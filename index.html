@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fahrtbriefing</title>
+<meta name="theme-color" content="#f4f5f7">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Briefing">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="js/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/print.css">
+<script src="js/config.js"></script>
+</head>
+<body>
+
+<!-- Zugangssperre: Kennwort wird im Worker geprüft (lokaler Modus: im Browser). -->
+<div class="gate" id="gate" hidden>
+  <form class="gate-box" id="gateForm" autocomplete="off">
+    <img class="gate-logo" alt="Wicki Partners Ballonteam" src="img/wicki-logo.png">
+    <h1 id="gateTitle">Fahrtbriefing</h1>
+    <p id="gateText">Private Fahrtvorbereitung.<br>Bitte Kennwort eingeben.</p>
+    <input id="gatePw" type="password" inputmode="numeric" enterkeyhint="go" aria-label="Kennwort" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="gate-hint" id="gateHint" hidden></div>
+    <div class="gate-err" id="gateErr" hidden>Kennwort stimmt nicht.</div>
+    <button class="btn primary" type="submit" id="gateOpen">Öffnen</button>
+    <p class="note" id="gateNote"></p>
+  </form>
+</div>
+
+<div class="app">
+  <header class="topbar no-print" id="topbar">
+    <div class="title-block">
+      <div class="eyebrow" id="eyebrow">Ballon · Fahrtvorbereitung</div>
+      <h1><span id="title">Fahrtbriefing</span> <button class="ver" id="appVersion" type="button" title="Version">–</button> <span class="modebadge" id="modeBadge" hidden></span></h1>
+      <div class="sub" id="subtitle"></div>
+    </div>
+    <div class="header-tools" id="tools"></div>
+    <button class="btn icon" id="menuBtn" type="button" title="Menü" aria-label="Menü">≡</button>
+    <img class="header-logo" alt="Wicki Partners Ballonteam" src="img/wicki-logo.png">
+    <div class="menu hidden" id="menu"></div>
+  </header>
+  <main class="main" id="view"></main>
+</div>
+
+<script src="js/vendor/leaflet/leaflet.js"></script>
+<script src="js/vendor/qrcode.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

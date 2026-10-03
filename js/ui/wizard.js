@@ -1,0 +1,335 @@
+/* Fahrtbriefing — geführter Ablauf «Neues Briefing» (sechs Schritte, Weiter/Zurück). */
+import { h, clear, toast, num, fmt, fmtSigned, debounce } from '../util.js';
+import { t, getLang } from '../i18n.js';
+import { setHeader } from '../app.js';
+import { field, input, select, textarea, check, mapPicker, kv, stats } from './widgets.js';
+import { scheduleEditor } from './parts.js';
+import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf } from '../model.js';
+import { resolveBalloon } from '../defaults.js';
+import { icao, countryGuess } from '../calc/geo.js';
+import { hhmm, fmtDate, fmtDur, localParts, isoDate } from '../calc/time.js';
+import { geocode, pointInfo, siteWeatherAt, route } from '../net.js';
+import { trailerMinutes } from '../calc/schedule.js';
+import { mandatoryPanels } from '../panels.js';
+import { tt } from '../i18n.js';
+
+const STEPS = ['wiz_s1', 'wiz_s2', 'wiz_s3', 'wiz_s4', 'wiz_s5', 'wiz_s6'];
+const QS = ['wiz_q1', 'wiz_q2', 'wiz_q3', 'wiz_q4', 'wiz_q5', 'wiz_q6'];
+
+export async function renderWizard(view, ctx, id, opts = {}) {
+  let b = opts.briefing || (id && !ctx.shared ? await ctx.store.getBriefing(id) : null);
+  let fresh = false;
+  if (!b) { b = newBriefing(ctx.settings); fresh = true; }
+  let step = b.wizardStep || (id ? 6 : 1);
+  const tz = () => b.site.tz || 'Europe/Zurich';
+  const lang = getLang();
+
+  const back = ctx.shared ? `#/s/${ctx.shared.token}` : '#/list';
+  const saveBtn = h('button.btn', { type: 'button', onclick: async () => { await persist(); toast(t('set_saved')); ctx.navigate(back); } }, t('wiz_saveDraft'));
+  const cancelBtn = h('button.btn', { type: 'button', onclick: () => ctx.navigate(back) }, t('wiz_cancel'));
+  setHeader({ title: t('wiz_title'), tools: [saveBtn, cancelBtn] });
+
+  const stepsBar = h('div.steps');
+  const prog = h('div.prog', h('i'));
+  const box = h('div.card', h('div.card-body'));
+  const sofar = h('div.card', [h('div.card-head', h('div.section-title', t('wiz_sofar'))), h('div.card-body.sofar')]);
+  view.appendChild(h('div.wiz', [stepsBar, prog, h('div.wiz-layout', [box, h('div', sofar)])]));
+
+  async function persist() {
+    b.wizardStep = step;
+    if (ctx.shared) await ctx.store.saveShared(ctx.shared.token, b, ctx.who); else await ctx.store.saveBriefing(b, ctx.who);
+    if (fresh) { fresh = false; history.replaceState(null, '', `#/new/${b.id}`); }
+  }
+  const persistSoon = debounce(() => persist().catch((e) => console.warn(e)), 1200);
+
+  function drawSteps() {
+    clear(stepsBar);
+    STEPS.forEach((k, i) => {
+      const n = i + 1;
+      const cls = n < step ? 'done' : n === step ? 'cur' : '';
+      stepsBar.appendChild(h('div.step' + (cls ? '.' + cls : ''), { onclick: () => { if (n < step) go(n); } }, [h('span.n', n < step ? '✓' : String(n)), t(k)]));
+      if (i < STEPS.length - 1) stepsBar.appendChild(h('div.step-bar'));
+    });
+    prog.firstChild.style.width = `${step / 6 * 100}%`;
+    const sb = sofar.querySelector('.sofar'); clear(sb);
+    const lines = summaryLines();
+    STEPS.forEach((k, i) => sb.appendChild(h('div', { class: i + 1 < step ? 'done' : 'todo' }, `${i + 1} · ${i + 1 < step && lines[i] ? lines[i] : t(k)}`)));
+    sb.appendChild(h('div.note', { style: { marginTop: '8px' } }, t('wiz_jump')));
+  }
+  function summaryLines() {
+    return [
+      `${b.balloon?.label || ''} · ${t('kind_' + b.flight.kind)} · ${b.flight.operatorName}`,
+      `${b.site.name || '?'} · ${fmtDate(tz(), b.time.startMs, lang)} ${hhmm(tz(), b.time.startMs)} LT`,
+      `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft`,
+      `${b.persons.pic} · ${b.persons.pax.length} Pax`,
+      `${b.schedule.meetingName || '–'}`,
+      '',
+    ];
+  }
+  async function go(n) {
+    if (n > step && !validate(step)) return;
+    step = Math.max(1, Math.min(6, n));
+    await persist();
+    draw();
+  }
+  function validate(s) {
+    if (s === 2 && (b.site.lat == null || !b.site.name)) { toast(t('site') + '?'); return false; }
+    if (s === 2 && !b.time.date) { toast(t('date') + '?'); return false; }
+    return true;
+  }
+  function footer(opts = {}) {
+    return h('div.foot', [
+      step > 1 ? h('button.btn', { type: 'button', onclick: () => go(step - 1) }, t('wiz_back')) : h('span'),
+      h('div.hint', t('wiz_hint')),
+      step < 6 ? h('button.btn.primary', { type: 'button', onclick: () => go(step + 1) }, t('wiz_next'))
+        : h('button.btn.primary', { type: 'button', onclick: create }, t('wiz_create')),
+    ]);
+  }
+  async function create() {
+    delete b.wizardStep;
+    if (ctx.shared) { await ctx.store.saveShared(ctx.shared.token, b, ctx.who); ctx.navigate(`#/s/${ctx.shared.token}`); return; }
+    await ctx.store.saveBriefing(b, ctx.who);
+    ctx.navigate(`#/b/${b.id}`);
+  }
+  function draw() {
+    drawSteps();
+    const body = box.querySelector('.card-body'); clear(body);
+    body.appendChild(h('h2', [h('span.muted.mono.small', t('wiz_stepOf', { n: step, total: 6 }) + ' · '), t(QS[step - 1])]));
+    const content = [null, step1, step2, step3, step4, step5, step6][step](body);
+    body.appendChild(footer());
+    body.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON') { e.preventDefault(); go(step + 1); } });
+    window.scrollTo(0, 0);
+    return content;
+  }
+
+  // ---------------------------------------------------------------- 1
+  function step1(body) {
+    const S = ctx.settings.balloons;
+    const typeRow = h('div.chips');
+    const combo = h('div.frow');
+    const redraw = () => {
+      clear(typeRow);
+      for (const ty of ['hab', 'gas']) typeRow.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.balloonSel.type === ty, onclick: () => { b.balloonSel = ty === 'gas' ? { type: 'gas', envelopeId: S.defaultEnvelope, basketId: S.defaultBasket } : { type: 'hab', id: S.defaultHab }; applyBalloon(); redraw(); } }, t(ty)));
+      clear(combo);
+      if (b.balloonSel.type === 'gas') {
+        combo.appendChild(field(t('envelope'), select(S.envelopes.map((e) => ({ value: e.id, label: `${e.id} · ${e.model} ${e.volume} m³` })), b.balloonSel.envelopeId, { onchange: (e) => { b.balloonSel.envelopeId = e.target.value; applyBalloon(); } })));
+        combo.appendChild(field(t('basket'), select(S.baskets.map((k) => ({ value: k.id, label: `${k.name} · ${k.mass} kg · max ${k.maxPersons} P.` })), b.balloonSel.basketId, { onchange: (e) => { b.balloonSel.basketId = e.target.value; applyBalloon(); } })));
+      } else {
+        combo.appendChild(field(t('registration'), select(S.hab.map((x) => ({ value: x.id, label: `${x.id} · ${x.model}` })), b.balloonSel.id, { onchange: (e) => { b.balloonSel.id = e.target.value; applyBalloon(); } })));
+      }
+    };
+    function applyBalloon() {
+      const bal = resolveBalloon(ctx.settings, b.balloonSel);
+      if (!bal) return;
+      const typeChanged = b.balloon?.type !== bal.type;
+      b.balloon = bal;
+      b.weather.envTempC = bal.envTempC ?? b.weather.envTempC;
+      b.schedule.rigMin = bal.rigMin ?? b.schedule.rigMin; b.schedule.fillMin = bal.fillMin ?? 0;
+      if (typeChanged) { const d = ctx.settings.intentDefaults[bal.type]; b.intent = { ...b.intent, durationMin: d.durationMin, altMinFt: d.altMinFt, altMaxFt: d.altMaxFt, levels: [...d.levels] }; }
+      persistSoon();
+    }
+    const kinds = h('div.chips', ['private', 'commercial', 'training', 'exam'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': b.flight.kind === k, onclick: (e) => { b.flight.kind = k; kinds.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); persistSoon(); } }, t('kind_' + k))));
+    const ops = ctx.settings.operators.map((o) => ({ value: o.id, label: o.name })).concat([{ value: 'custom', label: t('operatorCustom') }]);
+    const custom = input('text', b.flight.operatorId === 'custom' ? b.flight.operatorName : '', { placeholder: t('operatorCustom'), oninput: (e) => { b.flight.operatorName = e.target.value; persistSoon(); } });
+    custom.hidden = b.flight.operatorId !== 'custom';
+    const opSel = select(ops, b.flight.operatorId, { onchange: (e) => { b.flight.operatorId = e.target.value; custom.hidden = e.target.value !== 'custom'; b.flight.operatorName = e.target.value === 'custom' ? custom.value : ctx.settings.operators.find((o) => o.id === e.target.value)?.name || ''; persistSoon(); } });
+    redraw();
+    body.append(
+      field(t('balloonType'), typeRow), combo,
+      field(t('flightKind'), kinds),
+      h('div.frow', [field(t('operator'), h('div', [opSel, custom])), field(t('occasion'), input('text', b.flight.occasion, { oninput: (e) => { b.flight.occasion = e.target.value; persistSoon(); } }))]),
+    );
+  }
+
+  // ---------------------------------------------------------------- 2
+  function step2(body) {
+    const S = ctx.settings;
+    const favs = h('div.chips');
+    const results = h('div.results');
+    const mapEl = h('div.map');
+    const nameIn = input('text', b.site.name, { oninput: (e) => { b.site.name = e.target.value; persistSoon(); } });
+    const icaoIn = input('text', b.site.icao, { readOnly: true });
+    const elevIn = input('number', b.site.elev ?? '', { step: 1, oninput: (e) => { b.site.elev = num(e.target.value, null); persistSoon(); } });
+    const ctry = select([['CH', 'CH'], ['DE', 'DE'], ['AT', 'AT'], ['FR', 'FR'], ['IT', 'IT'], ['LI', 'LI'], ['', t('unknown')]].map(([v, l]) => ({ value: v, label: l })), b.site.country, { onchange: (e) => { b.site.country = e.target.value; refreshSun(); persistSoon(); } });
+    const tzIn = input('text', b.site.tz, { oninput: (e) => { b.site.tz = e.target.value || 'Europe/Zurich'; applyTime(); } });
+    const dateIn = input('date', b.time.date, { onchange: applyTime });
+    const timeIn = input('time', b.time.time, { onchange: applyTime });
+    const baseRow = h('div.chips', ['LT', 'UTC'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': b.time.base === k, onclick: (e) => { b.time.base = k; baseRow.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); applyTime(); } }, k)));
+    const sunBox = h('div.note');
+    const horizonBox = h('div.note');
+    let picker = null;
+    function applyTime() {
+      const d = dateIn.value || b.time.date, tm = timeIn.value || b.time.time;
+      if (b.time.base === 'UTC') { b.time.date = d; b.time.time = tm; b.time.startMs = Date.UTC(...d.split('-').map((x, i) => i === 1 ? +x - 1 : +x), ...tm.split(':').map(Number)); b.time.date = isoDate(tz(), b.time.startMs); b.time.time = hhmm(tz(), b.time.startMs); }
+      else setStart(b, d, tm);
+      refreshSun(); persistSoon();
+    }
+    function refreshSun() {
+      clear(sunBox); clear(horizonBox);
+      if (b.site.lat == null) return;
+      const sun = sunFor(b, S, ctx.racTable);
+      const z = tz();
+      sunBox.append(h('div', [h('b', `${t('bcmt')} ${hhmm(z, sun.official.bcmt)} · ${t('sr')} ${hhmm(z, sun.official.sr)} · ${t('ss')} ${hhmm(z, sun.official.ss)} · ${t('ecet')} ${hhmm(z, sun.official.ecet)}`), ' ', h('span.muted.small', sun.source === 'rac' ? t('sun_rac') : t('sun_astro'))]));
+      if (sun.racMissing) sunBox.appendChild(h('div.warn', t('sun_racMissing', { v: ctx.racTable?.validTo || '–' })));
+      if (sun.nightStart) sunBox.appendChild(h('div.warn', '⚠ ' + t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })));
+      if (sun.nightLanding) sunBox.appendChild(h('div.warn', '⚠ ' + t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })));
+      const ph = phaseOf(b.time.startMs);
+      const hrs = Math.round((b.time.startMs - Date.now()) / 3600000);
+      const models = hrs <= 48 ? 'ICON-D2, AROME, ICON-EU, ECMWF IFS, GFS' : hrs <= 120 ? 'ICON-EU, ARPEGE, ICON, ECMWF IFS, GFS' : hrs <= 240 ? 'ICON, ECMWF IFS, GFS, ECMWF ENS' : 'GFS, ECMWF ENS';
+      horizonBox.textContent = `${t('horizon')}: ${hrs >= 0 ? '+' : ''}${hrs} h → ${t('phase_' + ph)} · ${models}`;
+    }
+    async function setSite(s) {
+      Object.assign(b.site, { name: s.name, lat: s.lat, lon: s.lon, elev: s.elev ?? b.site.elev, tz: s.tz || b.site.tz, country: s.country || countryGuess(s.lat, s.lon), icao: icao(s.lat, s.lon), favoriteId: s.id || '' });
+      nameIn.value = b.site.name; icaoIn.value = b.site.icao; elevIn.value = b.site.elev ?? ''; ctry.value = b.site.country; tzIn.value = b.site.tz;
+      if (s.meetingId) { const m = S.meetings.find((x) => x.id === s.meetingId); if (m) Object.assign(b.schedule, { meetingId: m.id, meetingName: m.name, meetingLat: m.lat, meetingLon: m.lon }); }
+      setStart(b, b.time.date, b.time.time);
+      picker?.setPos(s.lat, s.lon, 11);
+      refreshSun(); persistSoon();
+      if (s.elev == null || !s.tz) {
+        try { const info = await pointInfo(s.lat, s.lon); if (info.elev != null) { b.site.elev = Math.round(info.elev); elevIn.value = b.site.elev; } if (info.tz) { b.site.tz = info.tz; tzIn.value = info.tz; } if (!b.site.name && info.name) { b.site.name = info.name; nameIn.value = info.name; } if (info.country) { b.site.country = info.country; ctry.value = info.country; } setStart(b, b.time.date, b.time.time); refreshSun(); persistSoon(); } catch { /* optional */ }
+      }
+    }
+    function drawFavs() {
+      clear(favs);
+      for (const s of S.sites.filter((x) => x.favorite)) favs.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.site.favoriteId === s.id, onclick: () => { setSite(s); drawFavs(); } }, s.name));
+    }
+    const q = input('search', '', { placeholder: t('siteSearch'), onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); doSearch(); } } });
+    async function doSearch() {
+      clear(results);
+      if (!q.value.trim()) return;
+      results.appendChild(h('div.note', t('loading')));
+      try {
+        const rs = await geocode(q.value.trim(), lang);
+        clear(results);
+        if (!rs.length) results.appendChild(h('div.note', '–'));
+        for (const r of rs) results.appendChild(h('button', { type: 'button', onclick: () => { clear(results); setSite({ ...r, id: '' }); drawFavs(); } }, `${r.name}${r.admin ? ' · ' + r.admin : ''} · ${r.lat.toFixed(3)}, ${r.lon.toFixed(3)}${r.elev != null ? ' · ' + Math.round(r.elev) + ' m' : ''}`));
+      } catch (e) { clear(results); results.appendChild(h('div.err', e.message)); }
+    }
+    const favBtn = h('button.btn', { type: 'button', onclick: async () => {
+      if (b.site.lat == null) return;
+      const id = (b.site.name || 'site').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const ex = S.sites.find((x) => x.id === id);
+      const rec = { id, name: b.site.name, lat: b.site.lat, lon: b.site.lon, elev: b.site.elev, country: b.site.country, tz: b.site.tz, notes: '', meetingId: b.schedule.meetingId || '', favorite: true };
+      if (ex) Object.assign(ex, rec); else S.sites.push(rec);
+      b.site.favoriteId = id; await ctx.saveSettings(S); drawFavs(); toast(t('set_saved'));
+    } }, t('siteSaveFav'));
+    drawFavs();
+    body.append(
+      field(t('siteFavorites'), favs),
+      h('div.inline', [q, h('button.btn', { type: 'button', onclick: doSearch }, t('siteSearchBtn'))]), results,
+      h('div.lbl', { style: { margin: '8px 0 4px' } }, t('siteMap')), mapEl,
+      h('div.frow.c4', [field(t('site'), nameIn), field(t('coords'), icaoIn), field(t('elevation') + ' (m)', elevIn), field(t('countryRules'), ctry)]),
+      h('div.frow.c4', [field(t('date'), dateIn), field(t('startTime'), timeIn), field(t('timeBase'), baseRow), field(t('s_tz'), tzIn)]),
+      h('div.row-actions', [favBtn]),
+      field(t('sun'), sunBox), horizonBox,
+    );
+    setTimeout(() => { picker = mapPicker(mapEl, b.site.lat, b.site.lon, (la, lo) => setSite({ name: b.site.name, lat: la, lon: lo, elev: null, tz: '', country: '' })); }, 0);
+    refreshSun();
+  }
+
+  // ---------------------------------------------------------------- 3
+  function step3(body) {
+    const it = b.intent;
+    const durIn = input('text', fmtDur(it.durationMin).replace(' h', ''), { placeholder: '2:00', oninput: (e) => { const m = /^(\d+)(?::(\d{1,2}))?/.exec(e.target.value.trim()); if (m) { it.durationMin = (+m[1]) * 60 + (+(m[2] || 0)); persistSoon(); sugg(); } } });
+    const minIn = input('number', it.altMinFt, { step: 100, oninput: (e) => { it.altMinFt = num(e.target.value); persistSoon(); sugg(); } });
+    const maxIn = input('number', it.altMaxFt, { step: 100, oninput: (e) => { it.altMaxFt = num(e.target.value); persistSoon(); sugg(); } });
+    const dir = input('text', it.direction, { placeholder: 'z. B. W – Reusstal / Aargau', oninput: (e) => { it.direction = e.target.value; persistSoon(); } });
+    const dn = h('div.chips', ['day', 'night', 'both'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': it.dayNight === k, onclick: (e) => { it.dayNight = k; dn.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); persistSoon(); sugg(); } }, t('dn_' + k))));
+    const rem = textarea(it.remark, { rows: 2, oninput: (e) => { it.remark = e.target.value; persistSoon(); } });
+    const lv = input('text', it.levels.join(', '), { oninput: (e) => { it.levels = e.target.value.split(/[,;]+/).map((x) => x.trim()).filter(Boolean); persistSoon(); } });
+    const suggBox = h('div.note');
+    function sugg() {
+      const sun = sunFor(b, ctx.settings, ctx.racTable);
+      const s = equipmentSuggest(b, sun);
+      clear(suggBox);
+      if (s.length) suggBox.textContent = t('eq_suggest', { s: s.map((x) => t('eq_' + x)).join(', ') });
+      if (sun?.nightLanding) suggBox.appendChild(h('div.warn', '⚠ ' + t('nightLandWarn', { e: hhmm(tz(), sun.official.ecet) })));
+    }
+    sugg();
+    body.append(
+      h('div.frow.c3', [field(t('duration') + ' (h:mm)', durIn), field(`${t('altBand')} ${t('altMin')} (ft)`, minIn), field(`${t('altBand')} ${t('altMax')} (ft)`, maxIn)]),
+      h('div.frow', [field(t('direction'), dir), field(t('dayNight'), dn)]),
+      field(t('levels'), lv), field(t('intentRemark'), rem), suggBox,
+    );
+  }
+
+  // ---------------------------------------------------------------- 4
+  function step4(body) {
+    const P = ctx.settings.persons, bal = b.balloon;
+    const pers = (role) => P.filter((p) => !role || p.roles?.includes(role)).map((p) => ({ value: p.id, label: p.name })).concat([{ value: 'custom', label: t('operatorCustom') }]);
+    const picCustom = input('text', b.persons.picId === 'custom' ? b.persons.pic : '', { placeholder: t('name'), oninput: (e) => { b.persons.pic = e.target.value; persistSoon(); } }); picCustom.hidden = b.persons.picId !== 'custom';
+    const picSel = select(pers('pic'), b.persons.picId, { onchange: (e) => { b.persons.picId = e.target.value; picCustom.hidden = e.target.value !== 'custom'; b.persons.pic = e.target.value === 'custom' ? picCustom.value : P.find((p) => p.id === e.target.value)?.name || ''; persistSoon(); } });
+    const retCustom = input('text', b.persons.retrieveId === 'custom' ? b.persons.retrieve : '', { placeholder: t('name'), oninput: (e) => { b.persons.retrieve = e.target.value; persistSoon(); } }); retCustom.hidden = b.persons.retrieveId !== 'custom';
+    const retSel = select(pers('retrieve').concat(pers('crew').filter((x) => !pers('retrieve').some((y) => y.value === x.value) && x.value !== 'custom')), b.persons.retrieveId, { onchange: (e) => { b.persons.retrieveId = e.target.value; retCustom.hidden = e.target.value !== 'custom'; b.persons.retrieve = e.target.value === 'custom' ? retCustom.value : P.find((p) => p.id === e.target.value)?.name || ''; persistSoon(); } });
+    const paxBox = h('div');
+    const preview = h('div');
+    function drawPax() {
+      clear(paxBox);
+      b.persons.pax.forEach((p, i) => {
+        const nameIn = input('text', p.name, { placeholder: t('paxPlaceholder', { n: i + 1 }), oninput: (e) => { p.name = e.target.value; persistSoon(); } });
+        const wIn = input('number', p.weight ?? '', { placeholder: `${bal.personWeight} ${t('normWeight')}`, step: 1, oninput: (e) => { p.weight = num(e.target.value, null); drawPreview(); persistSoon(); } });
+        paxBox.appendChild(h('div.pax-row', [nameIn, wIn, h('button.btn.icon', { type: 'button', onclick: () => { b.persons.pax.splice(i, 1); drawPax(); drawPreview(); persistSoon(); } }, '✕')]));
+      });
+      paxBox.appendChild(h('button.btn', { type: 'button', onclick: () => { b.persons.pax.push({ name: t('paxPlaceholder', { n: b.persons.pax.length + 1 }), weight: null }); drawPax(); drawPreview(); persistSoon(); } }, t('paxAdd')));
+    }
+    function drawPreview() {
+      clear(preview);
+      const { type, r } = massPerf(b, ctx.settings);
+      const src = b.weather.source === 'model' ? t('mp_modelStand', { t: b.weather.stand || '' }) : `${t('mp_temp')} ${b.weather.tempC} °C · QNH ${b.weather.qnh}`;
+      if (type === 'hab') {
+        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title', `${t('previewLift')} (${bal.reg}) · ${src}`)]), stats([
+          [t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'],
+          [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (b.weather.envTempC || bal.envTempC) ? 'neg' : ''],
+          [t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m` : '–'],
+          [t('mp_need', { d: fmtDur(b.intent.durationMin), r: Math.round(r.reserveMin) + ' min' }), `${fmt(r.needKg)} kg`], [t('mp_usable'), `${fmt(r.usable)} kg`, r.fuelMargin < 0 ? 'neg' : 'pos'],
+        ])]));
+      } else {
+        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title', `${t('previewBallast')} (${bal.label}) · ${src}`)]), stats([
+          [t('gb_gross'), `${fmt(r.grossLift)} kg`], [t('gb_net'), `${fmt(r.net)} kg`], [t('gb_ballast'), `${fmt(r.ballast)} kg · ${fmt(r.ballastPct)} %`, r.ballast < r.reserveKg ? 'neg' : 'pos'],
+          [t('gb_units'), r.units != null ? `${fmt(r.units, 1)} × ${bal.ballastUnitKg} kg` : '–'],
+        ])]));
+      }
+      if ((b.persons.pax.length + 1) > (bal.maxPersons || 99)) preview.appendChild(h('div.warn', `⚠ ${t('b_maxPersons')}: ${bal.maxPersons}`));
+    }
+    drawPax(); drawPreview();
+    body.append(h('div.frow', [field(t('pic'), h('div', [picSel, picCustom])), field(t('retrieve'), h('div', [retSel, retCustom]))]), field(t('pax'), paxBox), preview);
+    // Modellwerte für die Vorschau holen (einmal je Ort/Zeit)
+    if (b.site.lat != null && b.weather.source !== 'model' && (b.time.startMs - Date.now()) < 15 * 86400000) {
+      const p = localParts(tz(), b.time.startMs);
+      siteWeatherAt(b.site.lat, b.site.lon, b.time.date, p.hh).then((w) => { Object.assign(b.weather, { tempC: Math.round(w.tempC * 10) / 10, rh: w.rh, qnh: Math.round(w.qnh), source: 'model', stand: new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC' }); drawPreview(); persistSoon(); }).catch(() => {});
+    }
+  }
+
+  // ---------------------------------------------------------------- 5
+  function step5(body) {
+    const S = ctx.settings, sc = b.schedule;
+    const ms = S.meetings.map((m) => ({ value: m.id, label: m.name })).concat([{ value: 'custom', label: t('meetingCustom') }]);
+    const holder = h('div');
+    const mCustom = input('text', sc.meetingId === 'custom' ? sc.meetingName : '', { placeholder: t('meeting'), oninput: (e) => { sc.meetingName = e.target.value; persistSoon(); } }); mCustom.hidden = sc.meetingId !== 'custom';
+    const mSel = select(ms, sc.meetingId || 'custom', { onchange: (e) => { sc.meetingId = e.target.value; mCustom.hidden = e.target.value !== 'custom'; const m = S.meetings.find((x) => x.id === e.target.value); sc.meetingName = m ? m.name : mCustom.value; sc.meetingLat = m?.lat ?? null; sc.meetingLon = m?.lon ?? null; sc.driveMin = null; sc.overrides = {}; drawEditor(); persistSoon(); } });
+    function drawEditor() { clear(holder); holder.appendChild(scheduleEditor(b, ctx, () => persistSoon())); }
+    body.append(field(t('meeting'), h('div', [mSel, mCustom])), holder);
+    drawEditor();
+  }
+
+  // ---------------------------------------------------------------- 6
+  function step6(body) {
+    const S = ctx.settings;
+    const sun = sunFor(b, S, ctx.racTable);
+    const z = tz();
+    const { type, r } = massPerf(b, S);
+    const { rows } = scheduleFor(b, sun);
+    body.append(
+      h('div.frow', [
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s1'))), h('div.card-body', kv([[t('registration'), b.balloon.label], [t('flightKind'), t('kind_' + b.flight.kind)], [t('operator'), b.flight.operatorName], [t('occasion'), b.flight.occasion || '–']]))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s2'))), h('div.card-body', kv([[t('site'), `${b.site.name} · ${b.site.icao} · ${b.site.elev ?? '?'} m`], [t('date'), `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('sun'), sun ? `BCMT ${hhmm(z, sun.official.bcmt)} · SR ${hhmm(z, sun.official.sr)} · SS ${hhmm(z, sun.official.ss)} · ECET ${hhmm(z, sun.official.ecet)}` : '–'], sun?.nightStart ? ['', h('span.warn', t('night'))] : null]))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s3'))), h('div.card-body', kv([[t('duration'), fmtDur(b.intent.durationMin)], [t('altBand'), `${b.intent.altMinFt}–${b.intent.altMaxFt} ft`], [t('direction'), b.intent.direction || '–'], [t('levels'), b.intent.levels.join(', ')]]))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s4'))), h('div.card-body', kv([[t('pic'), b.persons.pic], [t('retrieve'), b.persons.retrieve || '–'], [t('pax'), b.persons.pax.map((p) => p.name).join(', ') || '–'], type === 'hab' ? [t('mp_takeoff'), `${fmt(r.takeoff)} kg (${fmtSigned(r.massDelta)} kg)`] : [t('gb_ballast'), `${fmt(r.ballast)} kg`]]))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv(rows.map((row) => [hhmm(z, row.ms), t('sch_' + row.key)])))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_mandatory'))), h('div.card-body', [h('ul', { style: { margin: 0, paddingLeft: '18px' } }, mandatoryPanels(S, b).map((p) => h('li', tt(p)))), h('div.note', t('wiz_createHint'))])]),
+      ]),
+    );
+  }
+
+  draw();
+}

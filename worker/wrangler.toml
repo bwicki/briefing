@@ -1,0 +1,26 @@
+# Fahrtbriefing — Cloudflare Worker (API, D1, R2)
+# Deployment: siehe SETUP.md. Secrets (nicht hier eintragen):
+#   wrangler secret put SESSION_SECRET   (zufällige Zeichenkette, ≥ 32 Zeichen)
+#   wrangler secret put ENC_KEY          (32 zufällige Bytes, base64)
+name = "briefing-api"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGINS = "https://briefing.wicki.aero,https://bwicki.github.io,http://localhost:8080,http://127.0.0.1:8080"
+APP_VERSION = "0.1.0"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "briefing"
+database_id = "00000000-0000-0000-0000-000000000000"   # wrangler d1 create briefing → ID hier eintragen
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "briefing-files"
+
+# Eigene Domain (nach dem ersten Deploy im Dashboard oder hier):
+# [[routes]]
+# pattern = "api.briefing.wicki.aero"
+# custom_domain = true
