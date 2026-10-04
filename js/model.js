@@ -10,7 +10,7 @@ import { fromLocal, localParts, isoDate, hhmm, addMin } from './calc/time.js';
 import { sunTimes, moonTimes, moonIllumination } from './calc/sun.js';
 import { racLookup } from './calc/rac.js';
 import { hotAir, gasBalloon } from './calc/aero.js';
-import { buildSchedule, scheduleWarnings } from './calc/schedule.js';
+import { buildSchedule, scheduleWarnings, buildPlan, planTemplate, planToStops } from './calc/schedule.js';
 import { icao, bearing, distKm, compass, countryGuess } from './calc/geo.js';
 import { PANELS } from './panels.js';
 
@@ -51,6 +51,7 @@ export function upgradeBriefing(b) {
   if (!b.landing) b.landing = emptyPlace();
   if (!b.schedule.overrides) b.schedule.overrides = {};
   ensureStops(b.schedule);
+  ensurePlan(b);
   if (!Array.isArray(b.persons.retrievers)) b.persons.retrievers = b.persons.retrieve ? [{ id: b.persons.retrieveId || 'custom', name: b.persons.retrieve }] : [];
   for (const p of b.persons.pax || []) if (/^(Pax|Passenger) \d+$/.test(p.name || '')) p.name = '';   // alte Platzhalter-Namen
   if (b.flight && b.flight.nvfr == null) b.flight.nvfr = b.intent?.dayNight === 'night' || b.intent?.dayNight === 'both';   // 0.8.1: NVFR-Schalter statt Tag/Nacht in der Absicht
@@ -71,6 +72,7 @@ export function duplicateBriefing(src, settings) {
   }
   b.weather = { ...b.weather, source: 'manual', stand: null };
   b.schedule.rows = []; b.schedule.overrides = {};
+  for (const it of b.schedule.plan || []) delete it.pin;
   return b;
 }
 
@@ -147,11 +149,41 @@ export function massPerf(b, settings) {
   }) };
 }
 
-/** Zeitplan-Zeilen (mit Überschreibungen) und Warnungen. */
+/** Zeitplan (tabellarisch, 0.9.1) sicherstellen: aus den Altfeldern (Etappen, Zeiten) eine Vorlage bauen. */
+export function ensurePlan(b) {
+  const s = b.schedule;
+  if (!Array.isArray(s.plan) || !s.plan.length) {
+    ensureStops(s);
+    s.plan = planTemplate({ type: b.balloon?.type, stops: s.stops, rigMin: s.rigMin, fillMin: s.fillMin, bufferMin: s.bufferMin, recoveryMin: s.recoveryMin, meetingName: s.meetingName, meetingLat: s.meetingLat, meetingLon: s.meetingLon, driveMin: s.driveMin });
+    // alte Pins (Altform) übernehmen, soweit zuordenbar
+    const ov = s.overrides || {};
+    for (const it of s.plan) { const k = it.type === 'meet' ? `depart:${it.id.replace(/^meet-/, '')}` : it.type; if (ov[k] != null) it.pin = ov[k]; }
+  }
+  if (!s.plan.some((x) => x.type === 'start')) s.plan.push({ id: 'start', type: 'start', name: '', info: '', min: 0 });
+  return s.plan;
+}
+/** Ballonwechsel in den Zeitplan übernehmen: Aufrüstzeit, Füllzeile (Gas) ein-/ausblenden. */
+export function applyBalloonToPlan(b, bal) {
+  const s = b.schedule; if (!Array.isArray(s.plan) || !bal) return;
+  const rig = s.plan.find((x) => x.type === 'rig'); if (rig && bal.rigMin != null) rig.min = bal.rigMin;
+  const fillIdx = s.plan.findIndex((x) => x.type === 'fill');
+  if (bal.type === 'gas' && fillIdx < 0) { const a = s.plan.findIndex((x) => x.type === 'start'); s.plan.splice(a < 0 ? s.plan.length : a, 0, { id: 'fill', type: 'fill', name: '', info: '', min: bal.fillMin ?? 150 }); }
+  else if (bal.type === 'gas' && fillIdx >= 0 && bal.fillMin != null) s.plan[fillIdx].min = bal.fillMin;
+  else if (bal.type !== 'gas' && fillIdx >= 0) s.plan.splice(fillIdx, 1);
+}
+/** Altfelder (Etappen, Treffpunkt) aus dem Zeitplan nachführen – für Pax-Karte, ICS, Crew-Nachricht, Leser. */
+export function syncFromPlan(s) {
+  if (!Array.isArray(s.plan)) return;
+  const stops = planToStops(s.plan);
+  if (stops.length) s.stops = stops;
+  syncMeeting(s);
+}
+/** Zeitplan-Zeilen (mit Pins) und Warnungen. Zeilen tragen key = Typ (start, landing, return …) für Leser. */
 export function scheduleFor(b, sun) {
   const s = b.schedule;
-  ensureStops(s);
-  const rows = buildSchedule({ startMs: b.time.startMs, type: b.balloon.type, rigMin: s.rigMin, fillMin: s.fillMin, bufferMin: s.bufferMin, durationMin: b.intent.durationMin, recoveryMin: s.recoveryMin, stops: s.stops, overrides: s.overrides || {} });
+  ensurePlan(b);
+  const rows = buildPlan(s.plan, { startMs: b.time.startMs, flightMin: b.intent.durationMin }).map((r) => ({ ...r, key: r.type === 'meet' ? `meet:${r.id}` : r.type, kind: r.type === 'meet' ? 'depart' : undefined }));
+  syncFromPlan(s);
   const warnings = scheduleWarnings(rows, sun ? { bcmt: sun.nvfr ? null : sun.official.bcmt, ecet: sun.nvfr ? null : sun.official.ecet, ss: sun.official.ss } : null);
   return { rows, warnings };
 }
@@ -164,6 +196,14 @@ export function ensureStops(s) {
   }
   syncMeeting(s);
   return s.stops;
+}
+/** Ersten Treffpunkt setzen (Favorit des Startplatzes): Etappen (Altform) und Zeitplan-Zeile «Treffpunkt». */
+export function setFirstMeeting(s, m) {
+  ensureStops(s);
+  Object.assign(s.stops[0], { meetingId: m.id, name: m.name, lat: m.lat ?? null, lon: m.lon ?? null, driveMin: null, driveSource: '' });
+  syncMeeting(s);
+  const row = (s.plan || []).find((x) => x.type === 'meet');
+  if (row) { row.name = m.name; row.meetingId = m.id; row.place = m.lat != null ? { name: m.name, lat: m.lat, lon: m.lon } : null; const drv = (s.plan || []).slice(s.plan.indexOf(row) + 1).find((x) => x.type === 'drive'); if (drv) { drv.minSource = ''; } }
 }
 export function syncMeeting(s) {
   const f = s.stops?.[0]; if (!f) return;
@@ -183,6 +223,10 @@ export function applyLanding(b, p, lang = 'de') {
 }
 /** Beschriftung einer Zeitplan-Zeile (Etappen mit Namen). */
 export function scheduleRowLabel(r, b, tr) {
+  if (r.type) {
+    const place = r.type === 'arrive' ? b.site?.name : r.type === 'landing' ? (b.landing?.name || '') : (r.place?.name || r.name || '');
+    return `${tr('act_' + r.type)}${place ? ' · ' + place : ''}${r.info ? ' – ' + r.info : ''}`;
+  }
   if (r.kind === 'depart') return `${tr('sch_departAt')}${r.name ? ' · ' + r.name : ''}`;
   if (r.key === 'arrive') return `${tr('sch_arrive')}${b.site?.name ? ' · ' + b.site.name : ''}`;
   return tr('sch_' + r.key);

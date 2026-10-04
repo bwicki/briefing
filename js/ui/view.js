@@ -78,7 +78,13 @@ export async function renderBrief(view, ctx, id, opts = {}) {
         case 'core': cell.appendChild(coreRows()); break;
         case 'sun': cell.appendChild(h('div', [h('div.kv', sunR.filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', v)])), sun?.nightStart ? h('div.ns', `⚠ ${t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })}`) : null, sun?.nightLanding ? h('div.ns', `⚠ ${t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })}`) : null])); break;
         case 'massperf': cell.appendChild(massBlock()); break;
-        case 'schedule': if (b.schedule.skip) { cell.appendChild(h('div', t('sch_skipped'))); break; } cell.appendChild(h('div', [h('div.mini', [`${t('sch_stops')}: `, ...(b.schedule.stops || []).map((st, k) => h('span', [k ? ' → ' : '', st.lat != null ? placeLine({ name: st.name, lat: st.lat, lon: st.lon }) : (st.name || '–'), st.driveMin != null ? ` (${st.driveMin} min)` : '']))]), h('table.inner', sched.rows.map((r) => h('tr', [h('td', { style: { textAlign: 'left', fontFamily: 'monospace' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, scheduleRowLabel(r, b, t))])))])); break;
+        case 'schedule': {
+          if (b.schedule.skip) { cell.appendChild(h('div', t('sch_skipped'))); break; }
+          // Zeit · Aktivität (Ort, Info) · Dauer · Ort mit Maps-Link, wo einer gesetzt ist
+          const rowPlace = (r) => (r.type === 'arrive' ? b.site : r.type === 'landing' ? b.landing : r.place);
+          cell.appendChild(h('table.inner.sched-view', sched.rows.map((r) => { const pl = rowPlace(r); return h('tr', [h('td', { style: { textAlign: 'left', fontFamily: 'monospace', whiteSpace: 'nowrap' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, [scheduleRowLabel(r, b, t), r.dur ? h('span.muted.small', ` · ${r.dur} min`) : null]), h('td', { style: { textAlign: 'left' } }, pl?.lat != null ? placeLine({ name: '', lat: pl.lat, lon: pl.lon }, { noElev: true }) : '')]); })));
+          break;
+        }
         case 'equipment': { const items = d.content.items || ['none']; cell.appendChild(h('div', S.equipmentItems.map((it) => h('span.chk', `${items.includes(it) ? '☑' : '☐'} ${t('eq_' + it)}`)))); break; }
         case 'transition': { const items = d.content.items || S.transitionDefaults[b.site.country] || []; cell.appendChild(h('div', S.transitionAltitudes.map((ta) => h('span.chk', `${items.includes(ta.id) ? '☑' : '☐'} ${ta.label}`)))); break; }
         case 'paxbriefing': cell.appendChild(h('div', [h('div', S.paxBriefingItems.map((it) => h('span.chk', `${(d.content.items || S.paxBriefingItems).includes(it) ? '☑' : '☐'} ${t('pb_' + it)}`))), b.balloon.type === 'gas' ? h('ul', { style: { margin: '4px 0', paddingLeft: '16px' } }, GAS_BRIEFING_EXTRA[lang].map((x) => h('li', x))) : null, h('div.mini', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, AMC1_BOP_BAS_115)])); break;

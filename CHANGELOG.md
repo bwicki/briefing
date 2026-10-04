@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.9.1 — 2026-10-04 · Dritte Rückmeldungsrunde (Teil 2): tabellarischer Zeitplan
+
+* **Tagesplanung als Tabelle** (Ablauf Schritt 5, Panel «Zeitplan» in der Erarbeitung): je Zeile
+  **Zeit · Aktivität (Dropdown) · Info · Dauer (min) · Ort**. Aktivitäten: Treffpunkt, Fahrt,
+  Ankunft Startplatz, Aufrüsten, Füllen, Reserve, Briefing, Start, Fahrt (Ballon), Landung,
+  Bergung, Rückfahrt, Verpflegung, Tanken, Sonstiges. Zeilen **per Ziehen oder ▲▼ verschieben**,
+  hinzufügen (+ Zeile), löschen (✕) – **die Zeiten laufen mit**: Anker ist die Zeile «Start»
+  (= Startzeit des Briefings); danach Zeit + Dauer vorwärts, davor rückwärts (Zeile = nächste
+  Zeit − eigene Dauer), Rundung auf 5 min. Zeit tippen = Pin (gestrichelt, ↺ löst ihn).
+* Orte: Treffpunkt/Fahrt/Rückfahrt/Verpflegung/Tanken/Briefing/Sonstiges mit Ortswahl (📍/✎);
+  Ankunft = Startplatz und Landung = geplanter Landeraum aus dem Briefing. **Fahrten werden
+  geroutet** (OSRM, Anhängerfaktor + Zuschlag), sobald Ort davor und danach bekannt sind
+  (gestrichelte orange Dauer = Routing; manuell überschreibbar, «Neu rechnen» setzt zurück).
+* Fahrtdauer der Ballonfahrt aus «Was ist geplant» (in der Zeile überschreibbar); Ballonwechsel
+  im Ablauf passt Aufrüstzeit an und blendet die Füllzeile (Gas) ein/aus. «Vorlage neu» baut die
+  Tabelle aus den Stammwerten neu (zweistufiger Knopf, kein Browser-Dialog).
+* Bestehende Briefings werden beim Öffnen in die Tabelle überführt (Etappen → Treffpunkt/Fahrt,
+  Puffer → Reserve, alte Pins bleiben); Pax-Karte, Kalender (ICS), Crew-Nachricht und
+  Briefingsicht lesen aus der Tabelle (Crew-Nachricht mit Maps-Links aller Zeilen mit Ort).
+* Briefingsicht: Zeitplan mit Dauer und Koordinaten/Maps-Link je Zeile mit Ort.
+* Layout: breite Tabelle im Ablauf (Schritt 5 nutzt die volle Breite); in schmalen Spalten
+  (Telefon, iPad hochkant, Panel neben der Seitenspalte) wird jede Zeile dreizeilig
+  (Zeit/Aktivität/Dauer – Info – Ort).
+* Tests: `buildPlan`/`planTemplate`/`planToStops` (127 Tests), Smoke-Test prüft Tabelle,
+  Verschieben mit angepassten Zeiten und Zeile hinzufügen.
+
 ## 0.9.0 — 2026-10-04 · Dritte Rückmeldungsrunde (Teil 1)
 
 * **KI-Kommentar** in jedem Panel-Titelbalken (Server-Modus mit KI-Freigabe): Klick erzeugt den
@@ -31,8 +57,7 @@
 * Layout: Panel-Titelbalken einheitlich zweizeilig hoch; alle Eingabefelder/Knöpfe in den
   Panel-Werkzeugleisten 30 px hoch, Trajektorien-Eingaben in einer Zeile; linke Panel-
   Navigation und rechte Spalte scrollbar; Pflicht-Inhalte im Ablauf fett in normaler Grösse.
-* Offen (0.9.1): tabellarischer Zeitplan mit Aktivitäten-Dropdown, Info- und Zeit/Ort-Spalte,
-  verschiebbaren Zeilen und mitlaufenden Zeiten.
+* Offen → 0.9.1: tabellarischer Zeitplan.
 
 ## 0.8.1 — 2026-10-04 · Rückmeldungen zu 0.8.0
 

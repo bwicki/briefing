@@ -106,12 +106,15 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
    (Name leer = Platzhalter im Briefing, Gewicht), Vorschau Tragkraft bzw. Ballast;
    Temperatur/QNH/Feuchte werden, wenn der Start innert 15 Tagen liegt, aus dem
    Modell geholt.
-5. **Tagesplanung** — **Etappen**: ein oder mehrere Treffpunkte/Zwischenhalte
-   (Liste aus Stamm oder Ortswahl; tippen = Suche), je Etappe die Fahrzeit mit
-   Anhänger zur nächsten (OSRM-Routing × Faktor + Zuschlag, überschreibbar),
-   Reihenfolge per Ziehen oder ▲▼; Aufrüst-/Füllzeit, Puffer. Zeiten rückwärts vom
-   Start: Ankunft Startplatz, davor die Abfahrten je Etappe; jede Zeile ist pinbar
-   (Ankunft ändern rechnet die Treffpunkte zurück, ↺ hebt den Pin auf). Klickbox
+5. **Tagesplanung** — **Tabelle** mit je Zeile Zeit · Aktivität (Dropdown:
+   Treffpunkt, Fahrt, Ankunft Startplatz, Aufrüsten, Füllen, Reserve, Briefing,
+   Start, Fahrt (Ballon), Landung, Bergung, Rückfahrt, Verpflegung, Tanken,
+   Sonstiges) · Info · Dauer (min) · Ort. Zeilen per Ziehen oder ▲▼ verschieben,
+   hinzufügen, löschen – die Zeiten laufen mit: Anker ist «Start» (Startzeit),
+   danach Zeit + Dauer vorwärts, davor rückwärts, Rundung auf 5 min. Zeit tippen =
+   Pin (↺ löst ihn). Fahrten werden geroutet (OSRM × Anhängerfaktor + Zuschlag),
+   sobald Ort davor und danach bekannt sind; Ankunft = Startplatz, Landung =
+   Landeraum. «Vorlage neu» baut die Tabelle aus Stamm und Favoriten neu. Klickbox
    **«kein Tagesplan anlegen / später»**.
 6. **Prüfen** — Zusammenfassung und Pflicht-Panels; *Briefing anlegen*.
 
@@ -292,8 +295,9 @@ die Einstellungen (ohne Zugänge).
   und Reinheit; Ballast = Brutto-Auftrieb − Nettomasse; Kennzahlen Abkühlung je K,
   Ballast je 100 m, Ballast-Einheiten, Landereserve. Ein Excel-Modus reproduziert
   die Vorlage v2 exakt (Tests).
-* **Tagesplanung** — Abfahrt = Start − Aufrüst-/Füllzeit − Fahrzeit − Puffer,
-  Rundung auf 5 min; Landung = Start + Dauer; Hinweise bei BCMT/ECET-Konflikt.
+* **Tagesplanung** — Zeilenliste mit Anker «Start»: vorwärts Zeit + Dauer,
+  rückwärts nächste Zeit − eigene Dauer, Pins je Zeile, Rundung auf 5 min
+  (`buildPlan`); Hinweise bei BCMT/ECET-Konflikt und Rückfahrt nach SS.
 
 `node test/calc.test.mjs` prüft diese Modelle gegen die Excel-Werte und die RAC-Tabelle.
 

@@ -2,15 +2,15 @@
  * Sonne/Mond-Block, Tragkraft-/Ballast-Editor, Zeitplan-Editor. */
 import { h, clear, num, fmt, fmtSigned, toast, uid } from '../util.js';
 import { t, getLang } from '../i18n.js';
-import { field, input, select, kv, stats, liftCurve, check, fieldAdd } from './widgets.js';
-import { sunFor, massPerf, scheduleFor, setStart, ensureStops, syncMeeting, scheduleRowLabel } from '../model.js';
-import { stammLabel } from '../stamm.js';
-import { placeRow, placeLine, typeToPick } from './place.js';
+import { field, input, select, kv, stats, liftCurve } from './widgets.js';
+import { sunFor, massPerf, scheduleFor, setStart, ensurePlan, scheduleRowLabel } from '../model.js';
+import { placeLine, pickPlace } from './place.js';
 import { hhmm, localParts, fmtDur, fmtDate } from '../calc/time.js';
+import { icao } from '../calc/geo.js';
 import { moonPhaseName } from '../calc/sun.js';
 import { racValidity } from '../calc/rac.js';
 import { siteWeatherAt, route } from '../net.js';
-import { trailerMinutes } from '../calc/schedule.js';
+import { trailerMinutes, ACT_TYPES, ACT_DEFAULT_MIN, ACT_PLACE } from '../calc/schedule.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
 
 const tzOf = (b) => b.site.tz || 'Europe/Zurich';
@@ -100,100 +100,110 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
 
 /** Etappen (Treffpunkte) der Anfahrt: Liste mit Ort, Fahrzeit zur nächsten Etappe, Umsortieren
  * per Ziehen (oder ▲▼); «+» über box.addFn. Jede Änderung löscht die Abfahrts-Pins. */
-export function stopsEditor(b, ctx, onChange, opts = {}) {
-  const S = ctx.settings, sc = b.schedule;
-  ensureStops(sc);
-  const box = h('div.stops');
-  const meetOpts = () => ctx.stamm.meetings.map((m) => ({ value: m.id, label: stammLabel(m, m.name) })).concat([{ value: 'custom', label: t('meetingCustom') }]);
-  const clearDepartPins = () => { for (const k of Object.keys(sc.overrides || {})) if (k.startsWith('depart:')) delete sc.overrides[k]; };
-  const changed = () => { syncMeeting(sc); onChange(); };
-  async function routeLeg(k) {
-    const a = sc.stops[k]; if (!a) return;
-    const nx = sc.stops[k + 1] || { lat: b.site.lat, lon: b.site.lon };
-    if (a.lat == null || nx.lat == null) { a.driveSource = a.driveMin == null ? '' : 'manual'; return; }
-    try {
-      const r = await route(a.lat, a.lon, nx.lat, nx.lon);
-      a.driveMin = trailerMinutes(r.seconds, S.scheduleDefaults.trailerFactor, S.scheduleDefaults.surchargeMin); a.driveKm = Math.round(r.meters / 1000); a.driveSource = 'routing';
-    } catch (e) { a.driveSource = 'manual'; if (a.driveMin == null) a.driveMin = 30; }
-  }
-  async function routeAll() { await Promise.all(sc.stops.map((_, k) => routeLeg(k))); draw(); changed(); }
-  function move(k, to) { if (to < 0 || to >= sc.stops.length) return; const [st] = sc.stops.splice(k, 1); sc.stops.splice(to, 0, st); clearDepartPins(); routeAll(); }
-  let dragFrom = null;
-  function draw() {
-    clear(box);
-    sc.stops.forEach((st, k) => {
-      const last = k === sc.stops.length - 1;
-      const custom = input('text', st.meetingId === 'custom' || !st.meetingId ? st.name : '', { placeholder: t('meeting') }); custom.hidden = !!st.meetingId && st.meetingId !== 'custom';
-      typeToPick(custom, () => ({ name: st.name, lat: st.lat, lon: st.lon, elev: null }), { title: t('meeting'), onPick: (p) => { st.name = p.name; st.lat = p.lat; st.lon = p.lon; st.meetingId = 'custom'; clearDepartPins(); routeAll(); }, onCancel: (v) => { st.name = v; changed(); } });
-      const sel = select(meetOpts(), st.meetingId || 'custom', { onchange: (e) => { st.meetingId = e.target.value; const m = ctx.stamm.meetings.find((x) => x.id === st.meetingId); if (m) { st.name = m.name; st.lat = m.lat ?? null; st.lon = m.lon ?? null; } else { st.name = custom.value; st.lat = null; st.lon = null; } custom.hidden = st.meetingId !== 'custom'; clearDepartPins(); routeAll(); } });
-      const drive = input('number', st.driveMin ?? '', { step: 5, min: 0, style: { width: '84px' }, title: last ? t('sch_driveSite') : t('sch_driveNext'), oninput: (e) => { st.driveMin = num(e.target.value, null); st.driveSource = 'manual'; clearDepartPins(); changed(); redrawTimes(); } });
-      const place = placeRow({ name: st.name, lat: st.lat, lon: st.lon }, { label: '', title: t('meeting'), noName: true, onPick: (p) => { st.lat = p.lat; st.lon = p.lon; if (!st.name || st.meetingId === 'custom') { st.name = st.name || p.name; custom.value = st.name; } st.meetingId = st.meetingId || 'custom'; clearDepartPins(); routeAll(); } });
-      const row = h('div.stop-row', { draggable: true }, [
-        h('div.stop-main', [
-          h('span.handle', { title: t('sch_drag') }, '≡'),
-          h('span.stop-no', String(k + 1)),
-          h('div.stop-sel', [sel, custom]),
-          h('button.btn.icon.small', { type: 'button', title: t('sch_moveUp'), disabled: k === 0, onclick: () => move(k, k - 1) }, '▲'),
-          h('button.btn.icon.small', { type: 'button', title: t('sch_moveDown'), disabled: last, onclick: () => move(k, k + 1) }, '▼'),
-          h('button.btn.icon.small', { type: 'button', title: t('remove'), disabled: sc.stops.length < 2, onclick: () => { sc.stops.splice(k, 1); clearDepartPins(); routeAll(); } }, '✕'),
-        ]),
-        h('div.stop-sub', [place, h('span.inline.small', [h('span.muted', `${last ? t('sch_driveSite') : t('sch_driveNext')}: `), drive, h('span.muted.small', st.driveSource === 'routing' ? ` ${t('driveAuto')}${st.driveKm ? ` · ${st.driveKm} km` : ''}` : st.driveSource === 'manual' ? ` ${t('driveManual')}` : '')])]),
-      ]);
-      row.addEventListener('dragstart', (e) => { dragFrom = k; e.dataTransfer.effectAllowed = 'move'; row.classList.add('dragging'); });
-      row.addEventListener('dragend', () => row.classList.remove('dragging'));
-      row.addEventListener('dragover', (e) => { e.preventDefault(); row.classList.add('over'); });
-      row.addEventListener('dragleave', () => row.classList.remove('over'));
-      row.addEventListener('drop', (e) => { e.preventDefault(); row.classList.remove('over'); if (dragFrom != null && dragFrom !== k) move(dragFrom, k); dragFrom = null; });
-      box.appendChild(row);
-    });
-  }
-  const redrawTimes = () => opts.onTimes?.();
-  box.addFn = () => { sc.stops.push({ id: uid(5), meetingId: 'custom', name: '', lat: null, lon: null, driveMin: null, driveKm: null, driveSource: '', dwellMin: 0 }); clearDepartPins(); draw(); changed(); setTimeout(() => box.querySelectorAll('.stop-sel input')[sc.stops.length - 1]?.focus(), 30); };
-  box.routeAll = routeAll;
-  draw();
-  if (sc.stops.some((st) => st.driveMin == null && st.lat != null) && b.site.lat != null) routeAll();
-  return box;
-}
-
-/** Zeitplan-Tabelle mit Überschreibungen; opts.hideStops lässt die Etappen-Liste weg (Ablauf zeigt sie selbst). */
+/** Tabellarischer Zeitplan: Zeilen = Aktivitäten (Dropdown), Info, Dauer, Zeit (Pin) und Ort; Zeilen per Ziehen
+ *  oder ▲▼ verschiebbar – die Zeiten laufen mit (Anker «Start»). Fahrten werden geroutet (OSRM, Anhängerfaktor),
+ *  wenn Ort davor und danach bekannt sind. */
 export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
   const S = ctx.settings, sc = b.schedule, z = tzOf(b);
-  ensureStops(sc);
+  ensurePlan(b);
   const wrap = h('div');
-  const table = h('table.sched');
+  const table = h('table.sched.plan');
   const warnBox = h('div');
-  const note = h('div.note');
-  const rigIn = input('number', sc.rigMin, { step: 5, readOnly, oninput: (e) => { sc.rigMin = num(e.target.value); redraw(); onChange(); } });
-  const fillIn = input('number', sc.fillMin, { step: 5, readOnly, oninput: (e) => { sc.fillMin = num(e.target.value); redraw(); onChange(); } });
-  const bufIn = input('number', sc.bufferMin, { step: 5, readOnly, oninput: (e) => { sc.bufferMin = num(e.target.value); redraw(); onChange(); } });
+  const typeOpts = ACT_TYPES.map((k) => ({ value: k, label: t('act_' + k) }));
+  let dragFrom = null;
+  const placeOf = (it) => (ACT_PLACE[it.type] === 'site' ? b.site : ACT_PLACE[it.type] === 'landing' ? (b.landing?.lat != null ? b.landing : null) : it.place);
+  const prevPlace = (k) => { for (let i = k - 1; i >= 0; i--) { const pl = placeOf(sc.plan[i]); if (pl?.lat != null) return pl; } return null; };
+  const nextPlace = (k) => { for (let i = k + 1; i < sc.plan.length; i++) { const pl = placeOf(sc.plan[i]); if (pl?.lat != null) return pl; } return null; };
+  /** Fahrt routen: eigener Ort = Ziel, sonst nächster Ort; Start = vorheriger Ort. */
+  async function routeDrive(k) {
+    const it = sc.plan[k]; if (!it || (it.type !== 'drive' && it.type !== 'return') || it.minSource === 'manual') return;
+    const from = prevPlace(k), to = it.place?.lat != null ? it.place : nextPlace(k);
+    if (!from || !to) return;
+    try { const r = await route(from.lat, from.lon, to.lat, to.lon); it.min = trailerMinutes(r.seconds, S.scheduleDefaults.trailerFactor, S.scheduleDefaults.surchargeMin); it.km = Math.round(r.meters / 1000); it.minSource = 'routing'; }
+    catch { /* Routing nicht verfügbar – Dauer bleibt */ }
+  }
+  async function routeAll() { await Promise.all(sc.plan.map((_, k) => routeDrive(k))); redraw(); onChange(); }
+  const clearPins = () => { for (const it of sc.plan) delete it.pin; };
+  function move(k, to) { if (to < 0 || to >= sc.plan.length) return; const [it] = sc.plan.splice(k, 1); sc.plan.splice(to, 0, it); routeAll(); }
   function redraw() {
     clear(table); clear(warnBox);
     const sun = sunFor(b, S, ctx.racTable);
     const { rows, warnings } = scheduleFor(b, sun);
     sc.rows = rows.map((r) => ({ key: r.key, ms: r.ms }));
-    for (const r of rows) {
-      const tIn = readOnly ? h('span.mono', hhmm(z, r.ms)) : input('time', hhmm(z, r.ms), { onchange: (e) => {
+    table.appendChild(h('thead', h('tr', [readOnly ? null : h('th'), h('th', t('sch_colTime')), h('th', t('sch_colAct')), h('th', t('sch_colInfo')), h('th', t('sch_colMin')), h('th', t('sch_colPlace')), readOnly ? null : h('th')])));
+    const tbody = h('tbody');
+    rows.forEach((r, k) => {
+      const it = sc.plan[k];
+      const isStart = it.type === 'start';
+      const dd = localParts(z, r.ms).d !== localParts(z, b.time.startMs).d ? ` (${fmtDate(z, r.ms, getLang()).split(' ')[0]})` : '';
+      const tIn = readOnly ? h('span.mono', hhmm(z, r.ms) + dd) : input('time', hhmm(z, r.ms), { onchange: (e) => {
         const [hh, mm] = e.target.value.split(':').map(Number); const p = localParts(z, r.ms);
-        sc.overrides[r.key] = Date.UTC(p.y, p.m - 1, p.d, hh, mm) - p.off * 60000;
-        if (r.key === 'start') { delete sc.overrides.start; setStart(b, `${p.y}-${String(p.m).padStart(2, '0')}-${String(p.d).padStart(2, '0')}`, e.target.value); }
+        const ms = Date.UTC(p.y, p.m - 1, p.d, hh, mm) - p.off * 60000;
+        if (isStart) setStart(b, `${p.y}-${String(p.m).padStart(2, '0')}-${String(p.d).padStart(2, '0')}`, e.target.value); else it.pin = ms;
         redraw(); onChange();
       } });
       if (r.overridden && !readOnly) tIn.classList.add('ov');
-      const dd = localParts(z, r.ms).d !== localParts(z, b.time.startMs).d ? ` (${fmtDate(z, r.ms, getLang()).slice(0, 2)})` : '';
-      table.appendChild(h('tr', [h('td.tm', tIn), h('td', [scheduleRowLabel(r, b, t), dd ? h('span.muted.small', dd) : null]), h('td.act', r.overridden && !readOnly ? h('button.btn.icon', { type: 'button', title: t('recompute'), onclick: () => { delete sc.overrides[r.key]; redraw(); onChange(); } }, '↺') : null)]));
-    }
+      const typeSel = readOnly ? h('b', t('act_' + it.type)) : select(typeOpts, it.type, { onchange: (e) => { const nt = e.target.value; if (nt !== 'start' && it.type === 'start') { e.target.value = 'start'; return; } it.type = nt; if (it.min == null && nt !== 'flight') it.min = ACT_DEFAULT_MIN[nt]; if (nt === 'flight') it.min = null; if (!ACT_PLACE[nt] || typeof ACT_PLACE[nt] === 'string') it.place = null; routeAll(); } });
+      const infoIn = readOnly ? h('span', it.info || '') : input('text', it.info || '', { placeholder: t('sch_infoHint'), oninput: (e) => { it.info = e.target.value; onChange(); } });
+      const minIn = readOnly ? h('span.mono', `${r.dur}`) : input('number', it.type === 'flight' && it.min == null ? b.intent.durationMin : (it.min ?? ACT_DEFAULT_MIN[it.type] ?? 0), { step: 5, min: 0, title: it.type === 'flight' ? t('sch_flightFromIntent') : it.minSource === 'routing' ? `${t('driveAuto')}${it.km ? ` · ${it.km} km` : ''}` : '', oninput: (e) => { it.min = num(e.target.value, 0); if (it.type === 'drive' || it.type === 'return') it.minSource = 'manual'; redraw(); onChange(); } });
+      if (it.minSource === 'routing' && !readOnly) minIn.classList.add('auto');
+      // Ort: Startplatz/Landeraum aus dem Briefing, sonst wählbar (kompakt: Name · Wählen/✎ · ✕)
+      let placeCell;
+      const pk = ACT_PLACE[it.type];
+      const pname = (p) => (p?.name ? h('span.pname', p.name) : h('span.mono', icao(p.lat, p.lon)));
+      if (pk === 'site') placeCell = pname(b.site);
+      else if (pk === 'landing') placeCell = b.landing?.lat != null ? pname(b.landing) : h('span.muted', t('landingSite') + ' –');
+      else if (pk && !readOnly) {
+        const pick = async () => { const p = await pickPlace(it.place, { title: t('act_' + it.type), from: prevPlace(k) }); if (p) { it.place = { name: p.name || '', lat: p.lat, lon: p.lon }; if (it.type === 'meet') it.name = p.name || it.name; routeAll(); } };
+        placeCell = h('span.pcell', [
+          it.place?.lat != null ? pname(it.place) : h('span.muted', '–'),
+          h('button.btn.icon.small', { type: 'button', title: it.place?.lat != null ? t('pick_change') : t('pick_choose'), onclick: pick }, it.place?.lat != null ? '✎' : '📍'),
+          it.place?.lat != null ? h('button.btn.icon.small.ghost', { type: 'button', title: t('remove'), onclick: () => { it.place = null; routeAll(); } }, '✕') : null,
+        ]);
+      } else if (pk && it.place?.lat != null) placeCell = placeLine(it.place, { noElev: true });
+      else placeCell = h('span.muted', '–');
+      const nameIn = it.type === 'meet' && !readOnly ? input('text', it.name || '', { placeholder: t('meeting'), style: { marginTop: '3px' }, oninput: (e) => { it.name = e.target.value; onChange(); } }) : null;
+      const row = h('tr', { draggable: !readOnly, class: isStart ? 'anchor' : '' }, [
+        readOnly ? null : h('td.handle', [h('span.handle', { title: t('sch_drag') }, '≡'), h('span.updown', [h('button.tiny', { type: 'button', title: t('sch_moveUp'), disabled: k === 0, onclick: () => move(k, k - 1) }, '▲'), h('button.tiny', { type: 'button', title: t('sch_moveDown'), disabled: k === rows.length - 1, onclick: () => move(k, k + 1) }, '▼')])]),
+        h('td.tm', [tIn, r.overridden && !readOnly ? h('button.btn.icon.small', { type: 'button', title: t('recompute'), onclick: () => { delete it.pin; redraw(); onChange(); } }, '↺') : null]),
+        h('td.act', [typeSel, nameIn]),
+        h('td.info', infoIn),
+        h('td.min', minIn),
+        h('td.place', { class: pk ? '' : 'none' }, placeCell),
+        readOnly ? null : h('td.ops', [h('button.btn.icon.small', { type: 'button', title: t('remove'), disabled: isStart, onclick: () => { sc.plan.splice(k, 1); routeAll(); } }, '✕')]),
+      ]);
+      if (!readOnly) {
+        row.addEventListener('dragstart', (e) => { dragFrom = k; e.dataTransfer.effectAllowed = 'move'; row.classList.add('dragging'); });
+        row.addEventListener('dragend', () => row.classList.remove('dragging'));
+        row.addEventListener('dragover', (e) => { e.preventDefault(); row.classList.add('over'); });
+        row.addEventListener('dragleave', () => row.classList.remove('over'));
+        row.addEventListener('drop', (e) => { e.preventDefault(); row.classList.remove('over'); if (dragFrom != null && dragFrom !== k) move(dragFrom, k); dragFrom = null; });
+      }
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
     for (const wkey of warnings) warnBox.appendChild(h('div.warn', '⚠ ' + (wkey === 'nightStart' ? t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) }) : wkey === 'nightLanding' ? t('nightLandWarn', { e: hhmm(z, sun.official.ecet) }) : (getLang() === 'en' ? 'Return after sunset' : 'Rückfahrt nach Sonnenuntergang'))));
   }
-  const timeFields = [field(`${t('rigTime')} (min)`, rigIn), b.balloon.type === 'gas' ? field(`${t('fillTime')} (min)`, fillIn) : field(`${t('buffer')} (min)`, bufIn)];
-  let stops = null;
-  if (!readOnly && !opts.hideStops) { stops = stopsEditor(b, ctx, () => { redraw(); onChange(); }, { onTimes: redraw }); wrap.append(fieldAdd(t('sch_stops'), stops, () => stops.addFn(), t('sch_stopAdd'))); }
-  if (!readOnly) wrap.append(
-    h('div.frow.c3', [...timeFields, h('div.f', [h('label', ' '), h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => { sc.overrides = {}; (stops || opts.stops)?.routeAll?.(); redraw(); onChange(); } }, t('recompute')), note])])]),
-  );
-  else wrap.append(h('div.note', [`${t('sch_stops')}: `, ...sc.stops.map((st, k) => h('span', [k ? ' → ' : '', st.lat != null ? placeLine({ name: st.name, lat: st.lat, lon: st.lon }) : (st.name || '–'), st.driveMin != null ? h('span.muted', ` (${st.driveMin} min)`) : null]))]));
-  wrap.append(table, warnBox);
-  if (!readOnly) wrap.append(h('div.note', t('sch_rule')));
+  const addRow = (type = 'custom') => { const a = sc.plan.findIndex((x) => x.type === 'start'); const it = { id: uid(5), type, name: '', info: '', min: type === 'flight' ? null : ACT_DEFAULT_MIN[type], place: null }; sc.plan.splice(a >= 0 ? a : sc.plan.length, 0, it); redraw(); onChange(); setTimeout(() => table.querySelectorAll('tbody tr')[Math.max(0, a)]?.querySelector('select')?.focus(), 30); };
+  table.addFn = () => addRow('custom');
+  if (!readOnly) {
+    // «Vorlage neu»: zweistufig (erster Klick fragt, zweiter innert 4 s führt aus) – kein Browser-Dialog
+    let armed = null;
+    const tplBtn = h('button.btn.small', { type: 'button', onclick: () => {
+      if (armed) { clearTimeout(armed); armed = null; tplBtn.textContent = t('sch_template'); sc.plan = null; ensurePlan(b); routeAll(); return; }
+      tplBtn.textContent = t('sch_templateConfirm'); armed = setTimeout(() => { armed = null; tplBtn.textContent = t('sch_template'); }, 4000);
+    } }, t('sch_template'));
+    wrap.append(h('div.sched-tools', [
+      h('button.btn.small', { type: 'button', onclick: () => addRow('custom') }, `+ ${t('sch_addRow')}`),
+      h('button.btn.small', { type: 'button', onclick: () => { clearPins(); for (const it of sc.plan) if (it.minSource === 'manual') it.minSource = ''; routeAll(); } }, t('recompute')),
+      tplBtn,
+      h('span.note', t('sch_rule')),
+    ]));
+  }
+  wrap.append(h('div.sched-wrap', h('div.tbl-scroll', table)), warnBox);
   redraw();
+  wrap.addFn = table.addFn;
+  wrap.routeAll = routeAll;
   return wrap;
 }
 

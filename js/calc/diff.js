@@ -19,7 +19,7 @@ export function changesSinceFinal(b) {
   cmp('intent', b.intent, s.intent);
   cmp('landing', { n: b.landing?.name, lat: b.landing?.lat, lon: b.landing?.lon }, { n: s.landing?.name, lat: s.landing?.lat, lon: s.landing?.lon });
   cmp('persons', b.persons, s.persons);
-  cmp('schedule', { m: b.schedule?.meetingName, d: b.schedule?.driveMin, o: b.schedule?.overrides, r: b.schedule?.rigMin }, { m: s.schedule?.meetingName, d: s.schedule?.driveMin, o: s.schedule?.overrides, r: s.schedule?.rigMin });
+  cmp('schedule', { m: b.schedule?.meetingName, d: b.schedule?.driveMin, o: b.schedule?.overrides, r: b.schedule?.rigMin, p: b.schedule?.plan }, { m: s.schedule?.meetingName, d: s.schedule?.driveMin, o: s.schedule?.overrides, r: s.schedule?.rigMin, p: s.schedule?.plan });
   cmp('weather', { t: b.weather?.tempC, q: b.weather?.qnh, rh: b.weather?.rh, e: b.weather?.envTempC }, { t: s.weather?.tempC, q: s.weather?.qnh, rh: s.weather?.rh, e: s.weather?.envTempC });
   const panels = [];
   const keys = new Set([...Object.keys(b.panels || {}), ...Object.keys(s.panels || {})]);

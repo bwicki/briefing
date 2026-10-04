@@ -6,7 +6,7 @@ import { sunTimes, moonTimes, moonIllumination, moonPhaseName } from '../js/calc
 import { parseRacText, racLookup } from '../js/calc/rac.js';
 import { fromLocal, hhmm, localParts, tzOffsetMin, isoDate } from '../js/calc/time.js';
 import { icao, parseIcao, distKm } from '../js/calc/geo.js';
-import { buildSchedule, trailerMinutes } from '../js/calc/schedule.js';
+import { buildSchedule, trailerMinutes, buildPlan, planTemplate, planToStops, scheduleWarnings, ACT_DEFAULT_MIN } from '../js/calc/schedule.js';
 import { readFileSync } from 'node:fs';
 import * as OM from '../js/auto/openmeteo.js';
 import { parseLevel, tracks, levelAltM } from '../js/auto/traj.js';
@@ -245,6 +245,34 @@ ok(!sw.some((w) => w.kind === 'tma'), 'TMA 5500 ft bei Platz 1400 ft (4100 ft da
 const sw2 = siteWarnings({ lat: 47.45, lon: 8.5, elevFt: 4800 }, [tma], 900);
 ok(sw2.length === 1 && sw2[0].kind === 'tma' && sw2[0].aglFt === 700, 'TMA nur 700 ft über Platz → Warnung');
 ok(requirementKey({ typeKey: 'TMA', cls: 'E' }) === 'classE' && requirementKey({ typeKey: 'OTHER', cls: 'C' }) === 'clearance' && requirementKey({ typeKey: 'P' }) === 'prohibited' && requirementKey({ typeKey: 'TRA' }) === 'activation', 'Hinweis-Schlüssel je Typ/Klasse');
+
+// ---- Tabellarischer Zeitplan (0.9.1): Anker «Start», vorwärts/rückwärts, Pins, Vorlage, Etappen-Rückführung
+{
+  const startMs = Date.UTC(2026, 9, 10, 4, 0);   // 06:00 LT (CEST)
+  const tpl = planTemplate({ type: 'hab', stops: [{ id: 'm1', name: 'Katzenrüti', lat: 47.4, lon: 8.5, driveMin: 25, driveSource: 'routing', driveKm: 18 }, { id: 'm2', name: 'Buchs', lat: 47.3, lon: 8.3, driveMin: 10 }], rigMin: 45, bufferMin: 15, recoveryMin: 60 });
+  ok(tpl.map((x) => x.type).join(',') === 'meet,drive,meet,drive,buffer,arrive,rig,start,flight,landing,recovery,return', 'Vorlage HAB: Treffpunkte, Fahrten, Reserve, Ankunft, Aufrüsten, Start, Fahrt, Landung, Bergung, Rückfahrt');
+  ok(planTemplate({ type: 'gas', stops: [], fillMin: 150 }).some((x) => x.type === 'fill'), 'Vorlage Gas enthält Füllen');
+  const rows = buildPlan(tpl, { startMs, flightMin: 90 });
+  const by = Object.fromEntries(rows.map((r) => [r.type + (r.type === 'meet' ? ':' + r.id : ''), r]));
+  ok(by.start.ms === startMs && by.flight.ms === startMs && by.flight.dur === 90, 'Start ist Anker, Fahrtdauer aus der Absicht');
+  ok(by.landing.ms === startMs + 90 * 60000 && by.recovery.ms === by.landing.ms && by.return.ms === by.landing.ms + 60 * 60000, 'vorwärts: Landung = Start + Fahrt, Rückfahrt = Landung + Bergung');
+  ok(by.rig.ms === startMs - 45 * 60000 && by.arrive.ms === by.rig.ms && by.buffer.ms === by.arrive.ms - 15 * 60000, 'rückwärts: Aufrüsten = Start − 45, Reserve davor');
+  ok(by['meet:meet-m2'].ms === by.buffer.ms - 10 * 60000 - ACT_DEFAULT_MIN.meet * 60000 && by['meet:meet-m1'].ms === by['meet:meet-m2'].ms - 25 * 60000 - ACT_DEFAULT_MIN.meet * 60000, 'Etappen: Abfahrt = nächste Zeit − Fahrt − Aufenthalt');
+  // Pin auf Ankunft: Zeilen davor rechnen vom Pin, Start bleibt
+  const pinned = tpl.map((x) => (x.type === 'arrive' ? { ...x, pin: startMs - 120 * 60000 } : x));
+  const r2 = buildPlan(pinned, { startMs, flightMin: 90 });
+  const b2 = Object.fromEntries(r2.map((r) => [r.type, r]));
+  ok(b2.arrive.ms === startMs - 120 * 60000 && b2.arrive.overridden && b2.rig.ms === startMs - 45 * 60000 && b2.buffer.ms === b2.arrive.ms - 15 * 60000, 'Pin Ankunft: Reserve/Etappen rechnen vom Pin, Aufrüsten weiter vom Start');
+  // Umsortieren: Bergung vor Landung → Zeiten laufen mit
+  const moved = tpl.slice(); const ri = moved.findIndex((x) => x.type === 'recovery'); const [rec] = moved.splice(ri, 1); moved.splice(moved.findIndex((x) => x.type === 'flight'), 0, rec);
+  const r3 = buildPlan(moved, { startMs, flightMin: 90 }); const b3 = Object.fromEntries(r3.map((r) => [r.type, r]));
+  ok(b3.recovery.ms === startMs && b3.flight.ms === startMs + 60 * 60000 && b3.landing.ms === b3.flight.ms + 90 * 60000, 'verschobene Zeile: Nachfolger rechnen neu');
+  ok(buildPlan([{ id: 'a', type: 'custom', min: 7 }, { id: 'start', type: 'start' }, { id: 'b', type: 'custom', min: 7 }, { id: 'c', type: 'custom', min: 7 }], { startMs }).map((r) => (r.ms - startMs) / 60000).join() === '-10,0,0,5', 'Rundung auf 5 min (rückwärts abgerundet, vorwärts kaufmännisch)');
+  const stops = planToStops(tpl);
+  ok(stops.length === 2 && stops[0].name === 'Katzenrüti' && stops[0].driveMin === 25 && stops[0].driveSource === 'routing' && stops[0].driveKm === 18 && stops[1].driveMin === 10, 'Etappen (Altform) aus dem Zeitplan abgeleitet');
+  const w = scheduleWarnings(rows, { bcmt: startMs + 60000, ecet: startMs + 60 * 60000, ss: startMs + 30 * 60000 });
+  ok(w.join() === 'nightStart,nightLanding,returnAfterSunset', 'Warnungen aus Typ-Schlüsseln');
+}
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);
 process.exit(fails ? 1 : 0);

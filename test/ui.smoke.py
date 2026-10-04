@@ -74,6 +74,21 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.wait_for_timeout(300)
         pg.screenshot(path=f'{OUT}/{name}_05_wiz4.png', full_page=True)
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(2500)
+        # Schritt 5: tabellarischer Zeitplan (Dropdown je Zeile, Info, Dauer, Ort), Zeilen verschiebbar, Zeiten laufen mit
+        assert pg.query_selector('.wiz table.sched.plan tbody tr.anchor') is not None, 'Zeitplan-Tabelle mit Anker «Start»'
+        acts = pg.evaluate("() => [...document.querySelectorAll('.wiz table.sched.plan tbody tr td.act select')].map(s => s.value)")
+        assert acts[:2] == ['meet', 'drive'] and 'rig' in acts and 'landing' in acts and 'return' in acts, f'Vorlage-Zeilen: {acts}'
+        times0 = pg.evaluate("() => [...document.querySelectorAll('.wiz table.sched.plan tbody tr td.tm input')].map(i => i.value)")
+        start_i = acts.index('start')
+        assert times0[acts.index('rig')] < times0[start_i] < times0[acts.index('landing')] and times0[acts.index('arrive')] == times0[acts.index('rig')], f'Zeiten um den Anker: {times0}'
+        # Bergung nach oben vor die Landung → Landung rückt um die Bergungsdauer nach hinten
+        rec_i = acts.index('recovery')
+        pg.click(f'.wiz table.sched.plan tbody tr:nth-child({rec_i + 1}) td.handle button[title="nach oben"]'); pg.wait_for_timeout(600)
+        acts2 = pg.evaluate("() => [...document.querySelectorAll('.wiz table.sched.plan tbody tr td.act select')].map(s => s.value)")
+        times2 = pg.evaluate("() => [...document.querySelectorAll('.wiz table.sched.plan tbody tr td.tm input')].map(i => i.value)")
+        assert acts2.index('recovery') == rec_i - 1 and times2[acts2.index('landing')] > times0[acts.index('landing')], f'Zeile verschoben, Zeiten angepasst: {times2}'
+        pg.click('.wiz .sched-tools button:has-text("Zeile hinzufügen")'); pg.wait_for_timeout(400)
+        assert len(pg.query_selector_all('.wiz table.sched.plan tbody tr')) == len(acts) + 1, 'Zeile hinzugefügt'
         pg.screenshot(path=f'{OUT}/{name}_06_wiz5.png', full_page=True)
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(600)
         pg.screenshot(path=f'{OUT}/{name}_07_wiz6.png', full_page=True)

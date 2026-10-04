@@ -4,7 +4,7 @@ import { t, getLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, kv, stats, fieldAdd } from './widgets.js';
 import { scheduleEditor } from './parts.js';
-import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, ensureStops, syncMeeting, applyLanding } from '../model.js';
+import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan } from '../model.js';
 import { placeRow, placeLine, pickPlace, mapsLink, typeToPick } from './place.js';
 import { stammLabel } from '../stamm.js';
 import { resolveBalloon } from '../defaults.js';
@@ -39,7 +39,8 @@ export async function renderWizard(view, ctx, id, opts = {}) {
   const prog = h('div.prog', h('i'));
   const box = h('div.card', h('div.card-body'));
   const sofar = h('div.card', [h('div.card-head', h('div.section-title', t('wiz_sofar'))), h('div.card-body.sofar')]);
-  view.appendChild(h('div.wiz', [stepsBar, prog, h('div.wiz-layout', [box, h('div', sofar)])]));
+  const wiz = h('div.wiz', [stepsBar, prog, h('div.wiz-layout', [box, h('div', sofar)])]);
+  view.appendChild(wiz);
 
   async function persist() {
     b.wizardStep = step;
@@ -50,6 +51,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
 
   function drawSteps() {
     clear(stepsBar);
+    wiz.classList.toggle('wide', step === 5);   // Tagesplanung: breite Tabelle
     STEPS.forEach((k, i) => {
       const n = i + 1;
       const cls = n < step ? 'done' : n === step ? 'cur' : '';
@@ -194,7 +196,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       const typeChanged = b.balloon?.type !== bal.type;
       b.balloon = bal;
       b.weather.envTempC = bal.envTempC ?? b.weather.envTempC;
-      b.schedule.rigMin = bal.rigMin ?? b.schedule.rigMin; b.schedule.fillMin = bal.fillMin ?? 0;
+      b.schedule.rigMin = bal.rigMin ?? b.schedule.rigMin; b.schedule.fillMin = bal.fillMin ?? 0; applyBalloonToPlan(b, bal);
       if (typeChanged) { const d = ctx.settings.intentDefaults[bal.type]; b.intent = { ...b.intent, durationMin: d.durationMin, altMinFt: d.altMinFt, altMaxFt: d.altMaxFt, levels: [...d.levels] }; }
       persistSoon();
     }
@@ -261,7 +263,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     async function setSite(s) {
       Object.assign(b.site, { name: s.name, lat: s.lat, lon: s.lon, elev: s.elev ?? b.site.elev, tz: s.tz || b.site.tz, country: s.country || countryGuess(s.lat, s.lon), icao: icao(s.lat, s.lon), favoriteId: s.id || '' });
       nameIn.value = b.site.name; icaoIn.value = b.site.icao; elevIn.value = b.site.elev ?? ''; ctry.value = b.site.country; tzIn.value = b.site.tz;
-      if (s.meetingId) { const m = M.meetings.find((x) => x.id === s.meetingId); if (m) { ensureStops(b.schedule); Object.assign(b.schedule.stops[0], { meetingId: m.id, name: m.name, lat: m.lat, lon: m.lon, driveMin: null, driveSource: '' }); syncMeeting(b.schedule); } }
+      if (s.meetingId) { const m = M.meetings.find((x) => x.id === s.meetingId); if (m) setFirstMeeting(b.schedule, m); }
       setStart(b, b.time.date, b.time.time);
       refreshSun(); persistSoon(); ampelSoon();
       if (s.elev == null || !s.tz) {

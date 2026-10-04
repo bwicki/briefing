@@ -53,7 +53,7 @@ export function crewMessage(b, ctx, link) {
     '',
     ...rows.map((r) => `${hhmm(zz, r.ms)}  ${scheduleRowLabel(r, b, t)}`),
     '',
-    ...(sc.stops || []).filter((st) => st.lat != null).map((st) => `${t('meeting')} ${st.name}: ${mapsUrl(st.lat, st.lon)}`),
+    ...rows.filter((r) => r.place?.lat != null).map((r) => `${r.type === 'meet' ? t('meeting') : t('act_' + r.type)} ${r.name || r.place.name || ''}: ${mapsUrl(r.place.lat, r.place.lon)}`),
     b.site.lat != null ? `${t('site')}: ${mapsUrl(b.site.lat, b.site.lon)}` : '',
     sun ? `BCMT ${hhmm(zz, sun.official.bcmt)} · SR ${hhmm(zz, sun.official.sr)} · SS ${hhmm(zz, sun.official.ss)} · ECET ${hhmm(zz, sun.official.ecet)}` : '',
     link ? `Briefing: ${link}` : '',
