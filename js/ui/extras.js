@@ -154,6 +154,7 @@ export async function renderPaxCard(view, ctx, id, opts = {}) {
     h('div.bs', t('pax_bring')), h('ul.pax-list', items.map((x) => h('li', x))),
     h('div.bs', t('pax_safety')), h('ul.pax-list', (lang === 'en' ? PAX_SAFETY.en : PAX_SAFETY.de).concat(b.balloon.type === 'gas' ? GAS_BRIEFING_EXTRA[lang] || GAS_BRIEFING_EXTRA.de : []).map((x) => h('li', x))),
     h('div.bs', t('pax_contact')), h('div.kv.pax-kv', [[t('pic'), `${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`], b.persons.retrieve ? [t('retrieve'), b.persons.retrieve] : null, [t('operator'), b.flight.operatorName]].filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', v)])),
+    (pic?.trackers || []).length ? h('div', [h('div.bs', t('pax_track')), h('ul.pax-list.trackers', pic.trackers.map((u) => h('li', h('a', { href: u, target: '_blank', rel: 'noopener' }, u.replace(/^https?:\/\/(www\.)?/, ''))))), h('div.mini', t('pax_trackHint'))]) : null,
     h('div.bf', [h('span', t('pax_weather')), h('span', `${t('appName')} · ${b.flight.operatorName}`)]),
   ]);
   view.appendChild(card);

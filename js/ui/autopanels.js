@@ -67,8 +67,12 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   }
   draw();
   wrap.append(toolbar, body);
-  // beim ersten Öffnen ohne Schnappschuss automatisch laden (nur Modell-Panels, nicht NOTAM/DABS)
-  if (!readOnly && !d.content.auto && (['meteogram', 'wind', 'temps', 'traj', 'metar', 'sigmet', 'balloon', 'pdiff'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE')) && b.site.lat != null && ctx.autoLoad !== false) setTimeout(run, 50 + Math.random() * 400);
+  // beim ersten Öffnen ohne Schnappschuss automatisch laden: Modell-Panels sofort; DABS, Karten und
+  // NOTAM (Worker-Abrufe, Freigabe) etwas später, damit die Modellpanels zuerst stehen
+  const remote = ctx.store.mode === 'remote';
+  const auto = ['meteogram', 'wind', 'temps', 'traj', 'metar', 'sigmet', 'balloon', 'pdiff'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE');
+  const later = remote && (p.auto === 'dabs' || (p.auto === 'synoptic' && (ctx.settings.synopticCharts || []).length) || (p.auto === 'notam' && ctx.can('notam')));
+  if (!readOnly && !d.content.auto && (auto || later) && b.site.lat != null && ctx.autoLoad !== false) setTimeout(run, (later ? 1500 : 50) + Math.random() * 400);
   return wrap;
 }
 

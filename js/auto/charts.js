@@ -140,61 +140,96 @@ export function stueveChart(levels, o = {}) {
  * Meteogramm: recs [{ms, temp, dew, w10, gust, d10, cloud, cloudLow, cloudMid, cloudHigh, precip, cape}],
  * o: { fromMs, toMs (Fahrtfenster), tz, hhmm(fn), light(fn ms→bool), w, rating(fn rec→0..2) }
  */
+/** Meteogramm (Stundenwerte): Bänder Temperatur/Taupunkt, Wind/Böen (+Fahnen), Bewölkung
+ * tief/mittel/hoch, Niederschlag + CAPE, darunter Zeitachse (LT, Tageswechsel) und Ampelstreifen.
+ * o: {w, hhmm(ms), dayLabel(ms), rating(r), fromMs, toMs, startMs, lab{…}} — Beschriftungen kommen vom Aufrufer (Sprache). */
 export function meteogram(recs, o = {}) {
   if (!recs?.length) return null;
-  const W = o.w || 640, H = 300, L = 40, R = 40, T = 10, B = 26;
-  const rows = [['temp', 90], ['wind', 70], ['cloud', 50], ['precip', 44]];
+  const lab = Object.assign({ temp: 'Temperatur °C', wind: 'Wind kt', cloud: 'Bewölkung %', precip: 'Niederschlag mm/h', cape: 'CAPE J/kg', high: 'hoch', mid: 'mittel', low: 'tief', fly: 'Ampel', start: 'Start', land: 'Landung', lt: 'LT' }, o.lab || {});
+  const W = o.w || 760, L = 58, R = 44, T = 8, B = 44;
+  const bands = [['temp', 96], ['wind', 86], ['cloud', 58], ['precip', 56]];
+  const H = T + bands.reduce((a, b) => a + b[1], 0) + B;
   const svg = mk('svg', { viewBox: `0 0 ${W} ${H}`, class: 'mg-svg', role: 'img' });
   const t0 = recs[0].ms, t1 = recs[recs.length - 1].ms;
   const x = (ms) => L + ((ms - t0) / ((t1 - t0) || 1)) * (W - L - R);
   const colW = (W - L - R) / Math.max(1, recs.length - 1);
-  // Fahrtfenster + Nacht
-  if (o.light) for (const r of recs) if (!o.light(r.ms)) svg.appendChild(mk('rect', { x: x(r.ms) - colW / 2, y: T, width: colW, height: H - T - B, class: 'mg-night' }));
-  if (o.fromMs != null) svg.appendChild(mk('rect', { x: x(o.fromMs), y: T, width: Math.max(2, x(o.toMs) - x(o.fromMs)), height: H - T - B, class: 'mg-window' }));
+  const plotTop = T, plotBot = H - B;
+  const clipId = `mgclip${++uid}`;
+  const defs = mk('defs'); const cp = mk('clipPath', { id: clipId }); cp.appendChild(mk('rect', { x: L, y: plotTop, width: W - L - R, height: plotBot - plotTop })); defs.appendChild(cp); svg.appendChild(defs);
+  const plot = mk('g', { 'clip-path': `url(#${clipId})` }); svg.appendChild(plot);
+  const inPlot = (n) => plot.appendChild(n);
+  // Nacht, Fahrtfenster
+  for (const r of recs) if (r.night) inPlot(mk('rect', { x: x(r.ms) - colW / 2, y: plotTop, width: colW, height: plotBot - plotTop, class: 'mg-night' }));
+  if (o.fromMs != null) inPlot(mk('rect', { x: x(o.fromMs), y: plotTop, width: Math.max(2, x(o.toMs) - x(o.fromMs)), height: plotBot - plotTop, class: 'mg-window' }));
+  // Stundenraster + Tageswechsel
+  const every = recs.length > 60 ? 6 : recs.length > 30 ? 3 : recs.length > 16 ? 2 : 1;
+  recs.forEach((r, i) => {
+    const hr = o.hhmm ? o.hhmm(r.ms) : String(new Date(r.ms).getUTCHours()).padStart(2, '0');
+    const midnight = hr === '00';
+    svg.appendChild(mk('line', { x1: x(r.ms), y1: plotTop, x2: x(r.ms), y2: plotBot + (midnight ? 14 : 4), class: midnight ? 'mg-grid mg-day' : 'mg-grid mg-hour' }));
+    if (i % every === 0 || midnight) svg.appendChild(mk('text', { x: x(r.ms), y: plotBot + 13, class: 'mg-ax', 'text-anchor': 'middle' }, hr));
+    if ((midnight || i === 0) && o.dayLabel) svg.appendChild(mk('text', { x: x(r.ms) + 3, y: plotBot + 25, class: 'mg-ax mg-dayl', 'text-anchor': 'start' }, o.dayLabel(r.ms)));
+  });
+  svg.appendChild(mk('text', { x: W - R + 4, y: plotBot + 13, class: 'mg-ax', 'text-anchor': 'start' }, lab.lt));
   let yTop = T;
-  const band = (h) => { const y0 = yTop; yTop += h; return [y0, y0 + h]; };
+  const band = (hh) => { const y0 = yTop; yTop += hh; svg.appendChild(mk('line', { x1: L, y1: y0 + hh, x2: W - R, y2: y0 + hh, class: 'mg-grid mg-sep' })); return [y0, y0 + hh]; };
+  const title = (y0, txt) => svg.appendChild(mk('text', { x: L + 4, y: y0 + 10, class: 'mg-title' }, txt));
+  const tick = (yv, txt, right) => svg.appendChild(mk('text', { x: right ? W - R + 4 : L - 4, y: yv + 3, class: 'mg-ax', 'text-anchor': right ? 'start' : 'end' }, txt));
   // Temperatur / Taupunkt
-  { const [y0, y1] = band(rows[0][1]);
+  { const [y0, y1] = band(bands[0][1]);
     const vals = recs.flatMap((r) => [r.temp, r.dew]).filter((v) => v != null);
     const vMin = Math.floor((Math.min(...vals) - 2) / 5) * 5, vMax = Math.ceil((Math.max(...vals) + 2) / 5) * 5;
-    const y = (v) => y1 - 4 - ((v - vMin) / ((vMax - vMin) || 1)) * (y1 - y0 - 8);
-    for (let v = vMin; v <= vMax; v += 5) { svg.appendChild(mk('line', { x1: L, y1: y(v), x2: W - R, y2: y(v), class: 'mg-grid' })); svg.appendChild(mk('text', { x: L - 4, y: y(v) + 3, class: 'mg-ax', 'text-anchor': 'end' }, String(v))); }
+    const y = (v) => y1 - 6 - ((v - vMin) / ((vMax - vMin) || 1)) * (y1 - y0 - 20);
+    for (let v = vMin; v <= vMax; v += 5) { svg.appendChild(mk('line', { x1: L, y1: y(v), x2: W - R, y2: y(v), class: 'mg-grid' + (v === 0 ? ' mg-zero' : '') })); tick(y(v), `${v}°`); }
     svg.appendChild(mk('polyline', { points: recs.filter((r) => r.dew != null).map((r) => `${x(r.ms).toFixed(1)},${y(r.dew).toFixed(1)}`).join(' '), class: 'mg-dew' }));
     svg.appendChild(mk('polyline', { points: recs.filter((r) => r.temp != null).map((r) => `${x(r.ms).toFixed(1)},${y(r.temp).toFixed(1)}`).join(' '), class: 'mg-temp' }));
-    svg.appendChild(mk('text', { x: W - R + 4, y: y0 + 10, class: 'mg-ax' }, '°C T/Td'));
+    // Extremwerte beschriften
+    const tv = recs.filter((r) => r.temp != null);
+    if (tv.length) { const mx = tv.reduce((a, r) => (r.temp > a.temp ? r : a)), mn = tv.reduce((a, r) => (r.temp < a.temp ? r : a)); svg.appendChild(mk('text', { x: x(mx.ms), y: y(mx.temp) - 4, class: 'mg-val mg-tv', 'text-anchor': 'middle' }, `${Math.round(mx.temp)}°`)); if (mn !== mx) svg.appendChild(mk('text', { x: x(mn.ms), y: y(mn.temp) + 11, class: 'mg-val mg-tv', 'text-anchor': 'middle' }, `${Math.round(mn.temp)}°`)); }
+    title(y0, lab.temp);
   }
-  // Wind
-  { const [y0, y1] = band(rows[1][1]);
+  // Wind / Böen + Fahnen
+  { const [y0, y1] = band(bands[1][1]);
     const vMax = Math.max(10, Math.ceil(Math.max(...recs.map((r) => (r.gust ?? r.w10 ?? 0) * MS_TO_KT)) / 5) * 5);
-    const y = (v) => y1 - 2 - (v / vMax) * (y1 - y0 - 14);
-    for (const v of [0, vMax / 2, vMax]) { svg.appendChild(mk('line', { x1: L, y1: y(v), x2: W - R, y2: y(v), class: 'mg-grid' })); svg.appendChild(mk('text', { x: L - 4, y: y(v) + 3, class: 'mg-ax', 'text-anchor': 'end' }, String(Math.round(v)))); }
-    for (const r of recs) { if (r.gust != null) svg.appendChild(mk('rect', { x: x(r.ms) - colW * 0.3, y: y(r.gust * MS_TO_KT), width: colW * 0.6, height: Math.max(0, y(0) - y(r.gust * MS_TO_KT)), class: 'mg-gust' })); if (r.w10 != null) svg.appendChild(mk('rect', { x: x(r.ms) - colW * 0.3, y: y(r.w10 * MS_TO_KT), width: colW * 0.6, height: Math.max(0, y(0) - y(r.w10 * MS_TO_KT)), class: 'mg-wind' })); }
-    for (const r of recs) if (r.w10 != null && r.d10 != null) svg.appendChild(barbGroup(x(r.ms), y0 + 16, r.w10, r.d10, 'mg-barb'));
-    svg.appendChild(mk('text', { x: W - R + 4, y: y0 + 10, class: 'mg-ax' }, 'kt Wind/Böen'));
+    const y = (v) => y1 - 4 - (v / vMax) * (y1 - y0 - 26);
+    for (const v of [0, vMax / 2, vMax]) { svg.appendChild(mk('line', { x1: L, y1: y(v), x2: W - R, y2: y(v), class: 'mg-grid' })); tick(y(v), `${Math.round(v)}`); }
+    for (const r of recs) { if (r.gust != null) inPlot(mk('rect', { x: x(r.ms) - colW * 0.32, y: y(r.gust * MS_TO_KT), width: colW * 0.64, height: Math.max(0, y(0) - y(r.gust * MS_TO_KT)), class: 'mg-gust' })); if (r.w10 != null) inPlot(mk('rect', { x: x(r.ms) - colW * 0.32, y: y(r.w10 * MS_TO_KT), width: colW * 0.64, height: Math.max(0, y(0) - y(r.w10 * MS_TO_KT)), class: 'mg-wind' })); }
+    const bEvery = colW < 14 ? Math.ceil(14 / colW) : 1;
+    recs.forEach((r, i) => { if (i % bEvery === 0 && r.w10 != null && r.d10 != null && x(r.ms) >= L + 9 && x(r.ms) <= W - R - 9) svg.appendChild(barbGroup(x(r.ms), y0 + 18, r.w10, r.d10, 'mg-barb')); });
+    title(y0, lab.wind);
   }
-  // Bewölkung
-  { const [y0, y1] = band(rows[2][1]);
-    const hh = (y1 - y0 - 6) / 3;
-    recs.forEach((r) => { [['cloudHigh', 0], ['cloudMid', 1], ['cloudLow', 2]].forEach(([k, j]) => { const v = r[k]; if (v == null) return; svg.appendChild(mk('rect', { x: x(r.ms) - colW / 2, y: y0 + 3 + j * hh, width: colW, height: hh, class: 'mg-cloud', style: `fill-opacity:${(v / 100 * 0.85).toFixed(2)}` })); }); });
-    svg.appendChild(mk('text', { x: W - R + 4, y: y0 + 10, class: 'mg-ax' }, 'Wolken h/m/l'));
+  // Bewölkung tief/mittel/hoch
+  { const [y0, y1] = band(bands[2][1]);
+    const hh = (y1 - y0 - 14) / 3, top = y0 + 12;
+    recs.forEach((r) => { [['cloudHigh', 0], ['cloudMid', 1], ['cloudLow', 2]].forEach(([k, j]) => { const v = r[k]; if (v == null) return; inPlot(mk('rect', { x: x(r.ms) - colW / 2, y: top + j * hh, width: colW + 0.5, height: hh, class: 'mg-cloud', style: `fill-opacity:${(v / 100 * 0.9).toFixed(2)}` })); }); });
+    [lab.high, lab.mid, lab.low].forEach((tx, j) => { svg.appendChild(mk('line', { x1: L, y1: top + j * hh, x2: W - R, y2: top + j * hh, class: 'mg-grid' })); tick(top + j * hh + hh / 2, tx); });
+    title(y0, lab.cloud);
   }
   // Niederschlag + CAPE
-  { const [y0, y1] = band(rows[3][1]);
+  { const [y0, y1] = band(bands[3][1]);
     const pMax = Math.max(1, Math.ceil(Math.max(...recs.map((r) => r.precip || 0))));
-    const y = (v) => y1 - 2 - (v / pMax) * (y1 - y0 - 8);
-    for (const r of recs) if (r.precip) svg.appendChild(mk('rect', { x: x(r.ms) - colW * 0.35, y: y(r.precip), width: colW * 0.7, height: Math.max(0, y(0) - y(r.precip)), class: 'mg-precip' }));
-    svg.appendChild(mk('text', { x: L - 4, y: y(pMax) + 3, class: 'mg-ax', 'text-anchor': 'end' }, `${pMax}`));
-    svg.appendChild(mk('text', { x: W - R + 4, y: y0 + 10, class: 'mg-ax' }, 'mm/h'));
-    for (const r of recs) if (r.cape != null && r.cape >= 300) svg.appendChild(mk('text', { x: x(r.ms), y: y0 + 10, class: 'mg-ax mg-cape', 'text-anchor': 'middle' }, '⚡'));
+    const y = (v) => y1 - 4 - (v / pMax) * (y1 - y0 - 18);
+    for (const v of [0, pMax / 2, pMax]) { svg.appendChild(mk('line', { x1: L, y1: y(v), x2: W - R, y2: y(v), class: 'mg-grid' })); tick(y(v), v % 1 ? v.toFixed(1) : String(v)); }
+    for (const r of recs) if (r.precip) inPlot(mk('rect', { x: x(r.ms) - colW * 0.36, y: y(r.precip), width: colW * 0.72, height: Math.max(0, y(0) - y(r.precip)), class: 'mg-precip' }));
+    const capes = recs.filter((r) => r.cape != null);
+    if (capes.length) {
+      const cMax = Math.max(500, Math.ceil(Math.max(...capes.map((r) => r.cape)) / 500) * 500);
+      const yc = (v) => y1 - 4 - (v / cMax) * (y1 - y0 - 18);
+      svg.appendChild(mk('polyline', { points: capes.map((r) => `${x(r.ms).toFixed(1)},${yc(r.cape).toFixed(1)}`).join(' '), class: 'mg-capeline' }));
+      tick(yc(cMax), `${cMax}`, true); tick(yc(0), '0', true);
+      for (const r of capes) if (r.cape >= 300) svg.appendChild(mk('text', { x: x(r.ms), y: y0 + 11, class: 'mg-ax mg-cape', 'text-anchor': 'middle' }, '⚡'));
+    }
+    title(y0, `${lab.precip} · ${lab.cape}`);
   }
-  // Zeitachse + Ampel
-  for (const r of recs) {
-    const d = new Date(r.ms); const hr = o.hhmm ? o.hhmm(r.ms) : `${d.getUTCHours()}`;
-    const every = recs.length > 30 ? 3 : recs.length > 16 ? 2 : 1;
-    const idx = recs.indexOf(r);
-    if (idx % every === 0) svg.appendChild(mk('text', { x: x(r.ms), y: H - B + 12, class: 'mg-ax', 'text-anchor': 'middle' }, hr));
-    if (o.rating) { const lv = o.rating(r); if (lv != null) svg.appendChild(mk('rect', { x: x(r.ms) - colW / 2 + 1, y: H - B + 16, width: Math.max(1, colW - 2), height: 6, class: `mg-fly f${lv}` })); }
+  // Ampelstreifen
+  if (o.rating) {
+    const ys = plotBot + 30;
+    svg.appendChild(mk('text', { x: L - 4, y: ys + 7, class: 'mg-ax', 'text-anchor': 'end' }, lab.fly));
+    for (const r of recs) { const lv = o.rating(r); if (lv != null) svg.appendChild(mk('rect', { x: x(r.ms) - colW / 2 + 0.5, y: ys, width: Math.max(1, colW - 1), height: 8, class: `mg-fly f${lv}` })); }
   }
-  svg.appendChild(mk('line', { x1: L, y1: H - B, x2: W - R, y2: H - B, class: 'mg-grid' }));
+  // Start-/Landemarke
+  const mark = (ms, txt, cls) => { if (ms == null || ms < t0 || ms > t1) return; svg.appendChild(mk('line', { x1: x(ms), y1: plotTop, x2: x(ms), y2: plotBot, class: 'mg-mark ' + cls })); svg.appendChild(mk('text', { x: x(ms) + 3, y: plotTop + 9, class: 'mg-val ' + cls }, txt)); };
+  mark(o.startMs ?? o.fromMs, lab.start, 'mg-start'); mark(o.toMs, lab.land, 'mg-land');
+  svg.appendChild(mk('rect', { x: L, y: plotTop, width: W - L - R, height: plotBot - plotTop, class: 'mg-frame' }));
   return svg;
 }

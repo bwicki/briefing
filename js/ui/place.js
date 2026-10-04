@@ -57,6 +57,25 @@ export function placeRow(value, opts = {}) {
   return opts.label ? field(opts.label, row) : row;
 }
 
+/**
+ * Textfeld, das beim Tippen die Ortswahl öffnet (Suche mit dem Getippten vorbelegt).
+ * onPick(place) nach Übernahme; der Feldwert wird auf place.name gesetzt.
+ */
+export function typeToPick(inp, getValue, opts = {}) {
+  let open = false;
+  inp.addEventListener('input', async (e) => {
+    if (open || e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') return;
+    const v = inp.value.trim();
+    if (v.length < 2) return;
+    open = true;
+    try {
+      const p = await pickPlace({ ...(getValue?.() || {}), name: '' }, { title: opts.title, from: opts.from, query: v });
+      if (p) { inp.value = p.name; opts.onPick?.(p); } else opts.onCancel?.(v);
+    } finally { open = false; }
+  });
+  return inp;
+}
+
 /** Koordinaten aus Text: «47.3, 8.4», ICAO 4719N00824E, Google-Maps-URL (@lat,lon / q=lat,lon). */
 export function parseCoords(q) {
   const s = String(q || '').trim();
@@ -84,7 +103,7 @@ async function nominatim(q, lang) {
 export function pickPlace(initial, opts = {}) {
   const lang = getLang();
   const cur = { name: initial?.name || '', lat: initial?.lat ?? null, lon: initial?.lon ?? null, elev: initial?.elev ?? null, tz: initial?.tz || '', country: initial?.country || '', icao: '', address: initial?.address || '' };
-  const q = input('search', '', { placeholder: t('pick_search'), autocomplete: 'off' });
+  const q = input('search', opts.query || '', { placeholder: t('pick_search'), autocomplete: 'off' });
   const results = h('div.results');
   const mapEl = h('div.map.pick');
   const nameIn = input('text', cur.name, { placeholder: t('name'), oninput: (e) => { cur.name = e.target.value; } });
@@ -158,8 +177,10 @@ export function pickPlace(initial, opts = {}) {
   setTimeout(() => {
     picker = mapPicker(mapEl, cur.lat, cur.lon, (la, lo) => setPos(la, lo, true), 13);
     if (cur.lat == null && opts.from?.lat != null) picker?.map.setView([opts.from.lat, opts.from.lon], 10);
-    setTimeout(() => q.focus(), 100);
+    setTimeout(() => { q.focus(); if (opts.query) { q.setSelectionRange(q.value.length, q.value.length); doSearch(); } }, 100);
   }, 30);
+  // Weitertippen im Suchfeld sucht laufend (ab 3 Zeichen, mit Pause)
+  q.addEventListener('input', debounce(() => { if (q.value.trim().length >= 3) doSearch(); }, 600));
   return dialog(opts.title || t('pick_title'), content, [{ label: t('cancel'), value: false }, { label: t('pick_use'), value: true, primary: true }], { cls: 'wide' }).then((ok) => {
     if (!ok || cur.lat == null) return null;
     cur.icao = icao(cur.lat, cur.lon);

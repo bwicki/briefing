@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.6.0 — 2026-10-04 · Rückmeldungen aus dem ersten Einsatz
+
+* Ablauf: ein «Neues Briefing»-Knopf (gefüllt, in der Hauptnavigation); tippen
+  ins Ortsfeld (Startort, Treffpunkt) öffnet die Ortssuche direkt; Startplätze in
+  den Einstellungen als Heissluft/Gas gekennzeichnet (Favoriten je Ballontyp);
+  Start-Ampel (denkbar / marginal / eher ausgeschlossen) sobald Ort und Zeit
+  stehen; Trajektorien-Vorschau (Min/Max-Höhe) in der Fahrtabsicht — Klick auf
+  die Karte setzt Landeraum und Zielrichtung; Platzhalter in Pax-Feldern
+  verschwinden beim Tippen (leer = «Pax n (Name folgt)» im Briefing); mehrere
+  Nachfahrer; Tagesplanung «kein Plan anlegen / später».
+* Ortszeile (Name · Koordinaten · Höhe · Maps-Link · Ändern) auf einer Zeile,
+  Felder darunter unten bündig; Ausgabewerte auf einer Zeile ausgerichtet.
+* Tragkraft/Masse: Vorgaben (Eingaben Startplatz, Vorgaben aus Stamm) klar von
+  den Resultaten (Masse; Höhe und Hüllentemperatur mit Kurve und Achsen) getrennt;
+  «Gasflaschen» → «Gasplanung» (nur Heissluft).
+* Fix: Tragkraft-Kurve zeigte statt der Grafik eine lange Zahlenreihe
+  (SVG-Namensraum).
+* METAR/TAF: alle Plätze im Umkreis (Standard 150 km, Anzahl einstellbar, 0 = alle);
+  Rohmeldung und Klartext (DE/EN) nebeneinander, TAF-Gruppen entschlüsselt.
+* Trajektorien: Legende Farbe = Höhe; Karte als Standard (Satellit/Basiskarte
+  wählbar), Distanzraster-Skizze über Knopf ▦; Skizze im Druck.
+* Meteogramm neu: beschriftete Bänder mit Einheiten, Zeitachse mit Tageswechsel,
+  Start-/Landemarken, Extremwerte, CAPE-Linie, Legende; Fenster −6/+6 h.
+* Automatische Panels laden beim ersten Öffnen alle von selbst (auch DABS,
+  Karten, NOTAM soweit freigeschaltet).
+* DABS/Karten: kleiner Viewer mit Blättern; Beilagen auf eigenen Seiten im Druck,
+  abschaltbar («Beilagen mitdrucken»); geparste Karten nicht mehr gestaucht.
+* Briefingsicht: einheitliche Breite aller Abschnitte (Tabellen mit fester
+  Spaltenbreite, breite Inhalte scrollen bzw. brechen um).
+* Personen: mehrere Tracker-Links je Person (Einstellungen) → Pax-Karte zeigt
+  die Links des PIC; Pax-Karte druckt A5 hoch.
+
 ## 0.5.2 — 2026-10-04
 
 * Zugänge: Auge zum Anzeigen/Verbergen der Eingabe; bei leerem Feld lädt es den

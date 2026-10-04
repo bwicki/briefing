@@ -61,7 +61,7 @@ function buildNav() {
   const items = [['list', t('nav_list'), '#/list'], ['new', t('nav_new'), '#/new'], ['settings', t('nav_settings'), '#/settings']];
   for (const [key, label, href] of items) {
     const active = cur === key || (key === 'list' && ['b', 'v', 'pax'].includes(cur));
-    n.appendChild(h('a', { href, class: active ? 'on' : '', 'aria-current': active ? 'page' : null }, key === 'new' ? `+ ${label}` : label));
+    n.appendChild(h('a', { href, class: key === 'new' ? 'primary' : active ? 'on' : '', 'aria-current': active ? 'page' : null }, key === 'new' ? `+ ${label}` : label));
   }
 }
 

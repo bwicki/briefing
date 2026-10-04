@@ -7,7 +7,8 @@ import { SECTIONS, visiblePanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '.
 import { sunRows } from './parts.js';
 import { massPerf, scheduleFor, sunFor, upgradeBriefing } from '../model.js';
 import { placeLine } from './place.js';
-import { renderSnapshot } from './autorender.js';
+import { renderSnapshot, standLine } from './autorender.js';
+import { load, save } from '../util.js';
 import { goNoGo } from '../calc/gonogo.js';
 import { changesSinceFinal } from '../calc/diff.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
@@ -25,12 +26,17 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const toggle = h('div.viewtoggle', [canEdit ? h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}` : `#/b/${b.id}`) }, t('view_edit')) : null, h('button.on', { type: 'button' }, t('view_brief'))]);
   const paxHash = shared?.material ? `#/m/${shared.token}/${b.id}/p` : shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`;
   if (shared?.material) tools.push(h('button.btn', { type: 'button', onclick: () => ctx.navigate(`#/m/${shared.token}`) }, `← ${t('ml_title')}`));
-  tools.push(toggle, h('button.btn', { type: 'button', onclick: () => ctx.navigate(paxHash) }, t('pax_title')), h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print')));
+  // Beilagen (DABS-Seiten, Karten) als eigene Seiten am Schluss – abwählbar
+  let withAtt = load('fb.printAtt', 1) === 1;
+  const attBox = h('label.check.no-print', { title: t('att_hint') }, [h('input', { type: 'checkbox', checked: withAtt, onchange: (e) => { withAtt = e.target.checked; save('fb.printAtt', withAtt ? 1 : 0); brief.classList.toggle('noatt', !withAtt); } }), h('span', t('att_print'))]);
+  tools.push(toggle, h('button.btn', { type: 'button', onclick: () => ctx.navigate(paxHash) }, t('pax_title')), attBox, h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print')));
   const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
   setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${ownerNote}`, tools });
 
   const brief = h('div.brief');
+  if (!withAtt) brief.classList.add('noatt');
   view.appendChild(brief);
+  const attachments = [];   // [{ title, images }] → Beilagen am Schluss
   const sun = sunFor(b, S, ctx.racTable);
   const { rows: sunR } = sunRows(b, ctx);
   const mp = massPerf(b, S);
@@ -63,14 +69,20 @@ export async function renderBrief(view, ctx, id, opts = {}) {
         case 'core': cell.appendChild(coreRows()); break;
         case 'sun': cell.appendChild(h('div', [h('div.kv', sunR.filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', v)])), sun?.nightStart ? h('div.ns', `⚠ ${t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })}`) : null, sun?.nightLanding ? h('div.ns', `⚠ ${t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })}`) : null])); break;
         case 'massperf': cell.appendChild(massBlock()); break;
-        case 'schedule': cell.appendChild(h('div', [h('div.mini', [`${t('meeting')}: `, b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–'), b.schedule.driveMin != null ? ` · ${t('driveTime')} ${b.schedule.driveMin} min` : '']), h('table.inner', sched.rows.map((r) => h('tr', [h('td', { style: { textAlign: 'left', fontFamily: 'monospace' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, `${t('sch_' + r.key)}${r.key === 'depart' && b.schedule.meetingName ? ' · ' + b.schedule.meetingName : ''}${r.key === 'arrive' ? ' · ' + b.site.name : ''}`)])))])); break;
+        case 'schedule': if (b.schedule.skip) { cell.appendChild(h('div', t('sch_skipped'))); break; } cell.appendChild(h('div', [h('div.mini', [`${t('meeting')}: `, b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–'), b.schedule.driveMin != null ? ` · ${t('driveTime')} ${b.schedule.driveMin} min` : '']), h('table.inner', sched.rows.map((r) => h('tr', [h('td', { style: { textAlign: 'left', fontFamily: 'monospace' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, `${t('sch_' + r.key)}${r.key === 'depart' && b.schedule.meetingName ? ' · ' + b.schedule.meetingName : ''}${r.key === 'arrive' ? ' · ' + b.site.name : ''}`)])))])); break;
         case 'equipment': { const items = d.content.items || ['none']; cell.appendChild(h('div', S.equipmentItems.map((it) => h('span.chk', `${items.includes(it) ? '☑' : '☐'} ${t('eq_' + it)}`)))); break; }
         case 'transition': { const items = d.content.items || S.transitionDefaults[b.site.country] || []; cell.appendChild(h('div', S.transitionAltitudes.map((ta) => h('span.chk', `${items.includes(ta.id) ? '☑' : '☐'} ${ta.label}`)))); break; }
         case 'paxbriefing': cell.appendChild(h('div', [h('div', S.paxBriefingItems.map((it) => h('span.chk', `${(d.content.items || S.paxBriefingItems).includes(it) ? '☑' : '☐'} ${t('pb_' + it)}`))), b.balloon.type === 'gas' ? h('ul', { style: { margin: '4px 0', paddingLeft: '16px' } }, GAS_BRIEFING_EXTRA[lang].map((x) => h('li', x))) : null, h('div.mini', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, AMC1_BOP_BAS_115)])); break;
         case 'text': cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (p.defaultText ? tt(p.defaultText) : '–')))); break;
         case 'landing': cell.appendChild(h('div', [b.landing?.lat != null ? h('div', [h('b', `${t('landingSite')}: `), placeLine(b.landing), b.site.lat != null ? h('span.mini', ` · ${distKm(b.site.lat, b.site.lon, b.landing.lat, b.landing.lon).toFixed(1)} km · ${Math.round(bearing(b.site.lat, b.site.lon, b.landing.lat, b.landing.lon)).toString().padStart(3, '0')}°`) : null]) : null, h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (b.landing?.lat != null ? '' : '–')))])); break;
         case 'auto': {
-          if (d.content?.auto) cell.appendChild(renderSnapshot(d.content.auto, b, ctx, { interactive: false }));
+          const snap = d.content?.auto;
+          if (snap && ['dabs', 'synoptic'].includes(snap.kind) && (snap.images || []).length) {
+            // Bilder als Beilage (eigene Seiten), im Panel nur der Verweis
+            attachments.push({ title: tt(p), images: snap.images, stand: standLine(snap, b) });
+            const viewer = renderSnapshot(snap, b, ctx, { interactive: false }); viewer.classList.add('no-print');
+            cell.appendChild(h('div', [h('div.mini.attref', t('att_ref', { n: attachments.length, p: snap.images.length })), viewer]));
+          } else if (snap) cell.appendChild(renderSnapshot(snap, b, ctx, { interactive: false }));
           if (d.content?.text) cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap', marginTop: '4px' } }, textToNodes(d.content.text)));
           for (const im of d.content?.images || []) cell.appendChild(h('figure', { style: { margin: '4px 0' } }, [h('img.pimg', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]));
           if (!d.content?.auto && !d.content?.text && !(d.content?.images || []).length) cell.appendChild(h('span.mini', '–'));
@@ -94,13 +106,14 @@ export async function renderBrief(view, ctx, id, opts = {}) {
     brief.appendChild(tbl);
   }
   brief.appendChild(h('div.bf', [h('span', `${APP.name} ${APP.version} · Wicki Aero GmbH · ${t('printDisclaimer')}`), h('span', `${b.site.icao} · ${b.site.tz}`)]));
+  if (attachments.length) brief.appendChild(h('div.appendix', attachments.map((a, i) => h('div.att', [h('div.bs', `${t('att_title', { n: i + 1 })} · ${a.title}`), a.stand, ...a.images.map((im) => h('figure', { style: { margin: '4px 0' } }, [h('img.pimg.att', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]))]))));
 
   function coreRows() {
     return h('div.kv', [
       [t('core_reg'), b.balloon.label], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
       [t('core_kind'), ['private', 'commercial', 'training', 'exam'].map((k) => `${b.flight.kind === k ? '☑' : '☐'} ${t('kind_' + k)}`).join('  ') + ` · LTF: ${b.flight.operatorName}`],
       [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('core_pic'), b.persons.pic],
-      [t('core_pax'), `${b.persons.pax.length}: ${b.persons.pax.map((x) => x.name).join(', ') || '–'}`], [t('core_retrieve'), b.persons.retrieve || '–'],
+      [t('core_pax'), `${b.persons.pax.length}: ${b.persons.pax.map((x, i) => x.name || t('paxPlaceholder', { n: i + 1 })).join(', ') || '–'}`], [t('core_retrieve'), b.persons.retrieve || '–'],
       [t('core_site'), placeLine(b.site)],
       [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}${b.intent.remark ? ' · ' + b.intent.remark : ''}`],
     ].map(([k, v]) => [h('div.k', k), h('div.v', v)]));

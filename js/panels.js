@@ -25,7 +25,7 @@ export const PANELS = [
   { key: 'A.remarks', section: 'A', kind: 'text', de: 'Bemerkungen', en: 'Remarks', grade: 'manual' },
   // B
   { key: 'B.synoptic', section: 'B', kind: 'auto', auto: 'synoptic', de: 'Allgemeine Lage mit Bodendruckkarte', en: 'General situation with surface chart', grade: 'half', link: 'meteoswiss', phase2: 'ECMWF Open Charts, DWD Bodenanalyse' },
-  { key: 'B.metar', section: 'B', kind: 'auto', auto: 'metar', de: 'METAR/TAF der nächstgelegenen Flugplätze', en: 'METAR/TAF of nearest aerodromes', grade: 'auto', link: 'skybriefing', phase2: 'aviationweather.gov, 4 nächste Plätze' },
+  { key: 'B.metar', section: 'B', kind: 'auto', auto: 'metar', de: 'METAR/TAF der nächstgelegenen Flugplätze', en: 'METAR/TAF of nearest aerodromes', grade: 'auto', link: 'skybriefing', phase2: 'aviationweather.gov, Plätze im eingestellten Umkreis (RAW + Klartext)' },
   { key: 'B.temps', section: 'B', kind: 'auto', auto: 'temps', de: 'Temps', en: 'Soundings', grade: 'auto', link: 'meteoblue', phase2: 'meteoblue Images API, eigenes Stüve, Payerne' },
   { key: 'B.obs', section: 'B', kind: 'paste', de: 'Observations', en: 'Observations', grade: 'auto', link: 'meteoswiss', phase2: 'SwissMetNet, METAR, DWD-Stationen' },
   { key: 'B.fwp', section: 'B', kind: 'auto', auto: 'fwp', de: 'Flugwetterprognose (offiziell)', en: 'Official aviation forecast', grade: 'half', link: 'skybriefing', phase2: 'DE: DWD Luftsportberichte automatisch' },

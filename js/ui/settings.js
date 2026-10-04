@@ -109,6 +109,7 @@ export async function renderSettings(view, ctx) {
       S.persons.forEach((p, i) => box.appendChild(h('div.item-box', [
         h('div.head', [h('b', p.name), h('button.btn.icon', { type: 'button', onclick: () => { S.persons.splice(i, 1); drawP(); } }, '🗑')]),
         h('div.frow.c4', [txtField(p, 'name', t('name')), txtField(p, 'phone', t('phone')), txtField(p, 'email', t('email')), numField(p, 'weight', `${t('weight')} kg`)]),
+        field(t('p_trackers'), textarea((p.trackers || []).join('\n'), { rows: 2, placeholder: 'https://live.garmin.com/… · https://aprs.fi/… · https://www.flightradar24.com/…', oninput: (e) => { p.trackers = e.target.value.split(/[\n,;\s]+/).map((x) => x.trim()).filter((x) => /^https?:\/\//i.test(x)); } })),
         h('div.chips', ROLES.map((r) => h('button.chip', { type: 'button', 'aria-pressed': (p.roles || []).includes(r), onclick: (e) => { p.roles = p.roles || []; const i2 = p.roles.indexOf(r); if (i2 >= 0) p.roles.splice(i2, 1); else p.roles.push(r); e.currentTarget.setAttribute('aria-pressed', p.roles.includes(r)); } }, r.toUpperCase()))),
       ])));
       box.appendChild(h('button.btn', { type: 'button', onclick: () => { S.persons.push({ id: uid(6), name: '', roles: ['crew'], phone: '', email: '', weight: null }); drawP(); } }, t('add')));
@@ -136,7 +137,14 @@ export async function renderSettings(view, ctx) {
         h('div.head', [h('b', s.name), h('button.btn.icon', { type: 'button', onclick: () => { S.sites.splice(i, 1); drawS(); } }, '🗑')]),
         h('div.frow', [txtField(s, 'name', t('name')), placeRow(s, { label: t('coords'), title: t('site'), noName: true, onPick: (p) => { Object.assign(s, { lat: p.lat, lon: p.lon, elev: p.elev ?? s.elev, tz: p.tz || s.tz, country: p.country || s.country }); if (!s.name) s.name = p.name; drawS(); } })]),
         h('div.frow.c4', [numField(s, 'elev', t('s_elev')), txtField(s, 'country', t('s_country')), txtField(s, 'tz', t('s_tz')), field(t('s_meeting'), select([{ value: '', label: '–' }].concat(S.meetings.map((m) => ({ value: m.id, label: m.name }))), s.meetingId, { onchange: (e) => { s.meetingId = e.target.value; } }))]),
-        field(t('s_fav'), check('', s.favorite, (v) => { s.favorite = v; })),
+        h('div.frow', [field(t('s_fav'), check('', s.favorite, (v) => { s.favorite = v; })), field(t('s_types'), h('div.chips', ['hab', 'gas'].map((ty) => h('button.chip', { type: 'button', 'aria-pressed': !s.types?.length || s.types.includes(ty), title: t('s_typesHint'), onclick: (e) => {
+          // leer = beide; Klick schaltet um; nie beide aus
+          let cur = s.types?.length ? [...s.types] : ['hab', 'gas'];
+          cur = cur.includes(ty) ? cur.filter((x) => x !== ty) : cur.concat(ty);
+          if (!cur.length) cur = [ty === 'hab' ? 'gas' : 'hab'];
+          s.types = cur.length === 2 ? [] : cur;
+          e.currentTarget.parentElement.querySelectorAll('.chip').forEach((c, k) => c.setAttribute('aria-pressed', !s.types.length || s.types.includes(['hab', 'gas'][k])));
+        } }, t(ty)))))]),
         field(t('s_notes'), textarea(s.notes, { rows: 2, oninput: (e) => { s.notes = e.target.value; } })),
       ])));
       sBox.appendChild(h('button.btn', { type: 'button', onclick: () => { S.sites.push({ id: uid(6), name: '', lat: null, lon: null, elev: null, country: 'CH', tz: 'Europe/Zurich', notes: '', meetingId: '', favorite: true }); drawS(); } }, t('add')));
@@ -224,7 +232,7 @@ export async function renderSettings(view, ctx) {
     return h('div', [
       h('div.card', [h('div.card-head', h('div.section-title', t('set_flyLimits'))), h('div.card-body', [h('div.frow.c4', [pair('wind', `${t('auto_wind')} m/s (grenzwertig / nein)`), pair('gust', `${t('auto_gust')} m/s`), pair('gustSpread', 'Böe − Wind m/s'), pair('cape', 'CAPE J/kg')]), h('div.frow.c3', [numField(F, 'precip', 'Niederschlag ≥ mm/h → nein', 0.1), numField(F, 'visKm', 'Sicht < km → nein', 0.5), numField(F, 'baseFt', 'Wolkenbasis < ft → grenzwertig', 100)])])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_trajDefaults'))), h('div.card-body', h('div.frow.c3', [numField(T, 'hab', `${t('hab')} (min)`, 30), numField(T, 'gas', `${t('gas')} (min)`, 60), numField(T, 'stepMin', 'Zeitschritt (min)', 5)]))]),
-      h('div.card', [h('div.card-head', h('div.section-title', t('set_meteo'))), h('div.card-body', [h('div.frow.c4', [numField(S.meteoDefaults, 'topHpa', 'Profil bis hPa', 50), numField(S, 'metarRadiusKm', t('set_metar') + ' km', 10), numField(S, 'metarCount', t('set_metar') + ' n'), numField(S, 'notamRadiusNm', t('set_notamNm'), 5)]), txtField(S, 'aiModel', t('set_aiModel'))])]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_meteo'))), h('div.card-body', [h('div.frow.c4', [numField(S.meteoDefaults, 'topHpa', 'Profil bis hPa', 50), numField(S, 'metarRadiusKm', t('set_metar'), 10), numField(S, 'metarCount', t('set_metarN')), numField(S, 'notamRadiusNm', t('set_notamNm'), 5)]), txtField(S, 'aiModel', t('set_aiModel'))])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_synoptic'))), h('div.card-body', [chartsBox, h('div.note', 'Nur Bild-URLs von dwd.de, ecmwf.int, meteoschweiz.admin.ch, rainviewer, meteoblue, skybriefing, eumetsat (Allowlist im Worker).')])]),
     ]);
   }

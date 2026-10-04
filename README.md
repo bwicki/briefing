@@ -86,19 +86,28 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
 
 1. **Ballon & Fahrt** — Heissluft (Kennung) oder Gas (Hülle × Korb), Typ der Fahrt,
    Lufttransportführer, Anlass.
-2. **Ort & Zeit** — Favoriten-Chips und **Ortswahl** (siehe unten). Kurzkoordinaten,
-   Höhe, Land und Zeitzone werden ermittelt (Open-Meteo, Nominatim); Datum,
-   Startzeit, LT/UTC; Sonne/Dämmerung sofort, Warnung bei Nachtfahrt;
-   Planungshorizont mit verfügbaren Modellen.
-3. **Fahrtabsicht** — Dauer, Höhenband, Zielrichtung, Tag/Nacht, optional
-   **geplanter Landeraum** (Ortswahl; Distanz und Kurs ab Startort), Trajektorien-
-   Niveaus (Startwerte je Ballontyp aus den Einstellungen).
-4. **Personen** — PIC, Nachfahrer, Pax (Name oder Platzhalter, Gewicht), Vorschau
-   Tragkraft bzw. Ballast; Temperatur/QNH/Feuchte werden, wenn der Start innert
-   15 Tagen liegt, aus dem Modell geholt.
-5. **Tagesplanung** — Treffpunkt (Liste oder Ortswahl), Fahrzeit mit Anhänger
-   (OSRM-Routing × Faktor + Zuschlag), Aufrüst-/Füllzeit, Tabelle mit
-   überschreibbaren Zeiten.
+2. **Ort & Zeit** — Favoriten-Chips (nur Startplätze, die zum Ballontyp passen;
+   Kennzeichnung Heissluft/Gas in den Einstellungen) und **Ortswahl**: ins Ortsfeld
+   tippen öffnet die Suche direkt. Kurzkoordinaten, Höhe, Land und Zeitzone werden
+   ermittelt (Open-Meteo, Nominatim); Datum, Startzeit, LT/UTC; Sonne/Dämmerung
+   sofort, Warnung bei Nachtfahrt; Planungshorizont mit verfügbaren Modellen.
+   Sobald Ort und Zeit stehen, erscheint die **Start-Ampel** (denkbar / marginal /
+   eher ausgeschlossen) aus Modellwerten und Ampel-Grenzen — grobe Einschätzung,
+   keine Entscheidung.
+3. **Fahrtabsicht** — Start-Ampel, Dauer, Höhenband; **Trajektorien-Vorschau**
+   (untere/obere Höhe des Höhenbands ab Startzeit auf der Karte); ein Klick auf die
+   Karte übernimmt den Punkt als **geplanten Landeraum** und füllt die
+   Zielrichtung (Himmelsrichtung, Kurs, Distanz, Ort). Tag/Nacht, Trajektorien-
+   Niveaus (Startwerte je Ballontyp aus den Einstellungen). Landeraum und Richtung
+   bleiben optional.
+4. **Personen** — PIC, **mehrere Nachfahrer** (Liste aus Stamm oder frei), Pax
+   (Name leer = Platzhalter im Briefing, Gewicht), Vorschau Tragkraft bzw. Ballast;
+   Temperatur/QNH/Feuchte werden, wenn der Start innert 15 Tagen liegt, aus dem
+   Modell geholt.
+5. **Tagesplanung** — Treffpunkt (Liste oder Ortswahl; tippen = Suche), Fahrzeit
+   mit Anhänger (OSRM-Routing × Faktor + Zuschlag), Aufrüst-/Füllzeit, Tabelle mit
+   überschreibbaren Zeiten; Klickbox **«kein Tagesplan anlegen / später»**, dann
+   steht im Briefing «Tagesplan: wird später festgelegt».
 6. **Prüfen** — Zusammenfassung und Pflicht-Panels; *Briefing anlegen*.
 
 ### Ortswahl (Startort, Treffpunkt, Landeraum, Stammdaten)
@@ -149,22 +158,24 @@ Panel-Arten:
 Über Abschnitt B steht die **Modell-Leiste**: Modellwahl (ICON-D2 2 km bis 48 h,
 ARPEGE, ICON-EU, ECMWF IFS, UKMO, ICON global, GFS, Auto) mit Vorschlag je
 Planungshorizont, **Alle aktualisieren** und der Stand der letzten Aktualisierung.
-Beim ersten Öffnen eines Briefings laden sich die Modell-Panels von selbst.
+Beim ersten Öffnen eines Briefings laden sich alle automatischen Panels von
+selbst (Modell-Panels sofort; DABS, Karten und NOTAM — soweit freigeschaltet —
+kurz danach).
 
 | Panel | Inhalt | Quelle |
 |---|---|---|
 | Allgemeine Lage | Schnappschüsse amtlicher Karten (DWD-Bodenanalysen, ECMWF Bodendruck/Wind 850 hPa zur Startzeit und +24 h; Liste in Einstellungen → Meteo) | DWD, ECMWF Open Charts (CC-BY-4.0), über Worker in R2 |
-| METAR/TAF | die 4 nächsten Plätze (Umkreis einstellbar), TAF gegliedert | aviationweather.gov über Worker; Rückfall GaforCast-Kopie |
+| METAR/TAF | alle Plätze im eingestellten Umkreis (Standard 150 km, max. Anzahl einstellbar); je Platz **Rohmeldung und Klartext nebeneinander** (DE/EN: Wind, Sicht, Wetter, Wolken, T/Td, QNH, Trend; TAF mit BECMG/TEMPO/PROB/FM-Gruppen und Gültigkeit) | aviationweather.gov über Worker; Rückfall GaforCast-Kopie |
 | Temps | Stüve-Diagramm des Modellprofils zur Startzeit (T, Td, Feuchteschattierung, Windfahnen, Grenzschicht, 0 °C), Inversionen | Open-Meteo Druckflächen |
 | Flugwetterprognose | **DE:** DWD Flugwetterübersicht des Bereichs + GAFOR-Einstufung des Gebiets (Punkt-in-Polygon). **CH:** MeteoSchweiz-Prognose einfügen (Pflicht) | DWD-Luftsportberichte (Kopie gafor.wicki.aero) |
 | Windprognose | Windprofil Start–Landung stündlich (°/kt je Niveau), Profilgrafiken mit Höhenband-Marken | Open-Meteo |
 | Ballonprognose | **DE:** DWD-Gebietsvorhersage Ballonsport (Tabellen); immer: eigene Stundentabelle mit Ampel fahrbar/grenzwertig/nein und Begründung | DWD (Kopie), Open-Meteo |
 | Druckdifferenz | Genève–Güttingen (Bise), Zürich–Lugano (Föhn) aus Modell-QNH, stündlich; Paare in Einstellungen | Open-Meteo |
-| Trajektorien | Bahnen je Niveau (SFC, «1000 AGL», «3000», «FL065»; Standard aus Fahrtabsicht), Dauer (Heissluft 2 h, Gas 24 h), Startversatz ±2 h; Nord-oben-Skizze (druckbar), Karte, Tabelle mit Stundenmarken, Endpunkt als ICAO + Maps-Link | eigene Rechnung aus dem Modellwind (Punktprognose, linear zwischen Stunden und Niveaus) |
+| Trajektorien | Bahnen je Niveau (SFC, «1000 AGL», «3000», «FL065»; Standard aus Fahrtabsicht), Dauer (Heissluft 2 h, Gas 24 h), Startversatz ±2 h; **Legende Farbe = Höhe**; am Bildschirm die Karte (Basiskarte oder Satellit, Luftraum-Overlay; Knopf ▦ rechts oben blendet das Distanzraster-Skizze ein), im Druck die Nord-oben-Skizze; Tabelle mit Stundenmarken, Endpunkt als ICAO + Maps-Link | eigene Rechnung aus dem Modellwind (Punktprognose, linear zwischen Stunden und Niveaus) |
 | SIGWX | SIGMET/AIRMET im Umkreis automatisch; SIGWX-Karte einfügen | aviationweather.gov über Worker |
-| Meteogramm | Grafik (T/Td, Wind/Böen mit Fahnen, Bewölkung h/m/l, Niederschlag, CAPE, Nacht/Fahrtfenster, Ampel) und Stundentabelle mit Nebelrisiko und Wolkenbasis | Open-Meteo |
+| Meteogramm | Grafik über Start −6 h … Landung +6 h mit beschrifteten Bändern (Temperatur/Taupunkt mit Extremwerten, Wind/Böen kt mit Fahnen, Bewölkung hoch/mittel/tief, Niederschlag mm/h + CAPE), Zeitachse LT mit Tageswechsel, Start-/Landemarke, Nacht- und Fahrtfenster-Schattierung, Ampelstreifen und Legende; dazu Stundentabelle mit Nebelrisiko und Wolkenbasis | Open-Meteo |
 | Radar | Live-Radar (RainViewer) auf der Karte, Links Windy/MeteoSchweiz/Blitzortung/Sat24 — nur am Bildschirm | RainViewer, OSM |
-| DABS | DABS-PDF (heute/morgen) holen, Seiten als Bilder im Briefing | skybriefing über Worker, R2 |
+| DABS | DABS-PDF (heute/morgen) automatisch holen; Seiten im kleinen Viewer mit Blättern (‹ ›, Pfeiltasten, Link zum PDF), im Druck alle Seiten bzw. als Beilage | skybriefing über Worker, R2 |
 | Strecken-NOTAM | FAA-NOTAM-API entlang Startort → Landeraum → Trajektorien-Endpunkte (Radius einstellbar), **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | FAA NOTAM API (Zugang in Einstellungen → Zugänge) |
 
 **KI-Hinweis:** Knopf im Panel öffnet den Prompt (Fahrtkontext + Panel-Inhalt +
@@ -217,7 +228,10 @@ Freigabe wird als Final v1, v2 … mit Schnappschuss abgelegt.
 Das fertige Briefing wie im gedruckten Muster: Kopf mit Logo, Abschnitte A–D als
 zweispaltige Tabellen, Zusatzinfo/KI-Hinweis/Kommentar unter dem Inhalt, Fuss mit
 Version und Hinweis. **PDF / Drucken** nutzt den Browserdruck (A4 hoch; «Als PDF
-sichern»). Auf dem Handy werden die Tabellen gestapelt.
+sichern»). Bild-Schnappschüsse (DABS, Karten) stehen als **Beilagen** auf eigenen
+Seiten nach dem Briefing; die Klickbox «Beilagen mitdrucken» in der Werkzeugleiste
+schaltet sie für den Druck ab (am Bildschirm zeigt das Panel den Viewer). Die
+Pax-Karte druckt auf A5 hoch. Auf dem Handy werden die Tabellen gestapelt.
 
 ### Berechtigungen (persönliche Links)
 

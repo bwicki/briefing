@@ -5,12 +5,14 @@ import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, kv, stats } from './widgets.js';
 import { scheduleEditor } from './parts.js';
 import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing } from '../model.js';
-import { placeRow, placeLine, pickPlace, mapsLink } from './place.js';
+import { placeRow, placeLine, pickPlace, mapsLink, typeToPick } from './place.js';
 import { stammLabel } from '../stamm.js';
 import { resolveBalloon } from '../defaults.js';
-import { icao, countryGuess } from '../calc/geo.js';
+import { icao, countryGuess, distKm, bearing, compass } from '../calc/geo.js';
 import { hhmm, fmtDate, fmtDur, localParts, isoDate } from '../calc/time.js';
 import { geocode, pointInfo, siteWeatherAt, route } from '../net.js';
+import { startAmpel, quickTraj } from '../auto/data.js';
+import { baseLayers } from './autorender.js';
 import { trailerMinutes } from '../calc/schedule.js';
 import { mandatoryPanels } from '../panels.js';
 import { tt } from '../i18n.js';
@@ -105,6 +107,62 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     return content;
   }
 
+  // ---------------------------------------------------------------- Start-Ampel (Schritt 2/3)
+  /** Ampel «Start denkbar / marginal / eher ausgeschlossen» aus der Modellprognose, sobald Ort und Zeit bekannt sind. */
+  function ampelBox() {
+    const box = h('div.ampel');
+    const draw = async () => {
+      clear(box);
+      if (b.site.lat == null || !b.time.startMs) return;
+      box.appendChild(h('div.note', t('ampel_loading')));
+      try {
+        const a = await startAmpel(ctx, b);
+        clear(box);
+        const cls = ['neg', 'half', 'pos'][a.level] || '';
+        box.appendChild(h('div.ampel-row.' + cls, [h('span.dot.' + cls), h('b', t('ampel_' + a.level)), a.why.length ? h('span.muted', ` · ${a.why.join(', ')}`) : null, h('span.muted.small', ` · ${a.modelName || ''} · ${t('ampel_hint')}`)]));
+      } catch (e) { clear(box); box.appendChild(h('div.note', `${t('ampel_title')}: ${e.message}`)); }
+    };
+    draw();
+    box.redraw = draw;
+    return box;
+  }
+
+  /** Trajektorien-Vorschau (Min-/Max-Höhe der Fahrtabsicht) mit Karte; Klick übernimmt Landeraum und Richtung. */
+  function trajPreview(onPick) {
+    const wrap = h('div.card', [h('div.card-head', h('div.section-title', t('trajprev_title'))), h('div.card-body')]);
+    const body = wrap.querySelector('.card-body');
+    const mapEl = h('div.map.trajprev');
+    const note = h('div.note', t('trajprev_loading'));
+    body.append(note, mapEl);
+    (async () => {
+      if (b.site.lat == null) { note.textContent = t('site') + '?'; return; }
+      const elevFt = Math.round((b.site.elev || 0) * 3.28084);
+      const lo = b.intent.altMinFt || 500, hi = b.intent.altMaxFt || 5000;
+      const levels = [lo <= elevFt + 300 ? `${Math.max(300, lo)} AGL` : `${lo}`, `${hi}`];
+      try {
+        const r = await quickTraj(ctx, b, levels);
+        note.textContent = `${t('trajprev_note', { d: fmtDur(r.durationMin), l: levels.join(' / ') })} · ${r.modelName || ''}`;
+        if (typeof L === 'undefined') return;
+        const map = L.map(mapEl, { zoomControl: true }).setView([b.site.lat, b.site.lon], 10);
+        const bl = baseLayers(); bl.osm.addTo(map); for (const k in bl.over) bl.over[k].addTo(map);
+        L.control.layers(bl.base, bl.over, { position: 'topleft', collapsed: true }).addTo(map);
+        const colors = ['#1673a8', '#c2481a'];
+        const bounds = [[b.site.lat, b.site.lon]];
+        r.tracks.forEach((tr, k) => { if (tr.belowGround) return; const pts = tr.points.map((p) => [p.lat, p.lon]); bounds.push(...pts); L.polyline(pts, { color: colors[k % 2], weight: 3 }).addTo(map).bindTooltip(`${tr.label} · ${tr.altFt} ft`); });
+        L.marker([b.site.lat, b.site.lon]).addTo(map).bindTooltip(b.site.name || 'Start');
+        let landMarker = b.landing?.lat != null ? L.circleMarker([b.landing.lat, b.landing.lon], { radius: 7, color: '#2f8f4e', fillOpacity: .6 }).addTo(map) : null;
+        map.on('click', async (e) => {
+          const { lat, lng } = e.latlng;
+          if (!landMarker) landMarker = L.circleMarker([lat, lng], { radius: 7, color: '#2f8f4e', fillOpacity: .6 }).addTo(map); else landMarker.setLatLng([lat, lng]);
+          let info = {}; try { info = await pointInfo(lat, lng); } catch { /* ohne Name/Höhe */ }
+          onPick({ lat, lon: lng, name: info.name || icao(lat, lng), elev: info.elev != null ? Math.round(info.elev) : null, address: '' });
+        });
+        setTimeout(() => { map.invalidateSize(); map.fitBounds(bounds, { padding: [20, 20] }); }, 60);
+      } catch (e) { note.textContent = `${t('trajprev_title')}: ${e.message}`; mapEl.hidden = true; }
+    })();
+    return wrap;
+  }
+
   // ---------------------------------------------------------------- 1
   function step1(body) {
     const S = ctx.stamm.balloons;
@@ -148,7 +206,9 @@ export async function renderWizard(view, ctx, id, opts = {}) {
   function step2(body) {
     const S = ctx.settings, M = ctx.stamm;   // S: eigener Stamm (speichern), M: inkl. Freigaben (auswählen)
     const favs = h('div.chips');
-    const nameIn = input('text', b.site.name, { oninput: (e) => { b.site.name = e.target.value; drawPlace(); persistSoon(); } });
+    const nameIn = input('text', b.site.name, { placeholder: t('siteTypeHint') });
+    // Tippen öffnet die Ortswahl (Suche mit dem Getippten); Übernahme setzt den Ort
+    typeToPick(nameIn, () => b.site, { title: t('site'), onPick: (p) => { setSite({ name: p.name, lat: p.lat, lon: p.lon, elev: p.elev, tz: p.tz, country: p.country, id: '' }); drawFavs(); drawPlace(); }, onCancel: (v) => { b.site.name = v; drawPlace(); persistSoon(); } });
     const icaoIn = input('text', b.site.icao, { readOnly: true });
     const elevIn = input('number', b.site.elev ?? '', { step: 1, oninput: (e) => { b.site.elev = num(e.target.value, null); drawPlace(); persistSoon(); } });
     const ctry = select([['CH', 'CH'], ['DE', 'DE'], ['AT', 'AT'], ['FR', 'FR'], ['IT', 'IT'], ['LI', 'LI'], ['', t('unknown')]].map(([v, l]) => ({ value: v, label: l })), b.site.country, { onchange: (e) => { b.site.country = e.target.value; refreshSun(); persistSoon(); } });
@@ -158,11 +218,13 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const baseRow = h('div.chips', ['LT', 'UTC'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': b.time.base === k, onclick: (e) => { b.time.base = k; baseRow.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); applyTime(); } }, k)));
     const sunBox = h('div.note');
     const horizonBox = h('div.note');
+    const ampel = ampelBox();
+    const ampelSoon = debounce(() => ampel.redraw(), 900);
     function applyTime() {
       const d = dateIn.value || b.time.date, tm = timeIn.value || b.time.time;
       if (b.time.base === 'UTC') { b.time.date = d; b.time.time = tm; b.time.startMs = Date.UTC(...d.split('-').map((x, i) => i === 1 ? +x - 1 : +x), ...tm.split(':').map(Number)); b.time.date = isoDate(tz(), b.time.startMs); b.time.time = hhmm(tz(), b.time.startMs); }
       else setStart(b, d, tm);
-      refreshSun(); persistSoon();
+      refreshSun(); persistSoon(); ampelSoon();
     }
     function refreshSun() {
       clear(sunBox); clear(horizonBox);
@@ -183,14 +245,16 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       nameIn.value = b.site.name; icaoIn.value = b.site.icao; elevIn.value = b.site.elev ?? ''; ctry.value = b.site.country; tzIn.value = b.site.tz;
       if (s.meetingId) { const m = M.meetings.find((x) => x.id === s.meetingId); if (m) Object.assign(b.schedule, { meetingId: m.id, meetingName: m.name, meetingLat: m.lat, meetingLon: m.lon }); }
       setStart(b, b.time.date, b.time.time);
-      refreshSun(); persistSoon();
+      refreshSun(); persistSoon(); ampelSoon();
       if (s.elev == null || !s.tz) {
         try { const info = await pointInfo(s.lat, s.lon); if (info.elev != null) { b.site.elev = Math.round(info.elev); elevIn.value = b.site.elev; } if (info.tz) { b.site.tz = info.tz; tzIn.value = info.tz; } if (!b.site.name && info.name) { b.site.name = info.name; nameIn.value = info.name; } if (info.country) { b.site.country = info.country; ctry.value = info.country; } setStart(b, b.time.date, b.time.time); refreshSun(); drawPlace(); persistSoon(); } catch { /* optional */ }
       }
     }
     function drawFavs() {
       clear(favs);
-      for (const s of M.sites.filter((x) => x.favorite)) favs.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.site.favoriteId === s.id, title: s.shared ? s.ownerName : null, onclick: () => { setSite(s); drawFavs(); } }, stammLabel(s, s.name)));
+      const ty = b.balloon?.type || 'hab';
+      for (const s of M.sites.filter((x) => x.favorite && (!x.types?.length || x.types.includes(ty)))) favs.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.site.favoriteId === s.id, title: s.shared ? s.ownerName : null, onclick: () => { setSite(s); drawFavs(); } }, stammLabel(s, s.name)));
+      if (!favs.children.length) favs.appendChild(h('span.note', t('siteNoFavType')));
     }
     const placeBox = h('div');
     function drawPlace() {
@@ -213,6 +277,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       h('div.frow.c4', [field(t('date'), dateIn), field(t('startTime'), timeIn), field(t('timeBase'), baseRow), field(t('s_tz'), tzIn)]),
       h('div.row-actions', [favBtn]),
       field(t('sun'), sunBox), horizonBox,
+      field(t('ampel_title'), ampel),
     );
     refreshSun();
   }
@@ -223,14 +288,23 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const durIn = input('text', fmtDur(it.durationMin).replace(' h', ''), { placeholder: '2:00', oninput: (e) => { const m = /^(\d+)(?::(\d{1,2}))?/.exec(e.target.value.trim()); if (m) { it.durationMin = (+m[1]) * 60 + (+(m[2] || 0)); persistSoon(); sugg(); } } });
     const minIn = input('number', it.altMinFt, { step: 100, oninput: (e) => { it.altMinFt = num(e.target.value); persistSoon(); sugg(); } });
     const maxIn = input('number', it.altMaxFt, { step: 100, oninput: (e) => { it.altMaxFt = num(e.target.value); persistSoon(); sugg(); } });
-    const dir = input('text', it.direction, { placeholder: 'z. B. W – Reusstal / Aargau', oninput: (e) => { it.direction = e.target.value; persistSoon(); } });
+    const dir = input('text', it.direction, { placeholder: t('directionHint'), oninput: (e) => { it.direction = e.target.value; persistSoon(); } });
     const dn = h('div.chips', ['day', 'night', 'both'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': it.dayNight === k, onclick: (e) => { it.dayNight = k; dn.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); persistSoon(); sugg(); } }, t('dn_' + k))));
     const rem = textarea(it.remark, { rows: 2, oninput: (e) => { it.remark = e.target.value; persistSoon(); } });
     const lv = input('text', it.levels.join(', '), { oninput: (e) => { it.levels = e.target.value.split(/[,;]+/).map((x) => x.trim()).filter(Boolean); persistSoon(); } });
     const suggBox = h('div.note');
     const landBox = h('div');
-    const drawLand = () => { clear(landBox); landBox.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, from: b.site, onPick: (p) => { if (p) Object.assign(b.landing, { name: p.name, lat: p.lat, lon: p.lon, elev: p.elev, icao: p.icao, address: p.address || '' }); else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' }); persistSoon(); drawLand(); } })); landBox.appendChild(h('div.note', t('landingHint'))); };
+    const setLanding = (p) => {
+      if (p) {
+        Object.assign(b.landing, { name: p.name, lat: p.lat, lon: p.lon, elev: p.elev ?? null, icao: icao(p.lat, p.lon), address: p.address || '' });
+        const brg = Math.round(bearing(b.site.lat, b.site.lon, p.lat, p.lon)), km = distKm(b.site.lat, b.site.lon, p.lat, p.lon);
+        it.direction = `${compass(brg, lang)} ${String(brg).padStart(3, '0')}° · ${km.toFixed(0)} km · ${p.name}`; dir.value = it.direction;
+      } else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' });
+      persistSoon(); drawLand();
+    };
+    const drawLand = () => { clear(landBox); landBox.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, from: b.site, onPick: setLanding })); landBox.appendChild(h('div.note', t('landingHint'))); };
     drawLand();
+    const preview = trajPreview(setLanding);
     function sugg() {
       const sun = sunFor(b, ctx.settings, ctx.racTable);
       const s = equipmentSuggest(b, sun);
@@ -240,8 +314,10 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     }
     sugg();
     body.append(
+      field(t('ampel_title'), ampelBox()),
       h('div.frow.c3', [field(t('duration') + ' (h:mm)', durIn), field(`${t('altBand')} ${t('altMin')} (ft)`, minIn), field(`${t('altBand')} ${t('altMax')} (ft)`, maxIn)]),
-      h('div.frow', [field(t('direction'), dir), field(t('dayNight'), dn)]),
+      preview,
+      h('div.frow.top', [field(t('direction'), dir), field(t('dayNight'), dn)]),
       landBox,
       field(t('levels'), lv), field(t('intentRemark'), rem), suggBox,
     );
@@ -253,18 +329,31 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const pers = (role) => P.filter((p) => !role || p.roles?.includes(role)).map((p) => ({ value: p.id, label: stammLabel(p, p.name) })).concat([{ value: 'custom', label: t('operatorCustom') }]);
     const picCustom = input('text', b.persons.picId === 'custom' ? b.persons.pic : '', { placeholder: t('name'), oninput: (e) => { b.persons.pic = e.target.value; persistSoon(); } }); picCustom.hidden = b.persons.picId !== 'custom';
     const picSel = select(pers('pic'), b.persons.picId, { onchange: (e) => { b.persons.picId = e.target.value; picCustom.hidden = e.target.value !== 'custom'; b.persons.pic = e.target.value === 'custom' ? picCustom.value : P.find((p) => p.id === e.target.value)?.name || ''; persistSoon(); } });
-    const retCustom = input('text', b.persons.retrieveId === 'custom' ? b.persons.retrieve : '', { placeholder: t('name'), oninput: (e) => { b.persons.retrieve = e.target.value; persistSoon(); } }); retCustom.hidden = b.persons.retrieveId !== 'custom';
-    const retSel = select(pers('retrieve').concat(pers('crew').filter((x) => !pers('retrieve').some((y) => y.value === x.value) && x.value !== 'custom')), b.persons.retrieveId, { onchange: (e) => { b.persons.retrieveId = e.target.value; retCustom.hidden = e.target.value !== 'custom'; b.persons.retrieve = e.target.value === 'custom' ? retCustom.value : P.find((p) => p.id === e.target.value)?.name || ''; persistSoon(); } });
+    // Nachfahrer: mehrere Personen (Liste aus Stamm oder frei)
+    const retOpts = pers('retrieve').concat(pers('crew').filter((x) => !pers('retrieve').some((y) => y.value === x.value) && x.value !== 'custom'));
+    const retBox = h('div.retrievers');
+    const syncRetrieve = () => { b.persons.retrieve = b.persons.retrievers.map((r) => r.name).filter(Boolean).join(', '); b.persons.retrieveId = b.persons.retrievers[0]?.id || ''; };
+    function drawRet() {
+      clear(retBox);
+      b.persons.retrievers.forEach((r, i) => {
+        const custom = input('text', r.id === 'custom' ? r.name : '', { placeholder: t('name'), oninput: (e) => { r.name = e.target.value; syncRetrieve(); persistSoon(); } }); custom.hidden = r.id !== 'custom';
+        const sel = select(retOpts, r.id || 'custom', { onchange: (e) => { r.id = e.target.value; custom.hidden = r.id !== 'custom'; r.name = r.id === 'custom' ? custom.value : P.find((p) => p.id === r.id)?.name || ''; syncRetrieve(); persistSoon(); } });
+        retBox.appendChild(h('div.pax-row.ret-row', [h('div', { style: { display: 'flex', gap: '6px', flex: 1, minWidth: 0 } }, [sel, custom]), h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { b.persons.retrievers.splice(i, 1); syncRetrieve(); drawRet(); persistSoon(); } }, '✕')]));
+      });
+      retBox.appendChild(h('button.btn', { type: 'button', onclick: () => { const free = retOpts.find((o) => o.value !== 'custom' && !b.persons.retrievers.some((r) => r.id === o.value)); b.persons.retrievers.push(free ? { id: free.value, name: free.label.replace(/ \(.*\)$/, '') } : { id: 'custom', name: '' }); syncRetrieve(); drawRet(); persistSoon(); } }, t('retrieveAdd')));
+    }
+    drawRet();
     const paxBox = h('div');
     const preview = h('div');
     function drawPax() {
       clear(paxBox);
       b.persons.pax.forEach((p, i) => {
         const nameIn = input('text', p.name, { placeholder: t('paxPlaceholder', { n: i + 1 }), oninput: (e) => { p.name = e.target.value; persistSoon(); } });
+        if (p.name === t('paxPlaceholder', { n: i + 1 })) { p.name = ''; nameIn.value = ''; }   // alter Platzhalter als Wert → leeren
         const wIn = input('number', p.weight ?? '', { placeholder: `${bal.personWeight} ${t('normWeight')}`, step: 1, oninput: (e) => { p.weight = num(e.target.value, null); drawPreview(); persistSoon(); } });
         paxBox.appendChild(h('div.pax-row', [nameIn, wIn, h('button.btn.icon', { type: 'button', onclick: () => { b.persons.pax.splice(i, 1); drawPax(); drawPreview(); persistSoon(); } }, '✕')]));
       });
-      paxBox.appendChild(h('button.btn', { type: 'button', onclick: () => { b.persons.pax.push({ name: t('paxPlaceholder', { n: b.persons.pax.length + 1 }), weight: null }); drawPax(); drawPreview(); persistSoon(); } }, t('paxAdd')));
+      paxBox.appendChild(h('button.btn', { type: 'button', onclick: () => { b.persons.pax.push({ name: '', weight: null }); drawPax(); drawPreview(); persistSoon(); setTimeout(() => paxBox.querySelectorAll('.pax-row input[type=text]')[b.persons.pax.length - 1]?.focus(), 30); } }, t('paxAdd')));
     }
     function drawPreview() {
       clear(preview);
@@ -286,7 +375,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       if ((b.persons.pax.length + 1) > (bal.maxPersons || 99)) preview.appendChild(h('div.warn', `⚠ ${t('b_maxPersons')}: ${bal.maxPersons}`));
     }
     drawPax(); drawPreview();
-    body.append(h('div.frow', [field(t('pic'), h('div', [picSel, picCustom])), field(t('retrieve'), h('div', [retSel, retCustom]))]), field(t('pax'), paxBox), preview);
+    body.append(h('div.frow', [field(t('pic'), h('div', [picSel, picCustom])), field(t('retrieve'), retBox)]), field(t('pax'), paxBox), preview);
     // Modellwerte für die Vorschau holen (einmal je Ort/Zeit)
     if (b.site.lat != null && b.weather.source !== 'model' && (b.time.startMs - Date.now()) < 15 * 86400000) {
       const p = localParts(tz(), b.time.startMs);
@@ -299,13 +388,15 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const S = ctx.settings, sc = b.schedule;
     const ms = ctx.stamm.meetings.map((m) => ({ value: m.id, label: stammLabel(m, m.name) })).concat([{ value: 'custom', label: t('meetingCustom') }]);
     const holder = h('div');
-    const mCustom = input('text', sc.meetingId === 'custom' ? sc.meetingName : '', { placeholder: t('meeting'), oninput: (e) => { sc.meetingName = e.target.value; persistSoon(); } }); mCustom.hidden = sc.meetingId !== 'custom';
+    const mCustom = input('text', sc.meetingId === 'custom' ? sc.meetingName : '', { placeholder: t('meeting') }); mCustom.hidden = sc.meetingId !== 'custom';
     const mSel = select(ms, sc.meetingId || 'custom', { onchange: (e) => { sc.meetingId = e.target.value; mCustom.hidden = e.target.value !== 'custom'; const m = ctx.stamm.meetings.find((x) => x.id === e.target.value); sc.meetingName = m ? m.name : mCustom.value; sc.meetingLat = m?.lat ?? null; sc.meetingLon = m?.lon ?? null; sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } });
     const meetBox = h('div');
     const meetPlace = () => ({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon, elev: null });
+    typeToPick(mCustom, meetPlace, { title: t('meeting'), onPick: (p) => { sc.meetingName = p.name; sc.meetingLat = p.lat; sc.meetingLon = p.lon; sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); }, onCancel: (v) => { sc.meetingName = v; persistSoon(); } });
     function drawMeet() { clear(meetBox); meetBox.appendChild(placeRow(meetPlace(), { label: `${t('meeting')} · ${t('coords')}`, title: t('meeting'), onPick: (p) => { sc.meetingLat = p.lat; sc.meetingLon = p.lon; if (sc.meetingId === 'custom' || !sc.meetingName) { sc.meetingName = p.name; mCustom.value = p.name; } sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } })); }
-    function drawEditor() { clear(holder); holder.appendChild(scheduleEditor(b, ctx, () => persistSoon())); }
-    body.append(h('div.frow', [field(t('meeting'), h('div', [mSel, mCustom])), meetBox]), holder);
+    function drawEditor() { clear(holder); if (sc.skip) { holder.appendChild(h('div.note', t('sch_skipped'))); return; } holder.appendChild(scheduleEditor(b, ctx, () => persistSoon())); }
+    const skipBox = check(t('sch_skip'), !!sc.skip, (v) => { sc.skip = v; drawEditor(); persistSoon(); });
+    body.append(skipBox, h('div.frow', [field(t('meeting'), h('div', [mSel, mCustom])), meetBox]), holder);
     drawMeet(); drawEditor();
   }
 
@@ -322,7 +413,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s2'))), h('div.card-body', kv([[t('site'), placeLine(b.site)], [t('date'), `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('sun'), sun ? `BCMT ${hhmm(z, sun.official.bcmt)} · SR ${hhmm(z, sun.official.sr)} · SS ${hhmm(z, sun.official.ss)} · ECET ${hhmm(z, sun.official.ecet)}` : '–'], sun?.nightStart ? ['', h('span.warn', t('night'))] : null]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s3'))), h('div.card-body', kv([[t('duration'), fmtDur(b.intent.durationMin)], [t('altBand'), `${b.intent.altMinFt}–${b.intent.altMaxFt} ft`], [t('direction'), b.intent.direction || '–'], b.landing?.lat != null ? [t('landingSite'), placeLine(b.landing)] : null, [t('levels'), b.intent.levels.join(', ')]]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s4'))), h('div.card-body', kv([[t('pic'), b.persons.pic], [t('retrieve'), b.persons.retrieve || '–'], [t('pax'), b.persons.pax.map((p) => p.name).join(', ') || '–'], type === 'hab' ? [t('mp_takeoff'), `${fmt(r.takeoff)} kg (${fmtSigned(r.massDelta)} kg)`] : [t('gb_ballast'), `${fmt(r.ballast)} kg`]]))]),
-        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv([[t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–')]].concat(rows.map((row) => [hhmm(z, row.ms), t('sch_' + row.key)]))))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv([[t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–')]].concat(b.schedule.skip ? [[t('sch_title'), t('sch_skipped')]] : rows.map((row) => [hhmm(z, row.ms), t('sch_' + row.key)]))))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_mandatory'))), h('div.card-body', [h('ul', { style: { margin: 0, paddingLeft: '18px' } }, mandatoryPanels(S, b).map((p) => h('li', tt(p)))), h('div.note', t('wiz_createHint'))])]),
       ]),
     );

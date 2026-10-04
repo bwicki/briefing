@@ -5,8 +5,9 @@ import { t, getLang } from '../i18n.js';
 import { hhmm, fmtDateTime, fmtDate } from '../calc/time.js';
 import { MS_TO_KT, M_TO_FT } from '../auto/openmeteo.js';
 import { meteogram as meteogramSvg, windChart, stueveChart } from '../auto/charts.js';
-import { trajSvg } from '../auto/traj.js';
+import { trajSvg, TRAJ_COLORS } from '../auto/traj.js';
 import { mapsLink } from './place.js';
+import { decodeMetar, decodeTaf } from '../calc/metar.js';
 
 const kt = (ms) => (ms == null ? '–' : Math.round(ms * MS_TO_KT));
 const deg = (d) => (d == null ? '–' : Math.round(d).toString().padStart(3, '0'));
@@ -23,7 +24,18 @@ export function standLine(snap, b) {
 // ---------------------------------------------------------------- Meteogramm
 export function renderMeteogram(snap, b, ctx, opts = {}) {
   const d = snap.data, z = b.site.tz || 'Europe/Zurich';
-  const svg = meteogramSvg(d.recs, { fromMs: d.fromMs, toMs: d.toMs, hhmm: (ms) => hhmm(z, ms).slice(0, 2), rating: (r) => r.fly, w: 680 });
+  const lang = getLang();
+  const lab = { temp: `${t('auto_tempTd')} °C`, wind: `${t('auto_wind')} / ${t('auto_gust')} kt`, cloud: `${t('auto_cloud')} %`, precip: `${t('auto_precip')} mm/h`, cape: 'CAPE J/kg', high: t('auto_cloudHigh'), mid: t('auto_cloudMid'), low: t('auto_cloudLow'), fly: t('auto_fly'), start: t('auto_trajStart'), land: t('auto_landing'), lt: 'LT' };
+  const svg = meteogramSvg(d.recs, { fromMs: d.fromMs, toMs: d.toMs, startMs: d.fromMs, hhmm: (ms) => hhmm(z, ms).slice(0, 2), dayLabel: (ms) => fmtDate(z, ms, lang), rating: (r) => r.fly, lab, w: 760 });
+  const sw = (cls, style) => h('span.sw.' + cls, { style });
+  const legend = h('div.mg-legend', [
+    h('span.item', [sw('line'), t('auto_temp')]), h('span.item', [sw('dash'), t('auto_dew')]),
+    h('span.item', [sw('box', { background: 'var(--amber)' }), t('auto_wind')]), h('span.item', [sw('box', { background: 'var(--amber)', opacity: .4 }), t('auto_gust')]),
+    h('span.item', [sw('box', { background: 'var(--mg-cloud)' }), `${t('auto_cloud')} (${t('auto_cloudHigh')}/${t('auto_cloudMid')}/${t('auto_cloudLow')})`]),
+    h('span.item', [sw('box', { background: 'var(--dew)' }), t('auto_precip')]), h('span.item', [sw('dash', { borderColor: '#8a4fb5' }), 'CAPE ⚡ ≥ 300']),
+    h('span.item', [sw('box', { background: 'var(--amber)', opacity: .25 }), t('auto_window')]), h('span.item', [sw('box', { background: 'var(--text-dim)', opacity: .3 }), t('auto_night')]),
+    h('span.item', [sw('box', { background: 'var(--green)' }), `${t('auto_fly')}: ${t('fly_2')}`]), h('span.item', [sw('box', { background: 'var(--amber)' }), t('fly_1')]), h('span.item', [sw('box', { background: 'var(--temp)' }), t('fly_0')]),
+  ]);
   const rows = d.recs.filter((r) => r.ms >= d.fromMs - 3600000 && r.ms <= d.toMs + 3600000);
   const table = h('table.auto', [
     h('thead', h('tr', ['LT', 'T/Td °C', 'RH %', `${t('auto_wind')} kt`, `${t('auto_gust')}`, `${t('auto_cloud')} l/m/h %`, 'mm/h', 'CAPE', t('auto_fog'), t('auto_base'), t('auto_fly')].map((x) => h('th', x)))),
@@ -33,7 +45,7 @@ export function renderMeteogram(snap, b, ctx, opts = {}) {
       h('td', ['–', '○', '◐', '●'][r.fog ?? 0]), h('td', r.baseFt != null ? `${r.baseFt} ft` : '–'), h('td', h('span.tag.' + (FLY[r.fly] || ''), flyTxt(r.fly))),
     ]))),
   ]);
-  return h('div.auto-wrap', [svg, h('div.tbl-scroll', table), h('div.note', t('auto_flyLegend'))]);
+  return h('div.auto-wrap', [svg, legend, h('div.tbl-scroll', table), h('div.note', t('auto_flyLegend'))]);
 }
 
 // ---------------------------------------------------------------- Windprofil
@@ -69,21 +81,38 @@ export function renderTraj(snap, b, ctx, opts = {}) {
   const svg = trajSvg(d.tracks, { lat: b.site.lat, lon: b.site.lon, landing: d.landing, w: 420, h: 380 });
   const table = h('table.auto', [
     h('thead', h('tr', [t('auto_level'), 'ft', ...(d.tracks[0]?.hourly || []).map((hh) => hhmm(z, hh.ms)), t('auto_end')].map((x) => h('th', x)))),
-    h('tbody', d.tracks.map((tr) => h('tr', [h('td', tr.label), h('td.mono', tr.altFt), ...(tr.belowGround ? [h('td', { colspan: (d.tracks.find((x) => x.hourly.length)?.hourly.length || 0) + 1 }, h('span.muted', t('auto_belowGround')))] : [...tr.hourly.map((hh) => h('td.mono', `${hh.km} km/${deg(hh.brg)}°`)), h('td', [h('span.mono', tr.end.icao), ' ', mapsLink(tr.end.lat, tr.end.lon, '↗'), tr.ok ? null : h('span.warn', ` ${t('auto_trajCut')}`)])])]))),
+    h('tbody', d.tracks.map((tr, k) => h('tr', [h('td', [h('span.sw', { style: { background: TRAJ_COLORS[k % TRAJ_COLORS.length] } }), ' ', tr.label]), h('td.mono', tr.altFt), ...(tr.belowGround ? [h('td', { colspan: (d.tracks.find((x) => x.hourly.length)?.hourly.length || 0) + 1 }, h('span.muted', t('auto_belowGround')))] : [...tr.hourly.map((hh) => h('td.mono', `${hh.km} km/${deg(hh.brg)}°`)), h('td', [h('span.mono', tr.end.icao), ' ', mapsLink(tr.end.lat, tr.end.lon, '↗'), tr.ok ? null : h('span.warn', ` ${t('auto_trajCut')}`)])])]))),
   ]);
+  const legend = h('div.traj-legend', [h('span.muted.small', `${t('auto_legendAlt')}: `), ...d.tracks.filter((tr) => !tr.belowGround).map((tr, k) => h('span.item', [h('span.sw', { style: { background: TRAJ_COLORS[d.tracks.indexOf(tr) % TRAJ_COLORS.length] } }), ` ${tr.label} · ${tr.altFt} ft`]))]);
   const mapEl = opts.interactive ? h('div.map.traj') : null;
-  const wrap = h('div.auto-wrap', [h('div.traj-grid', [svg, mapEl]), h('div.note', `${t('auto_trajStart')} ${hhmm(z, d.startMs)} LT · ${d.durationMin} min · ${d.levels.join(', ')} · ${t('auto_trajNote')}`), h('div.tbl-scroll', table)]);
-  if (mapEl) setTimeout(() => drawTrajMap(mapEl, d, b), 0);
+  const grid = h('div.traj-grid' + (mapEl ? '.maponly' : ''), [svg, mapEl]);
+  const wrap = h('div.auto-wrap', [legend, grid, h('div.note', `${t('auto_trajStart')} ${hhmm(z, d.startMs)} LT · ${d.durationMin} min · ${d.levels.join(', ')} · ${t('auto_trajNote')}`), h('div.tbl-scroll', table)]);
+  if (mapEl) setTimeout(() => drawTrajMap(mapEl, d, b, { onGrid: () => grid.classList.toggle('maponly') }), 0);
   return wrap;
 }
 let ctxAirspace = '';
 export const setAirspaceUrl = (u) => { ctxAirspace = u || ''; };
-function drawTrajMap(el, d, b) {
+/** Leaflet-Karte: Basiskarte wählbar (OSM/Satellit), Luftraum-Overlay, Knopf «Distanzraster» (rechts oben) blendet die Skizze ein. */
+export function baseLayers() {
+  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenStreetMap' });
+  const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 17, attribution: 'Esri, Maxar, Earthstar Geographics' });
+  const base = {}; base[t('auto_osm')] = osm; base[t('auto_satellite')] = sat;
+  const over = {};
+  if (ctxAirspace) over['openAIP'] = L.tileLayer(ctxAirspace, { maxZoom: 14, opacity: 0.75, attribution: 'Luftraum: openAIP' });
+  return { osm, sat, base, over };
+}
+function iconButton(map, title, icon, onClick, pos = 'topright') {
+  const C = L.Control.extend({ onAdd() { const el = L.DomUtil.create('div', 'leaflet-bar leaflet-control fb-ctl'); const a = L.DomUtil.create('a', '', el); a.href = '#'; a.title = title; a.setAttribute('aria-label', title); a.textContent = icon; L.DomEvent.on(a, 'click', (e) => { L.DomEvent.stop(e); a.classList.toggle('on'); onClick(a.classList.contains('on')); }); return el; } });
+  return new C({ position: pos }).addTo(map);
+}
+function drawTrajMap(el, d, b, o = {}) {
   if (typeof L === 'undefined') return;
   const map = L.map(el, { zoomControl: true }).setView([b.site.lat, b.site.lon], 10);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenStreetMap' }).addTo(map);
-  if (ctxAirspace) L.tileLayer(ctxAirspace, { maxZoom: 14, opacity: 0.75, attribution: 'Luftraum: openAIP' }).addTo(map);
-  const colors = ['#c2481a', '#1673a8', '#2f8f4e', '#8a4fb5', '#b5892f', '#444', '#d1476e', '#2aa198'];
+  const bl = baseLayers();
+  bl.osm.addTo(map); for (const k in bl.over) bl.over[k].addTo(map);
+  L.control.layers(bl.base, bl.over, { position: 'topleft', collapsed: true }).addTo(map);
+  if (o.onGrid) iconButton(map, t('auto_grid'), '▦', o.onGrid);
+  const colors = TRAJ_COLORS;
   const bounds = [[b.site.lat, b.site.lon]];
   d.tracks.forEach((tr, k) => {
     const pts = tr.points.map((p) => [p.lat, p.lon]); bounds.push(...pts);
@@ -93,6 +122,7 @@ function drawTrajMap(el, d, b) {
   L.marker([b.site.lat, b.site.lon]).addTo(map).bindTooltip(b.site.name || 'Start');
   if (d.landing) L.circleMarker([d.landing.lat, d.landing.lon], { radius: 7, color: '#2f8f4e', fillOpacity: .6 }).addTo(map).bindTooltip(d.landing.name || t('landingSite'));
   setTimeout(() => { map.invalidateSize(); map.fitBounds(bounds, { padding: [20, 20] }); }, 60);
+  return map;
 }
 
 // ---------------------------------------------------------------- Ballonprognose
@@ -125,16 +155,24 @@ export function renderPdiff(snap, b) {
 
 // ---------------------------------------------------------------- METAR/TAF
 export function renderMetar(snap, b) {
-  const d = snap.data;
+  const d = snap.data, lang = getLang();
   if (!d.metar?.length) return h('div.note', t('auto_none'));
-  return h('div.auto-wrap', d.metar.map((m) => {
-    const taf = d.taf?.[m.icaoId];
-    return h('div.metar', [
-      h('div', [h('b', m.icaoId), ` ${m.name || ''} · ${Math.round(m.distKm)} km`, m.obsTime ? h('span.muted.small', ` · ${new Date(m.obsTime * 1000).toISOString().slice(11, 16)} UTC`) : null]),
-      h('pre.report', m.rawOb || ''),
-      taf ? h('pre.report', (taf.rawTAF || '').replace(/\s(PROB\d{2}\s+TEMPO|PROB\d{2}|TEMPO|BECMG|FM\d{6})/g, '\n  $1')) : h('div.note', `${t('auto_noTaf')}`),
-    ]);
-  }));
+  const tafFmt = (raw) => (raw || '').replace(/\s(PROB\d{2}\s+TEMPO|PROB\d{2}|TEMPO|BECMG|FM\d{6})/g, '\n  $1');
+  const pair = (label, raw, lines) => h('div.metar-cols', [
+    h('div.raw', [h('div.lbl', label), h('pre.report', raw)]),
+    h('div.dec', [h('div.lbl', t('auto_decoded')), h('ul.decoded', lines.map((x) => h('li', x)))]),
+  ]);
+  return h('div.auto-wrap', [
+    h('div.note', `${d.metar.length} ${t('auto_metarWithin')} ${d.radiusKm || ''} km`.replace('  ', ' ')),
+    ...d.metar.map((m) => {
+      const taf = d.taf?.[m.icaoId];
+      return h('div.metar', [
+        h('div', [h('b', m.icaoId), ` ${m.name || ''} · ${Math.round(m.distKm)} km`, m.obsTime ? h('span.muted.small', ` · ${new Date(m.obsTime * 1000).toISOString().slice(11, 16)} UTC`) : null]),
+        pair('METAR', m.rawOb || '', decodeMetar(m.rawOb || '', lang)),
+        taf ? pair('TAF', tafFmt(taf.rawTAF), decodeTaf(taf.rawTAF || '', lang)) : h('div.note', `${t('auto_noTaf')}`),
+      ]);
+    }),
+  ]);
 }
 
 // ---------------------------------------------------------------- SIGMET
@@ -165,11 +203,26 @@ export function renderFwp(snap) {
   return h('div.auto-wrap', parts);
 }
 
-/** Bildliste eines Schnappschusses (DABS, Karten). */
-export function renderImages(snap) {
+/** Bildliste eines Schnappschusses (DABS, Karten). Mehrere Seiten: kleiner Viewer mit Blättern
+ * (Bildschirm); im Druck erscheinen alle Seiten (bzw. die Beilagen der Briefingsicht). */
+export function renderImages(snap, b, ctx, opts = {}) {
   const imgs = snap.images || [];
   if (!imgs.length) return h('div.note', '–');
-  return h('div.imgs.auto-imgs', imgs.map((im) => h('figure', [h('img.pimg', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null])));
+  const figs = imgs.map((im, i) => h('figure', { class: i === 0 ? 'cur' : '' }, [h('img.pimg', { src: im.url, alt: im.caption || '', loading: i === 0 ? 'eager' : 'lazy' }), im.caption ? h('figcaption.mini', im.caption) : null]));
+  if (imgs.length < 2 && !snap.data?.pdfUrl) return h('div.imgs.auto-imgs', figs);
+  let cur = 0;
+  const counter = h('span.mono', `1/${imgs.length}`);
+  const show = (i) => { cur = (i + imgs.length) % imgs.length; figs.forEach((f, k) => f.classList.toggle('cur', k === cur)); counter.textContent = `${cur + 1}/${imgs.length}`; };
+  const bar = h('div.pager-bar.no-print', [
+    h('button.btn.icon', { type: 'button', title: t('auto_prev'), 'aria-label': t('auto_prev'), onclick: () => show(cur - 1) }, '‹'),
+    h('span.small', [t('auto_page'), ' ', counter]),
+    h('button.btn.icon', { type: 'button', title: t('auto_next'), 'aria-label': t('auto_next'), onclick: () => show(cur + 1) }, '›'),
+    snap.data?.pdfUrl ? h('a.btn.small', { href: snap.data.pdfUrl, target: '_blank', rel: 'noopener' }, 'PDF ↗') : null,
+  ]);
+  const wrap = h('div.pager', [bar, h('div.imgs.auto-imgs.pages', figs)]);
+  wrap.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') show(cur - 1); else if (e.key === 'ArrowRight') show(cur + 1); });
+  wrap.tabIndex = 0;
+  return wrap;
 }
 
 export const RENDERERS = { meteogram: renderMeteogram, wind: renderWind, temps: renderTemps, traj: renderTraj, balloon: renderBalloon, pdiff: renderPdiff, metar: renderMetar, sigmet: renderSigmet, notam: renderNotam, dabs: renderImages, synoptic: renderImages, fwp: renderFwp };

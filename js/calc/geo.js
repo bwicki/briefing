@@ -82,3 +82,10 @@ export function countryGuess(lat, lon) {
   for (const [cc, s, n, w, e] of boxes) if (lat >= s && lat <= n && lon >= w && lon <= e) return cc;
   return '';
 }
+
+/** Himmelsrichtung (8 Sektoren) für Kurse: N, NE/NO, E/O, SE/SO, S, SW, W, NW. */
+export function compass(deg, lang = 'de') {
+  const d = ((deg % 360) + 360) % 360;
+  const names = lang === 'en' ? ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] : ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
+  return names[Math.round(d / 45) % 8];
+}

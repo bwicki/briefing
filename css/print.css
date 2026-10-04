@@ -14,15 +14,28 @@
   a { color: inherit; text-decoration: none; }
 }
 @page land { size: A4 landscape; }
+@page pax { size: A5 portrait; margin: 8mm 9mm; }
 @media print {
   .brief .auto-wrap{gap:4px;}
   .brief table.auto{font-size:8.5pt;white-space:normal;}
   .brief table.auto th{position:static;}
   .brief .sv-svg,.brief .mg-svg{max-width:170mm;}
   .brief .traj-svg{max-width:110mm;}
+  .brief .traj-grid.maponly .traj-svg{display:block;}
   .brief .wind-charts figure{max-width:60mm;}
   .brief .map{display:none;}
   .brief .stand{font-size:8pt;}
-  .brief.paxcard{font-size:12pt;}
+  .brief.paxcard{font-size:11pt;page:pax;}
+  .brief .appendix{display:block;}
+  .brief .appendix .att{page-break-before:always;}
+  .pager .pages figure{display:block;page-break-inside:avoid}
+  .pager .pages img.pimg{max-height:240mm}
+  .brief .appendix img.pimg{max-height:250mm;max-width:100%;}
+  .brief.noatt .appendix{display:none;}
   .brief .bsum{background:#f3f5f8 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
+
+.metar-cols{display:grid;grid-template-columns:1fr 1.3fr;gap:4px 10px}
+.metar-cols ul.decoded{margin:2px 0 0;padding-left:14px;font-size:9.5pt}
+.metar-cols ul.decoded li:first-child{list-style:none;margin-left:-14px;font-weight:600}
+.metar-cols .lbl{font-size:8pt;color:#666;text-transform:uppercase}

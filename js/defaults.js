@@ -77,7 +77,7 @@ export const DEFAULT_SETTINGS = {
   flyLimits: { wind: [4, 6], gust: [6, 8], gustSpread: [4, 6], cape: [300, 800], precip: 0.1, visKm: 1.5, baseFt: 1000 },
   trajDefaults: { hab: 120, gas: 1440, stepMin: 10 },
   meteoDefaults: { topHpa: 500 },
-  metarRadiusKm: 120, metarCount: 4, notamRadiusNm: 25, aiModel: 'claude-sonnet-5-5',
+  metarRadiusKm: 150, metarCount: 0, notamRadiusNm: 25, aiModel: 'claude-sonnet-5-5',
   synopticCharts: [
     { name: 'DWD Bodenanalyse Europa/Nordatlantik', url: 'https://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_na_ana.png' },
     { name: 'DWD Bodenanalyse Westeuropa', url: 'https://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_weu_ana.png' },
@@ -146,5 +146,8 @@ export function mergeSettings(saved) {
     }
     return a;
   };
-  return merge(base, saved);
+  const out = merge(base, saved);
+  // 0.6: alte Standardwerte (120 km / 4 Plätze) auf neue Standards heben (150 km / alle im Umkreis)
+  if (out.metarRadiusKm === 120 && out.metarCount === 4) { out.metarRadiusKm = 150; out.metarCount = 0; }
+  return out;
 }

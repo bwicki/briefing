@@ -41,14 +41,37 @@ const lightFn = (b, ctx) => { const sun = sunFor(b, ctx.settings, ctx.racTable);
 export async function meteogram(ctx, b) {
   const j = await getForecast(ctx, b);
   const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
-  const idx = OM.window(j, b.time.startMs - 3 * 3600000, Math.max(landing, b.time.startMs + 2 * 3600000) + 3 * 3600000);
+  const idx = OM.window(j, b.time.startMs - 6 * 3600000, Math.max(landing, b.time.startMs + 2 * 3600000) + 6 * 3600000);
   if (!idx.length) throw new Error(t('auto_noHours'));
   const light = lightFn(b, ctx);
   const lim = ctx.settings.flyLimits;
-  const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, light(r.ms), lim, getLang()); return { ...r, fog: OM.fogRisk(r).level, baseFt: OM.cloudBaseFt(r), fly: fr.level, why: fr.why }; });
+  const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, light(r.ms), lim, getLang()); return { ...r, night: !light(r.ms), fog: OM.fogRisk(r).level, baseFt: OM.cloudBaseFt(r), fly: fr.level, why: fr.why }; });
   const z = b.site.tz || 'Europe/Zurich';
   const text = recs.map((r) => `${hhmm(z, r.ms)} T ${r.temp?.toFixed(0)}°/Td ${r.dew?.toFixed(0)}° Wind ${r.d10 != null ? Math.round(r.d10).toString().padStart(3, '0') : '–'}/${Math.round((r.w10 || 0) * OM.MS_TO_KT)}G${Math.round((r.gust || 0) * OM.MS_TO_KT)} kt Wolken ${r.cloud ?? '–'}% RR ${r.precip ?? 0} mm CAPE ${r.cape ?? '–'} → ${['nein', 'grenzwertig', 'fahrbar'][r.fly] || '–'}${r.why?.length ? ' (' + r.why.join(', ') + ')' : ''}`).join('\n');
   return { kind: 'meteogram', ...standOf(j, b), data: { recs, fromMs: b.time.startMs, toMs: landing }, text };
+}
+
+/** Start-Ampel für den Ablauf: schlechteste Stundenampel im Fahrtfenster (Start … Landung). */
+export async function startAmpel(ctx, b) {
+  const j = await getForecast(ctx, b);
+  const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
+  const idx = OM.window(j, b.time.startMs - 1800000, Math.max(landing, b.time.startMs + 3600000));
+  if (!idx.length) throw new Error(t('auto_noHours'));
+  const light = lightFn(b, ctx);
+  const lim = ctx.settings.flyLimits;
+  const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, light(r.ms), lim, getLang()); return { ms: r.ms, fly: fr.level, why: fr.why, w10: r.w10, gust: r.gust, precip: r.precip, cloud: r.cloud }; });
+  const level = Math.min(...recs.map((r) => r.fly ?? 2));
+  const why = [...new Set(recs.filter((r) => r.fly === level).flatMap((r) => r.why || []))].slice(0, 4);
+  return { level, why, recs, ...standOf(j, b) };
+}
+
+/** Trajektorien-Vorschau für den Ablauf: wenige Niveaus (z. B. Min/Max der Fahrtabsicht), ohne Speichern. */
+export async function quickTraj(ctx, b, levels) {
+  const j = await getForecast(ctx, b);
+  const durationMin = b.intent.durationMin || ctx.settings.trajDefaults?.[b.balloon.type] || 120;
+  const elev = b.site.elev ?? j.elevation ?? 0;
+  const trs = tracks(j, { lat: b.site.lat, lon: b.site.lon, elev, startMs: b.time.startMs, durationMin, levels, stepMin: ctx.settings.trajDefaults?.stepMin || 10 });
+  return { tracks: trs, durationMin, ...standOf(j, b) };
 }
 
 /** Windprofil zur Startzeit und stündlich bis zur Landung. */
@@ -182,9 +205,9 @@ export async function pdiff(ctx, b) {
 
 /** METAR/TAF der nächsten Plätze. */
 export async function metar(ctx, b) {
-  const j = await ctx.store.data('metar', { lat: b.site.lat, lon: b.site.lon, km: ctx.settings.metarRadiusKm || 120, limit: ctx.settings.metarCount || 4 }, shareTok(ctx));
+  const j = await ctx.store.data('metar', { lat: b.site.lat, lon: b.site.lon, km: ctx.settings.metarRadiusKm || 150, limit: ctx.settings.metarCount || 40 }, shareTok(ctx));
   const text = (j.metar || []).map((m) => `${m.icaoId} (${Math.round(m.distKm)} km): ${m.rawOb || ''}${j.taf?.[m.icaoId] ? `\nTAF ${j.taf[m.icaoId].rawTAF || ''}` : ''}`).join('\n\n');
-  return { kind: 'metar', stand: Date.now(), source: j.source, data: { metar: j.metar || [], taf: j.taf || {}, generated: j.generated }, text };
+  return { kind: 'metar', stand: Date.now(), source: j.source, data: { metar: j.metar || [], taf: j.taf || {}, generated: j.generated, radiusKm: ctx.settings.metarRadiusKm || 150 }, text };
 }
 
 /** SIGMET/AIRMET in der Umgebung. */

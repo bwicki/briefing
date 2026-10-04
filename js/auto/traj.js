@@ -78,6 +78,8 @@ export function tracks(j, o) {
 }
 
 /** Nord-oben-Skizze der Bahnen als SVG (druckbar, ohne Kacheln). */
+/** Farben der Trajektorien (Reihenfolge der Niveaus); Legende und Karte verwenden dieselben. */
+export const TRAJ_COLORS = ['#c2481a', '#1673a8', '#2f8f4e', '#8a4fb5', '#b5892f', '#444', '#d1476e', '#2aa198'];
 export function trajSvg(trs, o = {}) {
   const NS = 'http://www.w3.org/2000/svg';
   const mk = (tag, attrs, txt) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (txt != null) n.textContent = txt; return n; };
@@ -101,7 +103,7 @@ export function trajSvg(trs, o = {}) {
   for (let g = h0; g <= h1 + 1e-6; g += grid) { svg.appendChild(mk('line', { x1: X(cx - r), y1: Y(g), x2: X(cx + r), y2: Y(g), class: 'tg' + (Math.abs(g) < 1e-6 ? ' tz' : '') })); svg.appendChild(mk('text', { x: pad - 4, y: Y(g) + 3, class: 'tl', 'text-anchor': 'end' }, `${g > 0 ? '+' : ''}${g}`)); }
   svg.appendChild(mk('text', { x: W / 2, y: 11, class: 'tl', 'text-anchor': 'middle' }, 'N ↑'));
   svg.appendChild(mk('text', { x: W - 4, y: H - 4, class: 'tl', 'text-anchor': 'end' }, `km · Raster ${grid} km`));
-  const colors = ['#c2481a', '#1673a8', '#2f8f4e', '#8a4fb5', '#b5892f', '#444', '#d1476e', '#2aa198'];
+  const colors = TRAJ_COLORS;
   const labels = [];
   trs.forEach((tr, k) => {
     if (tr.belowGround) return;

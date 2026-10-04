@@ -78,7 +78,7 @@ function tafByIcao(list, ids) {
   return out;
 }
 async function metar(env, ctx, q) {
-  const lat = +q.get('lat'), lon = +q.get('lon'), km = Math.min(300, +q.get('km') || 120), limit = Math.min(10, +q.get('limit') || 4);
+  const lat = +q.get('lat'), lon = +q.get('lon'), km = Math.min(400, +q.get('km') || 150), limit = Math.min(40, +q.get('limit') || 40);
   if (!isFinite(lat) || !isFinite(lon)) return err('lat/lon');
   const cell = `${lat.toFixed(1)},${lon.toFixed(1)},${km},${limit}`;
   const data = await cached(ctx, `metar/${cell}`, 600, async () => {

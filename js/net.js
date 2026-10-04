@@ -65,12 +65,12 @@ export async function localData(kind, p = {}) {
     case 'om': return getJson(`https://api.open-meteo.com/v1/forecast?${p.query}`, 15000);
     case 'metar': {
       const j = await dataFile('dwd/metar.json');
-      const km = p.km || 120;
+      const km = p.km || 150;
       const best = new Map();
       for (const m of j.metar || []) { if (!m.icaoId || m.lat == null) continue; const prev = best.get(m.icaoId); if (!prev || (m.obsTime || 0) > (prev.obsTime || 0)) best.set(m.icaoId, m); }
       const R = 6371, rad = (d) => d * Math.PI / 180;
       const dist = (a, b, c, d) => 2 * R * Math.asin(Math.sqrt(Math.sin(rad(c - a) / 2) ** 2 + Math.cos(rad(a)) * Math.cos(rad(c)) * Math.sin(rad(d - b) / 2) ** 2));
-      const list = [...best.values()].map((m) => ({ ...m, distKm: dist(+p.lat, +p.lon, m.lat, m.lon) })).filter((m) => m.distKm <= km).sort((a, b) => a.distKm - b.distKm).slice(0, p.limit || 4);
+      const list = [...best.values()].map((m) => ({ ...m, distKm: dist(+p.lat, +p.lon, m.lat, m.lon) })).filter((m) => m.distKm <= km).sort((a, b) => a.distKm - b.distKm).slice(0, p.limit || 40);
       const ids = list.map((m) => m.icaoId);
       const taf = {}; for (const t of j.taf || []) if (ids.includes(t.icaoId) && (!taf[t.icaoId] || t.mostRecent === 1)) taf[t.icaoId] = t;
       return { metar: list, taf, source: `${t('auto_copy')} NOAA AWC (${j.via || 'awc'})`, generated: j.generated };

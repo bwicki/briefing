@@ -9,8 +9,7 @@ import { isoDate } from '../calc/time.js';
 import { tag } from './widgets.js';
 
 export async function renderList(view, ctx) {
-  const newBtn = h('button.btn.primary', { type: 'button', onclick: () => ctx.navigate('#/new') }, t('newBriefing'));
-  setHeader({ title: t('briefings'), tools: [newBtn] });
+  setHeader({ title: t('briefings'), tools: [] });   // «+ Neues Briefing» steht als gefüllter Knopf in der Hauptnavigation
   // Sichten: eigene · alle Benutzer (Super) · Fahrten mit meinem Material (Ballon freigegeben)
   const remote = ctx.store.mode === 'remote';
   const scopes = ['own'];

@@ -52,7 +52,8 @@ with sync_playwright() as p:
     pg.click('button:has-text("Freigeben als Final")'); pg.wait_for_timeout(600)
     pg.screenshot(path=f'{OUT}/remote_release.png')
     assert pg.is_visible('.dialog'), 'Freigabe-Dialog'
-    pg.fill('.dialog textarea', 'Test: DABS/NOTAM folgen'); pg.click('.dialog-foot button.primary'); pg.wait_for_timeout(1500)
+    if pg.query_selector('.dialog textarea'): pg.fill('.dialog textarea', 'Test: DABS/NOTAM folgen')   # nur bei fehlenden Pflicht-Panels (DABS lädt seit 0.6 von selbst)
+    pg.click('.dialog-foot button.primary'); pg.wait_for_timeout(1500)
     assert 'Final v1' in pg.inner_text('#subtitle'), 'Final v1 im Kopf: ' + pg.inner_text('#subtitle')
     # Zweiter Kontext: Mitarbeit-Link
     c2 = b.new_context(viewport={'width': 820, 'height': 1180}, locale='de-CH', timezone_id='Europe/Zurich')

@@ -17,7 +17,8 @@ import { PANELS } from './panels.js';
 export function newBriefing(settings, now = Date.now()) {
   const sel = defaultBalloon(settings);
   const bal = resolveBalloon(settings, sel);
-  const site = settings.sites.find((s) => s.favorite) || settings.sites[0] || null;
+  const forType = (s) => !s.types?.length || s.types.includes(bal?.type || 'hab');
+  const site = settings.sites.find((s) => s.favorite && forType(s)) || settings.sites.find(forType) || settings.sites[0] || null;
   const tz = site?.tz || 'Europe/Zurich';
   const p = localParts(tz, now + 86400000);
   const date = `${p.y}-${String(p.m).padStart(2, '0')}-${String(p.d).padStart(2, '0')}`;
@@ -33,7 +34,7 @@ export function newBriefing(settings, now = Date.now()) {
     time: { date, time: '06:30', startMs: fromLocal(tz, date, '06:30'), base: settings.timeBase || 'LT' },
     intent: { durationMin: intent.durationMin, altMinFt: intent.altMinFt, altMaxFt: intent.altMaxFt, direction: '', dayNight: 'day', remark: '', levels: [...intent.levels] },
     landing: emptyPlace(),
-    persons: { picId: settings.persons.find((x) => x.roles?.includes('pic'))?.id || '', pic: settings.persons.find((x) => x.roles?.includes('pic'))?.name || '', retrieveId: settings.persons.find((x) => x.roles?.includes('retrieve'))?.id || '', retrieve: settings.persons.find((x) => x.roles?.includes('retrieve'))?.name || '', pax: [] },
+    persons: { picId: settings.persons.find((x) => x.roles?.includes('pic'))?.id || '', pic: settings.persons.find((x) => x.roles?.includes('pic'))?.name || '', retrieveId: settings.persons.find((x) => x.roles?.includes('retrieve'))?.id || '', retrieve: settings.persons.find((x) => x.roles?.includes('retrieve'))?.name || '', retrievers: settings.persons.filter((x) => x.roles?.includes('retrieve')).slice(0, 1).map((x) => ({ id: x.id, name: x.name })), pax: [] },
     schedule: { meetingId: meeting?.id || '', meetingName: meeting?.name || '', meetingLat: meeting?.lat ?? null, meetingLon: meeting?.lon ?? null, driveMin: null, driveSource: '', driveKm: null, rigMin: bal?.rigMin ?? 45, fillMin: bal?.fillMin ?? 0, bufferMin: settings.scheduleDefaults.bufferMin, recoveryMin: settings.scheduleDefaults.recoveryMin, rows: [], overrides: {} },
     weather: { tempC: 15, qnh: 1013, rh: null, envTempC: bal?.envTempC ?? 100, source: 'manual', stand: null, gasDeltaT: 0 },
     panels: {}, versions: [], log: [], accessCount: 0,
@@ -49,6 +50,8 @@ export function upgradeBriefing(b) {
   if (!b) return b;
   if (!b.landing) b.landing = emptyPlace();
   if (!b.schedule.overrides) b.schedule.overrides = {};
+  if (!Array.isArray(b.persons.retrievers)) b.persons.retrievers = b.persons.retrieve ? [{ id: b.persons.retrieveId || 'custom', name: b.persons.retrieve }] : [];
+  for (const p of b.persons.pax || []) if (/^(Pax|Passenger) \d+$/.test(p.name || '')) p.name = '';   // alte Platzhalter-Namen
   for (const p of PANELS) if (!b.panels[p.key]) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
   return b;
 }

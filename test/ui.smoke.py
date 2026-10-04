@@ -19,6 +19,7 @@ def mock_external(pg):
     pg.route('**/gafor.wicki.aero/**', gafor)
     pg.route('**/api.rainviewer.com/**', lambda r: r.abort())
     pg.route('**/tile.openstreetmap.org/**', lambda r: r.abort())
+    pg.route('**/server.arcgisonline.com/**', lambda r: r.abort())
     pg.route('**/nominatim.openstreetmap.org/**', lambda r: r.abort())
     pg.route('**/router.project-osrm.org/**', lambda r: r.abort())
 
@@ -61,7 +62,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1500)
         pg.click('button:has-text("Pax hinzufügen")'); pg.wait_for_timeout(200)
         pg.click('button:has-text("Pax hinzufügen")'); pg.wait_for_timeout(300)
-        rows = pg.query_selector_all('.pax-row input[type=text]')
+        rows = pg.query_selector_all('.pax-row:not(.ret-row) input[type=text]')
         if rows: rows[0].fill('Viviane Graf')
         pg.wait_for_timeout(300)
         pg.screenshot(path=f'{OUT}/{name}_05_wiz4.png', full_page=True)
@@ -94,7 +95,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         assert 'tendenz' in pg.inner_text('.side').lower(), 'Go/No-Go-Karte'
         pg.click('.more > button'); pg.wait_for_timeout(300)
         assert pg.is_visible('.more-menu'), 'Mehr-Menü offen'
-        pg.click('.more-menu button:has-text("Crew")'); pg.wait_for_timeout(800)
+        pg.click('.more-menu button:has-text("Crew")'); pg.wait_for_timeout(1200)
         assert 'Ballonfahrt' in pg.input_value('.dialog textarea'), 'Crew-Nachricht erzeugt'
         pg.click('.dialog-foot button'); pg.wait_for_timeout(300)
         # Text in ein Paste-Panel

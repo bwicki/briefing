@@ -129,13 +129,19 @@ export function liftCurve(rows, takeoff, maxAlt) {
   const x = (c) => pl + (c - cMin) / (cMax - cMin || 1) * (W - pl - pr);
   const y = (hh) => pt + (1 - hh / hMax) * (H - pt - pb);
   const pts = rows.map((r) => `${x(r.capacity).toFixed(1)},${y(r.h).toFixed(1)}`).join(' ');
-  const svg = h('svg.curve', { viewBox: `0 0 ${W} ${H}`, xmlns: 'http://www.w3.org/2000/svg' });
+  const span = cMax - cMin || 1, step = span > 600 ? 200 : span > 300 ? 100 : 50;
+  const xt = []; for (let c = Math.ceil(cMin / step) * step; c <= cMax; c += step) xt.push(c);
+  // SVG-Namensraum nötig: mit document.createElement entstünde ein HTML-Element «svg», dessen Inhalt als Text erschiene
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('class', 'curve');
   svg.innerHTML = `
     <polyline fill="none" stroke="var(--dew)" stroke-width="2" points="${pts}"/>
     <line x1="${x(takeoff)}" y1="${pt}" x2="${x(takeoff)}" y2="${H - pb}" stroke="var(--temp)" stroke-dasharray="4 3"/>
     ${maxAlt != null ? `<line x1="${pl}" y1="${y(maxAlt)}" x2="${W - pr}" y2="${y(maxAlt)}" stroke="var(--amber)" stroke-dasharray="3 3"/>` : ''}
-    ${[0, 2000, 4000, 6000, 8000, 10000].map((hh) => `<text x="4" y="${y(hh) + 3}" font-size="8" fill="var(--text-dim)" font-family="monospace">${hh}</text>`).join('')}
-    <text x="${x(takeoff) + 3}" y="${H - pb - 4}" font-size="8" fill="var(--temp)" font-family="monospace">${fmt(takeoff)} kg</text>
-    <text x="${W - pr}" y="${H - 8}" font-size="8" fill="var(--text-dim)" font-family="monospace" text-anchor="end">kg Tragfähigkeit → · m AMSL ↑</text>`;
+    ${[0, 2000, 4000, 6000, 8000, 10000].filter((hh) => hh <= hMax).map((hh) => `<line x1="${pl}" y1="${y(hh)}" x2="${W - pr}" y2="${y(hh)}" stroke="var(--line-soft)" stroke-width="0.6"/><text x="4" y="${y(hh) + 3}" font-size="8" fill="var(--text-dim)" font-family="monospace">${hh}</text>`).join('')}
+    ${xt.map((c) => `<line x1="${x(c)}" y1="${H - pb}" x2="${x(c)}" y2="${H - pb + 3}" stroke="var(--text-dim)"/><text x="${x(c)}" y="${H - pb + 11}" font-size="7.5" fill="var(--text-dim)" font-family="monospace" text-anchor="middle">${c}</text>`).join('')}
+    <line x1="${pl}" y1="${H - pb}" x2="${W - pr}" y2="${H - pb}" stroke="var(--text-dim)" stroke-width="0.8"/>
+    <text x="${x(takeoff) + 3}" y="${pt + 9}" font-size="8" fill="var(--temp)" font-family="monospace">${fmt(takeoff)} kg</text>
+    <text x="${W - pr}" y="${H - 2}" font-size="7.5" fill="var(--text-dim)" font-family="monospace" text-anchor="end">kg Tragfähigkeit → · m AMSL ↑</text>`;
   return svg;
 }
