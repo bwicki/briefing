@@ -1,0 +1,104 @@
+https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
+
+261
+FBEU40 EDZM 040600
+Deutscher Wetterdienst
+Flugwetterübersicht Bereich Süd
+gültig vom 04.10.2026, 06.00 UTC bis 05.10.2026, 03.00 UTC
+
+Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
+
+Wetterlage und -entwicklung:
+Bodennah bestimmten eine Hochdruckbrücke sowie eine feuchte
+Grundschicht in weiten Teilen Süddeutschlands das Wetter. Bis zum
+Mittag löst sich diese auf. In der Höhe nähert sich ein Tief an und
+führt mit westlicher Strömung eine feucht-milde Luftmasse heran.
+
+Wettergeschehen:
+Vereinzelt Durchzug von SCT SC/AC mit Untergrenzen zwischen FL070 und
+FL080, Obergrenzen um FL120. Zudem, besonders nördlich der Donau, BKN
+CS oberhalb FL245. Darunter verbreitet Nebel mit Obergrenzen um 2000
+FT AMSL.
+
+Im Vormittagsverlauf Abzug der SC/AC-Felder nach Osten. Zudem
+Auflösen des Nebels von den Rändern her. Zum Teil auch Übergang zu
+tiefem ST. Untergrenzen zunächst in wenigen 100 FT AGL. Bis zum
+Mittag verbreitet Auflösung letzter Dunst- und ST-Felder. Stattdessen
+Bildung von FEW CU mit Untergrenzen zwischen 2500 und 3000 FT AMSL.
+
+Im Nachmittagsverlauf Ansteigen der CU. Gebietsweise FEW/SCT CU mit
+Untergrenzen zwischen 4500 und 5500 FT AMSL. Obergrenzen im Westen um
+FL080, im Osten um FL060. Zudem Aufzug von BKN AC/CS oberhalb FL100
+von Westen her.
+
+Am Abend oftmals Auflösung der CU, nur südlich der Donau örtlich
+Übergang zu SCT CU mit Untergrenzen um FL050 und Obergrenzen bis
+FL070. Zudem Ausdehnung der OVC AC/CS nach Osten. Untergrenzen im
+Nordosten um FL160, im Südwesten um FL090. Von Westen her
+aufkommender leichter Regen. Durch eingelagerte TCUs mit Untergrenzen
+um FL060 und TOPs bis FL210 teils schauerartig verstärkt.
+
+Nachts Verlagerung des Niederschlags samt Bewölkung nach Osten. Zum
+Berichtsende zwischen Oberpfälzer Wald und Allgäu sowie südöstlich
+davon OVC AC/CS. Untergrenzen im Nordosten um FL130, im Südwesten um
+FL090. Besonders südlich der Donau SCT/BKN SC mit Untergrenzen
+zwischen FL050 und FL060 und Obergrenzen um FL090 darunter. Dort
+leichter Regen, durch EMBD TCU/CB teils schauerartig verstärkt. Auch
+ein einzelnes kurzes Gewitter nicht vollends ausgeschlossen.
+Nordwestlich der beschriebenen Regionen rasches Ausschichten der
+Bewölkung. Im westlichen Franken und im Kocher-Jagst-Gebiet
+wolkenlos. Dort örtlich Bildung flacher Dunst- und Nebelfelder.
+
+Sichtweite:
+Anfangs, abseits des Nebels, 10 bis 20 km. Im Nebel wenige 100 m, im
+Dunst/unter tiefem ST 2 bis 5 km. Im Laufe des Vormittags
+Sichtbesserung, ab dem Mittag verbreitet zwischen 30 und 50 km.
+Nachts 20 bis 40 km. Im Regen 15 bis 30 km. Bei Schauern 8 bis 15 km.
+In Gewittern 3 bis 8 km.
+
+Höhenwind und -temperatur:
+GAFOR-Gebiete 54 - 58, 63, 64:
+AMSL  |  09 UTC  |  21 UTC  |
+1500FT | 040/05KT  11C | 320/05KT  16C |
+2000FT | 050/05KT  11C | 330/05KT  15C |
+3000FT | 340/05KT  12C | 280/05KT  12C |
+5000FT | 280/05KT  09C | 260/05KT  08C |
+FL100  | 270/05KT  05C | 310/10KT  02C |
+
+GAFOR-Gebiete 62, 71 - 84:
+AMSL  |  09 UTC  |  21 UTC  |
+2000FT | 110/05KT  12C | 120/05KT  17C |
+3000FT | 080/05KT  13C | 160/05KT  14C |
+5000FT | 260/05KT  11C | 280/05KT  11C |
+FL100  | 270/15KT  03C | 270/15KT  03C |
+
+Turbulenz:
+Ab dem späten Nachmittag im Nordwesten aufkommendes Band mäßiger
+Turbulenz oberhalb FL180. Langsam nach Südosten ziehend, dabei
+abschwächend. Zum Berichtsende die Regionen südlich der Donau
+erreichend. In Verbindung mit TCU/CB mäßig bis stark.
+
+Vereisung:
+Ab dem späten Nachmittag im Südwesten aufkommende mäßige Vereisung
+zwischen Nullgradgrenze und FL205. Nach Osten verlagernd. In
+Verbindung mit TCU/CB mäßig bis stark
+
+Nullgradgrenze:
+Um FL115. Tagsüber absinkend. Nachts verbreitet um FL105.
+
+Inversionen:
+Anfangs Bodeninversion mit Obergrenze um 2500 FT AMSL. Im Laufe des
+Vormittags auflösend bzw. in eine Absinkinversion zwischen FL050 und
+FL080 übergehend. Mit Aufzug des Niederschlags örtlich auflösend. In
+der Nacht zum Montag Bildung einer Bodeninversion mit Oberkante um
+2500 FT AMSL.
+
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Nürnberg  04.48 | 05.20 | 16.48 | 17.20
+München  04.44 | 05.16 | 16.46 | 17.17
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
+SA/SU   = Sonnenauf/untergang
+
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+
+Luftfahrtberatungszentrale München/zo
