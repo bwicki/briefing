@@ -84,20 +84,22 @@ Crew; Datum + 7 Tage; Meteo-Panels leer) und öffnet den Ablauf bei Schritt 6.
 Sechs Schritte mit Zurück/Weiter (Eingabetaste = Weiter); der Entwurf wird laufend
 gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
 
-1. **Ballon & Fahrt** — Heissluft (Kennung) oder Gas (Hülle × Korb), Typ der Fahrt,
-   Lufttransportführer, Anlass.
+1. **Ballon & Fahrt** — Heissluft (Kennung) oder Gas (Hülle × Korb), Typ der Fahrt mit
+   **NVFR-Schalter** (bewusst geplante Nachtfahrt: keine Nacht-Warnungen, Nachtausrüstung
+   wird gesetzt), Lufttransportführer, Anlass.
 2. **Ort & Zeit** — Favoriten-Chips (nur Startplätze, die zum Ballontyp passen;
    Kennzeichnung Heissluft/Gas in den Einstellungen) und **Ortswahl**: ins Ortsfeld
    tippen öffnet die Suche direkt. Kurzkoordinaten, Höhe, Land und Zeitzone werden
    ermittelt (Open-Meteo, Nominatim); Datum, Startzeit, LT/UTC; Sonne/Dämmerung
-   sofort, Warnung bei Nachtfahrt; Planungshorizont mit verfügbaren Modellen.
+   sofort, Warnung bei Nachtfahrt (bzw. Hinweis «NVFR geplant»); Planungshorizont mit
+   verfügbaren Modellen. «Als Favorit speichern» nur, wenn kein Favorit gewählt ist.
    Sobald Ort und Zeit stehen, erscheint die **Start-Ampel** (denkbar / marginal /
    eher ausgeschlossen) aus Modellwerten und Ampel-Grenzen — grobe Einschätzung,
    keine Entscheidung.
-3. **Fahrtabsicht** — Start-Ampel, Dauer, Höhenband; **Trajektorien-Vorschau**
-   (untere/obere Höhe des Höhenbands ab Startzeit auf der Karte); ein Klick auf die
-   Karte übernimmt den Punkt als **geplanten Landeraum** und füllt die
-   Zielrichtung (Himmelsrichtung, Kurs, Distanz, Ort). Tag/Nacht, Trajektorien-
+3. **Fahrtabsicht** — Start-Ampel, Dauer, Höhenband, Trajektorien-Niveaus; **Trajektorien-
+   Karte mit allen Niveaus** (Legende, Stundenpunkte, zeichnet bei Änderungen neu); ein
+   Klick auf die Karte übernimmt den Punkt als **geplanten Landeraum** und füllt die
+   Zielrichtung (Himmelsrichtung, Kurs, Distanz, Ort). Trajektorien-
    Niveaus (Startwerte je Ballontyp aus den Einstellungen). Landeraum und Richtung
    bleiben optional.
 4. **Personen** — PIC, **mehrere Nachfahrer** (Liste aus Stamm oder frei), Pax
@@ -179,7 +181,7 @@ kurz danach).
 | Thermik | eigene Abschätzung aus dem Modell: Globalstrahlung × Bowen-Faktor → Wärmestrom, mit Grenzschichthöhe zur konvektiven Geschwindigkeitsskala w* (Deardorff); je Stunde Klasse keine/schwach/mässig/kräftig/stark (Grenzen unter Einstellungen → Experte), Einsetzen, Maximum, Abschwächen, Fahrtfenster; Tabelle links, Balken rechts | Open-Meteo |
 | Meteogramm | Grafik über Start −6 h … Landung +6 h mit beschrifteten Bändern (Temperatur/Taupunkt mit Extremwerten, Wind/Böen kt mit Fahnen, Bewölkung hoch/mittel/tief, Niederschlag mm/h + CAPE), Zeitachse LT mit Tageswechsel, Start-/Landemarke, Nacht- und Fahrtfenster-Schattierung, Ampelstreifen und Legende; dazu Stundentabelle mit Nebelrisiko und Wolkenbasis | Open-Meteo |
 | Radar | Live-Radar (RainViewer) auf der Karte (weit genug für die Niederschlagsgebiete), Startort und Landeraum markiert, **Webcams im Umkreis automatisch aus öffentlichen Quellen** (europaweit: Windy Webcams API mit Schlüssel, OpenStreetMap ohne; Umkreis in Einstellungen → Meteo, Standard 40 km um Start und Landeraum) plus eigene Liste, als Kamera-Symbol mit Popup (Vorschaubild, Link) und aufklappbarer Liste; Links Windy/MeteoSchweiz/Blitzortung/Sat24 — nur am Bildschirm | RainViewer, Windy, OSM/Overpass; über Worker (`/api/wx/webcams`) |
-| Luftraum entlang des Fahrtwegs | **Luftraumanalyse** aus openAIP für die berechneten Trajektorien: je Luftraum *durchfahren* (Bahn innerhalb, Untergrenze unter der geplanten Maximalhöhe; km ab Start, ETA je Bahn), *nahe* (im Korridor, Standard 5 km, Einstellungen → Meteo) oder *oberhalb der Maximalhöhe* (eingeklappt); Typ (CTR, TMA, TMZ, RMZ, R/D/P, TRA/TSA, ATZ …), ICAO-Klasse, Unter-/Obergrenze, Hinweis (Freigabe, Transponder, Hörbereitschaft, Aktivierung per NOTAM, Frequenzen); **FIR-Folge** je Bahn mit Wechselpunkt (km, LT); Karte mit Polygonen und Bahnen (Bildschirm), Nord-oben-Skizze (Druck). Braucht die Trajektorien (werden sonst mitberechnet) und den openAIP-Schlüssel («Zugänge: openaip» oder der Kachel-Schlüssel der Overlay-URL) | openAIP Core API über Worker `/api/wx/airspace` (6 h Cache je Ausschnitt) |
+| Luftraum entlang des Fahrtwegs | **Luftraumanalyse** aus openAIP für die berechneten Trajektorien: je Luftraum *durchfahren* (Bahn innerhalb, Untergrenze unter der geplanten Maximalhöhe; km ab Start, ETA je Bahn), *nahe* (im Korridor, Standard 5 km, Einstellungen → Meteo) oder *oberhalb der Maximalhöhe* (eingeklappt); Typ (CTR, TMA, TMZ, RMZ, R/D/P, TRA/TSA, ATZ …), ICAO-Klasse, Unter-/Obergrenze, Zusatzcodes (NOTAM/REQ/AGRMT, Squawk, Frequenz); reine Klasse-E/G-Lufträume werden nicht gelistet; **Warnungen** Startort in CTR/ATZ und TMA/CTA tiefer als 900 ft über dem Startort (Experte); **FIR-Folge** je Bahn mit Wechselpunkt (km, LT, +h:mm ab Start); Karte mit Polygonen und Bahnen (Bildschirm), Nord-oben-Skizze (Druck). Braucht die Trajektorien (werden sonst mitberechnet) und den openAIP-Schlüssel («Zugänge: openaip» oder der Kachel-Schlüssel der Overlay-URL) | openAIP Core API über Worker `/api/wx/airspace` (6 h Cache je Ausschnitt) |
 | DABS | DABS-PDF (heute/morgen) automatisch holen; Seiten im kleinen Viewer mit Blättern (‹ ›, Pfeiltasten, Link zum PDF), im Druck alle Seiten bzw. als Beilage | skybriefing über Worker, R2 |
 | Strecken-NOTAM | FAA-NOTAM-API entlang Startort → Landeraum → Trajektorien-Endpunkte (Radius einstellbar), **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | FAA NOTAM API (Zugang in Einstellungen → Zugänge) |
 

@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import * as OM from '../js/auto/openmeteo.js';
 import { parseLevel, tracks, levelAltM } from '../js/auto/traj.js';
 import { vfrRelevant } from '../js/auto/data.js';
-import { normalizeAirspace, analyzeAirspaces, limitFt, limitText, inAirspace, distToAirspaceKm, requirementKey } from '../js/calc/airspace.js';
+import { normalizeAirspace, analyzeAirspaces, limitFt, limitText, inAirspace, distToAirspaceKm, requirementKey, siteWarnings, isPlainEG } from '../js/calc/airspace.js';
 import { goNoGo } from '../js/calc/gonogo.js';
 import { changesSinceFinal } from '../js/calc/diff.js';
 
@@ -211,6 +211,7 @@ const ch = changesSinceFinal(B4);
 ok(ch.any && ch.fields.includes('persons') && ch.panels.some((p) => p.key === 'A.landing' && p.what.includes('content')), 'Pax und Landeort als geändert erkannt');
 ok(changesSinceFinal({ versions: [] }) === null, 'ohne Final: null');
 console.log('Luftraumanalyse');
+const ft0 = () => ({ value: 0, unit: 1, referenceDatum: 0 });
 const sq = (lat0, lon0, lat1, lon1) => ({ type: 'Polygon', coordinates: [[[lon0, lat0], [lon1, lat0], [lon1, lat1], [lon0, lat1], [lon0, lat0]]] });
 const ctr = normalizeAirspace({ _id: 'c1', name: 'ZURICH CTR', type: 4, icaoClass: 3, country: 'CH', lowerLimit: { value: 0, unit: 1, referenceDatum: 0 }, upperLimit: { value: 4500, unit: 1, referenceDatum: 1 }, geometry: sq(47.40, 8.40, 47.55, 8.65) }, 430);
 ok(ctr.typeKey === 'CTR' && ctr.cls === 'D' && ctr.lowerTxt === 'GND' && ctr.upperTxt === '4500 ft' && ctr.lowerFt === Math.round(430 * 3.28084), 'CTR normalisiert (GND = Platzhöhe)');
@@ -234,6 +235,15 @@ ok(an.near.length === 0 && !JSON.stringify(an).includes('UIR'), 'Gefahrengebiet 
 ok(an.firs.length === 1 && an.firs[0].seq.map((x) => x.name).join('>') === 'SWITZERLAND FIR>LANGEN FIR' && an.firs[0].seq[1].fromKm > 20, 'FIR-Folge CH → DE mit km');
 const an2 = analyzeAirspaces([trk], [dang], { altMaxFt: 4000, corridorKm: 15 });
 ok(an2.near.length === 1 && an2.near[0].minDistKm > 10 && an2.near[0].minDistKm < 12, 'Gefahrengebiet im 15-km-Korridor als «nahe»');
+const clsE = normalizeAirspace({ name: 'E-SEKTOR', type: 0, icaoClass: 4, lowerLimit: ft0(), upperLimit: { value: 100, unit: 6, referenceDatum: 2 }, geometry: sq(47.2, 8.2, 47.7, 8.9) });
+const tmzG = normalizeAirspace({ name: 'TMZ TEST', type: 5, icaoClass: 6, lowerLimit: ft0(), upperLimit: { value: 5000, unit: 1, referenceDatum: 1 }, geometry: sq(47.2, 8.2, 47.7, 8.9) });
+const an3 = analyzeAirspaces([trk], [clsE, tmzG], { altMaxFt: 4000, corridorKm: 5 });
+ok(isPlainEG(clsE) && !isPlainEG(tmzG) && an3.crossed.length === 1 && an3.crossed[0].as.name === 'TMZ TEST', 'Klasse E nicht gelistet, TMZ in Klasse G schon');
+const sw = siteWarnings({ lat: 47.45, lon: 8.5, elevFt: 1400 }, [ctr, tma, clsE], 900);
+ok(sw.some((w) => w.kind === 'ctr' && w.as.name === 'ZURICH CTR'), 'Startort in CTR → Warnung');
+ok(!sw.some((w) => w.kind === 'tma'), 'TMA 5500 ft bei Platz 1400 ft (4100 ft darüber) → keine Warnung');
+const sw2 = siteWarnings({ lat: 47.45, lon: 8.5, elevFt: 4800 }, [tma], 900);
+ok(sw2.length === 1 && sw2[0].kind === 'tma' && sw2[0].aglFt === 700, 'TMA nur 700 ft über Platz → Warnung');
 ok(requirementKey({ typeKey: 'TMA', cls: 'E' }) === 'classE' && requirementKey({ typeKey: 'OTHER', cls: 'C' }) === 'clearance' && requirementKey({ typeKey: 'P' }) === 'prohibited' && requirementKey({ typeKey: 'TRA' }) === 'activation', 'Hinweis-Schlüssel je Typ/Klasse');
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

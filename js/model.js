@@ -29,7 +29,7 @@ export function newBriefing(settings, now = Date.now()) {
     id: uid(12), createdAt: now, updatedAt: now, revision: 0, status: 'draft', finalNo: 0,
     lang: settings.lang || 'de', timeBase: settings.timeBase || 'LT',
     balloon: bal, balloonSel: sel,
-    flight: { kind: 'commercial', operatorId: op?.id || 'custom', operatorName: op?.name || '', occasion: '' },
+    flight: { kind: 'commercial', operatorId: op?.id || 'custom', operatorName: op?.name || '', occasion: '', nvfr: false },
     site: site ? { ...deepCopy(site), icao: icao(site.lat, site.lon) } : { name: '', lat: null, lon: null, elev: null, tz, country: '', icao: '' },
     time: { date, time: '06:30', startMs: fromLocal(tz, date, '06:30'), base: settings.timeBase || 'LT' },
     intent: { durationMin: intent.durationMin, altMinFt: intent.altMinFt, altMaxFt: intent.altMaxFt, direction: '', dayNight: 'day', remark: '', levels: [...intent.levels] },
@@ -53,6 +53,7 @@ export function upgradeBriefing(b) {
   ensureStops(b.schedule);
   if (!Array.isArray(b.persons.retrievers)) b.persons.retrievers = b.persons.retrieve ? [{ id: b.persons.retrieveId || 'custom', name: b.persons.retrieve }] : [];
   for (const p of b.persons.pax || []) if (/^(Pax|Passenger) \d+$/.test(p.name || '')) p.name = '';   // alte Platzhalter-Namen
+  if (b.flight && b.flight.nvfr == null) b.flight.nvfr = b.intent?.dayNight === 'night' || b.intent?.dayNight === 'both';   // 0.8.1: NVFR-Schalter statt Tag/Nacht in der Absicht
   for (const p of PANELS) if (!b.panels[p.key]) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
   return b;
 }
@@ -116,10 +117,13 @@ export function sunFor(b, settings, racTable) {
     if (r2) ecetLanding = fromLocal(tz, landDate, `${r2.ecet.slice(0, 2)}:${r2.ecet.slice(2)}`);
     else ecetLanding = sunTimes(lat, lon, fromLocal(tz, landDate, '12:00')).dusk;
   }
+  // NVFR bewusst geplant (Schalter in Schritt 1): keine Nacht-Warnungen, die Rohflags bleiben für die Ausrüstung
+  const nvfr = !!b.flight?.nvfr;
+  const startBeforeBcmt = b.time.startMs < official.bcmt, landingAfterEcet = ecetLanding != null && landing > ecetLanding;
   return {
     date, tz, official, astro: { bcmt: astro.dawn, sr: astro.sunrise, ss: astro.sunset, ecet: astro.dusk }, source, racMissing,
     moon: { ...moon, fraction: ill.fraction, phase: ill.phase },
-    nightStart: b.time.startMs < official.bcmt, nightLanding: ecetLanding != null && landing > ecetLanding, landing,
+    nightStart: !nvfr && startBeforeBcmt, nightLanding: !nvfr && landingAfterEcet, landing, nvfr, startBeforeBcmt, landingAfterEcet,
   };
 }
 
@@ -127,17 +131,18 @@ export function sunFor(b, settings, racTable) {
 export function massPerf(b, settings) {
   const bal = b.balloon, w = b.weather;
   const persons = 1 + (b.persons.pax?.length || 0);
-  const personMasses = [b.persons.picWeight || bal.personWeight, ...(b.persons.pax || []).map((p) => p.weight || bal.personWeight)];
+  const pw = +bal.personWeight || +settings?.balloons?.gasDefaults?.personWeight || 85;
+  const personMasses = [b.persons.picWeight || pw, ...(b.persons.pax || []).map((p) => p.weight || pw)];
   if (bal.type === 'gas') {
     return { type: 'gas', r: gasBalloon({
       volume: bal.volume, fillFraction: bal.fillFraction ?? 1, gas: bal.gas, purity: bal.purity, siteAlt: b.site.elev || 0,
       tempC: w.tempC, qnh: w.qnh, rh: w.rh, gasDeltaT: w.gasDeltaT || 0,
-      masses: bal.masses, persons, personWeight: bal.personWeight, personMasses, ballastUnitKg: bal.ballastUnitKg, reserveUnits: bal.reserveUnits,
+      masses: bal.masses, persons, personWeight: pw, personMasses, ballastUnitKg: bal.ballastUnitKg, reserveUnits: bal.reserveUnits,
     }) };
   }
   return { type: 'hab', r: hotAir({
     volume: bal.volume, siteAlt: b.site.elev || 0, tempC: w.tempC, qnh: w.qnh, rh: w.rh, envTempC: w.envTempC ?? bal.envTempC, envMaxC: bal.envMaxC,
-    masses: bal.masses, persons, personWeight: bal.personWeight, personMasses, cylinders: b.cylinders || bal.cylinders, mtom: bal.mtom,
+    masses: bal.masses, persons, personWeight: pw, personMasses, cylinders: b.cylinders || bal.cylinders, mtom: bal.mtom,
     usableFraction: bal.usableFraction, burnRate: bal.burnRate, durationMin: b.intent.durationMin, reserve: settings.reserve,
   }) };
 }
@@ -147,7 +152,7 @@ export function scheduleFor(b, sun) {
   const s = b.schedule;
   ensureStops(s);
   const rows = buildSchedule({ startMs: b.time.startMs, type: b.balloon.type, rigMin: s.rigMin, fillMin: s.fillMin, bufferMin: s.bufferMin, durationMin: b.intent.durationMin, recoveryMin: s.recoveryMin, stops: s.stops, overrides: s.overrides || {} });
-  const warnings = scheduleWarnings(rows, sun ? { bcmt: sun.official.bcmt, ecet: sun.official.ecet, ss: sun.official.ss } : null);
+  const warnings = scheduleWarnings(rows, sun ? { bcmt: sun.nvfr ? null : sun.official.bcmt, ecet: sun.nvfr ? null : sun.official.ecet, ss: sun.official.ss } : null);
   return { rows, warnings };
 }
 
@@ -186,7 +191,7 @@ export function scheduleRowLabel(r, b, tr) {
 /** Vorschläge Spezialausrüstung aus Fahrtabsicht und Nacht. */
 export function equipmentSuggest(b, sun) {
   const s = [];
-  if (sun?.nightStart || sun?.nightLanding || b.intent.dayNight !== 'day') s.push('nvr');
+  if (b.flight?.nvfr || sun?.startBeforeBcmt || sun?.landingAfterEcet) s.push('nvr');
   if ((b.intent.altMaxFt || 0) > 10000) s.push('o2');
   return s;
 }

@@ -64,7 +64,8 @@
 html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
   font-family:var(--sans);-webkit-text-size-adjust:100%;
   transition:background .2s,color .2s;}
-body{overscroll-behavior-y:none;}
+body{overscroll-behavior-y:none;hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word;}   /* Umbruch mit Silbentrennung (lang=de/en), nie mitten im Wort */
+input,textarea,select,button,pre,code,kbd,.mono,a{hyphens:manual;-webkit-hyphens:manual;}
 
 /* ---------- typography ---------- */
 .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--amber);

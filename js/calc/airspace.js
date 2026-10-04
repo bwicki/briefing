@@ -14,6 +14,9 @@ export const AS_CLASS = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G'
 /** Typen, die als Information gelten (FIR-Folge) oder für die Ballonfahrt nicht zählen. */
 const FIR_TYPES = new Set([10]);
 const SKIP_TYPES = new Set([11, 27, 35]);   // UIR, ACC-Sektor, UTA: oberer Luftraum, nie relevant
+/** Reine Klassen-Lufträume (ohne besondere Auflage): Klasse E und G werden nicht gelistet (Piloten kennen sie). */
+const PLAIN_TYPES = new Set(['OTHER', 'TMA', 'CTA', 'AWY', 'LTA', 'TIA', 'FIS', 'VFR']);
+export const isPlainEG = (as) => PLAIN_TYPES.has(as.typeKey) && (as.cls === 'E' || as.cls === 'G');
 
 /** Höhenangabe → ft AMSL (GND-Bezug näherungsweise mit Geländehöhe elevM). */
 export function limitFt(l, elevM = 0) {
@@ -126,7 +129,7 @@ export function analyzeAirspaces(tracks, items, o = {}) {
   });
   const margin = corridor / 111.2 * 1.6;
   for (const as of items) {
-    if (SKIP_TYPES.has(as.type) || !as.polys.length) continue;
+    if (SKIP_TYPES.has(as.type) || !as.polys.length || (o.hideEG !== false && isPlainEG(as))) continue;
     const bb = bboxOf(as);
     const hits = [];
     let minDist = Infinity;
@@ -156,6 +159,24 @@ export function analyzeAirspaces(tracks, items, o = {}) {
   const near = out.filter((x) => x.status === 'near').sort(order);
   const above = out.filter((x) => x.status === 'above').sort(order);
   return { crossed, near, above, firs, altMin, altMax, corridorKm: corridor };
+}
+
+/**
+ * Warnungen für den Startplatz: liegt er in einer CTR (oder ATZ/MATZ), liegt eine TMA/CTA mit Untergrenze
+ * weniger als tmaWarnFt über dem Platz? site: {lat, lon, elevFt}. Rückgabe [{kind:'ctr'|'tma', as, aglFt}].
+ */
+export function siteWarnings(site, items, tmaWarnFt = 900) {
+  const out = [];
+  if (!site || site.lat == null) return out;
+  for (const as of items) {
+    if (!as.polys.length || !inAirspace(site.lat, site.lon, as)) continue;
+    if (['CTR', 'ATZ', 'MATZ'].includes(as.typeKey)) { out.push({ kind: 'ctr', as, aglFt: 0 }); continue; }
+    if (['TMA', 'CTA'].includes(as.typeKey) && as.lowerFt != null && as.cls && 'ABCD'.includes(as.cls)) {
+      const agl = as.lowerFt - (site.elevFt || 0);
+      if (agl < tmaWarnFt) out.push({ kind: 'tma', as, aglFt: Math.max(0, Math.round(agl)) });
+    }
+  }
+  return out.sort((a, b) => (a.kind === b.kind ? a.aglFt - b.aglFt : a.kind === 'ctr' ? -1 : 1));
 }
 
 /** Ring auf höchstens n Punkte ausdünnen (für die Ablage im Briefing). */

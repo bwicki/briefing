@@ -2,7 +2,7 @@
  * und Briefingsicht teilen diese Funktionen; sie lesen nur den Schnappschuss). */
 import { h, fmt } from '../util.js';
 import { t, getLang } from '../i18n.js';
-import { hhmm, fmtDateTime, fmtDate } from '../calc/time.js';
+import { hhmm, fmtDateTime, fmtDate, fmtDur } from '../calc/time.js';
 import { MS_TO_KT, M_TO_FT } from '../auto/openmeteo.js';
 import { meteogram as meteogramSvg, windChart, stueveChart, mk } from '../auto/charts.js';
 import { trajSvg, TRAJ_COLORS } from '../auto/traj.js';
@@ -51,18 +51,6 @@ export function renderMeteogram(snap, b, ctx, opts = {}) {
 
 // ---------------------------------------------------------------- Luftraum entlang des Fahrtwegs
 const AS_COL = { cross: '#c2481a', near: '#d08a1a', above: '#8a8f99' };
-function asHint(x) {
-  const as = x.as;
-  const parts = [t('as_req_' + x.req, { c: as.cls || '' })];
-  if (as.flags?.byNotam) parts.push(t('as_byNotam'));
-  if (as.flags?.onRequest) parts.push(t('as_onRequest'));
-  if (as.flags?.onDemand) parts.push(t('as_onDemand'));
-  if (as.flags?.specialAgreement) parts.push(t('as_special'));
-  if (as.transponder) parts.push(`SQ ${as.transponder}`);
-  if (as.freqs?.length) parts.push(as.freqs.map((f) => `${f.name ? f.name + ' ' : ''}${f.value}`).join(', '));
-  if (as.hours?.operatingHours?.length) parts.push(t('as_hours'));
-  return parts.join(' · ');
-}
 /** Nord-oben-Skizze: Lufträume (rot durchfahren, orange nahe) und Bahnen – druckbar. */
 function airspaceSvg(d, b) {
   const NS = 'http://www.w3.org/2000/svg';
@@ -132,9 +120,11 @@ export function renderAirspace(snap, b, ctx, opts = {}) {
   const d = snap.data, z = b.site.tz || 'Europe/Zurich';
   const head = h('div.note', `${t('as_band')}: ${d.altMinFt}–${d.altMaxFt} ft · ${t('as_corridor')} ${d.corridorKm} km · ${d.tracks.map((x) => x.label).join(', ')} · ${d.total ?? '–'} ${t('as_inArea')}${d.trajStand ? ` · ${t('as_trajStand')} ${fmtDateTime(z, d.trajStand, getLang())}` : ''}`);
   const firParts = [];
+  for (const w of d.warns || []) firParts.push(h('div.warn', `⚠ ${w.kind === 'ctr' ? t('as_warnCtr', { n: `${w.name} (${w.typeKey}${w.cls ? ' ' + w.cls : ''}, ${w.lowerTxt}–${w.upperTxt})` }) : t('as_warnTma', { n: `${w.name} (${w.typeKey}${w.cls ? ' ' + w.cls : ''})`, l: w.lowerTxt, d: w.aglFt })}`));
+  for (const w of d.landWarns || []) firParts.push(h('div.note', `${t('as_landCtr', { n: `${w.name} (${w.typeKey}${w.cls ? ' ' + w.cls : ''})` })}`));
   if (d.firs?.length) {
-    // gleiche FIR-Folgen zusammenfassen: «SFC, 1000 ft AGL: CH» · «5000 ft: CH → DE ab 80 km»
-    const seqTxt = (f) => f.seq.map((s, i) => `${s.name}${s.country ? ` (${s.country})` : ''}${i ? ` ${t('as_fromKm')} ${s.fromKm} km, ${hhmm(z, s.fromMs)} LT` : ''}`).join(' → ');
+    // gleiche FIR-Folgen zusammenfassen: «SFC, 1000 ft AGL: CH» · «5000 ft: CH → DE ab 80 km, +1:30»
+    const seqTxt = (f) => f.seq.map((s, i) => `${s.name}${s.country ? ` (${s.country})` : ''}${i ? ` ${t('as_fromKm')} ${s.fromKm} km, ${hhmm(z, s.fromMs)} LT (+${fmtDur(Math.round((s.fromMs - b.time.startMs) / 60000))})` : ''}`).join(' → ');
     const groups = [];
     for (const f of d.firs) { const key = f.seq.map((s) => s.name).join('|'); const g = groups.find((x) => x.key === key); if (g) g.labels.push(f.label); else groups.push({ key, labels: [f.label], f }); }
     firParts.push(h('div.as-fir', [h('b', `${t('as_fir')}: `), groups.length === 1 ? seqTxt(groups[0].f) : groups.map((g, i) => h('span', [i ? ' · ' : '', h('span.muted', `${g.labels.join(', ')}: `), seqTxt(g.f)]))]));
@@ -143,14 +133,14 @@ export function renderAirspace(snap, b, ctx, opts = {}) {
     if (x.hits.length > 3) { const a = Math.min(...x.hits.map((hh) => hh.entryKm)), e = Math.max(...x.hits.map((hh) => hh.exitKm)); return `${x.hits.length} ${t('as_tracks')}: ${a}–${e} km`; }
     return x.hits.map((hh) => `${hh.label}: ${hh.entryKm} km ${hhmm(z, hh.entryMs)}${hh.exitKm > hh.entryKm ? `–${hh.exitKm} km ${hhmm(z, hh.exitMs)}` : ''}`).join(' · ');
   };
+  const flags = (as) => [as.flags?.byNotam ? 'NOTAM' : '', as.flags?.onRequest ? 'REQ' : '', as.flags?.specialAgreement ? 'AGRMT' : '', as.transponder ? `SQ ${as.transponder}` : '', ...(as.freqs || []).slice(0, 2).map((f) => `${f.name ? f.name + ' ' : ''}${f.value}`)].filter(Boolean).join(' · ');
   const row = (x) => h('tr', { class: `as-${x.status}` }, [
     h('td.mono', x.firstKm != null ? [`${x.firstKm} km`, h('br'), `${hhmm(z, x.firstMs)} LT`] : [`${t('as_near')}`, h('br'), `${x.minDistKm} km`]),
-    h('td', [h('b', x.as.name), x.hits.length > 1 || (x.hits.length === 1 && d.tracks.length > 1) ? h('div.small.muted', hitsTxt(x)) : null]),
+    h('td', [h('b', x.as.name), x.hits.length > 1 || (x.hits.length === 1 && d.tracks.length > 1) ? h('div.small.muted', hitsTxt(x)) : null, flags(x.as) ? h('div.small.muted.mono', flags(x.as)) : null]),
     h('td.mono', `${x.as.typeKey}${x.as.cls ? ' ' + x.as.cls : ''}`),
     h('td.mono', x.as.lowerTxt), h('td.mono', x.as.upperTxt),
-    h('td.small', asHint(x)),
   ]);
-  const thead = h('thead', h('tr', [h('th', t('as_km')), h('th', t('name')), h('th', t('as_type')), h('th', t('as_lower')), h('th', t('as_upper')), h('th', t('as_hint'))]));
+  const thead = h('thead', h('tr', [h('th', t('as_km')), h('th', t('name')), h('th', t('as_type')), h('th', t('as_lower')), h('th', t('as_upper'))]));
   const table = h('table.auto.as-tbl', [thead, h('tbody', [...d.crossed.map(row), ...d.near.map(row)])]);
   const empty = !d.crossed.length && !d.near.length ? h('div.note', t('as_noneCrossed')) : null;
   const svg = airspaceSvg(d, b);
@@ -158,7 +148,7 @@ export function renderAirspace(snap, b, ctx, opts = {}) {
   const grid = h('div.traj-grid' + (mapEl ? '.maponly' : ''), [svg, mapEl]);
   const legend = h('div.traj-legend', [h('span.item', [h('span.sw', { style: { background: AS_COL.cross } }), ` ${t('as_crossed')}`]), h('span.item', [h('span.sw', { style: { background: AS_COL.near } }), ` ${t('as_near')} (${d.corridorKm} km)`]), ...d.tracks.map((tr, k) => h('span.item', [h('span.sw', { style: { background: TRAJ_COLORS[k % TRAJ_COLORS.length] } }), ` ${tr.label} · ${tr.altFt} ft`]))]);
   const above = d.above.length ? h('details', [h('summary.small', `${t('as_above')} (> ${d.altMaxFt} ft): ${d.above.length}`), h('div.tbl-scroll', h('table.auto.as-tbl', [thead.cloneNode(true), h('tbody', d.above.map(row))]))]) : null;
-  const wrap = h('div.auto-wrap', [head, ...firParts, legend, grid, empty, d.crossed.length || d.near.length ? h('div.tbl-scroll', table) : null, above, h('div.note', t('as_note'))]);
+  const wrap = h('div.auto-wrap', [head, ...firParts, legend, grid, empty, d.crossed.length || d.near.length ? h('div.tbl-scroll', table) : null, above, h('div.note', `${t('as_note')} ${t('as_noteEG')}`)]);
   if (mapEl) setTimeout(() => { if (mapEl.isConnected) drawAirspaceMap(mapEl, d, b); }, 0);
   return wrap;
 }

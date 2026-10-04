@@ -27,6 +27,7 @@ export function sunRows(b, ctx) {
     [t('sun_moon'), `${t('sun_moonrise')} ${f(sun.moon.rise)} · ${t('sun_moonset')} ${f(sun.moon.set)} · ${moonPhaseName(sun.moon.phase, getLang())} · ${Math.round(sun.moon.fraction * 100)} % ${t('sun_illum')}`],
     ['UTC', `${f(sun.official.bcmt) && hhmm('UTC', sun.official.bcmt)} · ${hhmm('UTC', sun.official.sr)} · ${hhmm('UTC', sun.official.ss)} · ${hhmm('UTC', sun.official.ecet)}`],
   ];
+  if (sun.nvfr) rows.push([t('nvfr'), `${t('nvfr_planned')}${sun.startBeforeBcmt ? ` · ${t('nvfr_start')}` : ''}${sun.landingAfterEcet ? ` · ${t('nvfr_landing')}` : ''}`]);
   const warns = [];
   if (sun.racMissing) warns.push(t('sun_racMissing', { v: ctx.racTable ? racValidity(ctx.racTable) : '–' }));
   if (sun.nightStart) warns.push(t('nightWarn', { t: hhmm(z, b.time.startMs), b: f(sun.official.bcmt) }));

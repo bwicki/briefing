@@ -13,6 +13,8 @@ def airspace_fixture(bbox):
         {'_id': 'a4', 'name': 'TEST RMZ', 'type': 6, 'icaoClass': 6, 'country': 'CH', 'lowerLimit': ft(0, 0), 'upperLimit': ft(2500, 0), 'geometry': sq(s - 1, w + 0.08, n + 1, w + 0.14)},
         {'_id': 'f1', 'name': 'SWITZERLAND FIR', 'type': 10, 'country': 'CH', 'lowerLimit': ft(0, 0), 'upperLimit': fl(195), 'geometry': sq(s - 1, w - 1, n + 1, cx + 0.2)},
         {'_id': 'f2', 'name': 'LANGEN FIR', 'type': 10, 'country': 'DE', 'lowerLimit': ft(0, 0), 'upperLimit': fl(245), 'geometry': sq(s - 1, cx + 0.2, n + 1, e + 1)},
+        {'_id': 'a5', 'name': 'TEST ATZ', 'type': 13, 'icaoClass': 6, 'country': 'CH', 'lowerLimit': ft(0, 0), 'upperLimit': ft(3500), 'geometry': sq(s - 1, w - 1, n + 1, w + 0.16)},
+        {'_id': 'a6', 'name': 'TEST TMA 1', 'type': 7, 'icaoClass': 3, 'country': 'CH', 'lowerLimit': ft(2000), 'upperLimit': ft(5500), 'geometry': sq(s - 1, w - 1, n + 1, w + 0.2)},
         {'_id': 'u1', 'name': 'TEST UIR', 'type': 11, 'lowerLimit': fl(195), 'upperLimit': fl(660), 'geometry': sq(s - 1, w - 1, n + 1, e + 1)},
     ]
     return {'items': items, 'total': len(items), 'source': 'openAIP (Fixture)', 'generated': '2026-10-04T12:00:00Z'}

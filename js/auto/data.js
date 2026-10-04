@@ -8,8 +8,8 @@ import * as OM from './openmeteo.js';
 import { tracks } from './traj.js';
 import { sunFor, scheduleFor } from '../model.js';
 import { thermalHours, thermalSummary, classOf, THERMAL_DEFAULTS } from '../calc/thermal.js';
-import { normalizeAirspace, analyzeAirspaces, thinRing } from '../calc/airspace.js';
-import { isoDate, hhmm } from '../calc/time.js';
+import { normalizeAirspace, analyzeAirspaces, thinRing, siteWarnings } from '../calc/airspace.js';
+import { isoDate, hhmm, fmtDur } from '../calc/time.js';
 import { distKm, bearing, icao } from '../calc/geo.js';
 import { t, getLang } from '../i18n.js';
 import { dataFile } from '../net.js';
@@ -284,17 +284,22 @@ export async function airspace(ctx, b) {
   const elevM = b.site.elev || 0;
   const items = (j.items || []).map((it) => normalizeAirspace(it, elevM));
   const altMaxFt = b.intent.altMaxFt || 6000, altMinFt = b.intent.altMinFt || 0;
-  const a = analyzeAirspaces(tracks, items, { altMinFt, altMaxFt, corridorKm, siteElevFt: elevM * 3.28084 });
+  const siteElevFt = elevM * 3.28084;
+  const a = analyzeAirspaces(tracks, items, { altMinFt, altMaxFt, corridorKm, siteElevFt });
+  const tmaWarnFt = +ctx.settings.airspaceTmaWarnFt || 900;
+  const warns = siteWarnings({ lat: b.site.lat, lon: b.site.lon, elevFt: siteElevFt }, items, tmaWarnFt).map((w) => ({ kind: w.kind, aglFt: w.aglFt, name: w.as.name, typeKey: w.as.typeKey, cls: w.as.cls, lowerTxt: w.as.lowerTxt, upperTxt: w.as.upperTxt }));
+  const landWarns = b.landing?.lat != null ? siteWarnings({ lat: b.landing.lat, lon: b.landing.lon, elevFt: (b.landing.elev || elevM) * 3.28084 }, items, tmaWarnFt).filter((w) => w.kind === 'ctr').map((w) => ({ kind: w.kind, name: w.as.name, typeKey: w.as.typeKey, cls: w.as.cls })) : [];
   const slimAs = (x) => ({ ...x, as: { ...x.as, polys: x.as.polys.map((p) => [thinRing(p[0], 160)]) } });
   const z = b.site.tz || 'Europe/Zurich';
   const line = (x) => `${x.as.name} (${x.as.typeKey}${x.as.cls ? ' ' + x.as.cls : ''}) ${x.as.lowerTxt}–${x.as.upperTxt}${x.firstKm != null ? ` · ${x.firstKm} km · ${hhmm(z, x.firstMs)} LT` : ` · ${x.minDistKm} km`}`;
   const text = [
-    a.firs.length ? `FIR: ` + a.firs.map((f) => `${f.label}: ${f.seq.map((s) => `${s.name}${s.fromKm ? ` (${t('as_fromKm')} ${s.fromKm} km)` : ''}`).join(' → ')}`).join('; ') : '',
+    warns.map((w) => `⚠ ${w.kind === 'ctr' ? t('as_warnCtr', { n: w.name }) : t('as_warnTma', { n: w.name, l: w.lowerTxt, d: w.aglFt })}`).join('\n'),
+    a.firs.length ? `FIR: ` + a.firs.map((f) => `${f.label}: ${f.seq.map((s) => `${s.name}${s.fromKm ? ` (${t('as_fromKm')} ${s.fromKm} km, +${fmtDur(Math.round((s.fromMs - b.time.startMs) / 60000))})` : ''}`).join(' → ')}`).join('; ') : '',
     a.crossed.length ? `${t('as_crossed')}:\n` + a.crossed.map(line).join('\n') : t('as_noneCrossed'),
     a.near.length ? `${t('as_near')} (${corridorKm} km):\n` + a.near.map(line).join('\n') : '',
     a.above.length ? `${t('as_above')} (> ${altMaxFt} ft):\n` + a.above.map(line).join('\n') : '',
   ].filter(Boolean).join('\n\n');
-  return { kind: 'airspace', sourceUrl: 'https://www.openaip.net/map', stand: Date.now(), source: 'openAIP', data: { crossed: a.crossed.map(slimAs), near: a.near.map(slimAs), above: a.above.map((x) => ({ ...x, as: { ...x.as, polys: [] } })), firs: a.firs, altMinFt, altMaxFt, corridorKm, bbox, total: j.total, tracks: tracks.map((x) => ({ label: x.label, altFt: x.altFt, points: x.points })), landing: trj.landing || null, trajStand: b.panels['B.traj']?.content?.auto?.stand || null }, text };
+  return { kind: 'airspace', sourceUrl: 'https://www.openaip.net/map', stand: Date.now(), source: 'openAIP', data: { crossed: a.crossed.map(slimAs), near: a.near.map(slimAs), above: a.above.map((x) => ({ ...x, as: { ...x.as, polys: [] } })), firs: a.firs, warns, landWarns, tmaWarnFt, altMinFt, altMaxFt, corridorKm, bbox, total: j.total, tracks: tracks.map((x) => ({ label: x.label, altFt: x.altFt, points: x.points })), landing: trj.landing || null, trajStand: b.panels['B.traj']?.content?.auto?.stand || null }, text };
 }
 
 /** Alle automatischen Panels eines Briefings nacheinander; onStep(key, status, err). */

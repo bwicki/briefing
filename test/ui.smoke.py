@@ -59,9 +59,16 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.click('.dialog-foot button:has-text("Übernehmen")'); pg.wait_for_timeout(500)
         assert 'Google Maps' in pg.inner_text('.wiz'), 'Maps-Link nach Ortswahl'
         pg.screenshot(path=f'{OUT}/{name}_04_wiz3.png', full_page=True)
+        assert pg.query_selector('.wiz .traj-legend .item') is not None, 'Trajektorien-Vorschau mit Niveau-Legende in Schritt 3'
+        assert 'Tag und Nacht' not in pg.inner_text('.wiz'), 'keine Tag/Nacht-Wahl mehr in Schritt 3'
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1500)
+        import re as _re
+        takeoff0 = _re.search(r'Start\u00ad?gewicht[^\d]*(\d+)', pg.inner_text('.wiz'), _re.I) or _re.search(r'Ballast[^\d]*(\d+)', pg.inner_text('.wiz'), _re.I)
         pg.click('button.add[title="Pax hinzufügen (Name oder Platzhalter)"]'); pg.wait_for_timeout(200)
         pg.click('button.add[title="Pax hinzufügen (Name oder Platzhalter)"]'); pg.wait_for_timeout(300)
+        takeoff1 = _re.search(r'Start\u00ad?gewicht[^\d]*(\d+)', pg.inner_text('.wiz'), _re.I) or _re.search(r'Ballast[^\d]*(\d+)', pg.inner_text('.wiz'), _re.I)
+        assert takeoff0 and takeoff1 and int(takeoff1.group(1)) != int(takeoff0.group(1)), f'Vorschau reagiert auf Pax: {takeoff0 and takeoff0.group(0)} → {takeoff1 and takeoff1.group(0)}'
+        assert 'Personen (inkl. PIC) 3' in pg.inner_text('.wiz'), 'Personenzahl in der Vorschau'
         rows = pg.query_selector_all('.pax-row:not(.ret-row) input[type=text]')
         if rows: rows[0].fill('Viviane Graf')
         pg.wait_for_timeout(300)

@@ -58,6 +58,7 @@ with sync_playwright() as p:
     pg.click('#panel-C\\.airspace details summary'); pg.wait_for_timeout(200)
     assert 'TEST TMA 4' in pg.inner_text('#panel-C\\.airspace'), 'TMA nach Aufklappen sichtbar'
     assert pg.query_selector('#panel-C\\.airspace table.as-tbl tr.as-cross') is not None, 'durchfahrener Luftraum in Tabelle'
+    assert 'Startort liegt in TEST ATZ' in as_txt and 'TEST TMA 1' in as_txt and 'ft über Platz' in as_txt, 'Warnungen Startort in ATZ / TMA tief: ' + as_txt[:400]
     assert pg.query_selector('#panel-C\\.airspace .as-map .leaflet-overlay-pane path') is not None, 'Polygone auf der Karte'
     pg.query_selector('#panel-C\\.airspace').screenshot(path=f'{OUT}/remote_airspace.png')
     # Berechtigungen

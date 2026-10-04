@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.8.1 — 2026-10-04 · Rückmeldungen zu 0.8.0
+
+* Luftraum-Panel: nur Typ und ICAO-Klasse (keine Erklärtexte; Zusatzcodes NOTAM/REQ/AGRMT,
+  Squawk und Frequenz klein unter dem Namen); reine Klasse-E/G-Lufträume werden nicht
+  gelistet (TMZ, RMZ, ATZ, R/D/P usw. unabhängig von der Klasse schon). **Warnungen**: Startort
+  liegt in einer CTR/ATZ; TMA/CTA (Klasse A–D) mit Untergrenze weniger als 900 ft über dem
+  Startort (Schwelle unter Einstellungen → Experte); Landeraum in CTR als Hinweis. FIR-Folge
+  mit Zeit ab Start (+h:mm) für das spätere EET im Flugplan.
+* Schritt 1: **NVFR-Schalter** in der Zeile «Typ der Fahrt» (bewusst geplante Nachtfahrt):
+  unterdrückt die Nacht-Warnungen (Ort & Zeit, Fahrtabsicht, Tagesplanung, Briefingsicht),
+  zeigt stattdessen «NVFR geplant», setzt die Nachtausrüstung (NVR) in der Spezialausrüstung.
+  Die Tag/Nacht-Wahl in der Fahrtabsicht entfällt (alte Briefings: «Nacht»/«Tag und Nacht» →
+  NVFR).
+* Schritt 3: Trajektorien-Karte mit **allen Niveaus** (Legende, Stundenpunkte); Niveaus-Feld
+  über der Karte, Änderungen an Niveaus/Dauer zeichnen neu.
+* Schritt 2: «Als Favorit speichern» erscheint nicht mehr, wenn ein Favorit gewählt ist.
+* Schritt 4: Kästchen PIC/Nachfahrer unten bündig; Vorschau zeigt Personenzahl und
+  Personenmasse; Normgewicht-Rückfall 85 kg, falls ein Ballon-Stammsatz keines hat.
+* Textumbruch: Silbentrennung (lang=de/en) statt willkürlicher Trennung mitten im Wort; lange
+  Beschriftungen mit weichen Trennstellen (Hüllen·temperatur, Treibstoff·reserve …).
+
 ## 0.8.0 — 2026-10-04 · Luftraum entlang des Fahrtwegs
 
 * Neues Panel «Luftraum entlang des Fahrtwegs» (Abschnitt C, vor DABS): Lufträume aus

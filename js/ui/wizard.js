@@ -13,6 +13,7 @@ import { hhmm, fmtDate, fmtDur, localParts, isoDate } from '../calc/time.js';
 import { geocode, pointInfo, siteWeatherAt, route } from '../net.js';
 import { startAmpel, quickTraj } from '../auto/data.js';
 import { baseLayers } from './autorender.js';
+import { TRAJ_COLORS } from '../auto/traj.js';
 import { trailerMinutes } from '../calc/schedule.js';
 import { mandatoryPanels } from '../panels.js';
 import { tt } from '../i18n.js';
@@ -127,28 +128,34 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     return box;
   }
 
-  /** Trajektorien-Vorschau (Min-/Max-Höhe der Fahrtabsicht) mit Karte; Klick übernimmt Landeraum und Richtung. */
+  /** Trajektorien-Vorschau mit allen Niveaus der Fahrtabsicht (Karte, Legende); Klick übernimmt Landeraum und Richtung.
+   *  wrap.redraw() zeichnet neu (Niveaus/Dauer/Höhenband geändert). */
   function trajPreview(onPick) {
     const wrap = h('div.card', [h('div.card-head', h('div.section-title', t('trajprev_title'))), h('div.card-body')]);
     const body = wrap.querySelector('.card-body');
-    const mapEl = h('div.map.trajprev');
-    const note = h('div.note', t('trajprev_loading'));
-    body.append(note, mapEl);
-    (async () => {
+    let map = null;
+    const render = async () => {
+      clear(body);
+      const mapEl = h('div.map.trajprev');
+      const note = h('div.note', t('trajprev_loading'));
+      const legend = h('div.traj-legend');
+      body.append(note, legend, mapEl);
       if (b.site.lat == null) { note.textContent = t('site') + '?'; return; }
       const elevFt = Math.round((b.site.elev || 0) * 3.28084);
       const lo = b.intent.altMinFt || 500, hi = b.intent.altMaxFt || 5000;
-      const levels = [lo <= elevFt + 300 ? `${Math.max(300, lo)} AGL` : `${lo}`, `${hi}`];
+      const levels = (b.intent.levels || []).filter(Boolean).length ? [...b.intent.levels] : [lo <= elevFt + 300 ? `${Math.max(300, lo)} AGL` : `${lo}`, `${hi}`];
       try {
         const r = await quickTraj(ctx, b, levels);
-        note.textContent = `${t('trajprev_note', { d: fmtDur(r.durationMin), l: levels.join(' / ') })} · ${r.modelName || ''}`;
+        if (!mapEl.isConnected) return;
+        note.textContent = `${t('trajprev_note', { d: fmtDur(r.durationMin), l: levels.join(', ') })} · ${r.modelName || ''}`;
+        legend.append(h('span.muted.small', `${t('auto_legendAlt')}: `), ...r.tracks.filter((tr) => !tr.belowGround).map((tr) => h('span.item', [h('span.sw', { style: { background: TRAJ_COLORS[r.tracks.indexOf(tr) % TRAJ_COLORS.length] } }), ` ${tr.label} · ${tr.altFt} ft`])));
         if (typeof L === 'undefined') return;
-        const map = L.map(mapEl, { zoomControl: true }).setView([b.site.lat, b.site.lon], 10);
+        if (map) { try { map.remove(); } catch { /* bereits entfernt */ } }
+        map = L.map(mapEl, { zoomControl: true }).setView([b.site.lat, b.site.lon], 10);
         const bl = baseLayers(); bl.osm.addTo(map); for (const k in bl.over) bl.over[k].addTo(map);
         L.control.layers(bl.base, bl.over, { position: 'topleft', collapsed: true }).addTo(map);
-        const colors = ['#1673a8', '#c2481a'];
         const bounds = [[b.site.lat, b.site.lon]];
-        r.tracks.forEach((tr, k) => { if (tr.belowGround) return; const pts = tr.points.map((p) => [p.lat, p.lon]); bounds.push(...pts); L.polyline(pts, { color: colors[k % 2], weight: 3 }).addTo(map).bindTooltip(`${tr.label} · ${tr.altFt} ft`); });
+        r.tracks.forEach((tr, k) => { if (tr.belowGround) return; const pts = tr.points.map((p) => [p.lat, p.lon]); bounds.push(...pts); L.polyline(pts, { color: TRAJ_COLORS[k % TRAJ_COLORS.length], weight: 3 }).addTo(map).bindTooltip(`${tr.label} · ${tr.altFt} ft`); for (const hh of tr.hourly || []) L.circleMarker([hh.lat, hh.lon], { radius: 3.5, color: TRAJ_COLORS[k % TRAJ_COLORS.length], fillOpacity: 1 }).addTo(map).bindTooltip(`${tr.label} ${hhmm(tz(), hh.ms)} · ${Math.round(hh.km)} km`); });
         L.marker([b.site.lat, b.site.lon]).addTo(map).bindTooltip(b.site.name || 'Start');
         let landMarker = b.landing?.lat != null ? L.circleMarker([b.landing.lat, b.landing.lon], { radius: 7, color: '#2f8f4e', fillOpacity: .6 }).addTo(map) : null;
         map.on('click', async (e) => {
@@ -159,7 +166,9 @@ export async function renderWizard(view, ctx, id, opts = {}) {
         });
         setTimeout(() => { map.invalidateSize(); map.fitBounds(bounds, { padding: [20, 20] }); }, 60);
       } catch (e) { note.textContent = `${t('trajprev_title')}: ${e.message}`; mapEl.hidden = true; }
-    })();
+    };
+    render();
+    wrap.redraw = render;
     return wrap;
   }
 
@@ -194,10 +203,18 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const custom = input('text', b.flight.operatorId === 'custom' ? b.flight.operatorName : '', { placeholder: t('operatorCustom'), oninput: (e) => { b.flight.operatorName = e.target.value; persistSoon(); } });
     custom.hidden = b.flight.operatorId !== 'custom';
     const opSel = select(ops, b.flight.operatorId, { onchange: (e) => { b.flight.operatorId = e.target.value; custom.hidden = e.target.value !== 'custom'; b.flight.operatorName = e.target.value === 'custom' ? custom.value : ctx.stamm.operators.find((o) => o.id === e.target.value)?.name || ''; persistSoon(); } });
+    // NVFR: bewusst geplante Nachtfahrt (Schalter in der Zeile «Typ der Fahrt») → keine Nacht-Warnungen, Nachtausrüstung wird gesetzt
+    const nvfrChip = h('button.chip.lg.nvfr', { type: 'button', 'aria-pressed': !!b.flight.nvfr, title: t('nvfr_switch'), onclick: () => {
+      b.flight.nvfr = !b.flight.nvfr; nvfrChip.setAttribute('aria-pressed', b.flight.nvfr);
+      const eq = b.panels?.['A.equipment']?.content;
+      if (eq?.items) { const set = new Set(eq.items); if (b.flight.nvfr) { set.add('nvr'); set.delete('none'); } eq.items = [...set]; }
+      persistSoon();
+    } }, `🌙 ${t('nvfr')}`);
+    kinds.append(h('span.chip-sep'), nvfrChip);
     redraw();
     body.append(
       field(t('balloonType'), typeRow), combo,
-      field(t('flightKind'), kinds),
+      field(t('flightKind'), kinds), h('div.note', t('nvfr_hint')),
       h('div.frow', [field(t('operator'), h('div', [opSel, custom])), field(t('occasion'), input('text', b.flight.occasion, { oninput: (e) => { b.flight.occasion = e.target.value; persistSoon(); } }))]),
     );
   }
@@ -235,6 +252,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       if (sun.racMissing) sunBox.appendChild(h('div.warn', t('sun_racMissing', { v: ctx.racTable?.validTo || '–' })));
       if (sun.nightStart) sunBox.appendChild(h('div.warn', '⚠ ' + t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })));
       if (sun.nightLanding) sunBox.appendChild(h('div.warn', '⚠ ' + t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })));
+      if (sun.nvfr) sunBox.appendChild(h('div.note', `${t('nvfr')}: ${t('nvfr_planned')}${sun.startBeforeBcmt ? ` · ${t('nvfr_start')}` : ''}${sun.landingAfterEcet ? ` · ${t('nvfr_landing')}` : ''}`));
       const ph = phaseOf(b.time.startMs);
       const hrs = Math.round((b.time.startMs - Date.now()) / 3600000);
       const models = hrs <= 48 ? 'ICON-D2, AROME, ICON-EU, ECMWF IFS, GFS' : hrs <= 120 ? 'ICON-EU, ARPEGE, ICON, ECMWF IFS, GFS' : hrs <= 240 ? 'ICON, ECMWF IFS, GFS, ECMWF ENS' : 'GFS, ECMWF ENS';
@@ -255,6 +273,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       const ty = b.balloon?.type || 'hab';
       for (const s of M.sites.filter((x) => x.favorite && (!x.types?.length || x.types.includes(ty)))) favs.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.site.favoriteId === s.id, title: s.shared ? s.ownerName : null, onclick: () => { setSite(s); drawFavs(); } }, stammLabel(s, s.name)));
       if (!favs.children.length) favs.appendChild(h('span.note', t('siteNoFavType')));
+      favBtn.hidden = !!b.site.favoriteId && M.sites.some((x) => x.id === b.site.favoriteId);   // schon ein Favorit → kein «Als Favorit speichern»
     }
     const placeBox = h('div');
     function drawPlace() {
@@ -285,13 +304,14 @@ export async function renderWizard(view, ctx, id, opts = {}) {
   // ---------------------------------------------------------------- 3
   function step3(body) {
     const it = b.intent;
-    const durIn = input('text', fmtDur(it.durationMin).replace(' h', ''), { placeholder: '2:00', oninput: (e) => { const m = /^(\d+)(?::(\d{1,2}))?/.exec(e.target.value.trim()); if (m) { it.durationMin = (+m[1]) * 60 + (+(m[2] || 0)); persistSoon(); sugg(); } } });
+    let preview = null;
+    const redrawPreview = debounce(() => preview?.redraw?.(), 1200);
+    const durIn = input('text', fmtDur(it.durationMin).replace(' h', ''), { placeholder: '2:00', oninput: (e) => { const m = /^(\d+)(?::(\d{1,2}))?/.exec(e.target.value.trim()); if (m) { it.durationMin = (+m[1]) * 60 + (+(m[2] || 0)); persistSoon(); sugg(); redrawPreview(); } } });
     const minIn = input('number', it.altMinFt, { step: 100, oninput: (e) => { it.altMinFt = num(e.target.value); persistSoon(); sugg(); } });
     const maxIn = input('number', it.altMaxFt, { step: 100, oninput: (e) => { it.altMaxFt = num(e.target.value); persistSoon(); sugg(); } });
     const dir = input('text', it.direction, { placeholder: t('directionHint'), oninput: (e) => { it.direction = e.target.value; persistSoon(); } });
-    const dn = h('div.chips', ['day', 'night', 'both'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': it.dayNight === k, onclick: (e) => { it.dayNight = k; dn.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); persistSoon(); sugg(); } }, t('dn_' + k))));
     const rem = textarea(it.remark, { rows: 2, oninput: (e) => { it.remark = e.target.value; persistSoon(); } });
-    const lv = input('text', it.levels.join(', '), { oninput: (e) => { it.levels = e.target.value.split(/[,;]+/).map((x) => x.trim()).filter(Boolean); persistSoon(); } });
+    const lv = input('text', it.levels.join(', '), { oninput: (e) => { it.levels = e.target.value.split(/[,;]+/).map((x) => x.trim()).filter(Boolean); persistSoon(); redrawPreview(); } });
     const suggBox = h('div.note');
     const landBox = h('div');
     const setLanding = (p) => {
@@ -300,7 +320,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     };
     const drawLand = () => { clear(landBox); landBox.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, from: b.site, onPick: setLanding })); landBox.appendChild(h('div.note', t('landingHint'))); };
     drawLand();
-    const preview = trajPreview(setLanding);
+    preview = trajPreview(setLanding);
     function sugg() {
       const sun = sunFor(b, ctx.settings, ctx.racTable);
       const s = equipmentSuggest(b, sun);
@@ -312,10 +332,11 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     body.append(
       field(t('ampel_title'), ampelBox()),
       h('div.frow.c3', [field(t('duration') + ' (h:mm)', durIn), field(`${t('altBand')} ${t('altMin')} (ft)`, minIn), field(`${t('altBand')} ${t('altMax')} (ft)`, maxIn)]),
+      field(t('levels'), lv),
       preview,
-      h('div.frow.top', [field(t('direction'), dir), field(t('dayNight'), dn)]),
+      field(t('direction'), dir),
       landBox,
-      field(t('levels'), lv), field(t('intentRemark'), rem), suggBox,
+      field(t('intentRemark'), rem), suggBox,
     );
   }
 
@@ -356,7 +377,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       const { type, r } = massPerf(b, ctx.settings);
       const src = b.weather.source === 'model' ? t('mp_modelStand', { t: b.weather.stand || '' }) : `${t('mp_temp')} ${b.weather.tempC} °C · QNH ${b.weather.qnh}`;
       if (type === 'hab') {
-        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewLift')} (${bal.reg})`), h('span.sub2', src)])]), stats([
+        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewLift')} (${bal.reg})`), h('span.sub2', `${t('mp_persons')} ${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg · ${src}`)])]), stats([
           [t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'],
           [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (b.weather.envTempC || bal.envTempC) ? 'neg' : ''],
           [t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m` : '–'],
@@ -364,7 +385,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
           [t('mp_enduranceRes'), fmtDur(Math.max(0, r.enduranceMin - r.reserveMin))], [t('mp_margin'), `${fmtSigned(Math.round(r.fuelMargin))} kg`, r.fuelMargin < 0 ? 'neg' : 'pos'],
         ])]));
       } else {
-        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewBallast')} (${bal.label})`), h('span.sub2', src)])]), stats([
+        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewBallast')} (${bal.label})`), h('span.sub2', `${t('mp_persons')} ${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg · ${src}`)])]), stats([
           [t('gb_gross'), `${fmt(r.grossLift)} kg`], [t('gb_net'), `${fmt(r.net)} kg`], [t('gb_ballast'), `${fmt(r.ballast)} kg · ${fmt(r.ballastPct)} %`, r.ballast < r.reserveKg ? 'neg' : 'pos'],
           [t('gb_units'), r.units != null ? `${fmt(r.units, 1)} × ${bal.ballastUnitKg} kg` : '–'],
         ])]));
