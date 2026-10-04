@@ -133,14 +133,32 @@ funktioniert genauso.
    verschlüsselt im Worker gespeichert. Für Phase 2 relevant:
    * `openmeteo` — Open-Meteo-Kundenschlüssel (sonst freie API, 10 000 Abrufe/Tag).
    * `anthropic` — für KI-Hinweise (Modell in Einstellungen → Meteo, Standard
-     `claude-sonnet-5-5`).
-   * `cf_account_id` / `cf_api_token` — für das Final-PDF auf dem Server: API-Token
-     mit Berechtigung «Browser Rendering → Edit» (My Profile → API Tokens); ohne
-     diese Werte bleibt der Weg «Als PDF sichern → hochladen».
-   * `faa_client_id` / `faa_client_secret` — FAA NOTAM API: Konto unter
-     https://api.faa.gov/ anlegen, App registrieren, «NOTAM API» abonnieren;
-     die beiden Werte aus der App-Übersicht übernehmen. Ohne Zugang bleibt das
-     NOTAM-Panel auf Einfügen (skybriefing).
+     `claude-sonnet-5-5`). Schlüssel aus der Claude Console:
+     https://platform.claude.com → Settings → API keys → Create key (beginnt
+     mit `sk-ant-`, wird nur einmal gezeigt); unter Plans & billing
+     Zahlungsmethode und ein kleines Guthaben hinterlegen (Abrechnung nach
+     Verbrauch, getrennt vom Claude.ai-Abo).
+   * `cf_account_id` / `cf_api_token` — für das Final-PDF auf dem Server
+     (Cloudflare Browser Rendering öffnet die Briefingsicht unsichtbar und legt
+     das A4-PDF im Briefing ab): My Profile → API Tokens → Create Token →
+     **Create Custom Token** → Name `Fahrtbriefing PDF`, Permission `Account ·
+     Browser Rendering · Edit` (heisst in der Liste je nach Stand auch «Browser
+     Run»), Account Resources = dein Konto → Create Token. Account-ID = dieselbe
+     wie bei GitHub. Ohne diese Werte bleibt der Weg «PDF / Drucken → als PDF
+     speichern → hochladen».
+   * `faa_client_id` / `faa_client_secret` — FAA NOTAM API (offizielles
+     FAA-Portal, kostenlos; **nicht** über Drittanbieter wie apis.io):
+     1. https://api.faa.gov öffnen → rechts oben **Login** → als externer
+        Nutzer registrieren (E-Mail, Kennwort, Bestätigungsmail).
+     2. **APIs** → Suchfeld «NOTAM» → **NOTAM API** öffnen.
+     3. **Request Access** → Environment **Production** → Applikationsname
+        z. B. `Wicki Aero – Fahrtbriefing`, Zweck kurz beschreiben
+        (Flugvorbereitung Ballon, Strecken-NOTAM) → absenden. Die Anfrage
+        wird geprüft; die Freigabe kommt per E-Mail (Tage bis Wochen).
+     4. Nach der Freigabe: **My Applications** → Applikation → **View** →
+        `client_id` und `client_secret` kopieren und in der App unter
+        Einstellungen → Zugänge eintragen.
+     Ohne Zugang bleibt das NOTAM-Panel auf Einfügen (skybriefing).
 4. Einstellungen → Ballone/Personen/Startplätze prüfen (Platzhalter sind markiert),
    speichern.
 5. Daten aus dem lokalen Modus werden nicht automatisch übernommen — Briefings dort
