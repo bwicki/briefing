@@ -16,7 +16,7 @@ APP_URL = "https://briefing.wicki.aero"
 [[d1_databases]]
 binding = "DB"
 database_name = "briefing"
-database_id = "00000000-0000-0000-0000-000000000000"   # wrangler d1 create briefing → ID hier eintragen
+database_id = "f374e4a8-d8ef-4eee-9b67-879961f52061"   # wrangler d1 create briefing → ID hier eintragen
 
 [[r2_buckets]]
 binding = "FILES"

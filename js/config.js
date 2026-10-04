@@ -3,5 +3,5 @@
  * Nach dem Deployment des Workers (SETUP.md) hier die Domain eintragen.
  */
 window.BRIEFING_CONFIG = {
-  apiBase: 'https://api.briefing.wicki.aero',
+  apiBase: 'https://briefing-api.balthasar.workers.dev',
 };
