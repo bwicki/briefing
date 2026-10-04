@@ -14,6 +14,7 @@
 * KI-Hinweis je Panel (Prompt sichtbar, Anthropic über Worker, editierbar).
 * Worker: `/api/wx/*` (Open-Meteo mit Schlüssel, AWC, DWD-Kopie, DABS, Schnappschuss,
   NOTAM, KI) mit Cache; Dateien auch PDF.
+* Eigenes Favicon «Checkliste» (SVG, ICO, Apple-Touch, PWA-Icons); fünf Varianten unter `icons/variants`.
 * pdf.js vendored (RAC-Upload, DABS). Fix: Briefingsicht ausserhalb CH (Sonnenzeile).
 * Tests: 90 Rechenprüfungen, UI-Durchläufe CH und DE mit synthetischem Open-Meteo.
 
