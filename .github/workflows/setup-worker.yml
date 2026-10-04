@@ -63,15 +63,27 @@ jobs:
       - name: D1-Datenbank «briefing»
         id: d1
         run: |
-          id=$(npx wrangler d1 info briefing --json 2>/dev/null | grep -oE '"uuid": *"[0-9a-f-]{36}"' | grep -oE '[0-9a-f-]{36}' | head -1 || true)
+          set +e
+          uuidre='[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+          # 1) vorhandene Datenbank über die Liste finden
+          list=$(npx wrangler d1 list --json 2>/dev/null)
+          id=$(printf '%s' "$list" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const i=s.indexOf("[");const j=JSON.parse(s.slice(i));const d=j.find(x=>x.name==="briefing");process.stdout.write(d?(d.uuid||d.id||""):"")}catch{process.stdout.write("")}})')
+          # 2) sonst über «d1 info»
+          if [ -z "$id" ]; then info=$(npx wrangler d1 info briefing --json 2>&1); id=$(printf '%s' "$info" | grep -oE "$uuidre" | head -1); fi
+          # 3) sonst anlegen
           if [ -z "$id" ]; then
             echo "Datenbank wird angelegt …"
             out=$(npx wrangler d1 create briefing 2>&1); echo "$out"
-            id=$(echo "$out" | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
+            id=$(printf '%s' "$out" | grep -oE "$uuidre" | head -1)
           else
             echo "Datenbank vorhanden"
           fi
-          [ -n "$id" ] || { echo "::error::database_id nicht ermittelbar"; exit 1; }
+          set -e
+          if [ -z "$id" ]; then
+            echo "--- d1 list ---"; echo "$list"; echo "--- d1 info ---"; echo "${info:-}"
+            echo "::error::database_id der D1-Datenbank «briefing» nicht ermittelbar – Ausgabe im Schritt prüfen"
+            exit 1
+          fi
           sed -i -E "s/database_id = \"[^\"]*\"/database_id = \"$id\"/" wrangler.toml
           echo "database_id = $id"
           echo "id=$id" >> "$GITHUB_OUTPUT"
@@ -89,7 +101,7 @@ jobs:
           exit 1
       - name: Schema anlegen (und Migration 0.5 bei bestehender Datenbank)
         run: |
-          npx wrangler d1 execute briefing --remote --yes --file=schema.sql
+          npx wrangler d1 execute briefing --remote --yes --file=schema.sql || { echo "::error::Schema konnte nicht eingespielt werden – Ausgabe im Schritt prüfen"; exit 1; }
           if ! npx wrangler d1 execute briefing --remote --yes --command "SELECT owner_id FROM briefings LIMIT 1" >/dev/null 2>&1; then
             echo "Migration 0.5 …"; npx wrangler d1 execute briefing --remote --yes --file=migrate-0.5.sql
           else
@@ -98,7 +110,11 @@ jobs:
       - name: Deploy
         id: deploy
         run: |
-          out=$(npx wrangler deploy 2>&1); echo "$out"
+          set +e
+          out=$(npx wrangler deploy 2>&1); rc=$?
+          set -e
+          echo "$out"
+          [ "$rc" = 0 ] || { echo "::error::Deploy fehlgeschlagen – Ausgabe im Schritt prüfen"; exit 1; }
           url=$(echo "$out" | grep -oE 'https://[a-z0-9.-]+\.workers\.dev' | head -1)
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Worker-Adresse: $url"
@@ -107,8 +123,8 @@ jobs:
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
           ENC_KEY: ${{ secrets.ENC_KEY }}
         run: |
-          printf '%s' "$SESSION_SECRET" | npx wrangler secret put SESSION_SECRET
-          printf '%s' "$ENC_KEY" | npx wrangler secret put ENC_KEY
+          printf '%s' "$SESSION_SECRET" | npx wrangler secret put SESSION_SECRET || { echo "::error::SESSION_SECRET konnte nicht gesetzt werden"; exit 1; }
+          printf '%s' "$ENC_KEY" | npx wrangler secret put ENC_KEY || { echo "::error::ENC_KEY konnte nicht gesetzt werden"; exit 1; }
       - name: Gesundheitsprüfung
         run: |
           url='${{ steps.deploy.outputs.url }}'
