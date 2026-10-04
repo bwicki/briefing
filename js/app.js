@@ -43,14 +43,18 @@ export const ctx = {
 };
 
 // ---------------------------------------------------------------- Kopfzeile
-export function setHeader({ title, sub, tools = [], eyebrow } = {}) {
+export function setHeader({ title, sub, tools = [], eyebrow, menu = [] } = {}) {
   $('title').textContent = title || t('appName');
   $('eyebrow').textContent = eyebrow || t('eyebrow');
   const subEl = $('subtitle'); clear(subEl);
   if (sub) subEl.appendChild(typeof sub === 'string' ? document.createTextNode(sub) : sub);
   const tl = $('tools'); clear(tl);
   for (const b of tools) tl.appendChild(b);
+  ctx.pageMenu = menu;   // seitenspezifische Untermenüs im Hamburger (z. B. Berechtigungen, Mehr)
+  buildMenu();
 }
+/** Druck-Symbolknopf für die Kopfzeile (rechts von «Freigeben», links vom Hamburger). */
+export const printButton = (onclick) => h('button.btn.icon.print', { type: 'button', title: t('print'), 'aria-label': t('print'), onclick }, '🖨');
 
 /** Hauptnavigation: Briefings · Neu · Einstellungen — immer sichtbar (nicht für Link-Nutzer). */
 function buildNav() {
@@ -58,7 +62,7 @@ function buildNav() {
   if (ctx.shared || !store.isAuthed()) { n.hidden = true; return; }
   n.hidden = false;
   const cur = (location.hash || '#/list').split('?')[0].split('/')[1] || 'list';
-  const items = [['list', t('nav_list'), '#/list'], ['new', t('nav_new'), '#/new'], ['settings', t('nav_settings'), '#/settings']];
+  const items = [['list', t('nav_list'), '#/list'], ['new', t('nav_new'), '#/new']];   // Einstellungen: im Hamburger-Menü
   for (const [key, label, href] of items) {
     const active = cur === key || (key === 'list' && ['b', 'v', 'pax'].includes(cur));
     n.appendChild(h('a', { href, class: key === 'new' ? 'primary' : active ? 'on' : '', 'aria-current': active ? 'page' : null }, key === 'new' ? `+ ${label}` : label));
@@ -66,12 +70,18 @@ function buildNav() {
 }
 
 function buildMenu() {
-  const m = $('menu'); clear(m);
-  const item = (label, fn) => m.appendChild(h('button', { type: 'button', onclick: () => { m.classList.add('hidden'); fn(); } }, label));
-  if (!ctx.shared) {
-    item(t('nav_list'), () => ctx.navigate('#/list'));
-    item(t('nav_new'), () => ctx.navigate('#/new'));
-    item(t('nav_settings'), () => ctx.navigate('#/settings'));
+  const m = $('menu'); if (!m) return;
+  // offene Untermenüs über einen Neuaufbau hinweg behalten (Autosave baut die Kopfzeile neu, während das Menü offen ist)
+  const wasOpen = new Set([...m.querySelectorAll('details.submenu[open] summary')].map((x) => x.textContent));
+  clear(m);
+  const item = (label, fn, parent = m) => parent.appendChild(h('button', { type: 'button', onclick: () => { m.classList.add('hidden'); fn(); } }, label));
+  const sub = (label, items, open = false) => { const d = h('details.submenu', { open: open || wasOpen.has(label) }, [h('summary', label)]); for (const it of items) if (it) item(it.label, it.fn, d); m.appendChild(d); };
+  // seitenspezifische Untermenüs (Berechtigungen, Mehr …)
+  for (const g of ctx.pageMenu || []) if (g.items?.length) sub(g.label, g.items, !!g.open);
+  if ((ctx.pageMenu || []).length) m.appendChild(h('div.sep'));
+  if (!ctx.shared && store.isAuthed()) {
+    const sects = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'meteo', 'panels', 'links', 'users', 'access', 'expert'];
+    sub(t('nav_settings'), sects.map((k) => ({ label: t('set_' + k), fn: () => ctx.navigate('#/settings?' + k) })));
     m.appendChild(h('div.sep'));
   }
   item(t('nav_theme'), () => { applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true); });

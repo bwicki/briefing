@@ -5,6 +5,7 @@
 import { tt, getLang } from '../i18n.js';
 import { hhmm, fmtDate, fmtDur } from '../calc/time.js';
 import { sunFor } from '../model.js';
+import { visiblePanels } from '../panels.js';
 
 export function flightContext(b, ctx) {
   const z = b.site.tz || 'Europe/Zurich', lang = getLang();
@@ -22,9 +23,32 @@ export function flightContext(b, ctx) {
 }
 
 const SYSTEM = {
-  de: `Du bist Meteorologe und Ballonfahrt-Ausbilder und unterstützt einen erfahrenen Ballonpiloten bei der Fahrtvorbereitung. Du bekommst den Fahrtkontext und den Inhalt eines Briefing-Panels (Modelldaten, amtliche Produkte, eingefügte Texte oder Bilder). Antworte auf Deutsch (Schweiz, kein ß) in 2–5 knappen Zeilen als Aufzählung mit «–»: Besonderheiten, kritische Punkte, Abweichungen von den Kriterien, was zu beobachten ist. Nenne Zahlen mit Einheit und Zeit (LT). Keine Startempfehlung, keine Floskeln, keine Wiederholung des Kontexts. Wenn die Daten für eine Aussage nicht reichen, sag das in einer Zeile.`,
-  en: `You are a meteorologist and balloon flight instructor supporting an experienced balloon pilot in flight preparation. You receive the flight context and the content of one briefing panel (model data, official products, pasted text or images). Answer in English in 2–5 terse lines as a list with "–": particulars, critical points, deviations from the criteria, what to watch. Give numbers with units and time (LT). No go/no-go recommendation, no filler, do not repeat the context. If the data is insufficient, say so in one line.`,
+  de: `Du bist Meteorologe und Ballonfahrt-Ausbilder und unterstützt einen erfahrenen Ballonpiloten bei der Fahrtvorbereitung. Du bekommst den Fahrtkontext und den Inhalt eines Briefing-Panels (Modelldaten, amtliche Produkte, eingefügte Texte oder Bilder). Antworte auf Deutsch (Schweiz, kein ß) in 2–6 knappen Zeilen als Aufzählung mit «–»: Besonderheiten, kritische Punkte, Abweichungen von den Kriterien, ballonfahrtspezifische Warnungen und Hinweise, was zu beobachten ist. Nenne Zahlen mit Einheit und Zeit (LT). Keine Startempfehlung, keine Floskeln, keine Wiederholung des Kontexts. Wenn die Daten für eine Aussage nicht reichen, sag das in einer Zeile.`,
+  en: `You are a meteorologist and balloon flight instructor supporting an experienced balloon pilot in flight preparation. You receive the flight context and the content of one briefing panel (model data, official products, pasted text or images). Answer in English in 2–6 terse lines as a list with "–": particulars, critical points, deviations from the criteria, balloon-specific warnings and hints, what to watch. Give numbers with units and time (LT). No go/no-go recommendation, no filler, do not repeat the context. If the data is insufficient, say so in one line.`,
 };
+
+/** Gesamtlage aus den übrigen Panels (gekürzt): Schnappschuss-Texte, eingefügte Texte, Zusatzinfos – als Kontext,
+ *  damit der Kommentar zu einem Panel die Lage des ganzen Briefings kennt. Budget ca. 7000 Zeichen. */
+export function briefingOverview(b, ctx, exceptKey, budget = 7000) {
+  const lines = [];
+  let used = 0;
+  for (const p of visiblePanels(ctx.settings, b)) {
+    if (p.key === exceptKey) continue;
+    const d = b.panels?.[p.key]; if (!d) continue;
+    const bits = [];
+    if (d.content?.auto?.text) bits.push(d.content.auto.text);
+    if (d.content?.text) bits.push(d.content.text);
+    if (d.extra?.text) bits.push(`Zusatzinfo: ${d.extra.text}`);
+    if (d.comment) bits.push(`Pilotenkommentar: ${d.comment}`);
+    if (d.ai?.text) bits.push(`Bisheriger KI-Kommentar: ${d.ai.text}`);
+    if (!bits.length) continue;
+    const txt = bits.join(' | ').replace(/\s+/g, ' ').slice(0, 700);
+    if (used + txt.length > budget) break;
+    used += txt.length;
+    lines.push(`• ${tt(p)}: ${txt}`);
+  }
+  return lines.join('\n');
+}
 
 /** Prompt für ein Panel. Bilder: nur serverseitig abgelegte (/files/…). */
 export function panelPrompt(p, d, b, ctx) {
@@ -37,7 +61,11 @@ export function panelPrompt(p, d, b, ctx) {
   if (d.comment) parts.push('KOMMENTAR (PILOT):', d.comment.slice(0, 2000), '');
   const images = [].concat(auto?.images || [], d.content?.images || [], d.extra?.images || []).map((i) => i.url).filter((u) => /\/files\//.test(u)).slice(0, 6);
   if (images.length) parts.push(`${images.length} BILD(ER) beigefügt — lies sie aus (Karten, Tabellen, Screenshots).`, '');
-  parts.push(lang === 'en' ? 'Give the note for this panel.' : 'Gib den Hinweis zu diesem Panel.');
+  const overview = briefingOverview(b, ctx, p.key);
+  if (overview) parts.push('GESAMTLAGE (übrige Panels, gekürzt – nur als Kontext, nicht kommentieren):', overview, '');
+  parts.push(lang === 'en'
+    ? `Comment on the panel "${tt(p)}": particulars of this information and balloon-specific warnings/hints, taking the overall situation into account but staying on this panel's topic.`
+    : `Kommentiere das Panel «${tt(p)}»: Besonderheiten dieser Informationen sowie ballonfahrtspezifische Warnungen und Hinweise – unter Berücksichtigung der Gesamtlage, aber mit Bezug auf das Thema dieses Panels.`);
   return { system: SYSTEM[lang] || SYSTEM.de, user: parts.join('\n'), images };
 }
 

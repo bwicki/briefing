@@ -2,7 +2,7 @@
  * (KI), Pax-Sicherheitskarte, Export, Final-PDF. */
 import { h, clear, toast, dialog, uid } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
-import { setHeader } from '../app.js';
+import { setHeader, printButton } from '../app.js';
 import { textarea, field, check } from './widgets.js';
 import { placeLine, mapsUrl } from './place.js';
 import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel } from '../model.js';
@@ -133,9 +133,32 @@ export function goNoGoCard(b, ctx) {
 }
 
 // ---------------------------------------------------------------- Pax-Sicherheitskarte (#/pax/:id)
-export async function renderPaxCard(view, ctx, id, opts = {}) {
-  const b = upgradeBriefing(opts.briefing || await ctx.store.getBriefing(id));
-  if (!b) { view.appendChild(h('div.err', 'not found')); return; }
+/** Titel der Passagierkarte: Experte-Einstellung (DE/EN) oder Standard. */
+export const paxCardTitle = (S) => { const lang = getLang(); return (S.paxCardTitle?.[lang] || S.paxCardTitle?.de || '').trim() || t('pax_title'); };
+
+/** Druckauswahl: nur Briefing, zusätzlich DABS-Beilage, NOTAM, Passagierkarte → Briefingsicht mit ?print=1&parts=… */
+export async function printDialog(b, ctx, shared, onApply) {
+  const d = b.panels || {};
+  const hasDabs = !!(d['C.dabs']?.content?.auto?.images?.length);
+  const hasNotam = !!(d['C.notam']?.content?.auto || (d['C.notam']?.content?.text || '').trim() || (d['C.notam']?.content?.images || []).length);
+  const sel = { dabs: hasDabs, notam: hasNotam, pax: false };
+  const body = h('div', [
+    h('div.note', t('print_hint')),
+    check(t('print_brief'), true, () => {}),
+    check(`${t('print_dabs')}${hasDabs ? '' : ` (${t('print_none')})`}`, sel.dabs, (v) => { sel.dabs = v; }),
+    check(`${t('print_notam')}${hasNotam ? '' : ` (${t('print_none')})`}`, sel.notam, (v) => { sel.notam = v; }),
+    check(paxCardTitle(ctx.settings), sel.pax, (v) => { sel.pax = v; }),
+  ]);
+  body.querySelector('input').disabled = true;
+  const ok = await dialog(t('print_title'), body, [{ label: t('cancel'), value: false }, { label: t('print'), value: true, primary: true }]);
+  if (!ok) return;
+  const parts = ['brief', sel.dabs && 'dabs', sel.notam && 'notam', sel.pax && 'pax'].filter(Boolean).join(',');
+  if (onApply) { onApply(parts); return; }
+  ctx.navigate(`${shared?.material ? `#/m/${shared.token}/${b.id}` : shared ? `#/s/${shared.token}/v` : `#/v/${b.id}`}?print=1&parts=${parts}`);
+}
+
+/** Passagierkarte als Druckbogen (A4 quer, zwei A5-Karten); wird in der Pax-Sicht und als Druckteil der Briefingsicht gebraucht. */
+export function paxSheet(b, ctx) {
   const S = ctx.settings, zz = z(b), lang = getLang();
   const sun = sunFor(b, S, ctx.racTable);
   const { rows } = scheduleFor(b, sun);
@@ -143,11 +166,9 @@ export async function renderPaxCard(view, ctx, id, opts = {}) {
   const meet = (b.schedule.stops || []).find((st) => st.lat != null) || null;
   const qr = meet ? qrSvg(mapsUrl(meet.lat, meet.lon), 3, 2) : null;
   const pic = S.persons.find((p) => p.id === b.persons.picId);
-  const back = ctx.shared?.material ? `#/m/${ctx.shared.token}/${b.id}` : ctx.shared ? `#/s/${ctx.shared.token}/v` : `#/b/${b.id}`;
-  setHeader({ title: t('pax_title'), sub: `${fmtDate(zz, b.time.startMs, lang)} · ${b.site.name}`, tools: [h('button.btn', { type: 'button', onclick: () => ctx.navigate(back) }, '← ' + t('view_brief')), h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print'))] });
   const items = (S.paxCardItems?.[lang] || S.paxCardItems?.de || []);
   const card = h('div.brief.paxcard', [
-    h('div.bh', [h('div', [h('h1', `${t('pax_title')} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)]), h('div.r', h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }))]),
+    h('div.bh', [h('div', [h('h1', `${paxCardTitle(S)} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)]), h('div.r', h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }))]),
     h('div.bs', t('pax_meet')),
     h('div.pax-meet', [h('div.kv.pax-kv', [
       [t('meeting'), meet ? placeLine({ name: meet.name, lat: meet.lat, lon: meet.lon }, { noElev: true }) : (b.schedule.meetingName || '–')],
@@ -162,7 +183,16 @@ export async function renderPaxCard(view, ctx, id, opts = {}) {
   ]);
   // Druck: A4 quer, zwei A5-Karten nebeneinander (Schnittlinie in der Mitte); am Bildschirm eine Karte
   const copy = card.cloneNode(true); copy.classList.add('copy');
-  view.appendChild(h('div.paxsheet', [card, copy]));
+  return h('div.paxsheet', [card, copy]);
+}
+
+export async function renderPaxCard(view, ctx, id, opts = {}) {
+  const b = upgradeBriefing(opts.briefing || await ctx.store.getBriefing(id));
+  if (!b) { view.appendChild(h('div.err', 'not found')); return; }
+  const zz = z(b), lang = getLang();
+  const back = ctx.shared?.material ? `#/m/${ctx.shared.token}/${b.id}` : ctx.shared ? `#/s/${ctx.shared.token}/v` : `#/b/${b.id}`;
+  setHeader({ title: paxCardTitle(ctx.settings), sub: `${fmtDate(zz, b.time.startMs, lang)} · ${b.site.name}`, tools: [h('button.btn', { type: 'button', onclick: () => ctx.navigate(back) }, '← ' + t('view_brief')), printButton(() => window.print())] });
+  view.appendChild(paxSheet(b, ctx));
   if (/print=1/.test(location.hash)) setTimeout(() => window.print(), 400);
 }
 const PAX_SAFETY = {

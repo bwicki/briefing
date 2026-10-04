@@ -273,6 +273,46 @@ async function airspace(env, decrypt, ctx, q) {
   return json(data);
 }
 
+// ------------------------------------------------------------ Radiosondierung (Payerne 06610 u. a.)
+/** Letzte Sondierung einer WMO-Station als Niveau-Liste. Quelle: Archiv der University of Wyoming
+ *  (TEXT:LIST, dieselbe Messung wie bei MeteoSchweiz, dort nur per JavaScript). 00Z/12Z, Rückschau 36 h. 1 h Cache. */
+async function sounding(ctx, q) {
+  const stn = (q.get('stn') || '06610').replace(/[^0-9A-Z]/g, '').slice(0, 6);
+  const data = await cached(ctx, `sounding/${stn}/${Math.floor(Date.now() / 3600000)}`, 3600, async () => {
+    const now = new Date();
+    const tries = [];
+    for (let k = 0; k < 4; k++) {   // letzte 00Z/12Z-Termine
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours() >= 12 ? 12 : 0) - k * 12 * 3600000);
+      tries.push(d);
+    }
+    let last = null;
+    for (const d of tries) {
+      const y = d.getUTCFullYear(), m = String(d.getUTCMonth() + 1).padStart(2, '0'), dd = String(d.getUTCDate()).padStart(2, '0'), hh = String(d.getUTCHours()).padStart(2, '0');
+      const urls = [
+        `https://weather.uwyo.edu/wsgi/sounding?datetime=${y}-${m}-${dd}%20${hh}:00:00&id=${stn}&type=TEXT:LIST`,
+        `https://weather.uwyo.edu/cgi-bin/sounding?region=europe&TYPE=TEXT%3ALIST&YEAR=${y}&MONTH=${m}&FROM=${dd}${hh}&TO=${dd}${hh}&STNM=${stn}`,
+      ];
+      for (const u of urls) {
+        try {
+          const html = await (await get(u, { accept: 'text/html' }, 20000)).text();
+          const pre = /<pre[^>]*>([\s\S]*?)<\/pre>/i.exec(html)?.[1];
+          if (!pre || !/PRES\s+HGHT\s+TEMP/.test(pre)) { last = `${u}: keine Tabelle`; continue; }
+          const levels = [];
+          for (const line of pre.split('\n')) {
+            const m2 = /^\s*(\d{3,4}\.\d)\s+(\d+)\s+(-?\d+\.\d)\s+(-?\d+\.\d)\s+(\d+)\s+(\d+\.\d+)\s+(\d+)\s+(\d+)/.exec(line);
+            if (m2) levels.push({ hPa: +m2[1], m: +m2[2], temp: +m2[3], dew: +m2[4], rh: +m2[5], dir: +m2[7], kt: +m2[8] });
+          }
+          if (levels.length < 5) { last = `${u}: zu wenig Niveaus`; continue; }
+          const title = /<h2[^>]*>([^<]*)<\/h2>/i.exec(html)?.[1]?.trim() || '';
+          return { station: stn, time: d.toISOString(), title, levels, source: 'University of Wyoming (Radiosonde)', url: u, generated: new Date().toISOString() };
+        } catch (e) { last = `${u}: ${e.message}`; }
+      }
+    }
+    throw new Error(`Sondierung ${stn} nicht verfügbar (${last || '?'})`);
+  });
+  return json(data);
+}
+
 // ------------------------------------------------------------ FAA NOTAM
 async function notam(env, decrypt, ctx, q) {
   const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
@@ -362,6 +402,7 @@ export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
     case 'wxtext': return wxText(ctx, q);
     case 'webcams': return webcams(env, decrypt, ctx, q);
     case 'airspace': return airspace(env, decrypt, ctx, q);
+    case 'sounding': return sounding(ctx, q);
     case 'notam': return notam(env, decrypt, ctx, q);
     case 'ai': if (!canWrite) return err('forbidden', 403); return ai(env, decrypt, body);
     case 'pdf': if (!auth.owner) return err('forbidden', 403); return pdfRender(env, decrypt, ctx, body, auth);

@@ -98,11 +98,20 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
             assert 'DWD' not in pg.inner_text('#panel-B\\.balloon').split('EIGENE')[0].split('Stand:')[-1][:60] or True
         pg.wait_for_timeout(1500)
         assert '4725N00816E' in pg.inner_text('#panel-A\\.landing'), 'Landeraum im Editor'
+        # NOTAM: Umkreis um Orte (Standard Startort, 200 km)
+        pg.select_option('#panel-C\\.notam .ptools select', 'places'); pg.wait_for_timeout(400)
+        assert pg.query_selector('#panel-C\\.notam .notam-places .np-row') is not None and '200' in pg.input_value('#panel-C\\.notam .notam-places input[type=number]'), 'NOTAM-Orte-Editor mit Startort und 200 km'
+        pg.select_option('#panel-C\\.notam .ptools select', 'route'); pg.wait_for_timeout(300)
+        # Reihenfolge C: NOTAM vor Flugplan
+        keys = pg.evaluate("() => [...document.querySelectorAll('.panel')].map(p => p.id)")
+        assert keys.index('panel-C.notam') < keys.index('panel-C.fpl'), 'Flugplan nach NOTAM'
         # Phase 3: Tendenz-Karte, «Mehr»-Menü, Pax-Karte, Crew-Dialog
         assert 'tendenz' in pg.inner_text('.side').lower(), 'Go/No-Go-Karte'
-        pg.click('.more > button'); pg.wait_for_timeout(300)
-        assert pg.is_visible('.more-menu'), 'Mehr-Menü offen'
-        pg.click('.more-menu button:has-text("Crew")'); pg.wait_for_timeout(1200)
+        pg.click('#menuBtn'); pg.wait_for_timeout(300)
+        assert pg.is_visible('#menu details.submenu'), 'Hamburger mit Untermenüs offen'
+        assert 'Neues Briefing' not in pg.inner_text('#menu'), 'kein «Neues Briefing» im Hamburger'
+        pg.click('#menu details.submenu summary:has-text("Mehr")'); pg.wait_for_timeout(200)
+        pg.click('#menu button:has-text("Crew")'); pg.wait_for_timeout(1200)
         assert 'Ballonfahrt' in pg.input_value('.dialog textarea'), 'Crew-Nachricht erzeugt'
         pg.click('.dialog-foot button'); pg.wait_for_timeout(300)
         # Text in ein Paste-Panel
@@ -114,6 +123,9 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.goto(BASE + f'#/v/{bid}'); pg.wait_for_timeout(900)
         pg.screenshot(path=f'{OUT}/{name}_09_brief.png', full_page=True)
         assert pg.query_selector('.brief a.maps[target=_blank]') is not None, 'Maps-Link in Briefingsicht'
+        pg.click('#tools button.print'); pg.wait_for_timeout(400)
+        assert 'Passagier Info-/Sicherheitskarte' in pg.inner_text('.dialog'), 'Druckdialog mit Passagierkarte'
+        pg.click('.dialog-foot button:first-child'); pg.wait_for_timeout(200)
         assert '4725N00816E' in pg.inner_text('.brief'), 'Landeraum in Briefingsicht'
         assert pg.query_selector('.brief svg.mg-svg') is not None and pg.query_selector('.brief svg.sv-svg') is not None, 'Grafiken in der Briefingsicht'
         pg.emulate_media(media='print')

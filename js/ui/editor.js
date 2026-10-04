@@ -2,16 +2,16 @@
  * Freigabe-Checkliste, Berechtigungen. Für Owner und Mitarbeit-Links. */
 import { h, clear, toast, dialog, debounce, uid, textToNodes } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
-import { setHeader } from '../app.js';
+import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
-import { meteoBar, autoBlock } from './autopanels.js';
+import { meteoBar, autoBlock, askAi } from './autopanels.js';
 import { refreshAll as refreshAllData } from '../auto/data.js';
-import { goNoGoCard, crewDialog, assessmentDialog, finalPdfDialog, exportOne } from './extras.js';
+import { goNoGoCard, crewDialog, assessmentDialog, finalPdfDialog, exportOne, printDialog, paxCardTitle } from './extras.js';
 import { changesSinceFinal } from '../calc/diff.js';
 import { panelByKey } from '../panels.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
@@ -46,21 +46,21 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const tools = [];
     const toggle = h('div.viewtoggle', [h('button.on', { type: 'button' }, t('view_edit')), h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/v` : `#/v/${b.id}`) }, t('view_brief'))]);
     tools.push(toggle);
-    if (canOwn) tools.push(h('button.btn', { type: 'button', onclick: () => openAccessDialog(ctx, b) }, t('access')));
-    tools.push(h('button.btn', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/v?print=1` : `#/v/${b.id}?print=1`) }, t('print')));
-    const more = h('div.more', [h('button.btn', { type: 'button', onclick: (e) => { e.stopPropagation(); more.classList.toggle('open'); } }, t('more') + ' ▾'), h('div.menu.more-menu', [
-      h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`) }, t('pax_title')),
-      h('button', { type: 'button', onclick: () => crewDialog(b, ctx) }, t('crew_title')),
-      canOwn && ctx.store.mode === 'remote' && ctx.can('ai') ? h('button', { type: 'button', onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }) }, t('ass_title')) : null,
-      canOwn && ctx.store.mode === 'remote' && ctx.can('pdf') ? h('button', { type: 'button', onclick: () => finalPdfDialog(b, ctx, () => { touched(); drawHeader(); }) }, t('pdf_title')) : null,
-      canOwn ? h('button', { type: 'button', onclick: () => exportOne(b) }, t('export_one')) : null,
-    ])]);
-    document.addEventListener('click', (e) => { if (!e.target.closest('.more')) more.classList.remove('open'); });
-    more.querySelector('.more-menu').addEventListener('click', () => more.classList.remove('open'));
-    tools.push(more);
     if (canOwn) tools.push(h('button.btn.primary', { type: 'button', onclick: release }, t('release')));
+    tools.push(printButton(() => printDialog(b, ctx, shared)));   // Druckauswahl → Briefingsicht
+    // Berechtigungen und «Mehr» als Untermenüs im Hamburger
+    const menu = [
+      canOwn ? { label: t('access'), items: [{ label: t('access_manage'), fn: () => openAccessDialog(ctx, b) }] } : null,
+      { label: t('more'), items: [
+        { label: paxCardTitle(S), fn: () => ctx.navigate(shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`) },
+        { label: t('crew_title'), fn: () => crewDialog(b, ctx) },
+        canOwn && ctx.store.mode === 'remote' && ctx.can('ai') ? { label: t('ass_title'), fn: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }) } : null,
+        canOwn && ctx.store.mode === 'remote' && ctx.can('pdf') ? { label: t('pdf_title'), fn: () => finalPdfDialog(b, ctx, () => { touched(); drawHeader(); }) } : null,
+        canOwn ? { label: t('export_one'), fn: () => exportOne(b) } : null,
+      ].filter(Boolean) },
+    ].filter(Boolean);
     const sub = h('span', [h('span.rev', t('rev', { n: b.revision || 0, t: b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–', who: b.updatedBy || '–' })), ' · ', b.status === 'final' ? tag('final', t('released', { n: b.finalNo })) : tag('', t('status_draft')), ' · ', tag(phaseOf(b.time.startMs) === 'final' ? 'final-phase' : phaseOf(b.time.startMs) === 'plan' ? 'plan' : 'pre', t('phase_' + phaseOf(b.time.startMs))), shared ? ` · ${shared.role === 'edit' ? t('ac_editlink') : t('ac_readonly')} · ${shared.person}` : '']);
-    setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub, tools });
+    setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub, tools, menu });
   }
 
   // ---------------------------------------------------------------- Layout
@@ -112,7 +112,14 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const d = b.panels[p.key];
     const hasExtra = !!((d.extra?.text || '').trim() || (d.extra?.images || []).length);
     const extra = h('details.sub.extra', { open: hasExtra }, [h('summary', t('extra')), pasteArea(d.extra, (v) => { d.extra = v; touched(p.key); }, upload, { placeholder: t('extraHint'), rows: 2 })]);
-    const ai = d.ai?.text ? h('div.sub.ai', [h('div.row-actions', [h('span.lbl', `${t('ai')} · ${d.ai.model || ''} · ${d.ai.ts ? fmtDateTime(z, d.ai.ts, lang) : ''}`), shared?.role === 'read' ? null : h('button.btn.icon', { type: 'button', title: t('ai_discard'), onclick: () => { d.ai = null; touched(p.key); drawPanels(); } }, '✕')]), textarea(d.ai.text, { rows: 3, readOnly: shared?.role === 'read', oninput: (e) => { d.ai.text = e.target.value; d.ai.edited = true; touched(p.key); } })]) : null;
+    // KI-Kommentar direkt unter dem Panelinhalt: Text (Klick auf ✎ zum Bearbeiten), ✕ verwirft
+    let ai = null;
+    if (d.ai?.text) {
+      const ro = shared?.role === 'read';
+      const txt = h('div.ai-text', d.ai.text);
+      const ed = textarea(d.ai.text, { rows: 4, oninput: (e) => { d.ai.text = e.target.value; d.ai.edited = true; txt.textContent = e.target.value; touched(p.key); } }); ed.hidden = true;
+      ai = h('div.sub.ai', [h('div.row-actions', [h('span.lbl', `🤖 ${t('ai')} · ${d.ai.model || ''} · ${d.ai.ts ? fmtDateTime(z, d.ai.ts, lang) : ''}${d.ai.edited ? ' · ' + t('ai_edited') : ''}`), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_edit'), onclick: () => { ed.hidden = !ed.hidden; txt.hidden = !ed.hidden; if (!ed.hidden) ed.focus(); } }, '✎'), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_discard'), onclick: () => { d.ai = null; touched(p.key); drawPanels(); } }, '✕')]), txt, ed]);
+    }
     const cm = textarea(d.comment, { rows: 2, placeholder: t('comment'), oninput: (e) => { d.comment = e.target.value; touched(p.key); } });
     const comment = h('details.sub.cmt', { open: !!(d.comment || '').trim() }, [h('summary', t('comment')), cm]);
     return [extra, ai, comment];
@@ -131,6 +138,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
       p.grade === 'auto' ? tag('auto', 'AUTO') : p.grade === 'half' ? tag('half', 'LINK + EINFÜGEN') : p.grade === 'calc' ? tag('calc', 'CALC') : null,
       srcUrl ? h('a.srclink', { href: srcUrl, target: '_blank', rel: 'noopener', title: srcUrl }, shortUrl(srcUrl)) : null,
+      aiButtons(p, d),
       d.updatedAt ? h('span.src', `${t('stand')}: ${fmtDateTime(z, d.updatedAt, lang)} · ${d.updatedBy || ''}`) : null,
     ]);
     const body = h('div.panel-body');
@@ -176,6 +184,18 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     }
     body.append(content, ...subBlocks(p).filter(Boolean));
     return h('div.panel' + (panelStatus(p) === 'must' ? '.must-open' : ''), { id: 'panel-' + p.key }, [head, body]);
+  }
+  /** «KI-Kommentar» (direkt) und «…» (mit Prompt-Maske) im Titelbalken – Server-Modus mit KI-Freigabe. */
+  function aiButtons(p, d) {
+    if (ctx.store.mode !== 'remote' || !ctx.can('ai') || shared?.role === 'read') return null;
+    const hasContent = !!(d.content?.auto || (d.content?.text || '').trim() || (d.content?.images || []).length || (d.extra?.text || '').trim() || (d.extra?.images || []).length || ['core', 'sun', 'massperf', 'schedule', 'equipment', 'transition'].includes(p.kind));
+    if (!hasContent) return null;
+    const run = async (edit) => { const btn = wrap.querySelector('button'); btn.disabled = true; btn.textContent = t('ai_working'); await askAi(p, d, b, ctx, () => touched(p.key), drawPanels, { edit }); btn.disabled = false; btn.textContent = d.ai?.text ? t('ai_again') : t('ai_ask'); };
+    const wrap = h('span.aibtns', [
+      h('button.btn.small.ai', { type: 'button', title: t('ai_direct'), onclick: () => run(false) }, d.ai?.text ? t('ai_again') : t('ai_ask')),
+      h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => run(true) }, '…'),
+    ]);
+    return wrap;
   }
   function coreBlock() {
     const rows = [

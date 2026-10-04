@@ -124,7 +124,28 @@ export async function temps(ctx, b) {
   const asc = prof.filter((l) => l.temp != null).sort((a, b2) => a.m - b2.m);
   for (let k = 1; k < asc.length; k++) if (asc[k].temp > asc[k - 1].temp + 0.2) inv.push({ fromFt: asc[k - 1].ft, toFt: asc[k].ft, dT: +(asc[k].temp - asc[k - 1].temp).toFixed(1) });
   const text = `${t('auto_profileAt')} ${hhmm(b.site.tz || 'Europe/Zurich', b.time.startMs)} LT: ` + asc.map((l) => `${l.ft} ft ${l.temp?.toFixed(1)}°/${l.dew?.toFixed(1)}° ${l.dir != null ? Math.round(l.dir).toString().padStart(3, '0') : '–'}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ') + (inv.length ? ` · Inversion: ${inv.map((x) => `${x.fromFt}–${x.toFt} ft (+${x.dT} K)`).join(', ')}` : '') + (pbl != null ? ` · Grenzschicht ${Math.round(pbl * OM.M_TO_FT)} ft AGL` : '') + (fzl != null ? ` · 0 °C ${Math.round(fzl * OM.M_TO_FT)} ft` : '');
-  return { kind: 'temps', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev }, text };
+  // Letzte Messung der nächsten Radiosondenstation (Payerne 06610 u. a.) – Server-Modus
+  let obs = null, obsErr = '';
+  if (ctx.store.mode === 'remote') {
+    const st = nearestSounding(b.site.lat, b.site.lon);
+    try {
+      const so = await ctx.store.data('sounding', { stn: st.id }, shareTok(ctx));
+      const lv = (so.levels || []).filter((l) => l.hPa >= (ctx.settings.meteoDefaults?.topHpa || 500) - 50).map((l) => ({ label: `${Math.round(l.hPa)} hPa`, hPa: l.hPa, ft: Math.round(l.m * OM.M_TO_FT), m: l.m, temp: l.temp, dew: l.dew, rh: l.rh, dir: l.dir, spd: l.kt / OM.MS_TO_KT }));
+      obs = { station: st, time: so.time, title: so.title, levels: lv, url: so.url, source: so.source };
+    } catch (e) { obsErr = e.message; }
+  }
+  const obsText = obs ? `\n${t('auto_sounding')} ${obs.station.name} ${obs.time.slice(0, 13).replace('T', ' ')}Z: ` + obs.levels.filter((l) => [1000, 925, 850, 700, 500].includes(Math.round(l.hPa))).map((l) => `${Math.round(l.hPa)} hPa ${l.ft} ft ${l.temp}°/${l.dew}° ${String(l.dir).padStart(3, '0')}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ') : '';
+  return { kind: 'temps', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev, obs, obsErr }, text: text + obsText };
+}
+/** Radiosondenstationen (WMO) – die nächste zum Startort. */
+export const SOUNDING_STATIONS = [
+  { id: '06610', name: 'Payerne', lat: 46.81, lon: 6.94 }, { id: '10739', name: 'Stuttgart', lat: 48.83, lon: 9.20 }, { id: '10868', name: 'München-Oberschleissheim', lat: 48.25, lon: 11.55 },
+  { id: '10618', name: 'Idar-Oberstein', lat: 49.70, lon: 7.33 }, { id: '10410', name: 'Essen', lat: 51.40, lon: 6.97 }, { id: '10548', name: 'Meiningen', lat: 50.56, lon: 10.38 }, { id: '10393', name: 'Lindenberg', lat: 52.21, lon: 14.12 },
+  { id: '11035', name: 'Wien', lat: 48.25, lon: 16.36 }, { id: '11120', name: 'Innsbruck', lat: 47.26, lon: 11.35 }, { id: '16080', name: 'Milano Linate', lat: 45.43, lon: 9.28 }, { id: '16044', name: 'Udine', lat: 46.04, lon: 13.19 },
+  { id: '07180', name: 'Nancy-Essey', lat: 48.68, lon: 6.22 }, { id: '07481', name: 'Lyon-Satolas', lat: 45.73, lon: 5.08 }, { id: '07145', name: 'Trappes', lat: 48.77, lon: 2.01 }, { id: '06260', name: 'De Bilt', lat: 52.10, lon: 5.18 }, { id: '11520', name: 'Praha-Libus', lat: 50.01, lon: 14.45 },
+];
+export function nearestSounding(lat, lon) {
+  return SOUNDING_STATIONS.map((s) => ({ ...s, d: distKm(lat, lon, s.lat, s.lon) })).sort((a, b) => a.d - b.d)[0];
 }
 
 /** Trajektorien je Niveau. */
@@ -200,8 +221,8 @@ GAFOR ${area.id} ${area.name}${gafor ? ` (${gafor.title}): ${(gafor.periods || [
 export async function pdiff(ctx, b) {
   const chRegion = b.site.lat > 45.3 && b.site.lat < 48.6 && b.site.lon > 5 && b.site.lon < 11.5;
   const pairs = ctx.settings.pdiffPairs?.length ? ctx.settings.pdiffPairs : !chRegion ? [] : [
-    { name: 'Genève – Güttingen (Bise)', a: { name: 'Genève', lat: 46.25, lon: 6.13 }, b: { name: 'Güttingen', lat: 47.60, lon: 9.28 }, hint: 'ΔP > +3 hPa (GE höher) → Bise' },
-    { name: 'Zürich – Lugano (Föhn N/S)', a: { name: 'Zürich', lat: 47.38, lon: 8.57 }, b: { name: 'Lugano', lat: 46.00, lon: 8.96 }, hint: 'ΔP < −3 hPa (LUG höher) → Südföhn; > +4 → Nordföhn' },
+    { name: 'Genève – Güttingen (Bise)', a: { name: 'Genève', lat: 46.25, lon: 6.13 }, b: { name: 'Güttingen', lat: 47.60, lon: 9.28 }, hint: 'ΔP > +3 hPa (GE höher) → Bise', sign: 1 },
+    { name: 'Zürich – Lugano (Föhn N/S)', a: { name: 'Zürich', lat: 47.38, lon: 8.57 }, b: { name: 'Lugano', lat: 46.00, lon: 8.96 }, hint: 'ΔP < −3 hPa (LUG höher = Südüberdruck) → Südföhn; > +4 → Nordföhn', sign: -1 },
   ];
   const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
   const from = b.time.startMs - 6 * 3600000, to = Math.max(landing, b.time.startMs + 3 * 3600000) + 6 * 3600000;
@@ -218,11 +239,12 @@ export async function pdiff(ctx, b) {
     const [ja, jb] = await Promise.all([fetchP(p.a), fetchP(p.b)]);
     const rows = [];
     for (let i = 0; i < ja.hourly.time.length; i++) { const ms = ja.hourly.time[i] * 1000; if (ms < from || ms > to) continue; const pa = ja.hourly.pressure_msl[i], pb = jb.hourly.pressure_msl[i]; if (pa == null || pb == null) continue; rows.push({ ms, pa, pb, d: +(pa - pb).toFixed(1) }); }
-    out.push({ name: p.name, a: p.a.name, b: p.b.name, hint: p.hint, rows });
+    out.push({ name: p.name, a: p.a.name, b: p.b.name, hint: p.hint, sign: p.sign ?? 0, rows });
   }
   const z = b.site.tz || 'Europe/Zurich';
   const text = out.map((p) => `${p.name}: ` + p.rows.filter((r) => r.ms >= b.time.startMs - 3600000 && r.ms <= landing + 3600000).map((r) => `${hhmm(z, r.ms)} ${r.d > 0 ? '+' : ''}${r.d} hPa`).join(', ') + ` (${p.hint})`).join('\n');
-  return { kind: 'pdiff', sourceUrl: 'https://open-meteo.com/', stand: Date.now(), model, modelName: OM.modelName(model), source: 'Open-Meteo', data: { pairs: out, fromMs: b.time.startMs, toMs: landing }, text };
+  const lim = { half: +ctx.settings.pdiffWarn?.half || 3, neg: +ctx.settings.pdiffWarn?.neg || 4 };
+  return { kind: 'pdiff', sourceUrl: 'https://open-meteo.com/', stand: Date.now(), model, modelName: OM.modelName(model), source: 'Open-Meteo', data: { pairs: out, fromMs: b.time.startMs, toMs: landing, limits: lim }, text };
 }
 
 /** METAR/TAF der nächsten Plätze. */
@@ -239,23 +261,41 @@ export async function sigmet(ctx, b) {
   return { kind: 'sigmet', sourceUrl: 'https://aviationweather.gov/data/sigmet/', stand: Date.now(), source: j.source, data: { list: j.sigmet || [] }, text };
 }
 
-/** NOTAM entlang Start → Landeraum/Trajektorien-Endpunkte (Korridor), VFR-Filter. */
+/** Kreis > 100 NM (FAA-Maximum je Abfrage) mit 7 Teilkreisen abdecken: Mitte + Sechseck. */
+function hexCover(lat, lon, nm) {
+  if (nm <= 100) return [{ lat, lon, nm }];
+  const sub = 100, dist = Math.max(0, nm - sub * 0.55);
+  const out = [{ lat, lon, nm: sub }];
+  for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; out.push({ lat: lat + (dist / 60) * Math.cos(a), lon: lon + (dist / 60) * Math.sin(a) / Math.cos(lat * Math.PI / 180), nm: sub }); }
+  return out;
+}
+/** NOTAM: Strecke (Start → Landeraum/Trajektorien-Endpunkte, Korridor) oder Umkreis um gewählte Orte; VFR-Filter. */
 export async function notam(ctx, b, opts = {}) {
-  const pts = [{ lat: b.site.lat, lon: b.site.lon, name: b.site.name }];
-  if (b.landing?.lat != null) pts.push({ lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name });
-  const trj = b.panels['B.traj']?.content?.auto?.data?.tracks || [];
-  for (const tr of trj) if (tr.end) pts.push({ lat: tr.end.lat, lon: tr.end.lon, name: `${t('auto_trajEnd')} ${tr.label}` });
-  const nm = opts.nm || ctx.settings.notamRadiusNm || 25;
+  const mode = b.notamMode === 'places' ? 'places' : 'route';
+  let pts;
+  if (mode === 'places') {
+    pts = (b.notamPlaces || []).filter((p) => p.lat != null).map((p) => ({ lat: p.lat, lon: p.lon, name: p.name || icao(p.lat, p.lon), nm: Math.max(5, Math.round((+p.km || 200) / 1.852)) }));
+    if (!pts.length) throw new Error(t('notam_noPlaces'));
+  } else {
+    const nm = opts.nm || ctx.settings.notamRadiusNm || 25;
+    pts = [{ lat: b.site.lat, lon: b.site.lon, name: b.site.name, nm }];
+    if (b.landing?.lat != null) pts.push({ lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name, nm });
+    const trj = b.panels['B.traj']?.content?.auto?.data?.tracks || [];
+    for (const tr of trj) if (tr.end) pts.push({ lat: tr.end.lat, lon: tr.end.lon, name: `${t('auto_trajEnd')} ${tr.label}`, nm });
+  }
+  const nm = pts[0].nm;
   const all = new Map(); const errors = [];
-  for (const p of pts.slice(0, 6)) {
-    try { const j = await ctx.store.data('notam', { lat: p.lat, lon: p.lon, nm }, shareTok(ctx)); for (const it of j.items || []) if (!all.has(it.id)) all.set(it.id, it); }
-    catch (e) { errors.push(`${p.name}: ${e.message}`); if (e.status === 424) break; }
+  outer: for (const p of pts.slice(0, 6)) {
+    for (const c of hexCover(p.lat, p.lon, p.nm)) {
+      try { const j = await ctx.store.data('notam', { lat: c.lat, lon: c.lon, nm: c.nm }, shareTok(ctx)); for (const it of j.items || []) if (!all.has(it.id)) all.set(it.id, it); }
+      catch (e) { errors.push(`${p.name}: ${e.message}`); if (e.status === 424) break outer; break; }
+    }
   }
   const maxFt = (b.intent.altMaxFt || 6000) + 2000;
   const items = [...all.values()].map((it) => ({ ...it, vfr: vfrRelevant(it, maxFt, b.time.startMs, b.time.startMs + (b.intent.durationMin || 0) * 60000) }));
   const rel = items.filter((x) => x.vfr.relevant).sort((x, y) => (x.start || '').localeCompare(y.start || ''));
   const text = rel.map((x) => `${x.icao || x.location} ${x.number || ''}: ${(x.formatted || x.text || '').replace(/\s+/g, ' ').slice(0, 400)}`).join('\n\n');
-  return { kind: 'notam', sourceUrl: 'https://notams.aim.faa.gov/', stand: Date.now(), source: 'FAA NOTAM API', data: { items, relevantCount: rel.length, points: pts, nm, errors }, text };
+  return { kind: 'notam', sourceUrl: 'https://notams.aim.faa.gov/', stand: Date.now(), source: 'FAA NOTAM API', data: { items, relevantCount: rel.length, points: pts, nm, mode, errors }, text };
 }
 /** VFR-Relevanz: zeitlich überlappend, untere Grenze unter maxFt, keine reinen IFR-/Infrastruktur-Themen. */
 export function vfrRelevant(it, maxFt, fromMs, toMs) {

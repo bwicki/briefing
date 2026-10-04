@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.9.0 — 2026-10-04 · Dritte Rückmeldungsrunde (Teil 1)
+
+* **KI-Kommentar** in jedem Panel-Titelbalken (Server-Modus mit KI-Freigabe): Klick erzeugt den
+  Kommentar direkt (ohne Prompt-Maske) und zeigt ihn unter dem Panelinhalt; «…» daneben öffnet
+  die Prompt-Maske zum Anpassen. Prompt enthält den Panelinhalt (inkl. hochgeladener Zusatzinfos
+  und Bilder) **und die Gesamtlage** des Briefings (übrige Panels gekürzt) mit Bezug auf das
+  Thema des Panels; Fokus auf Besonderheiten und ballonfahrtspezifische Warnungen/Hinweise.
+  Kommentar als Text (✎ bearbeiten, ✕ verwerfen).
+* Kopfzeile: Pille nur Briefings / Neues Briefing; **Einstellungen, Berechtigungen und «Mehr» als
+  Untermenüs im Hamburger** (offene Untermenüs bleiben beim Autosave offen); **Drucken als
+  Symbolknopf** rechts von «Freigeben».
+* **Druckdialog**: nur Briefing, zusätzlich DABS-Beilage, NOTAM, «Passagier Info-/
+  Sicherheitskarte» (Titel unter Experte überschreibbar, DE/EN); die Passagierkarte wird als
+  A4-quer-Seite an das Briefing angehängt.
+* Abschnitt C: **Flugplan nach dem NOTAM**; NOTAM wahlweise **Strecke** (Start → Landeraum →
+  Trajektorien-Enden) oder **Umkreis um Orte** (Ortswahl, Standard Startort, Radius 200 km;
+  Kreise > 100 NM werden mit 7 Teilabfragen abgedeckt).
+* Radar-Karte: **Klickboxen rechts** für Regen (RainViewer), Webcams, Sonden (SondeHub:
+  Startplätze im Umkreis 250 km und Sonden der letzten 6 h); «Zoom level not supported»
+  behoben (RainViewer-Kacheln ab Zoom 7 hochskaliert, Karte bis Zoom 14).
+* Temps: zusätzlich die **letzte Radiosondierung** der nächsten Station (Payerne 06610,
+  Stuttgart, München, Wien, Milano …) als zweites Stüve-Diagramm mit Tabelle der
+  Hauptdruckflächen (Worker `GET /api/wx/sounding?stn=`, Archiv University of Wyoming –
+  dieselbe Messung wie das MeteoSchweiz-Emagramm, das nur per JavaScript geliefert wird).
+* Druckdifferenz: ΔP-Zellen **orange ab 3 hPa, rot ab 4 hPa** in der Warnrichtung des Paars
+  (Zürich–Lugano: Südüberdruck; Genève–Güttingen: Bise); Schwellen unter Experte.
+* Thermik: Tabelle kompakt ohne horizontales Scrollen, daneben Balken je Stunde in derselben
+  Zeilenhöhe.
+* Layout: Panel-Titelbalken einheitlich zweizeilig hoch; alle Eingabefelder/Knöpfe in den
+  Panel-Werkzeugleisten 30 px hoch, Trajektorien-Eingaben in einer Zeile; linke Panel-
+  Navigation und rechte Spalte scrollbar; Pflicht-Inhalte im Ablauf fett in normaler Grösse.
+* Offen (0.9.1): tabellarischer Zeitplan mit Aktivitäten-Dropdown, Info- und Zeit/Ort-Spalte,
+  verschiebbaren Zeilen und mitlaufenden Zeiten.
+
 ## 0.8.1 — 2026-10-04 · Rückmeldungen zu 0.8.0
 
 * Luftraum-Panel: nur Typ und ICAO-Klasse (keine Erklärtexte; Zusatzcodes NOTAM/REQ/AGRMT,

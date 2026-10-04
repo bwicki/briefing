@@ -1,7 +1,7 @@
 /* Fahrtbriefing — Briefingsicht: das fertige Briefing, Grundlage für Druck und Leselink. */
 import { h, clear, fmt, fmtSigned, textToNodes } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
-import { setHeader } from '../app.js';
+import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunRows } from './parts.js';
@@ -13,6 +13,7 @@ import { load, save } from '../util.js';
 import { goNoGo } from '../calc/gonogo.js';
 import { changesSinceFinal } from '../calc/diff.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
+import { printDialog, paxSheet, paxCardTitle } from './extras.js';
 import { distKm, bearing } from '../calc/geo.js';
 
 export async function renderBrief(view, ctx, id, opts = {}) {
@@ -27,15 +28,22 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const toggle = h('div.viewtoggle', [canEdit ? h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}` : `#/b/${b.id}`) }, t('view_edit')) : null, h('button.on', { type: 'button' }, t('view_brief'))]);
   const paxHash = shared?.material ? `#/m/${shared.token}/${b.id}/p` : shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`;
   if (shared?.material) tools.push(h('button.btn', { type: 'button', onclick: () => ctx.navigate(`#/m/${shared.token}`) }, `← ${t('ml_title')}`));
-  // Beilagen (DABS-Seiten, Karten) als eigene Seiten am Schluss – abwählbar
-  let withAtt = load('fb.printAtt', 1) === 1;
-  const attBox = h('label.check.no-print', { title: t('att_hint') }, [h('input', { type: 'checkbox', checked: withAtt, onchange: (e) => { withAtt = e.target.checked; save('fb.printAtt', withAtt ? 1 : 0); brief.classList.toggle('noatt', !withAtt); } }), h('span', t('att_print'))]);
-  tools.push(toggle, h('button.btn', { type: 'button', onclick: () => ctx.navigate(paxHash) }, t('pax_title')), attBox, h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print')));
-  const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
-  setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${ownerNote}`, tools });
-
+  // Druckteile aus dem Hash (?parts=brief,dabs,notam,pax) oder aus dem Druckdialog; Standard: Briefing + DABS-Beilage + NOTAM
+  const q = new URLSearchParams((location.hash.split('?')[1] || ''));
+  let parts = (q.get('parts') || 'brief,dabs,notam').split(',');
   const brief = h('div.brief');
-  if (!withAtt) brief.classList.add('noatt');
+  let paxEl = null;
+  const applyParts = (list) => {
+    parts = list;
+    brief.classList.toggle('noatt', !parts.includes('dabs'));
+    brief.classList.toggle('nonotam', !parts.includes('notam'));
+    if (paxEl) { paxEl.remove(); paxEl = null; }
+    if (parts.includes('pax')) { paxEl = paxSheet(b, ctx); paxEl.classList.add('print-only', 'pax-append'); brief.appendChild(paxEl); }
+  };
+  tools.push(toggle, printButton(() => printDialog(b, ctx, shared, (p) => { applyParts(p.split(',')); setTimeout(() => window.print(), 150); })));
+  const menu = [{ label: t('more'), items: [{ label: paxCardTitle(S), fn: () => ctx.navigate(paxHash) }] }];
+  const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
+  setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${ownerNote}`, tools, menu });
   view.appendChild(brief);
   const attachments = [];   // [{ title, images }] → Beilagen am Schluss
   const sun = sunFor(b, S, ctx.racTable);
@@ -103,7 +111,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       }
       if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b', t('ai') + ': '), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
-      tbl.appendChild(h('tr', [h('th', [tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null]), cell]));
+      tbl.appendChild(h('tr', { class: 'row-' + p.key.replace('.', '-') }, [h('th', [tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null]), cell]));
     }
     brief.appendChild(tbl);
   }
@@ -136,5 +144,6 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       h('div.kv', [[t('gb_gross'), `${fmt(r.grossLift)} kg`], [t('gb_ballast'), h('b', `${fmt(r.ballast)} kg · ${fmt(r.ballastPct, 1)} %`)], [t('gb_units'), r.units != null ? `${fmt(r.units, 1)} × ${bal.ballastUnitKg} kg` : '–'], [t('gb_reserve'), `${fmt(r.reserveKg)} kg`], [t('gb_cooling'), `${fmt(r.coolingLossPerK, 1)} kg/K`], [t('gb_per100'), `${fmt(r.ballastPer100m, 1)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
     ]);
   }
+  applyParts(parts);
   if (opts.print || /print=1/.test(location.hash)) setTimeout(() => window.print(), 400);
 }

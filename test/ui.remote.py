@@ -62,7 +62,9 @@ with sync_playwright() as p:
     assert pg.query_selector('#panel-C\\.airspace .as-map .leaflet-overlay-pane path') is not None, 'Polygone auf der Karte'
     pg.query_selector('#panel-C\\.airspace').screenshot(path=f'{OUT}/remote_airspace.png')
     # Berechtigungen
-    pg.click('button:has-text("Berechtigungen")'); pg.wait_for_timeout(800)
+    pg.click('#menuBtn'); pg.wait_for_timeout(300)
+    pg.click('#menu details.submenu summary:has-text("Berechtigungen")'); pg.wait_for_timeout(200)
+    pg.click('#menu button:has-text("Berechtigungen verwalten")'); pg.wait_for_timeout(800)
     pg.click('button:has-text("Person hinzufügen")'); pg.wait_for_timeout(1200)
     link_el = pg.query_selector('.item-box .mono')
     link = link_el.inner_text().strip(); print('link', link)
@@ -200,7 +202,9 @@ with sync_playwright() as p:
     assert 'Fahrtbriefing' in p3.inner_text('.brief'), 'Briefingsicht gerendert'
     assert p3.query_selector('.viewtoggle button:has-text("Erarbeitung")') is None, 'Material-Link nur lesen'
     p3.screenshot(path=f'{OUT}/remote_material_view.png')
-    p3.click('button:has-text("Pax-Sicherheitskarte")'); p3.wait_for_timeout(1000)
+    p3.click('#menuBtn'); p3.wait_for_timeout(300)
+    p3.click('#menu details.submenu summary:has-text("Mehr")'); p3.wait_for_timeout(200)
+    p3.click('#menu button:has-text("Passagier Info-/Sicherheitskarte")'); p3.wait_for_timeout(1000)
     assert p3.evaluate('location.hash').endswith('/p'), 'Pax-Karte unter Material-Link: ' + p3.evaluate('location.hash')
     b.close()
 print('\n'.join(errors) if errors else 'OK – keine Seitenfehler')

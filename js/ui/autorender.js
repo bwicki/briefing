@@ -165,25 +165,20 @@ export function renderThermal(snap, b) {
     h('div.stat', [h('div.k', t('th_end')), h('div.v', d.endMs ? hhmm(z, d.endMs) + ' LT' : '–')]),
     h('div.stat', [h('div.k', t('th_window')), h('div.v.' + (cls[d.winClass] || 'x'), `${t('th_' + d.winClass)} · max w* ${d.winMax} m/s`)]),
   ]);
-  // Balken w* je Stunde
-  const W = 760, H = 150, L = 36, R = 10, T = 10, B = 26, n = hs.length, cw = (W - L - R) / n;
-  const vMax = Math.max(2, Math.ceil(Math.max(...hs.map((x) => x.wstar)) * 2) / 2);
-  const y = (v) => H - B - (v / vMax) * (H - T - B);
-  const svg = mk('svg', { viewBox: `0 0 ${W} ${H}`, class: 'mg-svg', role: 'img' });
-  for (const v of [0, 1, 2, 3].filter((v) => v <= vMax)) { svg.appendChild(mk('line', { x1: L, y1: y(v), x2: W - R, y2: y(v), class: 'mg-grid' })); svg.appendChild(mk('text', { x: L - 4, y: y(v) + 3, class: 'mg-ax', 'text-anchor': 'end' }, `${v} m/s`)); }
-  if (d.fromMs != null) svg.appendChild(mk('rect', { x: L + ((d.fromMs - hs[0].ms) / 3600000) * cw, y: T, width: Math.max(2, ((d.toMs - d.fromMs) / 3600000) * cw), height: H - T - B, class: 'mg-window' }));
-  hs.forEach((x, i) => {
-    const col = { none: 'var(--text-dim)', weak: 'var(--green)', moderate: 'var(--amber)', strong: 'var(--temp)', severe: 'var(--temp)' }[x.klass];
-    svg.appendChild(mk('rect', { x: L + i * cw + 1, y: y(x.wstar), width: Math.max(1, cw - 2), height: Math.max(0, y(0) - y(x.wstar)), fill: col, 'fill-opacity': x.night ? 0.35 : 0.9 }));
-    if (i % (n > 20 ? 2 : 1) === 0) svg.appendChild(mk('text', { x: L + i * cw + cw / 2, y: H - B + 12, class: 'mg-ax', 'text-anchor': 'middle' }, hhmm(z, x.ms).slice(0, 2)));
-  });
+  // Tabelle (kompakt, ohne horizontales Scrollen) und daneben Balken je Stunde in derselben Zeilenhöhe
   const lim = d.limits || { weak: 1.2, moderate: 2.0, strong: 3.0 };
-  svg.appendChild(mk('text', { x: L + 4, y: T + 10, class: 'mg-title' }, `w* (m/s) · ${t('th_class')}: ${t('th_weak')} < ${lim.weak} < ${t('th_moderate')} < ${lim.moderate} < ${t('th_strong')} < ${lim.strong}`));
-  const table = h('table.auto', [
-    h('thead', h('tr', ['LT', `${t('th_rad')} W/m²`, `${t('th_zi')} ft AGL`, `${t('th_wstar')} m/s`, `${t('th_climb')} m/s`, `${t('th_gusty')} kt`, 'CAPE', t('th_class')].map((x) => h('th', x)))),
-    h('tbody', hs.map((x) => h('tr', { class: x.ms >= d.fromMs - 1800000 && x.ms <= d.toMs ? 'win' : '' }, [h('td.mono', hhmm(z, x.ms)), h('td', x.rad), h('td', x.pbl != null ? Math.round(x.pbl * M_TO_FT) : '–'), h('td.mono', x.wstar.toFixed(1)), h('td.mono', x.climb.toFixed(1)), h('td.mono', x.gusty != null ? Math.round(x.gusty * MS_TO_KT) : '–'), h('td', x.cape != null ? Math.round(x.cape) : '–'), h('td', h('span.tag.' + (cls[x.klass] || ''), t('th_' + x.klass)))]))),
+  const vMax = Math.max(2, Math.ceil(Math.max(...hs.map((x) => x.wstar)) * 2) / 2);
+  const inWin = (x) => x.ms >= d.fromMs - 1800000 && x.ms <= d.toMs;
+  const table = h('table.auto.th-tbl', [
+    h('thead', h('tr', [['LT', ''], ['W/m²', t('th_rad')], ['zi ft', `${t('th_zi')} ft AGL`], ['w*', `${t('th_wstar')} m/s`], ['↑ m/s', `${t('th_climb')} m/s`], ['Böe kt', `${t('th_gusty')} kt`], ['CAPE', 'CAPE J/kg'], [t('th_class'), '']].map(([x, ti]) => h('th', { title: ti }, x)))),
+    h('tbody', hs.map((x) => h('tr', { class: inWin(x) ? 'win' : '' }, [h('td.mono', hhmm(z, x.ms)), h('td.mono', x.rad), h('td.mono', x.pbl != null ? Math.round(x.pbl * M_TO_FT) : '–'), h('td.mono', x.wstar.toFixed(1)), h('td.mono', x.climb.toFixed(1)), h('td.mono', x.gusty != null ? Math.round(x.gusty * MS_TO_KT) : '–'), h('td.mono', x.cape != null ? Math.round(x.cape) : '–'), h('td', h('span.tag.' + (cls[x.klass] || ''), t('th_' + x.klass)))]))),
   ]);
-  return h('div.auto-wrap', [summary, h('div.side-grid', [h('div.num', h('div.tbl-scroll', table)), h('div.gfx', svg)]), h('div.note', t('th_note'))]);
+  const col = { none: 'var(--text-dim)', weak: 'var(--green)', moderate: 'var(--amber)', strong: 'var(--temp)', severe: 'var(--temp)' };
+  const bars = h('div.th-bars', [
+    h('div.th-head', [h('span', `w* m/s · ${t('th_weak')} < ${lim.weak} < ${t('th_moderate')} < ${lim.moderate} < ${t('th_strong')} < ${lim.strong}`)]),
+    ...hs.map((x) => h('div.th-row' + (inWin(x) ? '.win' : ''), [h('span.tm.mono', hhmm(z, x.ms).slice(0, 2)), h('span.bar', h('span.fill', { style: { width: `${Math.max(0, Math.min(100, x.wstar / vMax * 100))}%`, background: col[x.klass], opacity: x.night ? 0.35 : 0.9 } })), h('span.val.mono', x.wstar.toFixed(1))])),
+  ]);
+  return h('div.auto-wrap', [summary, h('div.side-grid.fill', [h('div.num', table), h('div.gfx', bars)]), h('div.note', t('th_note'))]);
 }
 
 // ---------------------------------------------------------------- Windprofil
@@ -211,7 +206,16 @@ export function renderTemps(snap, b, ctx) {
   const inv = d.inversions?.length ? h('div.warn', `${t('auto_inversion')}: ${d.inversions.map((x) => `${x.fromFt}–${x.toFt} ft (+${x.dT} K)`).join(', ')}`) : h('div.note', t('auto_noInversion'));
   const rows = [...d.profile].sort((a, c) => c.ft - a.ft).map((l) => h('tr', [h('td', l.label), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)]));
   const table = h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', rows)]));
-  return h('div.auto-wrap', [h('div.side-grid', [h('div.num', [table, inv, h('div.note', `${t('auto_pbl')}: ${d.pbl != null ? Math.round(d.pbl * M_TO_FT) + ' ft AGL' : '–'} · 0 °C: ${d.fzl != null ? Math.round(d.fzl * M_TO_FT) + ' ft AMSL' : '–'}`)]), h('div.gfx', svg || h('div.note', t('auto_noProfile')))])]);
+  const parts = [h('div.side-grid', [h('div.num', [h('div.lbl', `${t('auto_modelProfile')} ${snap.modelName || ''}`), table, inv, h('div.note', `${t('auto_pbl')}: ${d.pbl != null ? Math.round(d.pbl * M_TO_FT) + ' ft AGL' : '–'} · 0 °C: ${d.fzl != null ? Math.round(d.fzl * M_TO_FT) + ' ft AMSL' : '–'}`)]), h('div.gfx', svg || h('div.note', t('auto_noProfile')))])];
+  // Letzte Messung (Radiosonde Payerne u. a.): zweites Stüve + Tabelle der Hauptdruckflächen
+  if (d.obs?.levels?.length) {
+    const o = d.obs;
+    const main = o.levels.filter((l) => [1000, 925, 850, 700, 600, 500].includes(Math.round(l.hPa)) || l.hPa === o.levels[0].hPa);
+    const oSvg = stueveChart(o.levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 40)) === 0 || main.includes(l)), { w: 560, h: 360, lang: getLang() });
+    const oRows = [...main].sort((a, c) => c.ft - a.ft).map((l) => h('tr', [h('td', l.label), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)]));
+    parts.push(h('div.side-grid', { style: { marginTop: '10px' } }, [h('div.num', [h('div.lbl', `${t('auto_sounding')} ${o.station.name} (${o.station.id}) · ${(o.time || '').slice(0, 13).replace('T', ' ')} UTC`), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', oRows)])), h('div.note', [t('auto_soundingNote'), ' ', h('a', { href: 'https://www.meteoschweiz.admin.ch/service-und-publikationen/applikationen/radiosondierungen.html', target: '_blank', rel: 'noopener' }, 'MeteoSchweiz ↗'), ' · ', h('a', { href: o.url || '#', target: '_blank', rel: 'noopener' }, 'UWyo ↗')])]), h('div.gfx', oSvg || h('div.note', t('auto_noProfile')))]));
+  } else if (d.obsErr) parts.push(h('div.note', `${t('auto_sounding')}: ${d.obsErr}`));
+  return h('div.auto-wrap', parts);
 }
 
 // ---------------------------------------------------------------- Trajektorien
@@ -296,7 +300,10 @@ export function renderPdiff(snap, b) {
   return h('div.auto-wrap', d.pairs.map((p) => {
     const rows = p.rows.filter((r) => r.ms >= d.fromMs - 6 * 3600000 && r.ms <= d.toMs + 6 * 3600000);
     const every = rows.length > 16 ? 2 : 1;
-    return h('div', { style: { marginBottom: '8px' } }, [h('div.lbl', p.name), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [h('th', 'LT'), ...rows.filter((_, i) => i % every === 0).map((r) => h('th.mono', hhmm(z, r.ms)))])), h('tbody', [h('tr', [h('td', p.a), ...rows.filter((_, i) => i % every === 0).map((r) => h('td.mono', r.pa.toFixed(0)))]), h('tr', [h('td', p.b), ...rows.filter((_, i) => i % every === 0).map((r) => h('td.mono', r.pb.toFixed(0)))]), h('tr', [h('td', 'ΔP'), ...rows.filter((_, i) => i % every === 0).map((r) => h('td.mono' + (Math.abs(r.d) >= 3 ? '.b' : ''), { class: r.ms >= d.fromMs && r.ms <= d.toMs ? 'win' : '' }, `${r.d > 0 ? '+' : ''}${r.d}`))])])])), h('div.note', p.hint)]);
+    // Färbung: orange ab lim.half, rot ab lim.neg hPa – in der Warnrichtung des Paars (sign −1 = Südüberdruck, +1 = Nord/West, 0 = beide)
+    const lim = d.limits || { half: 3, neg: 4 };
+    const level = (v) => { const w = p.sign ? v * p.sign : Math.abs(v); return w >= lim.neg ? 'neg' : w >= lim.half ? 'half' : ''; };
+    return h('div', { style: { marginBottom: '8px' } }, [h('div.lbl', p.name), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [h('th', 'LT'), ...rows.filter((_, i) => i % every === 0).map((r) => h('th.mono', hhmm(z, r.ms)))])), h('tbody', [h('tr', [h('td', p.a), ...rows.filter((_, i) => i % every === 0).map((r) => h('td.mono', r.pa.toFixed(0)))]), h('tr', [h('td', p.b), ...rows.filter((_, i) => i % every === 0).map((r) => h('td.mono', r.pb.toFixed(0)))]), h('tr', [h('td', 'ΔP'), ...rows.filter((_, i) => i % every === 0).map((r) => { const lv = level(r.d); return h('td.mono' + (lv ? '.b.pd-' + lv : ''), { class: r.ms >= d.fromMs && r.ms <= d.toMs ? 'win' : '' }, `${r.d > 0 ? '+' : ''}${r.d}`); })])])])), h('div.note', `${p.hint} · ${t('pd_legend', { h: lim.half, n: lim.neg })}`)]);
   }));
 }
 
@@ -339,7 +346,7 @@ export function renderNotam(snap, b, ctx, opts = {}) {
   const d = snap.data;
   const rel = (d.items || []).filter((x) => x.vfr?.relevant), other = (d.items || []).filter((x) => !x.vfr?.relevant);
   const item = (x) => h('div.metar', [h('div', [h('b', `${x.icao || x.location || ''} ${x.number || ''}`), h('span.muted.small', ` · ${(x.start || '').slice(0, 16)} – ${(x.end || '').slice(0, 16)}${x.minFL != null || x.maxFL != null ? ` · FL${x.minFL ?? '000'}–FL${x.maxFL ?? '?'}` : ''}`), x.vfr?.why?.length ? h('span.muted.small', ` · ${x.vfr.why.join(', ')}`) : null]), h('pre.report', (x.formatted || x.text || '').trim())]);
-  const parts = [h('div.note', `${t('auto_notamCorridor')}: ${(d.points || []).map((p) => p.name || '').filter(Boolean).join(' → ')} · ${d.nm} NM · ${rel.length} ${t('auto_notamRelevant')}, ${other.length} ${t('auto_notamOther')}`)];
+  const parts = [h('div.note', d.mode === 'places' ? `${t('notam_places')}: ${(d.points || []).map((p) => `${p.name || ''} (${Math.round((p.nm || d.nm) * 1.852)} km)`).join(', ')} · ${rel.length} ${t('auto_notamRelevant')}, ${other.length} ${t('auto_notamOther')}` : `${t('auto_notamCorridor')}: ${(d.points || []).map((p) => p.name || '').filter(Boolean).join(' → ')} · ${d.nm} NM · ${rel.length} ${t('auto_notamRelevant')}, ${other.length} ${t('auto_notamOther')}`)];
   if (d.errors?.length) parts.push(h('div.warn', d.errors.join(' · ')));
   parts.push(...rel.map(item));
   if (other.length && opts.interactive) parts.push(h('details', [h('summary.small', `${t('auto_notamOther')} (${other.length})`), ...other.map(item)]));

@@ -25,6 +25,8 @@
   .brief .wind-charts figure{max-width:60mm;}
   .brief .map{display:none;}
   .brief .stand{font-size:8pt;}
+  .brief.nonotam tr.row-C-notam{display:none}
+  .brief .pax-append{display:grid;break-before:page}
   .paxsheet{page:pax;display:grid;grid-template-columns:1fr 1fr;column-gap:0;align-items:start;width:100%}
   .paxsheet .copy{display:block}
   .paxsheet .paxcard{font-size:9pt;line-height:1.25;padding:0 5mm !important;box-sizing:border-box;max-width:none !important}
