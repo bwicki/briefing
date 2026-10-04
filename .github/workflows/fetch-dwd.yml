@@ -1,0 +1,52 @@
+name: DWD-Berichte und METAR holen
+
+# dwd.de und aviationweather.gov erlauben keine Cross-Origin-Zugriffe aus dem
+# Browser. Dieser Workflow holt die frei zugänglichen DWD-Luftsportberichte
+# (GAFOR, Flugwetterübersicht, Gebietsvorhersagen Ballonsport) und eine
+# METAR/TAF-Kopie und legt sie als JSON unter data/dwd ab; die App liest sie
+# von der eigenen Origin (briefing.wicki.aero/data/dwd/…). Übernommen aus
+# GaforCast (bwicki/gafor); dort läuft derselbe Abruf.
+
+on:
+  schedule:
+    - cron: '9,29,49 * * * *'      # dreimal pro Stunde
+  workflow_dispatch:
+    inputs:
+      force_balloon:
+        description: 'Alle Ballonwetterberichte sofort neu holen'
+        type: boolean
+        default: false
+  push:
+    paths:
+      - 'scripts/fetch-dwd.mjs'
+      - '.github/workflows/fetch-dwd.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-dwd
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Berichte abrufen und parsen
+        env:
+          BALLOON_MAX_AGE_H: '4'
+          FORCE_BALLOON: ${{ inputs.force_balloon && '1' || '0' }}
+        run: node scripts/fetch-dwd.mjs
+      - name: Änderungen committen
+        run: |
+          git config user.name  "briefing-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/dwd
+          if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+          git commit -m "DWD/METAR $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git pull --rebase
+          git push

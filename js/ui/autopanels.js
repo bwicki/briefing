@@ -5,7 +5,7 @@
 import { h, clear, toast, num, dialog } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { field, input, select, textarea, check } from './widgets.js';
-import { renderSnapshot } from './autorender.js';
+import { renderSnapshot, setAirspaceUrl } from './autorender.js';
 import * as DATA from '../auto/data.js';
 import { MODELS, modelsFor, modelName, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDateTime } from '../calc/time.js';
@@ -32,6 +32,7 @@ export function meteoBar(b, ctx, { onChange, refreshAll, readOnly }) {
  * d = Panel-Datensatz (d.content.auto = Schnappschuss). onChange() nach Änderungen.
  */
 export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
+  setAirspaceUrl(ctx.settings.airspaceTileUrl);
   const wrap = h('div.autoblock');
   const toolbar = h('div.row-actions.no-print');
   const body = h('div');
@@ -126,6 +127,7 @@ function radarLive(b, ctx) {
     if (typeof L === 'undefined' || b.site.lat == null) return;
     const map = L.map(el).setView([b.site.lat, b.site.lon], 8);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 12, attribution: '© OpenStreetMap' }).addTo(map);
+    if (ctx.settings.airspaceTileUrl) L.tileLayer(ctx.settings.airspaceTileUrl, { maxZoom: 14, opacity: 0.75, attribution: 'Luftraum: openAIP' }).addTo(map);
     L.marker([b.site.lat, b.site.lon]).addTo(map);
     try {
       const j = await fetch('https://api.rainviewer.com/public/weather-maps.json').then((r) => r.json());

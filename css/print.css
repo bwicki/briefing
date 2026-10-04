@@ -23,4 +23,6 @@
   .brief .wind-charts figure{max-width:60mm;}
   .brief .map{display:none;}
   .brief .stand{font-size:8pt;}
+  .brief.paxcard{font-size:12pt;}
+  .brief .bsum{background:#f3f5f8 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }

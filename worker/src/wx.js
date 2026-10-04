@@ -12,6 +12,13 @@
 const UA = 'Fahrtbriefing/0.3 (+https://briefing.wicki.aero)';
 const AWC = 'https://aviationweather.gov/api/data';
 const GAFOR = 'https://gafor.wicki.aero/data/dwd';
+/** Eigene Kopie (GitHub Action im Repo), Rückfall GaforCast. */
+const dataBase = (env) => (env.DATA_BASE || 'https://briefing.wicki.aero/data/dwd').replace(/\/$/, '');
+async function copyJson(env, name) {
+  const bust = `?t=${Math.floor(Date.now() / 600000)}`;
+  try { return await (await get(`${dataBase(env)}/${name}${bust}`, {}, 12000)).json(); }
+  catch { return (await get(`${GAFOR}/${name}${bust}`, {}, 12000)).json(); }
+}
 const SNAPSHOT_HOSTS = ['www.dwd.de', 'charts.ecmwf.int', 'www.meteoschweiz.admin.ch', 'www.meteoswiss.admin.ch', 'tilecache.rainviewer.com', 'api.rainviewer.com', 'static.meteoblue.com', 'my.meteoblue.com', 'www.meteoblue.com', 'www.skybriefing.com', 'eumetview.eumetsat.int', 'view.eumetsat.int', 'opendata.dwd.de'];
 
 const json = (data, status = 200, headers = {}) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...headers } });
@@ -70,7 +77,7 @@ function tafByIcao(list, ids) {
   for (const t of Array.isArray(list) ? list : []) { if (!t.icaoId || !ids.includes(t.icaoId)) continue; const prev = out[t.icaoId]; if (!prev || t.mostRecent === 1 || (prev.mostRecent !== 1 && (t.issueTime || '') > (prev.issueTime || ''))) out[t.icaoId] = t; }
   return out;
 }
-async function metar(ctx, q) {
+async function metar(env, ctx, q) {
   const lat = +q.get('lat'), lon = +q.get('lon'), km = Math.min(300, +q.get('km') || 120), limit = Math.min(10, +q.get('limit') || 4);
   if (!isFinite(lat) || !isFinite(lon)) return err('lat/lon');
   const cell = `${lat.toFixed(1)},${lon.toFixed(1)},${km},${limit}`;
@@ -86,9 +93,9 @@ async function metar(ctx, q) {
       try { taf = tafByIcao(await (await get(`${AWC}/taf?ids=${ids.join(',')}&format=json`, {}, 12000)).json(), ids); } catch { /* ohne TAF */ }
       return { metar: m, taf, source: 'aviationweather.gov', generated: new Date().toISOString() };
     } catch (e) {
-      const j = await (await get(`${GAFOR}/metar.json?t=${Math.floor(Date.now() / 600000)}`, {}, 12000)).json();
+      const j = await copyJson(env, 'metar.json');
       const m = pickNearest(j.metar, lat, lon, km, limit);
-      return { metar: m, taf: tafByIcao(j.taf, m.map((x) => x.icaoId)), source: `gafor.wicki.aero (Kopie, ${e.message})`, generated: j.generated };
+      return { metar: m, taf: tafByIcao(j.taf, m.map((x) => x.icaoId)), source: `Kopie NOAA AWC (${j.via || 'awc'}; live: ${e.message})`, generated: j.generated };
     }
   });
   return json(data);
@@ -110,8 +117,8 @@ async function sigmet(ctx, q) {
 }
 
 // ------------------------------------------------------------ DWD-Kopie (GaforCast)
-async function dwd(ctx) {
-  const data = await cached(ctx, 'dwd/index', 600, async () => (await get(`${GAFOR}/index.json?t=${Math.floor(Date.now() / 600000)}`, {}, 15000)).json());
+async function dwd(env, ctx) {
+  const data = await cached(ctx, 'dwd/index', 600, () => copyJson(env, 'index.json'));
   return json(data);
 }
 
@@ -199,19 +206,50 @@ async function ai(env, decrypt, body) {
   return json({ text, model: j.model, usage: j.usage });
 }
 
+// ------------------------------------------------------------ Final-PDF (Cloudflare Browser Rendering)
+async function pdfRender(env, decrypt, ctx, body, auth) {
+  const token = await getSecret(env, decrypt, 'cf_api_token'), acc = await getSecret(env, decrypt, 'cf_account_id');
+  if (!token || !acc) return err('Browser Rendering nicht konfiguriert (Zugänge: cf_api_token, cf_account_id)', 424);
+  const id = String(body.id || '').replace(/[^a-z0-9]/g, '');
+  if (!id) return err('id');
+  const row = await env.DB.prepare('SELECT json FROM briefings WHERE id=?').bind(id).first();
+  if (!row) return err('not found', 404);
+  const b = JSON.parse(row.json);
+  // temporärer Leselink (1 h), damit der Renderer die Briefingsicht ohne Kennwort öffnen kann
+  const tmp = [...crypto.getRandomValues(new Uint8Array(16))].map((x) => (x % 36).toString(36)).join('');
+  await env.DB.prepare('INSERT INTO access_links (token,briefing_id,person,role,expires_at,created_at) VALUES (?,?,?,?,?,?)').bind(tmp, id, 'PDF-Renderer', 'read', Date.now() + 3600000, Date.now()).run();
+  try {
+    const page = `${(env.APP_URL || 'https://briefing.wicki.aero').replace(/\/$/, '')}/#/s/${tmp}/v`;
+    const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acc}/browser-rendering/pdf`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: page, gotoOptions: { waitUntil: 'networkidle0', timeout: 60000 }, waitForTimeout: 2500, viewport: { width: 1200, height: 1600 }, pdfOptions: { format: 'A4', printBackground: true, preferCSSPageSize: true, margin: { top: '12mm', right: '12mm', bottom: '14mm', left: '12mm' } } }),
+    });
+    const ct = (r.headers.get('Content-Type') || '').split(';')[0];
+    if (!r.ok || ct !== 'application/pdf') { let m = `Browser Rendering HTTP ${r.status}`; try { const j = await r.json(); m = j.errors?.[0]?.message || m; } catch { /* kein JSON */ } return err(m, 502); }
+    const buf = await r.arrayBuffer();
+    const key = `${id}/final-v${b.finalNo || 0}-${Date.now()}.pdf`;
+    await env.FILES.put(key, buf, { httpMetadata: { contentType: 'application/pdf' } });
+    await env.DB.prepare('INSERT INTO files (key,briefing_id,content_type,size,created_at) VALUES (?,?,?,?,?)').bind(key, id, 'application/pdf', buf.byteLength, Date.now()).run();
+    return json({ url: `/files/${key}`, key, size: buf.byteLength, finalNo: b.finalNo || 0 });
+  } finally {
+    ctx.waitUntil(env.DB.prepare('UPDATE access_links SET revoked=1 WHERE token=?').bind(tmp).run());
+  }
+}
+
 /** Einstieg: kind, Query, Body; auth = { owner: bool, link: row|null }. */
 export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
   const canWrite = auth.owner || auth.link?.role === 'edit';
   const briefingId = q.get('b') || auth.link?.briefing_id || null;
   switch (kind) {
     case 'om': return openMeteo(env, decrypt, ctx, q);
-    case 'metar': return metar(ctx, q);
+    case 'metar': return metar(env, ctx, q);
     case 'sigmet': return sigmet(ctx, q);
-    case 'dwd': return dwd(ctx);
+    case 'dwd': return dwd(env, ctx);
     case 'dabs': if (!canWrite) return err('forbidden', 403); return dabs(env, ctx, q, briefingId);
     case 'snapshot': if (!canWrite) return err('forbidden', 403); return snapshot(env, body, briefingId, q);
     case 'notam': return notam(env, decrypt, ctx, q);
     case 'ai': if (!canWrite) return err('forbidden', 403); return ai(env, decrypt, body);
+    case 'pdf': if (!auth.owner) return err('forbidden', 403); return pdfRender(env, decrypt, ctx, body, auth);
     default: return err('unknown kind', 404);
   }
 }

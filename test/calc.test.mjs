@@ -11,6 +11,8 @@ import { readFileSync } from 'node:fs';
 import * as OM from '../js/auto/openmeteo.js';
 import { parseLevel, tracks, levelAltM } from '../js/auto/traj.js';
 import { vfrRelevant } from '../js/auto/data.js';
+import { goNoGo } from '../js/calc/gonogo.js';
+import { changesSinceFinal } from '../js/calc/diff.js';
 
 let fails = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('  FAIL', msg); } else console.log('  ok  ', msg); };
@@ -180,5 +182,25 @@ ok(!vfrRelevant({ text: 'ILS RWY 14 U/S', start: '2026-10-04T00:00:00Z', end: '2
 ok(!vfrRelevant({ text: 'AIRSPACE RESTRICTION', start: '2026-10-04T00:00:00Z', end: '2026-10-06T00:00:00Z', minFL: 150 }, 8000, fromMs, toMs).relevant, 'NOTAM über FL150 nicht relevant');
 ok(!vfrRelevant({ text: 'AIRSPACE RESTRICTION', start: '2026-10-09T00:00:00Z', end: '2026-10-10T00:00:00Z' }, 8000, fromMs, toMs).relevant, 'NOTAM erst später');
 
+
+console.log('Go/No-Go und Änderungen seit Final');
+const S3 = { goNoGo: { dryWindowH: 3, noTsH: 3, meanWindKt: 10, gustKt: 12 }, flyLimits: { cape: [300, 800] } };
+const mkRec = (i, o = {}) => ({ ms: T0 + i * 3600000, fly: 2, precip: 0, cape: 20, w10: 2, gust: 3, why: [], ...o });
+const B3 = { time: { startMs: T0, date: '2026-10-05', time: '06:00' }, intent: { durationMin: 120 }, panels: { 'B.meteogram': { content: { auto: { stand: 1, modelName: 'ICON-D2', data: { recs: Array.from({ length: 12 }, (_, i) => mkRec(i - 4)) } } } } }, versions: [] };
+ok(goNoGo(B3, S3).level === 2, 'fahrbar bei ruhigen Stunden');
+B3.panels['B.meteogram'].content.auto.data.recs[5] = mkRec(1, { fly: 1, w10: 5, gust: 7, why: ['Bodenwind 10 kt'] });
+const g1 = goNoGo(B3, S3); ok(g1.level === 1 && g1.reasons[0].includes('Bodenwind'), 'grenzwertig übernimmt Stundenampel + Grund');
+B3.panels['B.meteogram'].content.auto.data.recs[7] = mkRec(3, { precip: 0.6 });
+ok(goNoGo(B3, S3).level === 0, 'Regen 1 h nach Landung → nein (Trockenfenster)');
+B3.panels['B.meteogram'].content.auto.data.recs[7] = mkRec(3, { cape: 900 });
+ok(goNoGo(B3, S3).level === 0 && goNoGo(B3, S3).reasons.some((r) => r.includes('CAPE')), 'CAPE 900 innert 3 h → nein');
+ok(goNoGo({ time: { startMs: T0 }, intent: {}, panels: {} }, S3).level === null, 'ohne Meteogramm: keine Aussage');
+const snap = JSON.parse(JSON.stringify({ ...B3, panels: { 'A.landing': { content: { text: 'Wohlen' }, extra: { text: '' } } }, persons: { pax: [{ name: 'A' }] }, schedule: { meetingName: 'Katzenrüti' } }));
+const B4 = { ...JSON.parse(JSON.stringify(snap)), versions: [{ no: 1, ts: 1, who: 'x', snapshot: snap }] };
+ok(changesSinceFinal(B4).any === false, 'keine Änderungen direkt nach Freigabe');
+B4.panels['A.landing'].content.text = 'Bremgarten'; B4.persons.pax.push({ name: 'B' });
+const ch = changesSinceFinal(B4);
+ok(ch.any && ch.fields.includes('persons') && ch.panels.some((p) => p.key === 'A.landing' && p.what.includes('content')), 'Pax und Landeort als geändert erkannt');
+ok(changesSinceFinal({ versions: [] }) === null, 'ohne Final: null');
 console.log(`\n${n - fails}/${n} Tests bestanden`);
 process.exit(fails ? 1 : 0);

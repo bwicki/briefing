@@ -277,11 +277,12 @@ async function route(req, env, url, ctx) {
 }
 
 async function uploadFile(env, briefingId, { dataUrl }) {
-  const mm = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(dataUrl || '');
-  if (!mm) return err('bad image');
+  const mm = /^data:(image\/(?:jpeg|png|webp)|application\/pdf);base64,(.+)$/.exec(dataUrl || '');
+  if (!mm) return err('bad file');
   const bytes = unb64u(mm[2].replace(/-/g, '+').replace(/_/g, '/'));
-  if (bytes.length > 4 * 1024 * 1024) return err('too large (4 MB)');
-  const ext = mm[1] === 'image/png' ? 'png' : mm[1] === 'image/webp' ? 'webp' : 'jpg';
+  const isPdf = mm[1] === 'application/pdf';
+  if (bytes.length > (isPdf ? 12 : 4) * 1024 * 1024) return err(isPdf ? 'too large (12 MB)' : 'too large (4 MB)');
+  const ext = isPdf ? 'pdf' : mm[1] === 'image/png' ? 'png' : mm[1] === 'image/webp' ? 'webp' : 'jpg';
   const key = `${briefingId}/${rnd(12).toLowerCase().replace(/[^a-z0-9]/g, 'x')}.${ext}`;
   await env.FILES.put(key, bytes, { httpMetadata: { contentType: mm[1] } });
   await env.DB.prepare('INSERT INTO files (key,briefing_id,content_type,size,created_at) VALUES (?,?,?,?,?)').bind(key, briefingId, mm[1], bytes.length, Date.now()).run();

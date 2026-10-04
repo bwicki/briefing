@@ -10,6 +10,9 @@ import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing } from '../model.js'
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock } from './autopanels.js';
 import { refreshAll as refreshAllData } from '../auto/data.js';
+import { goNoGoCard, crewDialog, assessmentDialog, finalPdfDialog, exportOne } from './extras.js';
+import { changesSinceFinal } from '../calc/diff.js';
+import { panelByKey } from '../panels.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { openAccessDialog } from './access.js';
 
@@ -33,6 +36,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   }
   const saveSoon = debounce(() => saveNow(), 900);
   const touched = (panelKey) => { dirty = true; if (panelKey) { const p = b.panels[panelKey]; p.updatedAt = Date.now(); p.updatedBy = ctx.who; } saveSoon(); drawNav(); };
+  const touchedSoon = debounce(() => drawSide(), 1500);
   window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 
   // ---------------------------------------------------------------- Kopf
@@ -42,6 +46,16 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     tools.push(toggle);
     if (canOwn) tools.push(h('button.btn', { type: 'button', onclick: () => openAccessDialog(ctx, b) }, t('access')));
     tools.push(h('button.btn', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/v?print=1` : `#/v/${b.id}?print=1`) }, t('print')));
+    const more = h('div.more', [h('button.btn', { type: 'button', onclick: (e) => { e.stopPropagation(); more.classList.toggle('open'); } }, t('more') + ' ▾'), h('div.menu.more-menu', [
+      h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`) }, t('pax_title')),
+      h('button', { type: 'button', onclick: () => crewDialog(b, ctx) }, t('crew_title')),
+      canOwn && ctx.store.mode === 'remote' ? h('button', { type: 'button', onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }) }, t('ass_title')) : null,
+      canOwn && ctx.store.mode === 'remote' ? h('button', { type: 'button', onclick: () => finalPdfDialog(b, ctx, () => { touched(); drawHeader(); }) }, t('pdf_title')) : null,
+      canOwn ? h('button', { type: 'button', onclick: () => exportOne(b) }, t('export_one')) : null,
+    ])]);
+    document.addEventListener('click', (e) => { if (!e.target.closest('.more')) more.classList.remove('open'); });
+    more.querySelector('.more-menu').addEventListener('click', () => more.classList.remove('open'));
+    tools.push(more);
     if (canOwn) tools.push(h('button.btn.primary', { type: 'button', onclick: release }, t('release')));
     const sub = h('span', [h('span.rev', t('rev', { n: b.revision || 0, t: b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–', who: b.updatedBy || '–' })), ' · ', b.status === 'final' ? tag('final', t('released', { n: b.finalNo })) : tag('', t('status_draft')), ' · ', tag(phaseOf(b.time.startMs) === 'final' ? 'final-phase' : phaseOf(b.time.startMs) === 'plan' ? 'plan' : 'pre', t('phase_' + phaseOf(b.time.startMs))), shared ? ` · ${shared.role === 'edit' ? t('ac_editlink') : t('ac_readonly')} · ${shared.person}` : '']);
     setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub, tools });
@@ -79,11 +93,15 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const hrs = Math.round((b.time.startMs - Date.now()) / 3600000);
     const counts = { ok: 0, must: 0, auto: 0, man: 0 };
     for (const p of panels) counts[panelStatus(p)]++;
-    side.append(
+    const ch = changesSinceFinal(b);
+    side.append(...[
+      goNoGoCard(b, ctx),
+      ch ? h('div.card', [h('div.card-head', h('div.section-title', t('chg_title', { n: ch.since.no }))), h('div.card-body.note', ch.any ? [ch.fields.length ? h('div', `${t('chg_fields')}: ${ch.fields.map((f) => t('chg_' + f)).join(', ')}`) : null, ...ch.panels.map((p) => h('div', { onclick: () => document.getElementById('panel-' + p.key)?.scrollIntoView({ behavior: 'smooth' }), style: { cursor: 'pointer' } }, `• ${tt(panelByKey(p.key) || { de: p.key })} (${p.what.map((w) => t('chg_' + w)).join(', ')})`))] : t('chg_none'))]) : null,
+      b.assessment?.text ? h('div.card', [h('div.card-head', h('div.section-title', t('ass_title'))), h('div.card-body', [h('div.note', { style: { whiteSpace: 'pre-wrap' } }, b.assessment.text), h('div.note.small', `${b.assessment.model || ''} · ${fmtDateTime(z, b.assessment.ts, lang)}`)])]) : null,
       h('div.card', [h('div.card-head', h('div.section-title', t('horizon'))), h('div.card-body', [h('div', `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT · ${hhmm('UTC', b.time.startMs)} UTC`), h('div.note', `${hrs >= 0 ? '+' : ''}${hrs} h → ${t('phase_' + phaseOf(b.time.startMs))}`)])]),
       h('div.card', [h('div.card-head', h('div.section-title', 'Panels')), h('div.card-body', [h('div', [h('span.dot.ok'), ` ${counts.ok} ✓`]), h('div', [h('span.dot.must'), ` ${counts.must} ${t('panel_mandatory')}`]), h('div', [h('span.dot.auto'), ` ${counts.auto} auto`]), h('div', [h('span.dot.man'), ` ${counts.man} ${t('panel_optional')}`])])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('log'))), h('div.card-body.note', (b.log || []).slice(-6).reverse().map((l) => h('div', `${fmtDateTime(z, l.ts, lang)} · ${l.who} · ${l.action}${l.panel ? ' · ' + l.panel : ''}${l.note ? ' · ' + l.note : ''}`)).concat((b.log || []).length ? [] : [h('div', '–')]))]),
-    );
+    ].filter(Boolean));
   }
 
   // ---------------------------------------------------------------- Panels
@@ -208,8 +226,11 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   async function release() {
     const missing = mandatoryPanels(S, b).filter((p) => !panelFilled(p, b));
     const reason = textarea('', { rows: 2, placeholder: t('rel_reason') });
+    const ch = changesSinceFinal(b);
     const content = h('div', [
       missing.length ? h('div', [h('div.warn', t('rel_missing')), h('ul', missing.map((p) => h('li', tt(p)))), h('div.lbl', t('rel_force')), reason]) : h('div.ok', t('rel_ok')),
+      ch ? h('div.note', { style: { marginTop: '8px' } }, ch.any ? `${t('chg_title', { n: ch.since.no })}: ${[...ch.fields.map((f) => t('chg_' + f)), ...ch.panels.map((p) => tt(panelByKey(p.key) || { de: p.key }))].join(', ')}` : t('chg_none')) : null,
+      h('div.note', { style: { marginTop: '8px' } }, t('rel_pdfHint')),
     ]);
     const ok = await dialog(t('rel_title'), content, [{ label: t('rel_cancel'), value: false }, { label: t('rel_do'), value: true, primary: true }]);
     if (!ok) return;

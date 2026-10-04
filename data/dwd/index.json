@@ -1,0 +1,2651 @@
+{
+ "generated": "2026-10-04T00:31:51.254Z",
+ "gafor": {
+  "EDZH": {
+   "title": "GAFOR Bereich LBZ Hamburg 03.10.2026",
+   "bereich": "LBZ Hamburg",
+   "office": "EDZH",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_node.html",
+   "issued": "2026-10-03T15:00:00.000Z",
+   "fetched": "2026-10-04T00:31:48.929Z",
+   "periods": [
+    "15-17",
+    "17-19",
+    "19-21"
+   ],
+   "areas": {
+    "10": [
+     "C",
+     "C",
+     "C"
+    ],
+    "00": [
+     "O",
+     "O",
+     "O"
+    ],
+    "01": [
+     "C",
+     "C",
+     "O"
+    ],
+    "02": [
+     "C",
+     "C",
+     "O"
+    ],
+    "03": [
+     "C",
+     "C",
+     "C"
+    ],
+    "04": [
+     "C",
+     "C",
+     "C"
+    ],
+    "05": [
+     "C",
+     "C",
+     "C"
+    ],
+    "06": [
+     "C",
+     "C",
+     "C"
+    ],
+    "07": [
+     "C",
+     "C",
+     "C"
+    ],
+    "08": [
+     "C",
+     "C",
+     "C"
+    ],
+    "09": [
+     "C",
+     "C",
+     "C"
+    ]
+   },
+   "details": {
+    "10": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Weser-Leine-Bergland",
+     "remarks": [
+      "",
+      "",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG"
+    },
+    "00": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Deutsche Bucht",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "01": {
+     "codes": [
+      "C",
+      "C",
+      "O"
+     ],
+     "name": "Ostfriesland",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "02": {
+     "codes": [
+      "C",
+      "C",
+      "O"
+     ],
+     "name": "Nordfriesland-Dithmarschen",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "03": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Schleswig-Holsteinische Geest",
+     "remarks": [
+      "",
+      "",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG"
+    },
+    "04": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Schleswig-Holsteinisches Hügelland",
+     "remarks": [
+      "",
+      "",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG"
+    },
+    "05": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Nordwestliches Niedersachsen",
+     "remarks": [
+      "",
+      "",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG"
+    },
+    "06": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Lüneburger Heide",
+     "remarks": [
+      "",
+      "",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG"
+    },
+    "07": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Westliches Niedersachsen",
+     "remarks": [
+      "",
+      "",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG"
+    },
+    "08": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Hannover und Braunschweig",
+     "remarks": [
+      "",
+      "",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG"
+    },
+    "09": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Teutoburger Wald",
+     "remarks": [
+      "",
+      "",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG"
+    }
+   },
+   "text": "GAFOR-Einstufung LBZ Hamburg\n\nGAFOR Bereich LBZ Hamburg 03.10.2026\n\nGebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC\n\n00  Deutsche Bucht  O  O  O\n\n01  Ostfriesland  C  C  O\n\n02  Nordfriesland-Dithmarschen  C  C  O\n\n03  Schleswig-Holsteinische Geest  C  C  C ISOL FG\n\n04  Schleswig-Holsteinisches Hügelland  C  C  C ISOL FG\n\n05  Nordwestliches Niedersachsen  C  C  C ISOL FG\n\n06  Lüneburger Heide  C  C  C ISOL FG\n\n07  Westliches Niedersachsen  C  C  C ISOL FG\n\n08  Hannover und Braunschweig  C  C  C ISOL FG\n\n09  Teutoburger Wald  C  C  C ISOL FG\n\n10  Weser-Leine-Bergland  C  C  C ISOL FG\n"
+  },
+  "EDZB": {
+   "title": "GAFOR Bereich LBZ Berlin 03.10.2026",
+   "bereich": "LBZ Berlin",
+   "office": "EDZB",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_node.html",
+   "issued": "2026-10-03T15:00:00.000Z",
+   "fetched": "2026-10-04T00:31:48.930Z",
+   "periods": [
+    "15-17",
+    "17-19",
+    "19-21"
+   ],
+   "areas": {
+    "11": [
+     "C",
+     "O",
+     "O"
+    ],
+    "12": [
+     "O",
+     "O",
+     "D3"
+    ],
+    "13": [
+     "C",
+     "O",
+     "O"
+    ],
+    "14": [
+     "C",
+     "O",
+     "D3"
+    ],
+    "15": [
+     "C",
+     "O",
+     "D3"
+    ],
+    "16": [
+     "O",
+     "O",
+     "D3"
+    ],
+    "17": [
+     "C",
+     "O",
+     "D3"
+    ],
+    "18": [
+     "O",
+     "O",
+     "D3"
+    ],
+    "19": [
+     "O",
+     "O",
+     "D3"
+    ],
+    "20": [
+     "O",
+     "O",
+     "D3"
+    ],
+    "21": [
+     "O",
+     "O",
+     "X"
+    ],
+    "22": [
+     "O",
+     "O",
+     "X"
+    ],
+    "23": [
+     "O",
+     "O",
+     "D3"
+    ],
+    "24": [
+     "O",
+     "O",
+     "X"
+    ],
+    "25": [
+     "D1",
+     "O",
+     "D3"
+    ],
+    "26": [
+     "C",
+     "O",
+     "D3"
+    ],
+    "27": [
+     "D1",
+     "M2",
+     "X"
+    ],
+    "28": [
+     "M2",
+     "M2",
+     "M5"
+    ]
+   },
+   "details": {
+    "11": {
+     "codes": [
+      "C",
+      "O",
+      "O"
+     ],
+     "name": "Mecklenburgisches Tiefland",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "12": {
+     "codes": [
+      "O",
+      "O",
+      "D3"
+     ],
+     "name": "Vorpommern",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "13": {
+     "codes": [
+      "C",
+      "O",
+      "O"
+     ],
+     "name": "Westliche Mecklenburgische Seenplatte und Prignitz",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "14": {
+     "codes": [
+      "C",
+      "O",
+      "D3"
+     ],
+     "name": "Östliche Mecklenburgische Seenplatte und Uckermark",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "15": {
+     "codes": [
+      "C",
+      "O",
+      "D3"
+     ],
+     "name": "Altmark",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "16": {
+     "codes": [
+      "O",
+      "O",
+      "D3"
+     ],
+     "name": "Fläming",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "17": {
+     "codes": [
+      "C",
+      "O",
+      "D3"
+     ],
+     "name": "Havelland",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "18": {
+     "codes": [
+      "O",
+      "O",
+      "D3"
+     ],
+     "name": "Barnim und Oderbruch",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "19": {
+     "codes": [
+      "O",
+      "O",
+      "D3"
+     ],
+     "name": "Dahme-Spree-Gebiet und Gubener Waldland",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "20": {
+     "codes": [
+      "O",
+      "O",
+      "D3"
+     ],
+     "name": "Magdeburger Börde und Nördliches Harzvorland",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "21": {
+     "codes": [
+      "O",
+      "O",
+      "X"
+     ],
+     "name": "Harz",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "22": {
+     "codes": [
+      "O",
+      "O",
+      "X"
+     ],
+     "name": "Leipziger Tieflandsbucht und Elbe-Elster-Niederung",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "23": {
+     "codes": [
+      "O",
+      "O",
+      "D3"
+     ],
+     "name": "Niederlausitzer Heiden",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "24": {
+     "codes": [
+      "O",
+      "O",
+      "X"
+     ],
+     "name": "Thüringer Becken",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "OCNL FG"
+     ],
+     "remark": "ISOL FG · OCNL FG"
+    },
+    "25": {
+     "codes": [
+      "D1",
+      "O",
+      "D3"
+     ],
+     "name": "Mittelsächsisches Hügelland",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "26": {
+     "codes": [
+      "C",
+      "O",
+      "D3"
+     ],
+     "name": "Oberlausitz und Lausitzer Gebirge",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    },
+    "27": {
+     "codes": [
+      "D1",
+      "M2",
+      "X"
+     ],
+     "name": "Thüringer Wald",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "OCNL FG"
+     ],
+     "remark": "ISOL FG · OCNL FG"
+    },
+    "28": {
+     "codes": [
+      "M2",
+      "M2",
+      "M5"
+     ],
+     "name": "Erzgebirge",
+     "remarks": [
+      "",
+      "ISOL FG",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG · ISOL FG"
+    }
+   },
+   "text": "GAFOR-Einstufung LBZ Berlin\n\nGAFOR Bereich LBZ Berlin 03.10.2026\n\nGebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC\n\n11  Mecklenburgisches Tiefland  C  O ISOL FG  O ISOL FG\n\n12  Vorpommern  O  O ISOL FG  D3 ISOL FG\n\n13  Westliche Mecklenburgische Seenplatte und Prignitz  C  O ISOL FG  O ISOL FG\n\n14  Östliche Mecklenburgische Seenplatte und Uckermark  C  O ISOL FG  D3 ISOL FG\n\n15  Altmark  C  O ISOL FG  D3 ISOL FG\n\n16  Fläming  O  O ISOL FG  D3 ISOL FG\n\n17  Havelland  C  O ISOL FG  D3 ISOL FG\n\n18  Barnim und Oderbruch  O  O ISOL FG  D3 ISOL FG\n\n19  Dahme-Spree-Gebiet und Gubener Waldland  O  O ISOL FG  D3 ISOL FG\n\n20  Magdeburger Börde und Nördliches Harzvorland  O  O ISOL FG  D3 ISOL FG\n\n21  Harz  O  O ISOL FG  X ISOL FG\n\n22  Leipziger Tieflandsbucht und Elbe-Elster-Niederung  O  O ISOL FG  X ISOL FG\n\n23  Niederlausitzer Heiden  O  O ISOL FG  D3 ISOL FG\n\n24  Thüringer Becken  O  O ISOL FG  X OCNL FG\n\n25  Mittelsächsisches Hügelland  D1  O ISOL FG  D3 ISOL FG\n\n26  Oberlausitz und Lausitzer Gebirge  C  O ISOL FG  D3 ISOL FG\n\n27  Thüringer Wald  D1  M2 ISOL FG  X OCNL FG\n\n28  Erzgebirge  M2  M2 ISOL FG  M5 ISOL FG\n"
+  },
+  "EDZE": {
+   "title": "GAFOR Bereich RWZ Essen 03.10.2026",
+   "bereich": "RWZ Essen",
+   "office": "EDZE",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_node.html",
+   "issued": "2026-10-03T15:00:00.000Z",
+   "fetched": "2026-10-04T00:31:48.930Z",
+   "periods": [
+    "15-17",
+    "17-19",
+    "19-21"
+   ],
+   "areas": {
+    "31": [
+     "C",
+     "C",
+     "O"
+    ],
+    "32": [
+     "C",
+     "O",
+     "D3"
+    ],
+    "33": [
+     "C",
+     "C",
+     "C"
+    ],
+    "34": [
+     "C",
+     "C",
+     "C"
+    ],
+    "35": [
+     "O",
+     "C",
+     "C"
+    ],
+    "36": [
+     "O",
+     "C",
+     "O"
+    ],
+    "37": [
+     "O",
+     "C",
+     "O"
+    ],
+    "38": [
+     "C",
+     "C",
+     "O"
+    ],
+    "39": [
+     "O",
+     "C",
+     "O"
+    ]
+   },
+   "details": {
+    "31": {
+     "codes": [
+      "C",
+      "C",
+      "O"
+     ],
+     "name": "Niederrheinisches Tiefland",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "32": {
+     "codes": [
+      "C",
+      "O",
+      "D3"
+     ],
+     "name": "Münsterland",
+     "remarks": [
+      "",
+      "",
+      "ISOL FG"
+     ],
+     "remark": "ISOL FG"
+    },
+    "33": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Ruhrgebiet und Ostwestfalen",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "34": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Niederrheinische Bucht",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "35": {
+     "codes": [
+      "O",
+      "C",
+      "C"
+     ],
+     "name": "Bergisches Land",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "36": {
+     "codes": [
+      "O",
+      "C",
+      "O"
+     ],
+     "name": "Sauerland",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "37": {
+     "codes": [
+      "O",
+      "C",
+      "O"
+     ],
+     "name": "Eifel",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "38": {
+     "codes": [
+      "C",
+      "C",
+      "O"
+     ],
+     "name": "Neuwieder Becken",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "39": {
+     "codes": [
+      "O",
+      "C",
+      "O"
+     ],
+     "name": "Westerwald",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    }
+   },
+   "text": "GAFOR-Einstufung RWZ Essen\n\nGAFOR Bereich RWZ Essen 03.10.2026\n\nGebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC\n\n31  Niederrheinisches Tiefland  C  C  O\n\n32  Münsterland  C  O  D3 ISOL FG\n\n33  Ruhrgebiet und Ostwestfalen  C  C  C\n\n34  Niederrheinische Bucht  C  C  C\n\n35  Bergisches Land  O  C  C\n\n36  Sauerland  O  C  O\n\n37  Eifel  O  C  O\n\n38  Neuwieder Becken  C  C  O\n\n39  Westerwald  O  C  O\n"
+  },
+  "EDZF": {
+   "title": "GAFOR Bereich FWZ Frankfurt 03.10.2026",
+   "bereich": "FWZ Frankfurt",
+   "office": "EDZF",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_node.html",
+   "issued": "2026-10-03T15:00:00.000Z",
+   "fetched": "2026-10-04T00:31:48.930Z",
+   "periods": [
+    "15-17",
+    "17-19",
+    "19-21"
+   ],
+   "areas": {
+    "41": [
+     "C",
+     "C",
+     "C"
+    ],
+    "42": [
+     "C",
+     "C",
+     "C"
+    ],
+    "43": [
+     "C",
+     "C",
+     "C"
+    ],
+    "44": [
+     "C",
+     "C",
+     "C"
+    ],
+    "45": [
+     "C",
+     "C",
+     "C"
+    ],
+    "46": [
+     "C",
+     "C",
+     "C"
+    ],
+    "47": [
+     "C",
+     "C",
+     "C"
+    ],
+    "50": [
+     "C",
+     "C",
+     "C"
+    ],
+    "51": [
+     "C",
+     "C",
+     "C"
+    ],
+    "52": [
+     "C",
+     "C",
+     "C"
+    ],
+    "53": [
+     "C",
+     "C",
+     "C"
+    ],
+    "61": [
+     "C",
+     "C",
+     "C"
+    ]
+   },
+   "details": {
+    "41": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Hunsrück",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "42": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Taunus",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "43": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Nordhessisches Bergland und Vogelsberg",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "44": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Rheinpfalz und Saarland",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "45": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Rhein-Main-Gebiet und Wetterau",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "46": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Odenwald und Spessart",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "47": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Rhön",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "50": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Südlicher Oberrheingraben",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "51": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Mittlerer Oberrheingraben",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "52": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Kraichgau",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "53": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Oberer und mittlerer Neckarraum",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "61": {
+     "codes": [
+      "C",
+      "C",
+      "C"
+     ],
+     "name": "Schwarzwald",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    }
+   },
+   "text": "GAFOR-Einstufung FWZ Frankfurt\n\nGAFOR Bereich FWZ Frankfurt 03.10.2026\n\nGebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC\n\n41  Hunsrück  C  C  C\n\n42  Taunus  C  C  C\n\n43  Nordhessisches Bergland und Vogelsberg  C  C  C\n\n44  Rheinpfalz und Saarland  C  C  C\n\n45  Rhein-Main-Gebiet und Wetterau  C  C  C\n\n46  Odenwald und Spessart  C  C  C\n\n47  Rhön  C  C  C\n\n50  Südlicher Oberrheingraben  C  C  C\n\n51  Mittlerer Oberrheingraben  C  C  C\n\n52  Kraichgau  C  C  C\n\n53  Oberer und mittlerer Neckarraum  C  C  C\n\n61  Schwarzwald  C  C  C\n"
+  },
+  "EDZM": {
+   "title": "GAFOR Bereich LBZ Muenchen 03.10.2026",
+   "bereich": "LBZ Muenchen",
+   "office": "EDZM",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_node.html",
+   "issued": "2026-10-03T15:00:00.000Z",
+   "fetched": "2026-10-04T00:31:48.930Z",
+   "periods": [
+    "15-17",
+    "17-19",
+    "19-21"
+   ],
+   "areas": {
+    "54": [
+     "O",
+     "C",
+     "O"
+    ],
+    "55": [
+     "O",
+     "O",
+     "O"
+    ],
+    "56": [
+     "O",
+     "C",
+     "O"
+    ],
+    "57": [
+     "O",
+     "C",
+     "O"
+    ],
+    "58": [
+     "O",
+     "M2",
+     "M2"
+    ],
+    "62": [
+     "O",
+     "O",
+     "O"
+    ],
+    "63": [
+     "O",
+     "O",
+     "O"
+    ],
+    "64": [
+     "O",
+     "O",
+     "O"
+    ],
+    "71": [
+     "O",
+     "C",
+     "O"
+    ],
+    "72": [
+     "O",
+     "O",
+     "O"
+    ],
+    "73": [
+     "O",
+     "O",
+     "O"
+    ],
+    "74": [
+     "O",
+     "O",
+     "O"
+    ],
+    "75": [
+     "O",
+     "C",
+     "O"
+    ],
+    "76": [
+     "O",
+     "O",
+     "O"
+    ],
+    "81": [
+     "O",
+     "O",
+     "O"
+    ],
+    "82": [
+     "O",
+     "O",
+     "O"
+    ],
+    "83": [
+     "M2",
+     "M2",
+     "M2"
+    ],
+    "84": [
+     "M2",
+     "M2",
+     "M2"
+    ]
+   },
+   "details": {
+    "54": {
+     "codes": [
+      "O",
+      "C",
+      "O"
+     ],
+     "name": "Mainfranken und Nördliches Unterfranken",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "55": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Kocher-Jagst-Gebiet und Frankenhöhe",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "56": {
+     "codes": [
+      "O",
+      "C",
+      "O"
+     ],
+     "name": "Mittelfranken",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "57": {
+     "codes": [
+      "O",
+      "C",
+      "O"
+     ],
+     "name": "Oberfranken",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "58": {
+     "codes": [
+      "O",
+      "M2",
+      "M2"
+     ],
+     "name": "Frankenwald und Fichtelgebirge",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "62": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Schwäbische Alb",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "63": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Fränkische Alb",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "64": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Oberpfälzer Wald",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "71": {
+     "codes": [
+      "O",
+      "C",
+      "O"
+     ],
+     "name": "Bodenseeraum",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "72": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Schwäbische Hochebene",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "73": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Westliche Donauniederung",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "74": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Südbayerisches Hügelland",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "75": {
+     "codes": [
+      "O",
+      "C",
+      "O"
+     ],
+     "name": "Östliche Donau- und Naabniederung",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "76": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Bayerischer Wald",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "81": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Westliches Alpenvorland",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "82": {
+     "codes": [
+      "O",
+      "O",
+      "O"
+     ],
+     "name": "Östliches Alpenvorland",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "83": {
+     "codes": [
+      "M2",
+      "M2",
+      "M2"
+     ],
+     "name": "Allgäuer Alpen",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "84": {
+     "codes": [
+      "M2",
+      "M2",
+      "M2"
+     ],
+     "name": "Östliche Bayerische Alpen",
+     "remarks": [
+      "",
+      "",
+      ""
+     ]
+    }
+   },
+   "text": "GAFOR-Einstufung LBZ Muenchen\n\nGAFOR Bereich LBZ Muenchen 03.10.2026\n\nGebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC\n\n54  Mainfranken und Nördliches Unterfranken  O  C  O\n\n55  Kocher-Jagst-Gebiet und Frankenhöhe  O  O  O\n\n56  Mittelfranken  O  C  O\n\n57  Oberfranken  O  C  O\n\n58  Frankenwald und Fichtelgebirge  O  M2  M2\n\n62  Schwäbische Alb  O  O  O\n\n63  Fränkische Alb  O  O  O\n\n64  Oberpfälzer Wald  O  O  O\n\n71  Bodenseeraum  O  C  O\n\n72  Schwäbische Hochebene  O  O  O\n\n73  Westliche Donauniederung  O  O  O\n\n74  Südbayerisches Hügelland  O  O  O\n\n75  Östliche Donau- und Naabniederung  O  C  O\n\n76  Bayerischer Wald  O  O  O\n\n81  Westliches Alpenvorland  O  O  O\n\n82  Östliches Alpenvorland  O  O  O\n\n83  Allgäuer Alpen  M2  M2  M2\n\n84  Östliche Bayerische Alpen  M2  M2  M2\n\nGAFOR Legende\n\nBitte beachten Sie unsere Nutzungsbedingungen für diese Produkte ...\n\n  Wichtig: Die auf dieser Internetseite bereitgestellten Flugwetterprodukte des DWD dürfen ausschließlich zur individuellen meteorologischen Flugvorbereitung genutzt werden. Die Weitergabe, die Weiterverarbeitung oder gar inhaltliche Änderung der Flugwetterinformationen sowie das Kopieren, Einbinden  oder Verlinken auf andere Internetserver ist nicht gestattet. Missbrauch und Verstöße gegen diese Regelung werden zur Anzeige gebracht!"
+  }
+ },
+ "overview": {
+  "EDZB": {
+   "bulletin": "FBEU40 EDZB 031800",
+   "bereich": "Ost",
+   "office": "EDZB",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html",
+   "issued": "2026-10-03T18:00:00.000Z",
+   "validFrom": "2026-10-03T18:00:00.000Z",
+   "validTo": "2026-10-04T15:00:00.000Z",
+   "areas": [
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28"
+   ],
+   "fetched": "2026-10-04T00:31:49.164Z",
+   "text": "Wetterlage und -entwicklung:\nUnter Hochdruckfluss bildet sich Eingangs der Nacht verbreitet eine\nfeuchte Grundschicht aus, welche im Laufe des Sonntages langsam\nabgebaut wird. Dabei bleibt fließt weiterhin eine sehr milde und\nfeuchte Luftmasse ein.\n\nWettergeschehen:\nZu Beginn häufig in der Mitte und in der Südhälfte SCT/BKN SC in\n2500-4000 FT AMSL, Obergrenzen um FL050. Anderenorts FEW SC oder\nneben hohen CI-Feldern wolkenfrei. Lokal, insbesondere im Südwesten,\nerste Bildung von Nebel.\n\nIm weiteren Nachtverlauf rasch Bildung von dichtem Nebel mit\nanschließendem, vor allem in der zweiten Nachthälfte, aufliegendem ST\noder 100-200 FT AGL mit Obergrenzen um 500 FT AGL. Zuerst\nNebel-/ST-Bildung in wolkenarmen Regionen, anschließend auch unterm\nSC. Geringste Nebel-/ST-Neigung in Mecklenburg-Vorpommern, hier lokal\nganz flache Nebelfelder möglich. Ausgangs der Nacht in Mecklenburg\nvon Nordwest über die Ostsee kommende BKN SC-Bewölkung zwischen\n1000-2000 FT AMSL, Obergrenzen um FL080.\n\nAm Sonntagmorgen verbreitet dichter Nebel mit aufliegendem ST oder\n100-200 FT AGL, Obergrenzen um 500-900 FT AGL. In\nMecklenburg-Vorpommern im Nordwesten der SC und ganz lokal flache\nNebelfelder sonst nur CI Bewölkung oberhalb FL180.\nIm Laufe des Sonntagvormittags zögerliches Auflösen/Anheben des\nNebels/ST. Bis zum Mittag lokal weiterhin Nebelfelder, vor allem im\nSüdwesten, möglich. Ansonsten meist aufgelöst und ST auf 500-1000 FT\nAGL anhebend und in SC übergehend. In der Südhälfte meist noch in\nSCT/BKN ST, in der Nordhälfte dagegen meist nur FEW ST. Entlang der\nKüste weiterhin der SC um 1000-2000 FT AMSL.\nAm Nachmittag Auflösung auch der letzten Nebelfelder. Im Verlauf\nverbreitet Bildung von FEW/SCT CU, in der Südhälfte Übergang von\nSCT/BKN ST/SC in CU in 2000-3000 FT AMSL, Obergrenzen zwischen\nFL060-FL080. In Mecklenburg-Vorpommern Anheben des SC in 1500-2500 FT\nAMSL.\n\nSichtweite:\nZu Beginn 10-25 km. In der Nacht mit Nebelbildung rasch auf unter\nwenige 100 m verschlechternd, ansonsten im Norden 2-10 km. Im Laufe\ndes Sonntages langsam auf 4-10 km verbessernd, am Nachmittag auf\n10-25 km.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 11 - 19:\nAMSL  |  21 UTC  |  09 UTC  |\n 500FT | 210/05KT  15C | 250/05KT  14C |\n1000FT | 220/05KT  15C | 280/10KT  13C |\n1500FT | 240/05KT  13C | 280/10KT  12C |\n2000FT | 240/05KT  13C | 280/10KT  12C |\n3000FT | 270/10KT  10C | 290/10KT  10C |\n5000FT | 270/10KT  07C | 300/10KT  07C |\nFL100  | 290/10KT  02C | 290/10KT  00C |\n\nGAFOR-Gebiete 20 - 28:\nAMSL  |  21 UTC  |  09 UTC  |\n1000FT | 310/05KT  16C | 240/05KT  12C |\n1500FT | 260/05KT  15C | 170/05KT  13C |\n2000FT | 270/05KT  14C | 080/05KT  12C |\n3000FT | 290/05KT  11C | 300/05KT  10C |\n5000FT | 270/05KT  08C | 260/05KT  06C |\nFL100  | 260/15KT  04C | 270/10KT  02C |\n\nTurbulenz:\nNicht signifikant.\n\nVereisung:\nNicht signifikant.\n\nNullgradgrenze:\nZwischen FL105-110 an der Küste und FL125-130 in den Mittelgebirgen.\nAm Sonntag langsam auf FL100 an der Küste und FL110 an den\nMittelgebirgen absinkend.\n\nInversionen:\nAbsinkinversion im Laufe der Nacht auf FL050-070 absinkend. Zudem ab\ndem Abendstunden Ausbildung einer Bodeninversion bis etwa 1000 FT\nAGL, am Vormittag langsam auflösend.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nBerlin  04.37 | 05.12 | 16.36 | 17.11\nLeipzig  04.41 | 05.16 | 16.42 | 17.15\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung\nSA/SU   = Sonnenauf/untergang\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um\n02.00/05.00 UTC\n\nLuftfahrtberatungszentrale Berlin/Hi",
+   "fullText": "918\nFBEU40 EDZB 031800\nDeutscher Wetterdienst\nFlugwetterübersicht Bereich Ost\ngültig vom 03.10.2026, 18.00 UTC bis 04.10.2026, 15.00 UTC\n\nVorhersagebereich: GAFOR-Gebiete 11 bis 28\n\nWetterlage und -entwicklung:\nUnter Hochdruckfluss bildet sich Eingangs der Nacht verbreitet eine\nfeuchte Grundschicht aus, welche im Laufe des Sonntages langsam\nabgebaut wird. Dabei bleibt fließt weiterhin eine sehr milde und\nfeuchte Luftmasse ein.\n\nWettergeschehen:\nZu Beginn häufig in der Mitte und in der Südhälfte SCT/BKN SC in\n2500-4000 FT AMSL, Obergrenzen um FL050. Anderenorts FEW SC oder\nneben hohen CI-Feldern wolkenfrei. Lokal, insbesondere im Südwesten,\nerste Bildung von Nebel.\n\nIm weiteren Nachtverlauf rasch Bildung von dichtem Nebel mit\nanschließendem, vor allem in der zweiten Nachthälfte, aufliegendem ST\noder 100-200 FT AGL mit Obergrenzen um 500 FT AGL. Zuerst\nNebel-/ST-Bildung in wolkenarmen Regionen, anschließend auch unterm\nSC. Geringste Nebel-/ST-Neigung in Mecklenburg-Vorpommern, hier lokal\nganz flache Nebelfelder möglich. Ausgangs der Nacht in Mecklenburg\nvon Nordwest über die Ostsee kommende BKN SC-Bewölkung zwischen\n1000-2000 FT AMSL, Obergrenzen um FL080.\n\nAm Sonntagmorgen verbreitet dichter Nebel mit aufliegendem ST oder\n100-200 FT AGL, Obergrenzen um 500-900 FT AGL. In\nMecklenburg-Vorpommern im Nordwesten der SC und ganz lokal flache\nNebelfelder sonst nur CI Bewölkung oberhalb FL180.\nIm Laufe des Sonntagvormittags zögerliches Auflösen/Anheben des\nNebels/ST. Bis zum Mittag lokal weiterhin Nebelfelder, vor allem im\nSüdwesten, möglich. Ansonsten meist aufgelöst und ST auf 500-1000 FT\nAGL anhebend und in SC übergehend. In der Südhälfte meist noch in\nSCT/BKN ST, in der Nordhälfte dagegen meist nur FEW ST. Entlang der\nKüste weiterhin der SC um 1000-2000 FT AMSL.\nAm Nachmittag Auflösung auch der letzten Nebelfelder. Im Verlauf\nverbreitet Bildung von FEW/SCT CU, in der Südhälfte Übergang von\nSCT/BKN ST/SC in CU in 2000-3000 FT AMSL, Obergrenzen zwischen\nFL060-FL080. In Mecklenburg-Vorpommern Anheben des SC in 1500-2500 FT\nAMSL.\n\nSichtweite:\nZu Beginn 10-25 km. In der Nacht mit Nebelbildung rasch auf unter\nwenige 100 m verschlechternd, ansonsten im Norden 2-10 km. Im Laufe\ndes Sonntages langsam auf 4-10 km verbessernd, am Nachmittag auf\n10-25 km.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 11 - 19:\nAMSL  |  21 UTC  |  09 UTC  |\n 500FT | 210/05KT  15C | 250/05KT  14C |\n1000FT | 220/05KT  15C | 280/10KT  13C |\n1500FT | 240/05KT  13C | 280/10KT  12C |\n2000FT | 240/05KT  13C | 280/10KT  12C |\n3000FT | 270/10KT  10C | 290/10KT  10C |\n5000FT | 270/10KT  07C | 300/10KT  07C |\nFL100  | 290/10KT  02C | 290/10KT  00C |\n\nGAFOR-Gebiete 20 - 28:\nAMSL  |  21 UTC  |  09 UTC  |\n1000FT | 310/05KT  16C | 240/05KT  12C |\n1500FT | 260/05KT  15C | 170/05KT  13C |\n2000FT | 270/05KT  14C | 080/05KT  12C |\n3000FT | 290/05KT  11C | 300/05KT  10C |\n5000FT | 270/05KT  08C | 260/05KT  06C |\nFL100  | 260/15KT  04C | 270/10KT  02C |\n\nTurbulenz:\nNicht signifikant.\n\nVereisung:\nNicht signifikant.\n\nNullgradgrenze:\nZwischen FL105-110 an der Küste und FL125-130 in den Mittelgebirgen.\nAm Sonntag langsam auf FL100 an der Küste und FL110 an den\nMittelgebirgen absinkend.\n\nInversionen:\nAbsinkinversion im Laufe der Nacht auf FL050-070 absinkend. Zudem ab\ndem Abendstunden Ausbildung einer Bodeninversion bis etwa 1000 FT\nAGL, am Vormittag langsam auflösend.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nBerlin  04.37 | 05.12 | 16.36 | 17.11\nLeipzig  04.41 | 05.16 | 16.42 | 17.15\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung\nSA/SU   = Sonnenauf/untergang\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um\n02.00/05.00 UTC\n\nLuftfahrtberatungszentrale Berlin/Hi"
+  },
+  "EDZE": {
+   "bulletin": "FBEU40 EDZE 031800",
+   "bereich": "West",
+   "office": "EDZE",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edze_node.html",
+   "issued": "2026-10-03T18:00:00.000Z",
+   "validFrom": "2026-10-03T18:00:00.000Z",
+   "validTo": "2026-10-04T15:00:00.000Z",
+   "areas": [
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37",
+    "38",
+    "39"
+   ],
+   "fetched": "2026-10-04T00:31:49.400Z",
+   "text": "Wetterlage und -entwicklung:\nEin Hochdruckgebiet über Mitteleuropa bestimmt bei schwachen\nStrömungsverhältnissen mit einer sehr milden und trockenen Luftmasse\ndas Wetter im Vorhersagebereich. In der Nacht zum Sonntag kommt es\ngebietsweise zur Bildung einer feuchten Grundschicht, die sich\nvormittags wieder auflöst.\n\nWettergeschehen:\nAm Abend gebietsweise SCT/BKN LYR CI ab FL190, Obergrenzen oberhalb\nvon FL245. Darunter meist wolkenfrei und nur örtlich flache FEW/SCT\nSC-Felder um 4500 FT AMSL. Niederschlagsfrei.\n\nIn der Nacht zum Sonntag zunehmende LYR CI/CS-Felder ab FL170 bis\nüber FL245. Darunter im Verlauf der Nacht Auflösung der SC-Felder,\nzudem gebietsweise Bildung von Dunst und flachen Nebelfeldern.\nIn der zweiten Nachthälfte örtlich zu hochnebelartigem BKN/OVC ST\nunterhalb 1000 FT AGL verdichtend. Schwerpunkt in der Südosthälfte,\nwo die hohe Bewölkung anfangs noch deutlich aufgelockerter ist.\n\nSonntagvormittag lösen sich Dunst und Nebelfeldern zunehmend auf, im\nNeuwiederbecken und entlang von Mosel und Lahn jedoch teils bis zum\nMittag anhaltend. Vom Niederrhein bis zum Münsterland auflockern der\nhohen Bewölkung und häufig SKC.\n\nAm Mittag zunächst im Bergland flacher FEW/SCT CU mit Anfangsbasis um\n3000 FT AMSL. Am Nachmittag dann verbreitet FEW/SCT CU mit Basis\nzwischen 4000 und 5000 FT AMSL. Tops meist um FL060. Im\nNachmittagsverlauf vom Münsterland bis zum nördlichen Niederrhein\nAufzug von BKN CU/SC mit Untergrenzen in 3500 bis 4500 FT AMSL und\nTops bis FL085. Weiterhin niederschlagsfrei.\n\nSichtweite:\n30-60 km. In der Nacht zum Sonntag Rückgang auf 15-25 km,\ngebietsweise Bildung von Dunst und Nebel mit Sichten teils unter 1\nkm.\nSonntagvormittag teils zögerliche Auflösung der Dunst- und\nNebelfelder, bis zum Mittag allgemeine Besserung auf 30-60 km.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 31 - 34:\nAMSL  |  21 UTC  |  09 UTC  |\n 500FT | 070/05KT  18C | 260/05KT  14C |\n1000FT | 060/05KT  17C | 130/05KT  15C |\n1500FT | 050/05KT  15C | 060/05KT  14C |\n2000FT | 040/05KT  14C | 050/05KT  13C |\n3000FT | 080/05KT  12C | 030/05KT  11C |\n5000FT | 260/05KT  08C | 230/05KT  09C |\nFL100  | 290/05KT  01C | 270/10KT  00C |\n\nGAFOR-Gebiete 35 - 39:\nAMSL  |  21 UTC  |  09 UTC  |\n1000FT | 060/05KT  16C | 120/05KT  15C |\n1500FT | 070/05KT  16C | 120/05KT  14C |\n2000FT | 080/05KT  15C | 120/05KT  14C |\n3000FT | 150/05KT  12C | 300/05KT  11C |\n5000FT | 270/05KT  08C | 270/05KT  08C |\nFL100  | 280/05KT  03C | 270/05KT  01C |\n\nTurbulenz:\nNicht signifikant.\n\nVereisung:\nNicht signifikant.\n\nNullgradgrenze:\nZwischen FL100 im Norden und FL115 im Südwesten. Im Verlauf der Nacht\nzum Sonntag auf FL095-FL105 absinkend, mit den geringeren Werten im\nNordosten. Nachfolgend bis zum Berichtsende keine signifikanten\nÄnderungen.\n\nInversionen:\nAbsinkinversion im Süden zwischen FL060 und FL085, im Norden bei\nFL050-FL060. In der Nacht abschwächend und meist nicht mehr\nsignifikant. Außerdem in der Nacht zum Sonntag Bildung einer\nBodeninversion unterhalb 1000 FT AGL, die am Vormittag anhebt und\nsich wieder auflöst. Sonntagnachmittag teils schwache Absinkinversion\nim Süden bei FL055-FL070 und im Norden bei 3000 FT AMSL-FL055.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nDüsseldorf  05.06 | 05.38 | 17.04 | 17.37\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen\nSA/SU   = Sonnenauf/untergang - morgen\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um\n02.00/05.00 UTC\n\nRegionale Wetterberatungszentrale Essen/Ze",
+   "fullText": "242\nFBEU40 EDZE 031800\nDeutscher Wetterdienst\nFlugwetterübersicht Bereich West\ngültig vom 03.10.2026, 18.00 UTC bis 04.10.2026, 15.00 UTC\n\nVorhersagebereich: GAFOR-Gebiete 31 bis 39\n\nWetterlage und -entwicklung:\nEin Hochdruckgebiet über Mitteleuropa bestimmt bei schwachen\nStrömungsverhältnissen mit einer sehr milden und trockenen Luftmasse\ndas Wetter im Vorhersagebereich. In der Nacht zum Sonntag kommt es\ngebietsweise zur Bildung einer feuchten Grundschicht, die sich\nvormittags wieder auflöst.\n\nWettergeschehen:\nAm Abend gebietsweise SCT/BKN LYR CI ab FL190, Obergrenzen oberhalb\nvon FL245. Darunter meist wolkenfrei und nur örtlich flache FEW/SCT\nSC-Felder um 4500 FT AMSL. Niederschlagsfrei.\n\nIn der Nacht zum Sonntag zunehmende LYR CI/CS-Felder ab FL170 bis\nüber FL245. Darunter im Verlauf der Nacht Auflösung der SC-Felder,\nzudem gebietsweise Bildung von Dunst und flachen Nebelfeldern.\nIn der zweiten Nachthälfte örtlich zu hochnebelartigem BKN/OVC ST\nunterhalb 1000 FT AGL verdichtend. Schwerpunkt in der Südosthälfte,\nwo die hohe Bewölkung anfangs noch deutlich aufgelockerter ist.\n\nSonntagvormittag lösen sich Dunst und Nebelfeldern zunehmend auf, im\nNeuwiederbecken und entlang von Mosel und Lahn jedoch teils bis zum\nMittag anhaltend. Vom Niederrhein bis zum Münsterland auflockern der\nhohen Bewölkung und häufig SKC.\n\nAm Mittag zunächst im Bergland flacher FEW/SCT CU mit Anfangsbasis um\n3000 FT AMSL. Am Nachmittag dann verbreitet FEW/SCT CU mit Basis\nzwischen 4000 und 5000 FT AMSL. Tops meist um FL060. Im\nNachmittagsverlauf vom Münsterland bis zum nördlichen Niederrhein\nAufzug von BKN CU/SC mit Untergrenzen in 3500 bis 4500 FT AMSL und\nTops bis FL085. Weiterhin niederschlagsfrei.\n\nSichtweite:\n30-60 km. In der Nacht zum Sonntag Rückgang auf 15-25 km,\ngebietsweise Bildung von Dunst und Nebel mit Sichten teils unter 1\nkm.\nSonntagvormittag teils zögerliche Auflösung der Dunst- und\nNebelfelder, bis zum Mittag allgemeine Besserung auf 30-60 km.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 31 - 34:\nAMSL  |  21 UTC  |  09 UTC  |\n 500FT | 070/05KT  18C | 260/05KT  14C |\n1000FT | 060/05KT  17C | 130/05KT  15C |\n1500FT | 050/05KT  15C | 060/05KT  14C |\n2000FT | 040/05KT  14C | 050/05KT  13C |\n3000FT | 080/05KT  12C | 030/05KT  11C |\n5000FT | 260/05KT  08C | 230/05KT  09C |\nFL100  | 290/05KT  01C | 270/10KT  00C |\n\nGAFOR-Gebiete 35 - 39:\nAMSL  |  21 UTC  |  09 UTC  |\n1000FT | 060/05KT  16C | 120/05KT  15C |\n1500FT | 070/05KT  16C | 120/05KT  14C |\n2000FT | 080/05KT  15C | 120/05KT  14C |\n3000FT | 150/05KT  12C | 300/05KT  11C |\n5000FT | 270/05KT  08C | 270/05KT  08C |\nFL100  | 280/05KT  03C | 270/05KT  01C |\n\nTurbulenz:\nNicht signifikant.\n\nVereisung:\nNicht signifikant.\n\nNullgradgrenze:\nZwischen FL100 im Norden und FL115 im Südwesten. Im Verlauf der Nacht\nzum Sonntag auf FL095-FL105 absinkend, mit den geringeren Werten im\nNordosten. Nachfolgend bis zum Berichtsende keine signifikanten\nÄnderungen.\n\nInversionen:\nAbsinkinversion im Süden zwischen FL060 und FL085, im Norden bei\nFL050-FL060. In der Nacht abschwächend und meist nicht mehr\nsignifikant. Außerdem in der Nacht zum Sonntag Bildung einer\nBodeninversion unterhalb 1000 FT AGL, die am Vormittag anhebt und\nsich wieder auflöst. Sonntagnachmittag teils schwache Absinkinversion\nim Süden bei FL055-FL070 und im Norden bei 3000 FT AMSL-FL055.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nDüsseldorf  05.06 | 05.38 | 17.04 | 17.37\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen\nSA/SU   = Sonnenauf/untergang - morgen\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um\n02.00/05.00 UTC\n\nRegionale Wetterberatungszentrale Essen/Ze"
+  },
+  "EDZF": {
+   "bulletin": "FBEU40 EDZF 031800",
+   "bereich": "Mitte",
+   "office": "EDZF",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html",
+   "issued": "2026-10-03T18:00:00.000Z",
+   "validFrom": "2026-10-03T18:00:00.000Z",
+   "validTo": "2026-10-04T15:00:00.000Z",
+   "areas": [
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "50",
+    "51",
+    "52",
+    "53",
+    "61"
+   ],
+   "fetched": "2026-10-04T00:31:49.628Z",
+   "text": "Wetterlage und -entwicklung:\nUnter Hochdruckeinfluss hält sich aktuell eine allgemein trockene,\nsehr milde und stabile Luftmasse, in welcher sich auch in der Nacht\nauf Sonntag eine feuchte Grundschicht ausbilden wird. Bei einer\nHöhenströmung aus westlichen Richtungen wird vor allen in den Süden\ndes Vorhersagegebiets eine feuchtere Luftmasse herangeführt.\n\nWettergeschehen:\nZu Beginn liegt ein dünner FEW/SCT CI oberhalb von FL180-220 vor. Im\nLaufe der ersten Nachthälfte bilden sich örtlich feuchter Dunst und\nNebel sowie flacher BKN/OVC ST mit Untergrenzen in wenigen hundert FT\nAGL. Hauptschwerpunkte sind dabei vor allem der Rheingraben,\nNordhessen und der Neckarraum.\n\nIm Laufe der zweiten Nachthälfte zieht etwa südlich der Mainlinie\neine SCT/BKN AS/CS Bewölkung oberhalb FL140-160 aus Südwesten in das\nVorhersagegebiet herein. Darunter befindet sich örtlich eine SCT/BKN\nSC-Bewölkung zwischen 4500 FT AMSL und FL060. Über Baden-Württemberg\nist die Bewölkung örtlich mit SCT/BKN LYR SC/AC/CI oberhalb FL060-100\netwas kompakterer.\n\nZum späten Sonntagvormittag lösen sich Nebel, feuchter Dunst und\nStratus auf. Die mittelhohe bis hohe Bewölkung nördlich der Mainlinie\nzieht im Nachmittagsverlauf allmählich ostwärts ab, sodass es hier\nbis auf lokal flachen FEW CU um 3500 FT AMSL häufig wolkenlos ist. Im\nSüden hält sich dagegen die SC/AC/CI Bewölkung. Dort sind ISOL EMBD\nTCU/CB mit Basis um FL060 und Tops bis FL260 mit Regenschauern nicht\nganz ausgeschlossen.\n\nSichtweite:\n30-50 km. Im Dunst um 3 km. Im Nebel unter 1 km.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 41 - 47:\nAMSL  |  21 UTC  |  09 UTC  |\n1000FT | 020/05KT  15C | 070/05KT  10C |\n1500FT | 080/05KT  15C | 080/05KT  13C |\n2000FT | 080/05KT  15C | 080/05KT  13C |\n3000FT | 040/05KT  12C | 060/05KT  11C |\n5000FT | 260/05KT  08C | 320/05KT  09C |\nFL100  | 260/10KT  04C | 280/10KT  03C |\n\nGAFOR-Gebiete 50 - 53, 61:\nAMSL  |  21 UTC  |  09 UTC  |\n1000FT | 050/10KT  17C | 020/05KT  13C |\n1500FT | 070/10KT  17C | 040/10KT  14C |\n2000FT | 090/10KT  16C | 050/05KT  15C |\n3000FT | 100/05KT  14C | 120/05KT  14C |\n5000FT | 270/05KT  11C | 260/05KT  11C |\nFL100  | 260/15KT  04C | 270/15KT  02C |\n\nTurbulenz:\nIn und in der Umgebung von TCU/CB mäßig bis stark.\n\nVereisung:\nIn TCU/CB mäßig bis stark. In der SC/AC/CI-Bewölkung örtlich mäßig\nzwischen FL100 und FL220.\n\nNullgradgrenze:\nZwischen FL110 und FL120, bis Sonntagvormittag absinkend auf um\nFL105.\n\nInversionen:\nAbsinkinversion zwischen FL070 und FL100, die sich im Süden in der\nkommenden Nacht auflöst. Zusätzlich bildet sich zunehmend eine\nBodeninversion unterhalb 1200 FT AGL, die sich am Vormittag zögernd\nauflöst.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nGießen  04.57 | 05.30 | 16.57 | 17.30\nKarlsruhe  04.59 | 05.30 | 16.59 | 17.30\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen\nSA/SU   = Sonnenauf/untergang - morgen\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um 02.00\nUTC\n\nFlugwetterzentrale Frankfurt/it/mb",
+   "fullText": "022\nFBEU40 EDZF 031800\nDeutscher Wetterdienst\nFlugwetterübersicht Bereich Mitte\ngültig vom 03.10.2026, 18.00 UTC bis 04.10.2026, 15.00 UTC\n\nVorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61\n\nWetterlage und -entwicklung:\nUnter Hochdruckeinfluss hält sich aktuell eine allgemein trockene,\nsehr milde und stabile Luftmasse, in welcher sich auch in der Nacht\nauf Sonntag eine feuchte Grundschicht ausbilden wird. Bei einer\nHöhenströmung aus westlichen Richtungen wird vor allen in den Süden\ndes Vorhersagegebiets eine feuchtere Luftmasse herangeführt.\n\nWettergeschehen:\nZu Beginn liegt ein dünner FEW/SCT CI oberhalb von FL180-220 vor. Im\nLaufe der ersten Nachthälfte bilden sich örtlich feuchter Dunst und\nNebel sowie flacher BKN/OVC ST mit Untergrenzen in wenigen hundert FT\nAGL. Hauptschwerpunkte sind dabei vor allem der Rheingraben,\nNordhessen und der Neckarraum.\n\nIm Laufe der zweiten Nachthälfte zieht etwa südlich der Mainlinie\neine SCT/BKN AS/CS Bewölkung oberhalb FL140-160 aus Südwesten in das\nVorhersagegebiet herein. Darunter befindet sich örtlich eine SCT/BKN\nSC-Bewölkung zwischen 4500 FT AMSL und FL060. Über Baden-Württemberg\nist die Bewölkung örtlich mit SCT/BKN LYR SC/AC/CI oberhalb FL060-100\netwas kompakterer.\n\nZum späten Sonntagvormittag lösen sich Nebel, feuchter Dunst und\nStratus auf. Die mittelhohe bis hohe Bewölkung nördlich der Mainlinie\nzieht im Nachmittagsverlauf allmählich ostwärts ab, sodass es hier\nbis auf lokal flachen FEW CU um 3500 FT AMSL häufig wolkenlos ist. Im\nSüden hält sich dagegen die SC/AC/CI Bewölkung. Dort sind ISOL EMBD\nTCU/CB mit Basis um FL060 und Tops bis FL260 mit Regenschauern nicht\nganz ausgeschlossen.\n\nSichtweite:\n30-50 km. Im Dunst um 3 km. Im Nebel unter 1 km.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 41 - 47:\nAMSL  |  21 UTC  |  09 UTC  |\n1000FT | 020/05KT  15C | 070/05KT  10C |\n1500FT | 080/05KT  15C | 080/05KT  13C |\n2000FT | 080/05KT  15C | 080/05KT  13C |\n3000FT | 040/05KT  12C | 060/05KT  11C |\n5000FT | 260/05KT  08C | 320/05KT  09C |\nFL100  | 260/10KT  04C | 280/10KT  03C |\n\nGAFOR-Gebiete 50 - 53, 61:\nAMSL  |  21 UTC  |  09 UTC  |\n1000FT | 050/10KT  17C | 020/05KT  13C |\n1500FT | 070/10KT  17C | 040/10KT  14C |\n2000FT | 090/10KT  16C | 050/05KT  15C |\n3000FT | 100/05KT  14C | 120/05KT  14C |\n5000FT | 270/05KT  11C | 260/05KT  11C |\nFL100  | 260/15KT  04C | 270/15KT  02C |\n\nTurbulenz:\nIn und in der Umgebung von TCU/CB mäßig bis stark.\n\nVereisung:\nIn TCU/CB mäßig bis stark. In der SC/AC/CI-Bewölkung örtlich mäßig\nzwischen FL100 und FL220.\n\nNullgradgrenze:\nZwischen FL110 und FL120, bis Sonntagvormittag absinkend auf um\nFL105.\n\nInversionen:\nAbsinkinversion zwischen FL070 und FL100, die sich im Süden in der\nkommenden Nacht auflöst. Zusätzlich bildet sich zunehmend eine\nBodeninversion unterhalb 1200 FT AGL, die sich am Vormittag zögernd\nauflöst.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nGießen  04.57 | 05.30 | 16.57 | 17.30\nKarlsruhe  04.59 | 05.30 | 16.59 | 17.30\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen\nSA/SU   = Sonnenauf/untergang - morgen\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um 02.00\nUTC\n\nFlugwetterzentrale Frankfurt/it/mb"
+  },
+  "EDZH": {
+   "bulletin": "FBEU40 EDZH 031800",
+   "bereich": "Nord",
+   "office": "EDZH",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzh_node.html",
+   "issued": "2026-10-03T18:00:00.000Z",
+   "validFrom": "2026-10-03T18:00:00.000Z",
+   "validTo": "2026-10-04T15:00:00.000Z",
+   "areas": [
+    "00",
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10"
+   ],
+   "fetched": "2026-10-04T00:31:49.855Z",
+   "text": "Wetterlage und -entwicklung:\nEine Zone hohen Drucks erstreckt sich über England, Deutschland und\ndie Karpaten hinweg. Sie ist mit sehr milder Luft wetterbestimmend.\nEine nur sehr schwach ausgeprägte Kaltfront erstreckt sich über\nJütland, die Deutsche Bucht und die nordwestlichsten Niederlande\nhinweg. Sie zieht nur langsam südostwärts und wird am Morgen auf der\nLinie Rügen-Rheinmündung erwartet, am Nachmittag erstreckt sie sich\nüber das nördliche Brandenburg hinweg zum südwestlichen Niedersachsen\nund löst sich dabei zunehmend auf.\n\nWettergeschehen:\nEtwa nordwestlich einer Linie Leck-Emden im Bereich der Kaltfront\ngeschichtet OVC SC/AC mit Untergrenzen zwischen 1500 FT AMSL und 3500\nFT AMSL, örtlich auch nur um 1000 FT AMSL sowie Obergrenzen bis zu\nFL100 und OVC AC/CI in Schichten oberhalb von FL180. Örtlich fällt\netwas Regen oder Sprühregen. Nur im äußersten Nordwesten der\nDeutschen Bucht ist bereits ein Übergang zu SCT/BKN CU mit\nUntergrenzen um 2000 FT AMSL sowie Obergrenzen bis zu 3000 FT AMSL\nerfolgt. Oberhalb von FL200 kann noch bis zum frühen Morgen SCT/BKN\nCI in dünnen Schichten oberhalb von FL200 durchziehen. Südöstlich des\nFrontbereichs ist SCT/BKN, gebietsweise auch OVC AC/CI in dünnen\nSchichten oberhalb von FL180 vorzufinden. Zu Beginn kann auch noch\nörtlich SCT/BKN SC in dünnen Schichten zwischen 4000 FT AMSL und 5000\nFT AMSL auftreten.\nDie frontale Bewölkung kommt bis Mitternacht etwa bis zur Linie\nFehmarn-Papenburg voran und erreicht gegen Sonnenaufgang\nvoraussichtlich die Linie Lauenburg-Nordhorn. Dabei sinken die\nObergrenzen der SC/AC-Bewölkung auf FL080 ab, darunter bildet sich\ngebietsweise BKN/OVC ST mit Untergrenzen um 800 FT AGL, südwestlich\nder Elbe kann der ST zum frühen Morgen hin auch bis zum Boden\nabsinken. Die Untergrenzen der darüber liegenden AC/CI-Bewölkung\nsinken bis etwa FL100 ab. Der Niederschlag kommt weitestgehend zum\nErliegen. Die rückseitigen Auflockerungen erreichen bis Mitternacht\netwa die Linie Föhr-südwestliche Deutsche Bucht und gegen\nSonnenaufgang die Linie Fehmarn-Emden. Dabei lösen sich die CU über\nLand allerdings auf beziehungsweise gehen gebietsweise in SCT/BKN SC\nin dünnen Schichten um 2000 FT AMSL über. In Frontnähe gibt es\naußerdem noch SCT/BKN AC/CI in dünnen Schichten oberhalb von FL140.\nÖrtlich bildet sich über Land zum frühen Morgen hin auch aufliegend\nOVC ST(Nebel) mit Obergrenzen bis zu 300 FT AGL. Vorderseitig der\nFront bildet sich über Land bereits ab dem Abend örtlich aufliegend\nOVC ST(Nebel) mit im Laufe der Nacht bis etwa 500 FT AGL anwachsenden\nObergrenzen. Dabei ist der Schwerpunkt südöstlich der Linie\nLauenburg-Münster zu erwarten, während sich sonst eher vereinzelt\nNebel bildet.\nBis zum späten Nachmittag kommt die frontale Bewölkung noch etwa bis\nzur Linie Wittingen-Münster voran, wobei der ST sich bis zum Mittag\nauflöst und die restliche Bewölkung in SCT/BKN CU/SC mit Untergrenzen\nzwischen 2500 FT AMSL und 3500 FT AMSL bei Obergrenzen bis zu FL075\nübergeht. Außerdem gibt es noch SCT/BKN AC/CI in dünnen Schichten\noberhalb von FL100. Die Rückseitenbedingungen kommen voraussichtlich\nbis zur Linie Lüneburg-Meppen voran, der ST löst sich hier bereits am\nfrühen Vormittag wieder auf. Dann bildet sich auch über Land SCT/BKN\nCU, die Untergrenzen erreichen am Nachmittag 2500 FT AMSL bis 3500 FT\nAMSL, die Obergrenzen sind bei bis zu 4000 FT AMSL zu erwarten.\nVorderseitig der Front löst sich der ST örtlich erst in den\nMittagsstunden auf, hier erfolgt ein Übergang zu FEW/SCT CU mit auf\n3500 FT AMSL bis 4500 FT AMSL ansteigenden Untergrenzen bei\nObergrenzen um 4500 FT AMSL.\n\nSichtweite:\nÜber der See 20 km bis 40 km, über Land 30 km bis 60 km, im\nSprühregen vereinzelt bis 2 km zurückgehend, sonst im Laufe der Nacht\nüber Land zum Teil auf 8 km bis 20 km, zum Teil auch auf 2 km bis 5\nkm und gebietsweise unter 300 m zurückgehend, am Morgen und Vormittag\nzum Teil nur zögernd verbessernd und am Nachmittag verbreitet 30 km\nbis 60 km erreichend.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 00 - 04:\nAMSL  |  21 UTC  |  09 UTC  |\n 500FT | 230/10KT  14C | 270/05KT  13C |\n1000FT | 240/15KT  14C | 280/05KT  11C |\n1500FT | 250/20KT  13C | 300/10KT  10C |\n2000FT | 260/20KT  12C | 310/10KT  08C |\n3000FT | 270/20KT  09C | 290/10KT  06C |\n5000FT | 280/15KT  07C | 270/10KT  07C |\nFL100  | 250/20KT  01C | 260/20KT M00C |\n\nGAFOR-Gebiete 05 - 10:\nAMSL  |  21 UTC  |  09 UTC  |\n 500FT | 300/05KT  17C | 280/05KT  14C |\n1000FT | 290/05KT  16C | 280/05KT  14C |\n1500FT | 290/05KT  14C | 270/05KT  13C |\n2000FT | 280/05KT  13C | 270/10KT  12C |\n3000FT | 280/10KT  11C | 280/05KT  10C |\n5000FT | 260/10KT  07C | 310/05KT  08C |\nFL100  | 280/10KT  01C | 270/10KT  00C |\n\nTurbulenz:\nNicht signifikant.\n\nVereisung:\nNicht signifikant.\n\nNullgradgrenze:\nZwischen FL090 bis FL095 im Nordwesten und FL115 bis FL120 im\nSüdosten, im Nordwesten bis zum späten Vormittag auf FL080 absinkend\nund anschließend auf FL100 bis FL105 anhebend, im Südosten allmählich\nauf FL100 absinkend. Am Nachmittag niedrigste Nullgradgrenze mit\nFL085 bis FL090 von der Kieler Bucht bis zum Emsland.\n\nInversionen:\nÜber Land verbreitet Bodeninversion unterhalb von 500 FT AGL, bis zum\nspäten Vormittag auflösend. Außerdem teilweise schwache\nAbsinkinversion zwischen FL050 und FL070, mit Aufzug der Kaltfront\nauflösend und rückseitig neu bildend zwischen 2500 FT AMSL und 4500\nFT AMSL.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nSchleswig  04.52 | 05.29 | 16.51 | 17.26\nHannover  04.52 | 05.27 | 16.52 | 17.26\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen\nSA/SU   = Sonnenauf/untergang - morgen\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um\n02.00/05.00 UTC\n\nLuftfahrtberatungszentrale Hamburg/FI",
+   "fullText": "917\nFBEU40 EDZH 031800\nDeutscher Wetterdienst\nFlugwetterübersicht Bereich Nord\ngültig vom 03.10.2026, 18.00 UTC bis 04.10.2026, 15.00 UTC\n\nVorhersagebereich: GAFOR-Gebiete 00 bis 10\n\nWetterlage und -entwicklung:\nEine Zone hohen Drucks erstreckt sich über England, Deutschland und\ndie Karpaten hinweg. Sie ist mit sehr milder Luft wetterbestimmend.\nEine nur sehr schwach ausgeprägte Kaltfront erstreckt sich über\nJütland, die Deutsche Bucht und die nordwestlichsten Niederlande\nhinweg. Sie zieht nur langsam südostwärts und wird am Morgen auf der\nLinie Rügen-Rheinmündung erwartet, am Nachmittag erstreckt sie sich\nüber das nördliche Brandenburg hinweg zum südwestlichen Niedersachsen\nund löst sich dabei zunehmend auf.\n\nWettergeschehen:\nEtwa nordwestlich einer Linie Leck-Emden im Bereich der Kaltfront\ngeschichtet OVC SC/AC mit Untergrenzen zwischen 1500 FT AMSL und 3500\nFT AMSL, örtlich auch nur um 1000 FT AMSL sowie Obergrenzen bis zu\nFL100 und OVC AC/CI in Schichten oberhalb von FL180. Örtlich fällt\netwas Regen oder Sprühregen. Nur im äußersten Nordwesten der\nDeutschen Bucht ist bereits ein Übergang zu SCT/BKN CU mit\nUntergrenzen um 2000 FT AMSL sowie Obergrenzen bis zu 3000 FT AMSL\nerfolgt. Oberhalb von FL200 kann noch bis zum frühen Morgen SCT/BKN\nCI in dünnen Schichten oberhalb von FL200 durchziehen. Südöstlich des\nFrontbereichs ist SCT/BKN, gebietsweise auch OVC AC/CI in dünnen\nSchichten oberhalb von FL180 vorzufinden. Zu Beginn kann auch noch\nörtlich SCT/BKN SC in dünnen Schichten zwischen 4000 FT AMSL und 5000\nFT AMSL auftreten.\nDie frontale Bewölkung kommt bis Mitternacht etwa bis zur Linie\nFehmarn-Papenburg voran und erreicht gegen Sonnenaufgang\nvoraussichtlich die Linie Lauenburg-Nordhorn. Dabei sinken die\nObergrenzen der SC/AC-Bewölkung auf FL080 ab, darunter bildet sich\ngebietsweise BKN/OVC ST mit Untergrenzen um 800 FT AGL, südwestlich\nder Elbe kann der ST zum frühen Morgen hin auch bis zum Boden\nabsinken. Die Untergrenzen der darüber liegenden AC/CI-Bewölkung\nsinken bis etwa FL100 ab. Der Niederschlag kommt weitestgehend zum\nErliegen. Die rückseitigen Auflockerungen erreichen bis Mitternacht\netwa die Linie Föhr-südwestliche Deutsche Bucht und gegen\nSonnenaufgang die Linie Fehmarn-Emden. Dabei lösen sich die CU über\nLand allerdings auf beziehungsweise gehen gebietsweise in SCT/BKN SC\nin dünnen Schichten um 2000 FT AMSL über. In Frontnähe gibt es\naußerdem noch SCT/BKN AC/CI in dünnen Schichten oberhalb von FL140.\nÖrtlich bildet sich über Land zum frühen Morgen hin auch aufliegend\nOVC ST(Nebel) mit Obergrenzen bis zu 300 FT AGL. Vorderseitig der\nFront bildet sich über Land bereits ab dem Abend örtlich aufliegend\nOVC ST(Nebel) mit im Laufe der Nacht bis etwa 500 FT AGL anwachsenden\nObergrenzen. Dabei ist der Schwerpunkt südöstlich der Linie\nLauenburg-Münster zu erwarten, während sich sonst eher vereinzelt\nNebel bildet.\nBis zum späten Nachmittag kommt die frontale Bewölkung noch etwa bis\nzur Linie Wittingen-Münster voran, wobei der ST sich bis zum Mittag\nauflöst und die restliche Bewölkung in SCT/BKN CU/SC mit Untergrenzen\nzwischen 2500 FT AMSL und 3500 FT AMSL bei Obergrenzen bis zu FL075\nübergeht. Außerdem gibt es noch SCT/BKN AC/CI in dünnen Schichten\noberhalb von FL100. Die Rückseitenbedingungen kommen voraussichtlich\nbis zur Linie Lüneburg-Meppen voran, der ST löst sich hier bereits am\nfrühen Vormittag wieder auf. Dann bildet sich auch über Land SCT/BKN\nCU, die Untergrenzen erreichen am Nachmittag 2500 FT AMSL bis 3500 FT\nAMSL, die Obergrenzen sind bei bis zu 4000 FT AMSL zu erwarten.\nVorderseitig der Front löst sich der ST örtlich erst in den\nMittagsstunden auf, hier erfolgt ein Übergang zu FEW/SCT CU mit auf\n3500 FT AMSL bis 4500 FT AMSL ansteigenden Untergrenzen bei\nObergrenzen um 4500 FT AMSL.\n\nSichtweite:\nÜber der See 20 km bis 40 km, über Land 30 km bis 60 km, im\nSprühregen vereinzelt bis 2 km zurückgehend, sonst im Laufe der Nacht\nüber Land zum Teil auf 8 km bis 20 km, zum Teil auch auf 2 km bis 5\nkm und gebietsweise unter 300 m zurückgehend, am Morgen und Vormittag\nzum Teil nur zögernd verbessernd und am Nachmittag verbreitet 30 km\nbis 60 km erreichend.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 00 - 04:\nAMSL  |  21 UTC  |  09 UTC  |\n 500FT | 230/10KT  14C | 270/05KT  13C |\n1000FT | 240/15KT  14C | 280/05KT  11C |\n1500FT | 250/20KT  13C | 300/10KT  10C |\n2000FT | 260/20KT  12C | 310/10KT  08C |\n3000FT | 270/20KT  09C | 290/10KT  06C |\n5000FT | 280/15KT  07C | 270/10KT  07C |\nFL100  | 250/20KT  01C | 260/20KT M00C |\n\nGAFOR-Gebiete 05 - 10:\nAMSL  |  21 UTC  |  09 UTC  |\n 500FT | 300/05KT  17C | 280/05KT  14C |\n1000FT | 290/05KT  16C | 280/05KT  14C |\n1500FT | 290/05KT  14C | 270/05KT  13C |\n2000FT | 280/05KT  13C | 270/10KT  12C |\n3000FT | 280/10KT  11C | 280/05KT  10C |\n5000FT | 260/10KT  07C | 310/05KT  08C |\nFL100  | 280/10KT  01C | 270/10KT  00C |\n\nTurbulenz:\nNicht signifikant.\n\nVereisung:\nNicht signifikant.\n\nNullgradgrenze:\nZwischen FL090 bis FL095 im Nordwesten und FL115 bis FL120 im\nSüdosten, im Nordwesten bis zum späten Vormittag auf FL080 absinkend\nund anschließend auf FL100 bis FL105 anhebend, im Südosten allmählich\nauf FL100 absinkend. Am Nachmittag niedrigste Nullgradgrenze mit\nFL085 bis FL090 von der Kieler Bucht bis zum Emsland.\n\nInversionen:\nÜber Land verbreitet Bodeninversion unterhalb von 500 FT AGL, bis zum\nspäten Vormittag auflösend. Außerdem teilweise schwache\nAbsinkinversion zwischen FL050 und FL070, mit Aufzug der Kaltfront\nauflösend und rückseitig neu bildend zwischen 2500 FT AMSL und 4500\nFT AMSL.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nSchleswig  04.52 | 05.29 | 16.51 | 17.26\nHannover  04.52 | 05.27 | 16.52 | 17.26\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen\nSA/SU   = Sonnenauf/untergang - morgen\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um\n02.00/05.00 UTC\n\nLuftfahrtberatungszentrale Hamburg/FI"
+  },
+  "EDZM": {
+   "bulletin": "FBEU40 EDZM 031800",
+   "bereich": "Süd",
+   "office": "EDZM",
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html",
+   "issued": "2026-10-03T18:00:00.000Z",
+   "validFrom": "2026-10-03T18:00:00.000Z",
+   "validTo": "2026-10-04T15:00:00.000Z",
+   "areas": [
+    "54",
+    "55",
+    "56",
+    "57",
+    "58",
+    "62",
+    "63",
+    "64",
+    "71",
+    "72",
+    "73",
+    "74",
+    "75",
+    "76",
+    "81",
+    "82",
+    "83",
+    "84"
+   ],
+   "fetched": "2026-10-04T00:31:50.049Z",
+   "text": "Wetterlage und -entwicklung:\nSüddeutschland liegt im Einflussbereich einer Hochdruckbrücke. Die\nLuft ist vor allem in höheren Schichten feucht; zusätzlich entsteht\nnachts unter einer Inversion eine feuchte bodennahe Schicht, die\nSonntagmorgen langsam abtrocknet. Im Laufe des Sonntags sickert\nvorderseitig eines Kaltlufttropfens/Höhentiefs aus Nordwesten auch\nmitteltroposphärisch ein Schub feuchterer Luft ein.\n\nWettergeschehen:\nGebietsweise zeigen sich eingangs der Nacht dünne SC-Schollen um\nFL050-060. Darüber im gesamten Gebiet Durchzug von CI-Feldern\noberhalb FL245.\n\nIm Laufe der ersten Nachthälfte lösen sich die SC-Schollen oft auf.\nÜbrig bleiben die CI-Felder. Im weiteren Verlauf entstehen zunächst\nin Tal- und Muldenlagen sowie in Gewässernähe erste, meist flache\nNebelfelder. In der zweiten Nachthälfte dehnen sich diese deutlich\naus. Nebelobergrenze um 2000 FT AMSL.\n\nIn der Früh gebietsweise Nebel, darüber weiterhin CI-Felder oberhalb\nFL245. Im Laufe des Morgens Nebelauflösung beginnend an den Rändern,\nkurzzeitig kann der Nebel auch in Hochnebel/BKN ST übergehen mit\nUntergrenzen unter 500 FT AGL. Bis zum Vormittag löst sich jedoch\nauch dieser auf. Anschließend bildet sich im gesamten Gebiet\nunterhalb der weiterhin durchziehenden hohen Wolkenfelder FEW/SCT CU\nmit Basis in 3500-4000 FT AMSL. Bis zum Mittag Anstieg auf 5000 FT\nAMSL. TOPS bis FL070.\n\nNachmittags zieht aus Nordwesten dichtere AC/CS-Bewölkung oberhalb\nFL130-160 heran und erreicht bis 15:00 UTC ungefähr die Linie\nUlm-Nürnberg-Hof.\n\nSichtweite:\nNachts 10-20 km. Im Nebel unter 1 km.\nIm Laufe des Morgens dann Sichtbesserung, vormittags dann meist\nzwischen 30 und 60 km. Unter tiefem ST morgens vorübergehend 2-7 km\nSicht.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 54 - 58, 63, 64:\nAMSL  |  21 UTC  |  09 UTC  |\n1500FT | 010/05KT  17C | 320/05KT  14C |\n2000FT | 030/05KT  17C | 130/05KT  14C |\n3000FT | 170/05KT  14C | 210/05KT  13C |\n5000FT | 250/05KT  10C | 230/05KT  09C |\nFL100  | 250/15KT  06C | 270/20KT  04C |\n\nGAFOR-Gebiete 62, 71 - 84:\nAMSL  |  21 UTC  |  09 UTC  |\n2000FT | 100/05KT  17C | 150/05KT  14C |\n3000FT | 100/05KT  15C | 100/05KT  14C |\n5000FT | 020/05KT  12C | 120/05KT  11C |\nFL100  | 230/10KT  03C | 270/10KT  04C |\n\nTurbulenz:\nAb Sonntagnachmittag im Umfeld des Mains in einem schmalen Band evtl.\nmäßig zwischen FL100 und FL160.\n\nVereisung:\nEs wird keine mäßige oder starke Vereisung erwartet.\n\nNullgradgrenze:\nUm FL110-120.\n\nInversionen:\nNachts verbreitet Ausbildung einer Bodeninversion mit Obergrenze in\n2500 bis 3500 FT AMSL. Im Laufe des Morgens auflösend bzw. in eine\nAbsinkinversion zwischen FL050 und FL080 übergehend.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nNürnberg  04.48 | 05.20 | 16.48 | 17.20\nMünchen  04.44 | 05.16 | 16.46 | 17.17\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen\nSA/SU   = Sonnenauf/untergang - morgen\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um 02.00\nUTC\n\nLuftfahrtberatungszentrale München/pv",
+   "fullText": "919\nFBEU40 EDZM 031800\nDeutscher Wetterdienst\nFlugwetterübersicht Bereich Süd\ngültig vom 03.10.2026, 18.00 UTC bis 04.10.2026, 15.00 UTC\n\nVorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84\n\nWetterlage und -entwicklung:\nSüddeutschland liegt im Einflussbereich einer Hochdruckbrücke. Die\nLuft ist vor allem in höheren Schichten feucht; zusätzlich entsteht\nnachts unter einer Inversion eine feuchte bodennahe Schicht, die\nSonntagmorgen langsam abtrocknet. Im Laufe des Sonntags sickert\nvorderseitig eines Kaltlufttropfens/Höhentiefs aus Nordwesten auch\nmitteltroposphärisch ein Schub feuchterer Luft ein.\n\nWettergeschehen:\nGebietsweise zeigen sich eingangs der Nacht dünne SC-Schollen um\nFL050-060. Darüber im gesamten Gebiet Durchzug von CI-Feldern\noberhalb FL245.\n\nIm Laufe der ersten Nachthälfte lösen sich die SC-Schollen oft auf.\nÜbrig bleiben die CI-Felder. Im weiteren Verlauf entstehen zunächst\nin Tal- und Muldenlagen sowie in Gewässernähe erste, meist flache\nNebelfelder. In der zweiten Nachthälfte dehnen sich diese deutlich\naus. Nebelobergrenze um 2000 FT AMSL.\n\nIn der Früh gebietsweise Nebel, darüber weiterhin CI-Felder oberhalb\nFL245. Im Laufe des Morgens Nebelauflösung beginnend an den Rändern,\nkurzzeitig kann der Nebel auch in Hochnebel/BKN ST übergehen mit\nUntergrenzen unter 500 FT AGL. Bis zum Vormittag löst sich jedoch\nauch dieser auf. Anschließend bildet sich im gesamten Gebiet\nunterhalb der weiterhin durchziehenden hohen Wolkenfelder FEW/SCT CU\nmit Basis in 3500-4000 FT AMSL. Bis zum Mittag Anstieg auf 5000 FT\nAMSL. TOPS bis FL070.\n\nNachmittags zieht aus Nordwesten dichtere AC/CS-Bewölkung oberhalb\nFL130-160 heran und erreicht bis 15:00 UTC ungefähr die Linie\nUlm-Nürnberg-Hof.\n\nSichtweite:\nNachts 10-20 km. Im Nebel unter 1 km.\nIm Laufe des Morgens dann Sichtbesserung, vormittags dann meist\nzwischen 30 und 60 km. Unter tiefem ST morgens vorübergehend 2-7 km\nSicht.\n\nHöhenwind und -temperatur:\nGAFOR-Gebiete 54 - 58, 63, 64:\nAMSL  |  21 UTC  |  09 UTC  |\n1500FT | 010/05KT  17C | 320/05KT  14C |\n2000FT | 030/05KT  17C | 130/05KT  14C |\n3000FT | 170/05KT  14C | 210/05KT  13C |\n5000FT | 250/05KT  10C | 230/05KT  09C |\nFL100  | 250/15KT  06C | 270/20KT  04C |\n\nGAFOR-Gebiete 62, 71 - 84:\nAMSL  |  21 UTC  |  09 UTC  |\n2000FT | 100/05KT  17C | 150/05KT  14C |\n3000FT | 100/05KT  15C | 100/05KT  14C |\n5000FT | 020/05KT  12C | 120/05KT  11C |\nFL100  | 230/10KT  03C | 270/10KT  04C |\n\nTurbulenz:\nAb Sonntagnachmittag im Umfeld des Mains in einem schmalen Band evtl.\nmäßig zwischen FL100 und FL160.\n\nVereisung:\nEs wird keine mäßige oder starke Vereisung erwartet.\n\nNullgradgrenze:\nUm FL110-120.\n\nInversionen:\nNachts verbreitet Ausbildung einer Bodeninversion mit Obergrenze in\n2500 bis 3500 FT AMSL. Im Laufe des Morgens auflösend bzw. in eine\nAbsinkinversion zwischen FL050 und FL080 übergehend.\n\nZeiten in UTC: BDA  |  SA   |  SU   |  BDE\nNürnberg  04.48 | 05.20 | 16.48 | 17.20\nMünchen  04.44 | 05.16 | 16.46 | 17.17\nBDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen\nSA/SU   = Sonnenauf/untergang - morgen\n\nDie nächste planmäßige Aktualisierung erfolgt am 04.10.2026 um 02.00\nUTC\n\nLuftfahrtberatungszentrale München/pv"
+  }
+ },
+ "balloon": {
+  "10": {
+   "id": "10",
+   "name": "Weser-Leine-Bergland",
+   "refAltFt": 1400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_10",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Holzminden",
+    "lat": 51.83,
+    "lon": 9.47,
+    "elevFt": 520
+   },
+   "fetched": "2026-10-03T21:48:11.248Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/10.json"
+  },
+  "11": {
+   "id": "11",
+   "name": "Mecklenburgisches Tiefland",
+   "refAltFt": 300,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_11",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Rostock",
+    "lat": 54.08,
+    "lon": 12.15,
+    "elevFt": 70
+   },
+   "fetched": "2026-10-03T21:48:11.594Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/11.json"
+  },
+  "12": {
+   "id": "12",
+   "name": "Vorpommern",
+   "refAltFt": 200,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_12",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Greifswald",
+    "lat": 54.1,
+    "lon": 13.38,
+    "elevFt": 0
+   },
+   "fetched": "2026-10-03T21:48:11.940Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/12.json"
+  },
+  "13": {
+   "id": "13",
+   "name": "Westliche Mecklenburgische Seenplatte und Prignitz",
+   "refAltFt": 400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_13",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Parchim",
+    "lat": 53.43,
+    "lon": 11.83,
+    "elevFt": 180
+   },
+   "fetched": "2026-10-03T21:48:12.271Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/13.json"
+  },
+  "14": {
+   "id": "14",
+   "name": "Östliche Mecklenburgische Seenplatte und Uckermark",
+   "refAltFt": 400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_14",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Neustrelitz",
+    "lat": 53.37,
+    "lon": 13.08,
+    "elevFt": 250
+   },
+   "fetched": "2026-10-03T21:48:12.749Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/14.json"
+  },
+  "15": {
+   "id": "15",
+   "name": "Altmark",
+   "refAltFt": 400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_15",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Stendal",
+    "lat": 52.6,
+    "lon": 11.85,
+    "elevFt": 110
+   },
+   "fetched": "2026-10-03T21:48:13.221Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/15.json"
+  },
+  "16": {
+   "id": "16",
+   "name": "Fläming",
+   "refAltFt": 600,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_16",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Jüterbog",
+    "lat": 52,
+    "lon": 13.05,
+    "elevFt": 260
+   },
+   "fetched": "2026-10-03T21:48:13.664Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/16.json"
+  },
+  "17": {
+   "id": "17",
+   "name": "Havelland",
+   "refAltFt": 300,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_17",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Potsdam",
+    "lat": 52.4,
+    "lon": 13.05,
+    "elevFt": 140
+   },
+   "fetched": "2026-10-03T21:48:14.092Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/17.json"
+  },
+  "18": {
+   "id": "18",
+   "name": "Barnim und Oderbruch",
+   "refAltFt": 400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_18",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Strausberg",
+    "lat": 52.58,
+    "lon": 13.9,
+    "elevFt": 240
+   },
+   "fetched": "2026-10-03T21:48:14.572Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/18.json"
+  },
+  "19": {
+   "id": "19",
+   "name": "Dahme-Spree-Gebiet und Gubener Waldland",
+   "refAltFt": 400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_19",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Lübben",
+    "lat": 51.93,
+    "lon": 13.9,
+    "elevFt": 170
+   },
+   "fetched": "2026-10-03T21:48:15.000Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/19.json"
+  },
+  "20": {
+   "id": "20",
+   "name": "Magdeburger Börde und nördliches Harzvorland",
+   "refAltFt": 700,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_20",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Oschersleben",
+    "lat": 52.03,
+    "lon": 11.23,
+    "elevFt": 470
+   },
+   "fetched": "2026-10-03T21:48:15.451Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/20.json"
+  },
+  "21": {
+   "id": "21",
+   "name": "Harz",
+   "refAltFt": 2300,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_21",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Braunlage",
+    "lat": 51.73,
+    "lon": 10.62,
+    "elevFt": 2540
+   },
+   "fetched": "2026-10-03T21:48:15.756Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/21.json"
+  },
+  "22": {
+   "id": "22",
+   "name": "Leipziger Tieflandsbucht und Elbe-Elster-Niederung",
+   "refAltFt": 600,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_22",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Delitzsch",
+    "lat": 51.52,
+    "lon": 12.35,
+    "elevFt": 330
+   },
+   "fetched": "2026-10-03T21:48:16.107Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/22.json"
+  },
+  "23": {
+   "id": "23",
+   "name": "Niederlausitzer Heiden",
+   "refAltFt": 600,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_23",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Senftenberg",
+    "lat": 51.53,
+    "lon": 14,
+    "elevFt": 330
+   },
+   "fetched": "2026-10-03T21:48:16.423Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/23.json"
+  },
+  "24": {
+   "id": "24",
+   "name": "Thüringer Becken",
+   "refAltFt": 1400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_24",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Sömmerda",
+    "lat": 51.17,
+    "lon": 11.13,
+    "elevFt": 480
+   },
+   "fetched": "2026-10-03T21:48:16.741Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/24.json"
+  },
+  "25": {
+   "id": "25",
+   "name": "Mittelsächsisches Hügelland",
+   "refAltFt": 1300,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_25",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Rochlitz",
+    "lat": 51.05,
+    "lon": 12.8,
+    "elevFt": 710
+   },
+   "fetched": "2026-10-03T21:48:17.087Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/25.json"
+  },
+  "26": {
+   "id": "26",
+   "name": "Oberlausitz und Lausitzer Gebirge",
+   "refAltFt": 1500,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_26",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Bautzen",
+    "lat": 51.17,
+    "lon": 14.43,
+    "elevFt": 660
+   },
+   "fetched": "2026-10-03T21:48:17.399Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/26.json"
+  },
+  "27": {
+   "id": "27",
+   "name": "Thüringer Wald",
+   "refAltFt": 2800,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_27",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Ilmenau",
+    "lat": 50.68,
+    "lon": 10.93,
+    "elevFt": 1680
+   },
+   "fetched": "2026-10-03T21:48:17.708Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/27.json"
+  },
+  "28": {
+   "id": "28",
+   "name": "Erzgebirge",
+   "refAltFt": 2800,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_28",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Marienberg",
+    "lat": 50.65,
+    "lon": 13.17,
+    "elevFt": 2210
+   },
+   "fetched": "2026-10-03T21:48:18.017Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/28.json"
+  },
+  "31": {
+   "id": "31",
+   "name": "Niederrheinisches Tiefland",
+   "refAltFt": 400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_31",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Krefeld",
+    "lat": 51.33,
+    "lon": 6.57,
+    "elevFt": 130
+   },
+   "fetched": "2026-10-03T21:48:18.306Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/31.json"
+  },
+  "32": {
+   "id": "32",
+   "name": "Münsterland",
+   "refAltFt": 500,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_32",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Münster",
+    "lat": 51.97,
+    "lon": 7.63,
+    "elevFt": 200
+   },
+   "fetched": "2026-10-03T21:48:18.607Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/32.json"
+  },
+  "33": {
+   "id": "33",
+   "name": "Ruhrgebiet und Ostwestfalen",
+   "refAltFt": 800,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_33",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Dortmund",
+    "lat": 51.52,
+    "lon": 7.47,
+    "elevFt": 310
+   },
+   "fetched": "2026-10-03T21:48:18.898Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/33.json"
+  },
+  "34": {
+   "id": "34",
+   "name": "Niederrheinische Bucht",
+   "refAltFt": 700,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_34",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Erftstadt",
+    "lat": 50.8,
+    "lon": 6.77,
+    "elevFt": 320
+   },
+   "fetched": "2026-10-03T21:48:19.261Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/34.json"
+  },
+  "35": {
+   "id": "35",
+   "name": "Bergisches Land",
+   "refAltFt": 1400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_35",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Gummersbach",
+    "lat": 51.02,
+    "lon": 7.57,
+    "elevFt": 860
+   },
+   "fetched": "2026-10-03T21:48:19.581Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/35.json"
+  },
+  "36": {
+   "id": "36",
+   "name": "Sauerland",
+   "refAltFt": 2400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_36",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Schmallenberg",
+    "lat": 51.15,
+    "lon": 8.28,
+    "elevFt": 1750
+   },
+   "fetched": "2026-10-03T21:48:19.888Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/36.json"
+  },
+  "37": {
+   "id": "37",
+   "name": "Eifel",
+   "refAltFt": 2000,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_37",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Gerolstein",
+    "lat": 50.22,
+    "lon": 6.67,
+    "elevFt": 1500
+   },
+   "fetched": "2026-10-03T21:48:20.227Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/37.json"
+  },
+  "38": {
+   "id": "38",
+   "name": "Neuwieder Becken",
+   "refAltFt": 1000,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_38",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Ochtendung",
+    "lat": 50.35,
+    "lon": 7.38,
+    "elevFt": 460
+   },
+   "fetched": "2026-10-03T21:48:20.551Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/38.json"
+  },
+  "39": {
+   "id": "39",
+   "name": "Westerwald",
+   "refAltFt": 1900,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_39",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Bad Marienberg",
+    "lat": 50.65,
+    "lon": 7.95,
+    "elevFt": 1500
+   },
+   "fetched": "2026-10-03T21:48:20.901Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/39.json"
+  },
+  "41": {
+   "id": "41",
+   "name": "Hunsrück",
+   "refAltFt": 2300,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_41",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Hahn",
+    "lat": 49.95,
+    "lon": 7.27,
+    "elevFt": 1390
+   },
+   "fetched": "2026-10-03T21:48:21.236Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/41.json"
+  },
+  "42": {
+   "id": "42",
+   "name": "Taunus",
+   "refAltFt": 2000,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_42",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Bad Camberg",
+    "lat": 50.3,
+    "lon": 8.25,
+    "elevFt": 870
+   },
+   "fetched": "2026-10-03T21:48:21.562Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/42.json"
+  },
+  "43": {
+   "id": "43",
+   "name": "Nordhessisches Bergland und Vogelsberg",
+   "refAltFt": 2000,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_43",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Alsfeld",
+    "lat": 50.75,
+    "lon": 9.27,
+    "elevFt": 980
+   },
+   "fetched": "2026-10-03T21:48:21.859Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/43.json"
+  },
+  "44": {
+   "id": "44",
+   "name": "Rheinpfalz und Saarland",
+   "refAltFt": 1900,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_44",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Kaiserslautern",
+    "lat": 49.43,
+    "lon": 7.77,
+    "elevFt": 980
+   },
+   "fetched": "2026-10-03T21:48:22.226Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/44.json"
+  },
+  "45": {
+   "id": "45",
+   "name": "Rhein-Main-Gebiet und Wetterau",
+   "refAltFt": 800,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_45",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Offenbach/Main",
+    "lat": 50.1,
+    "lon": 8.77,
+    "elevFt": 430
+   },
+   "fetched": "2026-10-03T21:48:22.571Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/45.json"
+  },
+  "46": {
+   "id": "46",
+   "name": "Odenwald und Spessart",
+   "refAltFt": 1800,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_46",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Michelstadt",
+    "lat": 49.68,
+    "lon": 8.97,
+    "elevFt": 950
+   },
+   "fetched": "2026-10-03T21:48:22.908Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/46.json"
+  },
+  "47": {
+   "id": "47",
+   "name": "Rhön",
+   "refAltFt": 2800,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_47",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Gersfeld",
+    "lat": 50.45,
+    "lon": 9.92,
+    "elevFt": 2210
+   },
+   "fetched": "2026-10-03T21:48:23.221Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/47.json"
+  },
+  "50": {
+   "id": "50",
+   "name": "Südlicher Oberrheingraben",
+   "refAltFt": 1100,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_50",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Breisach",
+    "lat": 48.03,
+    "lon": 7.6,
+    "elevFt": 660
+   },
+   "fetched": "2026-10-03T21:48:23.583Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/50.json"
+  },
+  "51": {
+   "id": "51",
+   "name": "Mittlerer Oberrheingraben",
+   "refAltFt": 800,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_51",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Germersheim",
+    "lat": 49.22,
+    "lon": 8.37,
+    "elevFt": 320
+   },
+   "fetched": "2026-10-03T21:48:23.927Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/51.json"
+  },
+  "52": {
+   "id": "52",
+   "name": "Kraichgau",
+   "refAltFt": 1100,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_52",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Sinsheim",
+    "lat": 49.25,
+    "lon": 8.88,
+    "elevFt": 670
+   },
+   "fetched": "2026-10-03T21:48:24.245Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/52.json"
+  },
+  "53": {
+   "id": "53",
+   "name": "Oberer und mittlerer Neckarraum",
+   "refAltFt": 1700,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_53",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Bietigheim-Bissingen",
+    "lat": 48.95,
+    "lon": 9.13,
+    "elevFt": 810
+   },
+   "fetched": "2026-10-03T21:48:24.573Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/53.json"
+  },
+  "54": {
+   "id": "54",
+   "name": "Mainfranken und nördliches Unterfranken",
+   "refAltFt": 1400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_54",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Schweinfurt",
+    "lat": 50.03,
+    "lon": 10.23,
+    "elevFt": 880
+   },
+   "fetched": "2026-10-03T21:48:24.873Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/54.json"
+  },
+  "55": {
+   "id": "55",
+   "name": "Kocher-Jagst-Gebiet und Frankenhöhe",
+   "refAltFt": 1900,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_55",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Schwäbisch Hall",
+    "lat": 49.1,
+    "lon": 9.75,
+    "elevFt": 1270
+   },
+   "fetched": "2026-10-03T21:48:25.219Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/55.json"
+  },
+  "56": {
+   "id": "56",
+   "name": "Mittelfranken",
+   "refAltFt": 1700,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_56",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Fürth",
+    "lat": 49.47,
+    "lon": 11,
+    "elevFt": 980
+   },
+   "fetched": "2026-10-03T21:48:25.550Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/56.json"
+  },
+  "57": {
+   "id": "57",
+   "name": "Oberfranken",
+   "refAltFt": 1900,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_57",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Pegnitz",
+    "lat": 49.77,
+    "lon": 11.57,
+    "elevFt": 1630
+   },
+   "fetched": "2026-10-03T21:48:25.897Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/57.json"
+  },
+  "58": {
+   "id": "58",
+   "name": "Frankenwald und Fichtelgebirge",
+   "refAltFt": 2700,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_58",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Münchberg",
+    "lat": 50.22,
+    "lon": 11.73,
+    "elevFt": 1970
+   },
+   "fetched": "2026-10-03T21:48:26.243Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/58.json"
+  },
+  "61": {
+   "id": "61",
+   "name": "Schwarzwald",
+   "refAltFt": 4000,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_61",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Freudenstadt",
+    "lat": 48.47,
+    "lon": 8.42,
+    "elevFt": 2200
+   },
+   "fetched": "2026-10-03T21:48:26.543Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/61.json"
+  },
+  "62": {
+   "id": "62",
+   "name": "Schwäbische Alb",
+   "refAltFt": 3000,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_62",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Münsingen",
+    "lat": 48.42,
+    "lon": 9.5,
+    "elevFt": 2450
+   },
+   "fetched": "2026-10-03T21:48:26.880Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/62.json"
+  },
+  "63": {
+   "id": "63",
+   "name": "Fränkische Alb",
+   "refAltFt": 2000,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_63",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Beilngries",
+    "lat": 49.03,
+    "lon": 11.48,
+    "elevFt": 1550
+   },
+   "fetched": "2026-10-03T21:48:27.199Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/63.json"
+  },
+  "64": {
+   "id": "64",
+   "name": "Oberpfälzer Wald",
+   "refAltFt": 2400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_64",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Vohenstrauß",
+    "lat": 49.62,
+    "lon": 12.33,
+    "elevFt": 1790
+   },
+   "fetched": "2026-10-03T21:48:27.540Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/64.json"
+  },
+  "71": {
+   "id": "71",
+   "name": "Bodenseeraum",
+   "refAltFt": 2100,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_71",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Konstanz",
+    "lat": 47.67,
+    "lon": 9.17,
+    "elevFt": 1360
+   },
+   "fetched": "2026-10-03T21:48:27.914Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/71.json"
+  },
+  "72": {
+   "id": "72",
+   "name": "Schwäbische Hochebene",
+   "refAltFt": 2400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_72",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Biberach/Riss",
+    "lat": 48.1,
+    "lon": 9.8,
+    "elevFt": 1840
+   },
+   "fetched": "2026-10-03T21:48:28.351Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/72.json"
+  },
+  "73": {
+   "id": "73",
+   "name": "Westliche Donauniederung",
+   "refAltFt": 1700,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_73",
+   "title": "Vorhersage ausgegeben 03.10.2026 17:00 UTC (ICON-EU 2026-10-03 12 UTC)",
+   "station": {
+    "name": "Neuburg/Donau",
+    "lat": 48.73,
+    "lon": 11.18,
+    "elevFt": 1360
+   },
+   "fetched": "2026-10-03T21:48:28.648Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/73.json"
+  },
+  "74": {
+   "id": "74",
+   "name": "Südbayerisches Hügelland",
+   "refAltFt": 1800,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_74",
+   "title": "Vorhersage ausgegeben 03.10.2026 17:00 UTC (ICON-EU 2026-10-03 12 UTC)",
+   "station": {
+    "name": "Landshut",
+    "lat": 48.55,
+    "lon": 12.15,
+    "elevFt": 1340
+   },
+   "fetched": "2026-10-03T21:48:29.023Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/74.json"
+  },
+  "75": {
+   "id": "75",
+   "name": "Östliche Donau- und Naabniederung",
+   "refAltFt": 1600,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_75",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Straubing",
+    "lat": 48.87,
+    "lon": 12.58,
+    "elevFt": 1100
+   },
+   "fetched": "2026-10-03T21:48:29.481Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/75.json"
+  },
+  "76": {
+   "id": "76",
+   "name": "Bayerischer Wald",
+   "refAltFt": 3300,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_76",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Regen",
+    "lat": 48.97,
+    "lon": 13.13,
+    "elevFt": 1960
+   },
+   "fetched": "2026-10-03T21:48:29.909Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/76.json"
+  },
+  "81": {
+   "id": "81",
+   "name": "Westliches Alpenvorland",
+   "refAltFt": 3300,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_81",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Kempten",
+    "lat": 47.73,
+    "lon": 10.32,
+    "elevFt": 2280
+   },
+   "fetched": "2026-10-03T21:48:30.335Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/81.json"
+  },
+  "82": {
+   "id": "82",
+   "name": "Östliches Alpenvorland",
+   "refAltFt": 2500,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_82",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Holzkirchen",
+    "lat": 47.88,
+    "lon": 11.7,
+    "elevFt": 2300
+   },
+   "fetched": "2026-10-03T21:48:30.805Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/82.json"
+  },
+  "83": {
+   "id": "83",
+   "name": "Allgäuer Alpen",
+   "refAltFt": 6500,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_83",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Oberstdorf",
+    "lat": 47.42,
+    "lon": 10.28,
+    "elevFt": 3450
+   },
+   "fetched": "2026-10-03T21:48:31.100Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/83.json"
+  },
+  "84": {
+   "id": "84",
+   "name": "Östliche Bayerische Alpen",
+   "refAltFt": 6500,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_84",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Schliersee",
+    "lat": 47.73,
+    "lon": 11.87,
+    "elevFt": 2860
+   },
+   "fetched": "2026-10-03T21:48:31.411Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/84.json"
+  },
+  "01": {
+   "id": "01",
+   "name": "Ostfriesland",
+   "refAltFt": 200,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_01",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Wittmund",
+    "lat": 53.58,
+    "lon": 7.78,
+    "elevFt": 10
+   },
+   "fetched": "2026-10-03T21:48:08.235Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/01.json"
+  },
+  "02": {
+   "id": "02",
+   "name": "Nordfriesland-Dithmarschen",
+   "refAltFt": 100,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_02",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "St.Peter-Ording",
+    "lat": 54.32,
+    "lon": 8.7,
+    "elevFt": 0
+   },
+   "fetched": "2026-10-03T21:48:08.585Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/02.json"
+  },
+  "03": {
+   "id": "03",
+   "name": "Schleswig-Holsteinische Geest",
+   "refAltFt": 200,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_03",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Neumünster",
+    "lat": 54.08,
+    "lon": 9.95,
+    "elevFt": 70
+   },
+   "fetched": "2026-10-03T21:48:08.877Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/03.json"
+  },
+  "04": {
+   "id": "04",
+   "name": "Schleswig-Holsteinisches Hügelland",
+   "refAltFt": 300,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_04",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Plön",
+    "lat": 54.17,
+    "lon": 10.42,
+    "elevFt": 130
+   },
+   "fetched": "2026-10-03T21:48:09.201Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/04.json"
+  },
+  "05": {
+   "id": "05",
+   "name": "Nordwestliches Niedersachsen",
+   "refAltFt": 200,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_05",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Bremen",
+    "lat": 53.08,
+    "lon": 8.8,
+    "elevFt": 10
+   },
+   "fetched": "2026-10-03T21:48:09.561Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/05.json"
+  },
+  "06": {
+   "id": "06",
+   "name": "Lüneburger Heide",
+   "refAltFt": 400,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_06",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Uelzen",
+    "lat": 52.97,
+    "lon": 10.57,
+    "elevFt": 190
+   },
+   "fetched": "2026-10-03T21:48:09.875Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/06.json"
+  },
+  "07": {
+   "id": "07",
+   "name": "Westliches Niedersachsen",
+   "refAltFt": 300,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_07",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Diepholz",
+    "lat": 52.6,
+    "lon": 8.37,
+    "elevFt": 110
+   },
+   "fetched": "2026-10-03T21:48:10.176Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/07.json"
+  },
+  "08": {
+   "id": "08",
+   "name": "Hannover und Braunschweig",
+   "refAltFt": 600,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_08",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Peine",
+    "lat": 52.32,
+    "lon": 10.23,
+    "elevFt": 230
+   },
+   "fetched": "2026-10-03T21:48:10.494Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/08.json"
+  },
+  "09": {
+   "id": "09",
+   "name": "Teutoburger Wald",
+   "refAltFt": 700,
+   "source": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/node_09",
+   "title": "Gebietsvorhersagen für Ballonsport",
+   "station": {
+    "name": "Melle",
+    "lat": 52.2,
+    "lon": 8.35,
+    "elevFt": 290
+   },
+   "fetched": "2026-10-03T21:48:10.888Z",
+   "blocks": 4,
+   "cells": 117,
+   "file": "data/dwd/balloon/09.json"
+  }
+ },
+ "errors": [
+  {
+   "product": "gafor",
+   "url": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzl_node.html",
+   "message": "HTTP 404"
+  },
+  {
+   "product": "gafor",
+   "url": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzs_node.html",
+   "message": "HTTP 404"
+  },
+  {
+   "product": "gafor",
+   "url": "https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzo_node.html",
+   "message": "HTTP 404"
+  }
+ ],
+ "metar": {
+  "generated": "2026-10-04T00:31:51.256Z",
+  "via": "awc",
+  "stations": 80,
+  "tafs": 68,
+  "file": "data/dwd/metar.json"
+ }
+}

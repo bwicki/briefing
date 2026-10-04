@@ -7,6 +7,7 @@ import { PANELS, SECTIONS } from '../panels.js';
 import { parseRacText, racValidity, linesFromPdfItems } from '../calc/rac.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
 import { placeRow, mapsUrl } from './place.js';
+import { exportAll } from './extras.js';
 
 const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'rac', 'transition', 'gonogo', 'meteo', 'panels', 'links', 'access', 'expert'];
 
@@ -25,6 +26,7 @@ export async function renderSettings(view, ctx) {
   function draw() {
     clear(nav);
     for (const s of SECTS) nav.appendChild(h('button', { type: 'button', class: cur === s ? 'on' : '', onclick: () => { cur = s; draw(); } }, t('set_' + s)));
+    setTimeout(() => nav.querySelector('button.on')?.scrollIntoView({ inline: 'center', block: 'nearest' }), 0);
     clear(body);
     body.appendChild(({ general, balloons, persons, operators, sites, intent, schedule, rac, transition, gonogo, meteo, panels, links, access, expert })[cur]());
   }
@@ -242,7 +244,7 @@ export async function renderSettings(view, ctx) {
 
   function access() {
     const box = h('div');
-    const names = [['openmeteo', 'Open-Meteo API key'], ['meteoblue', 'meteoblue API key'], ['anthropic', 'Anthropic API key'], ['pcmet_user', 'pc_met Benutzer'], ['pcmet_pass', 'pc_met Kennwort'], ['skybriefing_user', 'skybriefing Benutzer'], ['skybriefing_pass', 'skybriefing Kennwort'], ['ors', 'OpenRouteService key'], ['windy_webcams', 'Windy Webcams key'], ['faa_client_id', 'FAA NOTAM client_id'], ['faa_client_secret', 'FAA NOTAM client_secret']];
+    const names = [['openmeteo', 'Open-Meteo API key'], ['meteoblue', 'meteoblue API key'], ['anthropic', 'Anthropic API key'], ['pcmet_user', 'pc_met Benutzer'], ['pcmet_pass', 'pc_met Kennwort'], ['skybriefing_user', 'skybriefing Benutzer'], ['skybriefing_pass', 'skybriefing Kennwort'], ['ors', 'OpenRouteService key'], ['windy_webcams', 'Windy Webcams key'], ['faa_client_id', 'FAA NOTAM client_id'], ['faa_client_secret', 'FAA NOTAM client_secret'], ['cf_account_id', 'Cloudflare Account-ID (Final-PDF)'], ['cf_api_token', 'Cloudflare API-Token mit «Browser Rendering» (Final-PDF)']];
     const drawA = async () => {
       clear(box);
       if (ctx.store.mode !== 'remote') { box.appendChild(h('div.note', t('ac_localOnly'))); return; }
@@ -270,6 +272,9 @@ export async function renderSettings(view, ctx) {
       h('div.card', [h('div.card-head', h('div.section-title', t('set_password'))), h('div.card-body', [h('div.frow.c3', [field(t('set_pwOld'), pwOld), field(t('set_pwNew'), pwNew), field(t('set_pwNew2'), pwNew2)]), pwBtn])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_reserve'))), h('div.card-body', h('div.frow.c3', [numField(r, 'pct', `${t('set_reservePct')} %`), numField(r, 'capMin', t('set_reserveCap')), numField(r, 'minMin', t('set_reserveMin'))]))]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_expertMode'))), h('div.card-body', check(t('set_expertMode'), S.expert, (v) => { S.expert = v; }))]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_export'))), h('div.card-body', [h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => exportAll(ctx).catch((e) => toast(e.message)) }, t('export_all'))]), h('div.note', t('export_hint'))])]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('pax_title'))), h('div.card-body', [field(t('pax_bring') + ' (DE, eine Zeile je Punkt)', textarea((S.paxCardItems?.de || []).join('\n'), { rows: 5, oninput: (e) => { S.paxCardItems = S.paxCardItems || {}; S.paxCardItems.de = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } })), field(t('pax_bring') + ' (EN)', textarea((S.paxCardItems?.en || []).join('\n'), { rows: 5, oninput: (e) => { S.paxCardItems = S.paxCardItems || {}; S.paxCardItems.en = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } }))])]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_airspace'))), h('div.card-body', [txtField(S, 'airspaceTileUrl', t('set_airspaceUrl')), h('div.note', t('set_airspaceHint'))])]),
     ]);
   }
   draw();

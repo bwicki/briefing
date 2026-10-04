@@ -85,6 +85,11 @@ export const DEFAULT_SETTINGS = {
     { name: 'ECMWF Bodendruck + Wind 850 hPa, Start +24 h', url: 'https://charts.ecmwf.int/opencharts-api/v1/products/medium-mslp-wind850/?projection=opencharts_europe&valid_time={validTime+24}' },
   ],
   pdiffPairs: [],
+  airspaceTileUrl: '',
+  paxCardItems: {
+    de: ['Feste, geschlossene Schuhe (Wiese, Tau, Dreck)', 'Lange Hosen, Schichten – oben ist es nicht kälter, am Boden früh aber kühl', 'Mütze/Cap (Brennerhitze), Sonnenbrille', 'Handschuhe zum Mithelfen beim Aufrüsten', 'Kamera mit Schlaufe; Handy sicher verstaut', 'Keine Angst vor etwas Wartezeit: wir fahren nur bei passendem Wetter'],
+    en: ['Sturdy closed shoes (meadow, dew, mud)', 'Long trousers, layers – not colder aloft, but chilly on the ground early', 'Cap (burner heat), sunglasses', 'Gloves for helping with rigging', 'Camera with lanyard; phone stowed safely', 'Be ready to wait a little: we only fly in suitable weather'],
+  },
   panels: { hidden: [], mandatory: ['A.sun', 'A.massperf', 'B.fwp', 'C.dabs', 'C.notam'] },
   links: { defaultExpiryDays: 7 },
   sources: {

@@ -90,6 +90,13 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
             assert 'DWD' not in pg.inner_text('#panel-B\\.balloon').split('EIGENE')[0].split('Stand:')[-1][:60] or True
         pg.wait_for_timeout(1500)
         assert '4725N00816E' in pg.inner_text('#panel-A\\.landing'), 'Landeraum im Editor'
+        # Phase 3: Tendenz-Karte, «Mehr»-Menü, Pax-Karte, Crew-Dialog
+        assert 'tendenz' in pg.inner_text('.side').lower(), 'Go/No-Go-Karte'
+        pg.click('.more > button'); pg.wait_for_timeout(300)
+        assert pg.is_visible('.more-menu'), 'Mehr-Menü offen'
+        pg.click('.more-menu button:has-text("Crew")'); pg.wait_for_timeout(800)
+        assert 'Ballonfahrt' in pg.input_value('.dialog textarea'), 'Crew-Nachricht erzeugt'
+        pg.click('.dialog-foot button'); pg.wait_for_timeout(300)
         # Text in ein Paste-Panel
         ta = pg.query_selector('#panel-B\\.fwp .pastewrap textarea')
         if ta: ta.fill('LSZH 100420Z VRB01KT CAVOK 15/14 Q1015\nFlugwetterprognose: Hochdrucklage, schwache Winde.'); pg.wait_for_timeout(1300)
@@ -104,6 +111,11 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.emulate_media(media='print')
         pg.pdf(path=f'{OUT}/{name}_brief.pdf', format='A4', print_background=True) if not mobile else None
         pg.emulate_media(media='screen')
+        # Pax-Karte
+        pg.goto(BASE + f'#/pax/{bid}'); pg.wait_for_timeout(900)
+        assert 'Sicherheit' in pg.inner_text('.paxcard') and 'Treffpunkt' in pg.inner_text('.paxcard'), 'Pax-Karte'
+        pg.screenshot(path=f'{OUT}/{name}_12_pax.png', full_page=True)
+        assert pg.is_visible('#mainnav a.on'), 'Hauptnavigation sichtbar'
         # Settings
         pg.goto(BASE + '#/settings?balloons'); pg.wait_for_timeout(700)
         pg.screenshot(path=f'{OUT}/{name}_10_settings.png', full_page=True)

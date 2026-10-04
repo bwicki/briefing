@@ -8,6 +8,8 @@ import { sunRows } from './parts.js';
 import { massPerf, scheduleFor, sunFor, upgradeBriefing } from '../model.js';
 import { placeLine } from './place.js';
 import { renderSnapshot } from './autorender.js';
+import { goNoGo } from '../calc/gonogo.js';
+import { changesSinceFinal } from '../calc/diff.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { distKm, bearing } from '../calc/geo.js';
 
@@ -20,7 +22,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const canEdit = !shared || shared.role === 'edit';
   const tools = [];
   const toggle = h('div.viewtoggle', [canEdit ? h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}` : `#/b/${b.id}`) }, t('view_edit')) : null, h('button.on', { type: 'button' }, t('view_brief'))]);
-  tools.push(toggle, h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print')));
+  tools.push(toggle, h('button.btn', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`) }, t('pax_title')), h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print')));
   setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}`, tools });
 
   const brief = h('div.brief');
@@ -35,6 +37,15 @@ export async function renderBrief(view, ctx, id, opts = {}) {
     h('div.r', [h('div', `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'} LT (${b.updatedAt ? hhmm('UTC', b.updatedAt) : ''} UTC)`), h('div', `${b.status === 'final' ? t('released', { n: b.finalNo }) : t('status_draft')} v${b.revision || 0} · PIC ${b.persons.pic}`), h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' })]),
   ]));
 
+  const gn = goNoGo(b, S);
+  const ch = b.status !== 'final' ? changesSinceFinal(b) : null;
+  const changed = new Set((ch?.panels || []).map((p) => p.key));
+  const lastV = (b.versions || []).slice(-1)[0];
+  if (gn.level != null || b.assessment?.text || lastV?.pdfUrl) brief.appendChild(h('div.bsum', [
+    gn.level != null ? h('div', [h('b', `${t('gn_title')}: `), h('span.tag.' + ['neg', 'half', 'pos'][gn.level], t('fly_' + gn.level)), gn.reasons.length ? ` – ${gn.reasons.join('; ')}` : '', h('span.mini', ` (${gn.model || ''}, ${t('gn_disclaimer')})`)]) : null,
+    b.assessment?.text ? h('div', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, [h('b', `${t('ass_title')} (${t('ai')}, ${fmtDateTime(z, b.assessment.ts, lang)}): `), b.assessment.text]) : null,
+    lastV?.pdfUrl ? h('div.mini.no-print', [h('a', { href: lastV.pdfUrl, target: '_blank', rel: 'noopener' }, `Final v${lastV.no} PDF ↗`)]) : null,
+  ]));
   const panels = visiblePanels(S, b);
   for (const s of SECTIONS) {
     const ps = panels.filter((p) => p.section === s.id);
@@ -74,7 +85,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       }
       if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b', t('ai') + ': '), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
-      tbl.appendChild(h('tr', [h('th', tt(p)), cell]));
+      tbl.appendChild(h('tr', [h('th', [tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null]), cell]));
     }
     brief.appendChild(tbl);
   }

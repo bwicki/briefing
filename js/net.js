@@ -2,6 +2,7 @@
  * Open-Meteo Geocoding/Höhe/Modellwerte, OSRM-Routing, Nominatim-Rückwärtssuche.
  * Alle Aufrufe sind optional: schlägt einer fehl, bleibt die App bedienbar.
  */
+import { t } from './i18n.js';
 const withTimeout = (ms) => { const c = new AbortController(); setTimeout(() => c.abort(), ms); return c.signal; };
 const getJson = async (url, ms = 9000) => { const r = await fetch(url, { signal: withTimeout(ms) }); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); };
 
@@ -50,13 +51,20 @@ export async function route(fromLat, fromLon, toLat, toLon) {
   return { seconds: r.duration, meters: r.distance };
 }
 
-/** Datenabrufe im lokalen Modus (ohne Worker): Open-Meteo direkt, METAR/TAF und DWD aus der GaforCast-Kopie. */
-const GAFOR = 'https://gafor.wicki.aero/data/dwd';
+/** Eigene DWD-/METAR-Kopie (data/dwd, GitHub Action) – Rückfall GaforCast. */
+const GAFOR = 'https://gafor.wicki.aero/data';
+export async function dataFile(rel, ms = 12000) {
+  const bust = `?t=${Math.floor(Date.now() / 600000)}`;
+  try { return await getJson(`data/${rel}${bust}`, ms); }
+  catch { return getJson(`${GAFOR}/${rel}${bust}`, ms); }
+}
+
+/** Datenabrufe im lokalen Modus (ohne Worker): Open-Meteo direkt, METAR/TAF und DWD aus der eigenen Kopie. */
 export async function localData(kind, p = {}) {
   switch (kind) {
     case 'om': return getJson(`https://api.open-meteo.com/v1/forecast?${p.query}`, 15000);
     case 'metar': {
-      const j = await getJson(`${GAFOR}/metar.json?t=${Math.floor(Date.now() / 600000)}`, 12000);
+      const j = await dataFile('dwd/metar.json');
       const km = p.km || 120;
       const best = new Map();
       for (const m of j.metar || []) { if (!m.icaoId || m.lat == null) continue; const prev = best.get(m.icaoId); if (!prev || (m.obsTime || 0) > (prev.obsTime || 0)) best.set(m.icaoId, m); }
@@ -65,9 +73,9 @@ export async function localData(kind, p = {}) {
       const list = [...best.values()].map((m) => ({ ...m, distKm: dist(+p.lat, +p.lon, m.lat, m.lon) })).filter((m) => m.distKm <= km).sort((a, b) => a.distKm - b.distKm).slice(0, p.limit || 4);
       const ids = list.map((m) => m.icaoId);
       const taf = {}; for (const t of j.taf || []) if (ids.includes(t.icaoId) && (!taf[t.icaoId] || t.mostRecent === 1)) taf[t.icaoId] = t;
-      return { metar: list, taf, source: 'gafor.wicki.aero (Kopie NOAA AWC)', generated: j.generated };
+      return { metar: list, taf, source: `${t('auto_copy')} NOAA AWC (${j.via || 'awc'})`, generated: j.generated };
     }
-    case 'dwd': return getJson(`${GAFOR}/index.json?t=${Math.floor(Date.now() / 600000)}`, 12000);
+    case 'dwd': return dataFile('dwd/index.json');
     default: throw Object.assign(new Error('remote only'), { code: 'remote' });
   }
 }

@@ -26,7 +26,24 @@ schreiben und nie im Chat weitergeben.
    repository secret: `CLOUDFLARE_API_TOKEN` (das Token) und
    `CLOUDFLARE_ACCOUNT_ID` (die Account-ID).
 
-## 3 Datenbank und Bucket anlegen (einmalig, lokal mit wrangler)
+## 3 Schnellweg: Setup-Skript (empfohlen)
+
+Auf einem Rechner mit Node 20+ im Ordner `worker\`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup.ps1      # Windows
+bash setup.sh                                               # macOS/Linux
+```
+
+Das Skript installiert wrangler, öffnet einmal den Browser für die Cloudflare-
+Anmeldung und erledigt die Schritte 3–5 unten selbst: D1-Datenbank anlegen und
+die `database_id` in `wrangler.toml` eintragen, R2-Bucket, Schema, zufällige
+Secrets (Werte landen in `worker/.secrets.local.txt` – in den Passwortmanager
+übernehmen und die Datei löschen), Deploy. Am Ende stehen die verbleibenden
+Handgriffe (Domain, GitHub-Secrets, Workflow-Berechtigung, Commit) auf dem
+Bildschirm. Wiederholbar: Vorhandenes wird übersprungen.
+
+## 3a Von Hand: Datenbank und Bucket anlegen
 
 Auf einem Rechner mit Node 20+:
 
@@ -85,6 +102,9 @@ eine andere Adresse verwendet, dort eintragen und pushen.
    * `openmeteo` — Open-Meteo-Kundenschlüssel (sonst freie API, 10 000 Abrufe/Tag).
    * `anthropic` — für KI-Hinweise (Modell in Einstellungen → Meteo, Standard
      `claude-sonnet-5-5`).
+   * `cf_account_id` / `cf_api_token` — für das Final-PDF auf dem Server: API-Token
+     mit Berechtigung «Browser Rendering → Edit» (My Profile → API Tokens); ohne
+     diese Werte bleibt der Weg «Als PDF sichern → hochladen».
    * `faa_client_id` / `faa_client_secret` — FAA NOTAM API: Konto unter
      https://api.faa.gov/ anlegen, App registrieren, «NOTAM API» abonnieren;
      die beiden Werte aus der App-Übersicht übernehmen. Ohne Zugang bleibt das
@@ -93,6 +113,15 @@ eine andere Adresse verwendet, dort eintragen und pushen.
    speichern.
 5. Daten aus dem lokalen Modus werden nicht automatisch übernommen — Briefings dort
    neu anlegen (Phase 1 ist dafür gedacht, mit dem Server zu beginnen).
+
+## 7a DWD-/METAR-Kopie (GitHub Action)
+
+Der Workflow `fetch-dwd.yml` holt dreimal pro Stunde die DWD-Luftsportberichte
+(GAFOR, Flugwetterübersicht, Gebietsvorhersagen Ballonsport) und eine METAR/TAF-
+Kopie nach `data/dwd/` und committet sie. Dafür einmalig: GitHub → Settings →
+Actions → General → Workflow permissions auf **Read and write** stellen. Erster
+Lauf von Hand über den Actions-Tab («Run workflow»). Fällt der Abruf aus, nimmt
+die App automatisch die Kopie von gafor.wicki.aero.
 
 ## 8 Laufender Betrieb
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0 — 2026-10-04 · Phase 3
+
+* Hauptnavigation Briefings · Neu · Einstellungen in jeder Sicht; Einstellungs-
+  Kategorien auf Handy als scrollbare Zeile; Editor/Dialoge auf Handy ohne
+  horizontales Überlaufen (Grid-Fix).
+* Tendenz (Modell) aus Stundenampel + Go/No-Go-Kriterien; Änderungen seit Final;
+  Gesamteinschätzung (KI); Pax-Sicherheitskarte; Crew-Nachricht & .ics; Final-PDF
+  (Browser Rendering oder Upload); Export JSON; PWA/Service Worker; Luftraum-Overlay.
+* Eigener DWD-/METAR-Abruf (GitHub Action, `scripts/fetch-dwd.mjs` aus GaforCast)
+  nach `data/dwd/`; GaforCast-Kopie nur noch als Rückfall.
+* Setup-Skripte `worker/setup.ps1` / `setup.sh` (nur noch `wrangler login`).
+
 ## 0.3.0 — 2026-10-04 · Phase 2
 
 * Automatische Panels mit Schnappschuss (Stand/Modell/Quelle, Druck, Leselink):

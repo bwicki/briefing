@@ -76,7 +76,8 @@ Ergebnis in allen Sichten: **Name · Kurzkoordinaten · Höhe · Google Maps ↗
 
 ### Erarbeitungssicht
 
-Links die Navigation A–D mit Status-Punkt je Panel (grün erledigt, blau
+Oben in jeder Sicht die Hauptnavigation **Briefings · + Neues Briefing ·
+Einstellungen**. Links die Navigation A–D mit Status-Punkt je Panel (grün erledigt, blau
 automatisch/noch nicht geladen, orange manuell offen, rot Pflicht offen), Mitte die Panels
 in Druckreihenfolge, rechts Planungshorizont, Panel-Zähler und Protokoll. Im Kopf
 die **Arbeitsversion** («v12 · Datum Zeit · Name»), der Status und die Phase.
@@ -142,6 +143,36 @@ welche Stunden man anschauen muss.
 **Freigeben als Final** prüft die Pflicht-Panels (Einstellungen → Panels & Pflicht);
 fehlt etwas, kann mit Begründung trotzdem freigegeben werden (Protokoll). Jede
 Freigabe wird als Final v1, v2 … mit Schnappschuss abgelegt.
+
+### Phase 3: Tendenz, Änderungen, Gesamteinschätzung, Pax-Karte, Crew, PDF, offline
+
+* **Tendenz (Modell)** rechts im Editor und oben in der Briefingsicht: fasst die
+  Stundenampel des Meteogramms im Fahrtfenster und die Go/No-Go-Kriterien
+  (Trockenfenster, Gewitterabstand/CAPE, Mittelwind, Böen; Einstellungen →
+  Go/No-Go) zu fahrbar/grenzwertig/nein mit Gründen zusammen. Kein Startentscheid.
+* **Seit Final vN geändert**: nach einer Freigabe zeigt die Seitenleiste, welche
+  Stammdaten und Panels sich seither geändert haben (klickbar); die Briefingsicht
+  markiert geänderte Panels, die Freigabe-Checkliste listet sie.
+* **Mehr ▾** im Editor-Kopf: Pax-Sicherheitskarte, Crew-Nachricht & Kalender,
+  Gesamteinschätzung (KI), Final-PDF, Briefing exportieren (JSON).
+* **Gesamteinschätzung (KI)**: Prompt aus allen Panels (automatische Daten, Texte,
+  KI-Hinweise, Kommentare) – 6–10 Zeilen mit Tendenz, editierbar, erscheint oben
+  in der Briefingsicht.
+* **Pax-Sicherheitskarte** (`#/pax/<id>`, Leselink `…/p`): eine Seite für die
+  Passagiere – Treffpunkt mit Maps-Link, Zeiten, Mitbringen (Liste in
+  Einstellungen → Experte), Sicherheitspunkte, Kontakt. Druck A4.
+* **Crew-Nachricht & Kalender**: Text mit Zeitplan und Maps-Links zum Kopieren,
+  per WhatsApp/E-Mail (Adressen der beteiligten Personen), `.ics`-Termin von
+  Abfahrt bis Rückkehr mit Erinnerung 12 h vorher.
+* **Final-PDF**: auf dem Server (Cloudflare Browser Rendering druckt die
+  Briefingsicht nach R2; Zugänge `cf_account_id`/`cf_api_token`) oder ein mit
+  «Als PDF sichern» erzeugtes PDF hochladen; Link in der Briefingsicht.
+* **Export**: Einstellungen → Experte → alle Briefings + Einstellungen als JSON.
+* **PWA / offline**: `sw.js` lädt die App-Hülle vor; zuletzt geöffnete Briefings
+  und Dateien bleiben offline lesbar (Netz zuerst, Cache als Rückfall). Zum
+  Startbildschirm hinzufügen (iPad/Handy) ergibt die App im Vollbild.
+* **Luftraum-Overlay**: Kachel-URL (openAIP) in Einstellungen → Experte, wird auf
+  Trajektorien- und Radarkarte gelegt.
 
 ### Briefingsicht und Druck
 
@@ -212,7 +243,7 @@ Einstellungen (ohne Zugänge).
 
 | Modellprognose (Stunden, Druckflächen) | Open-Meteo Forecast API | Server-Modus über Worker `/api/wx/om` (Kundenschlüssel, 15 min Cache); lokal direkt |
 | METAR/TAF, SIGMET/AIRMET | NOAA aviationweather.gov | Worker `/api/wx/metar`, `/api/wx/sigmet` (10 min Cache); Rückfall `gafor.wicki.aero/data/dwd/metar.json` |
-| DWD Luftsportberichte, Ballon-Gebietsvorhersagen, GAFOR-Gebiete | DWD, gespiegelt von GaforCast (`gafor.wicki.aero/data/…`, stündlich) | Worker `/api/wx/dwd` oder direkt |
+| DWD Luftsportberichte, Ballon-Gebietsvorhersagen, GAFOR-Gebiete, METAR-Kopie | DWD / NOAA, eigener Abruf durch die GitHub Action `fetch-dwd.yml` (3×/h) nach `data/dwd/`; Rückfall GaforCast-Kopie | Worker `/api/wx/dwd` oder direkt von der eigenen Origin |
 | Amtliche Karten (Schnappschuss) | DWD Hobbymeteorologie, ECMWF Open Charts | Worker `/api/wx/snapshot` (Allowlist) → R2 |
 | DABS | skybriefing `o/dabs?today|tomorrow` | Worker `/api/wx/dabs` → R2, Seiten mit pdf.js (vendored) gerendert |
 | NOTAM | FAA NOTAM API (`external-api.faa.gov`) | Worker `/api/wx/notam` mit `faa_client_id/secret` aus «Zugänge» |
@@ -239,7 +270,8 @@ hinter Login — Deep-Link + Einfügen.
 ## Versionierung
 
 `js/version.js` ist die eine Stelle für die Versionsnummer (Semantic Versioning);
-beim Release zusätzlich `CHANGELOG.md` nachführen (und ab Phase 3 `sw.js`).
+`sw.js` liest den Cache-Namen von dort (neue Version = neuer Cache). Beim Release
+zusätzlich `CHANGELOG.md` nachführen.
 
 ## Dateien
 

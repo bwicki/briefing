@@ -1,6 +1,6 @@
 {
   "name": "briefing",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Fahrtbriefing-WebApp – Wicki Aero GmbH (statisches Frontend + Cloudflare Worker)",

@@ -76,10 +76,13 @@ export function renderTraj(snap, b, ctx, opts = {}) {
   if (mapEl) setTimeout(() => drawTrajMap(mapEl, d, b), 0);
   return wrap;
 }
+let ctxAirspace = '';
+export const setAirspaceUrl = (u) => { ctxAirspace = u || ''; };
 function drawTrajMap(el, d, b) {
   if (typeof L === 'undefined') return;
   const map = L.map(el, { zoomControl: true }).setView([b.site.lat, b.site.lon], 10);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenStreetMap' }).addTo(map);
+  if (ctxAirspace) L.tileLayer(ctxAirspace, { maxZoom: 14, opacity: 0.75, attribution: 'Luftraum: openAIP' }).addTo(map);
   const colors = ['#c2481a', '#1673a8', '#2f8f4e', '#8a4fb5', '#b5892f', '#444', '#d1476e', '#2aa198'];
   const bounds = [[b.site.lat, b.site.lon]];
   d.tracks.forEach((tr, k) => {

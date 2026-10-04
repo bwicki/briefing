@@ -17,6 +17,7 @@ import { renderWizard } from './ui/wizard.js';
 import { renderEditor } from './ui/editor.js';
 import { renderBrief } from './ui/view.js';
 import { renderSettings } from './ui/settings.js';
+import { renderPaxCard } from './ui/extras.js';
 import { renderShared } from './ui/shared.js';
 
 const GATE_IDLE_MS = 2 * 60 * 60 * 1000;
@@ -38,6 +39,19 @@ export function setHeader({ title, sub, tools = [], eyebrow } = {}) {
   if (sub) subEl.appendChild(typeof sub === 'string' ? document.createTextNode(sub) : sub);
   const tl = $('tools'); clear(tl);
   for (const b of tools) tl.appendChild(b);
+}
+
+/** Hauptnavigation: Briefings · Neu · Einstellungen — immer sichtbar (nicht für Link-Nutzer). */
+function buildNav() {
+  const n = $('mainnav'); if (!n) return; clear(n);
+  if (ctx.shared || !store.isAuthed()) { n.hidden = true; return; }
+  n.hidden = false;
+  const cur = (location.hash || '#/list').split('?')[0].split('/')[1] || 'list';
+  const items = [['list', t('nav_list'), '#/list'], ['new', t('nav_new'), '#/new'], ['settings', t('nav_settings'), '#/settings']];
+  for (const [key, label, href] of items) {
+    const active = cur === key || (key === 'list' && ['b', 'v', 'pax'].includes(cur));
+    n.appendChild(h('a', { href, class: active ? 'on' : '', 'aria-current': active ? 'page' : null }, key === 'new' ? `+ ${label}` : label));
+  }
 }
 
 function buildMenu() {
@@ -99,15 +113,18 @@ async function route() {
   const [, name, ...rest] = hash.split('/');
   const arg = rest.join('/') || undefined;
   document.getElementById('menu').classList.add('hidden');
+  buildNav();
   try {
     if (name === 's' && arg) { await renderShared(view, ctx, arg); return; }
     if (!store.isAuthed() && !ctx.shared) { showGate(); return; }
+    buildNav();
     if (!ctx.settings) ctx.settings = await store.getSettings();
     switch (name) {
       case 'new': await renderWizard(view, ctx, arg || null); break;
       case 'b': await renderEditor(view, ctx, arg); break;
       case 'v': await renderBrief(view, ctx, arg); break;
       case 'settings': await renderSettings(view, ctx); break;
+      case 'pax': await renderPaxCard(view, ctx, arg); break;
       default: await renderList(view, ctx);
     }
   } catch (e) {
@@ -128,6 +145,8 @@ async function main() {
   const badge = $('modeBadge');
   if (store.mode === 'local') { badge.hidden = false; badge.textContent = t('localMode'); badge.classList.add('local'); }
   ctx.racDefault = await fetch('data/rac/rac-ch.json').then((r) => r.json()).catch(() => null);
+  // PWA: Service Worker (App-Hülle offline, zuletzt geöffnete Briefings lesbar)
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js', { type: 'module' }).catch((e) => console.warn('sw', e));
 
   $('gateForm').onsubmit = async (e) => {
     e.preventDefault();

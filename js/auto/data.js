@@ -10,6 +10,7 @@ import { sunFor, scheduleFor } from '../model.js';
 import { isoDate, hhmm } from '../calc/time.js';
 import { distKm, bearing, icao } from '../calc/geo.js';
 import { t, getLang } from '../i18n.js';
+import { dataFile } from '../net.js';
 
 const memo = new Map();
 const shareTok = (ctx) => ctx.shared?.token;
@@ -106,7 +107,7 @@ export async function balloon(ctx, b) {
     if (areas.length) {
       const near = areas.map((a) => ({ a, d: distKm(b.site.lat, b.site.lon, a.station.lat, a.station.lon) })).sort((x, y) => x.d - y.d)[0];
       if (near.d < 40 || (b.site.country === 'DE' && near.d < 150)) {
-        const file = await fetch(`https://gafor.wicki.aero/${near.a.file}?t=${Math.floor(Date.now() / 600000)}`).then((r) => r.json());
+        const file = await dataFile(String(near.a.file || `data/dwd/balloon/${near.a.id}.json`).replace(/^data\//, ''));
         dwd = { id: near.a.id, name: near.a.name, refAltFt: near.a.refAltFt, station: near.a.station, distKm: Math.round(near.d), fetched: near.a.fetched, source: near.a.source, blocks: file.blocks, text: file.text, issued: (file.text || '').match(/Vorhersage ausgegeben ([^\n]+)/)?.[1] || '' };
       } else note = t('auto_dwdFar', { km: Math.round(near.d) });
     }
@@ -125,7 +126,7 @@ function inRing(lat, lon, ring) {
 }
 let gaforAreasP = null;
 export function gaforArea(lat, lon) {
-  gaforAreasP = gaforAreasP || fetch('https://gafor.wicki.aero/data/gafor-areas.geojson').then((r) => r.json());
+  gaforAreasP = gaforAreasP || dataFile('gafor-areas.geojson', 20000);
   return gaforAreasP.then((g) => {
     for (const f of g.features || []) {
       const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];
