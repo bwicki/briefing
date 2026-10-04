@@ -11,7 +11,7 @@ import { sunTimes, moonTimes, moonIllumination } from './calc/sun.js';
 import { racLookup } from './calc/rac.js';
 import { hotAir, gasBalloon } from './calc/aero.js';
 import { buildSchedule, scheduleWarnings } from './calc/schedule.js';
-import { icao } from './calc/geo.js';
+import { icao, bearing, distKm, compass } from './calc/geo.js';
 import { PANELS } from './panels.js';
 
 export function newBriefing(settings, now = Date.now()) {
@@ -35,7 +35,7 @@ export function newBriefing(settings, now = Date.now()) {
     intent: { durationMin: intent.durationMin, altMinFt: intent.altMinFt, altMaxFt: intent.altMaxFt, direction: '', dayNight: 'day', remark: '', levels: [...intent.levels] },
     landing: emptyPlace(),
     persons: { picId: settings.persons.find((x) => x.roles?.includes('pic'))?.id || '', pic: settings.persons.find((x) => x.roles?.includes('pic'))?.name || '', retrieveId: settings.persons.find((x) => x.roles?.includes('retrieve'))?.id || '', retrieve: settings.persons.find((x) => x.roles?.includes('retrieve'))?.name || '', retrievers: settings.persons.filter((x) => x.roles?.includes('retrieve')).slice(0, 1).map((x) => ({ id: x.id, name: x.name })), pax: [] },
-    schedule: { meetingId: meeting?.id || '', meetingName: meeting?.name || '', meetingLat: meeting?.lat ?? null, meetingLon: meeting?.lon ?? null, driveMin: null, driveSource: '', driveKm: null, rigMin: bal?.rigMin ?? 45, fillMin: bal?.fillMin ?? 0, bufferMin: settings.scheduleDefaults.bufferMin, recoveryMin: settings.scheduleDefaults.recoveryMin, rows: [], overrides: {} },
+    schedule: { stops: [{ id: 'm1', meetingId: meeting?.id || '', name: meeting?.name || '', lat: meeting?.lat ?? null, lon: meeting?.lon ?? null, driveMin: null, driveKm: null, driveSource: '', dwellMin: 0 }], meetingId: meeting?.id || '', meetingName: meeting?.name || '', meetingLat: meeting?.lat ?? null, meetingLon: meeting?.lon ?? null, driveMin: null, driveSource: '', driveKm: null, rigMin: bal?.rigMin ?? 45, fillMin: bal?.fillMin ?? 0, bufferMin: settings.scheduleDefaults.bufferMin, recoveryMin: settings.scheduleDefaults.recoveryMin, rows: [], overrides: {} },
     weather: { tempC: 15, qnh: 1013, rh: null, envTempC: bal?.envTempC ?? 100, source: 'manual', stand: null, gasDeltaT: 0 },
     panels: {}, versions: [], log: [], accessCount: 0,
   };
@@ -50,6 +50,7 @@ export function upgradeBriefing(b) {
   if (!b) return b;
   if (!b.landing) b.landing = emptyPlace();
   if (!b.schedule.overrides) b.schedule.overrides = {};
+  ensureStops(b.schedule);
   if (!Array.isArray(b.persons.retrievers)) b.persons.retrievers = b.persons.retrieve ? [{ id: b.persons.retrieveId || 'custom', name: b.persons.retrieve }] : [];
   for (const p of b.persons.pax || []) if (/^(Pax|Passenger) \d+$/.test(p.name || '')) p.name = '';   // alte Platzhalter-Namen
   for (const p of PANELS) if (!b.panels[p.key]) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
@@ -144,10 +145,42 @@ export function massPerf(b, settings) {
 /** Zeitplan-Zeilen (mit Überschreibungen) und Warnungen. */
 export function scheduleFor(b, sun) {
   const s = b.schedule;
-  const rows = buildSchedule({ startMs: b.time.startMs, type: b.balloon.type, rigMin: s.rigMin, fillMin: s.fillMin, driveMin: s.driveMin ?? 30, bufferMin: s.bufferMin, durationMin: b.intent.durationMin, recoveryMin: s.recoveryMin });
-  for (const r of rows) if (s.overrides?.[r.key] != null) { r.ms = s.overrides[r.key]; r.overridden = true; }
+  ensureStops(s);
+  const rows = buildSchedule({ startMs: b.time.startMs, type: b.balloon.type, rigMin: s.rigMin, fillMin: s.fillMin, bufferMin: s.bufferMin, durationMin: b.intent.durationMin, recoveryMin: s.recoveryMin, stops: s.stops, overrides: s.overrides || {} });
   const warnings = scheduleWarnings(rows, sun ? { bcmt: sun.official.bcmt, ecet: sun.official.ecet, ss: sun.official.ss } : null);
   return { rows, warnings };
+}
+
+/** Etappenliste sicherstellen (Altform: ein Treffpunkt) und die Altfelder für Leser synchron halten. */
+export function ensureStops(s) {
+  if (!Array.isArray(s.stops) || !s.stops.length) {
+    s.stops = [{ id: 'm1', meetingId: s.meetingId || '', name: s.meetingName || '', lat: s.meetingLat ?? null, lon: s.meetingLon ?? null, driveMin: s.driveMin ?? null, driveKm: s.driveKm ?? null, driveSource: s.driveSource || '', dwellMin: 0 }];
+    if (s.overrides?.depart != null) { s.overrides['depart:m1'] = s.overrides.depart; delete s.overrides.depart; }
+  }
+  syncMeeting(s);
+  return s.stops;
+}
+export function syncMeeting(s) {
+  const f = s.stops?.[0]; if (!f) return;
+  s.meetingId = f.meetingId || ''; s.meetingName = f.name || ''; s.meetingLat = f.lat ?? null; s.meetingLon = f.lon ?? null;
+  const last = s.stops[s.stops.length - 1]; s.driveMin = last.driveMin ?? null; s.driveKm = last.driveKm ?? null; s.driveSource = last.driveSource || '';
+}
+/** Landeraum setzen (oder löschen) und die Zielrichtung daraus ableiten (Himmelsrichtung · Kurs · Distanz · Ort). */
+export function applyLanding(b, p, lang = 'de') {
+  if (p) {
+    Object.assign(b.landing, { name: p.name || '', lat: p.lat, lon: p.lon, elev: p.elev ?? null, icao: icao(p.lat, p.lon), address: p.address || '' });
+    if (b.site.lat != null) {
+      const brg = Math.round(bearing(b.site.lat, b.site.lon, p.lat, p.lon)), km = distKm(b.site.lat, b.site.lon, p.lat, p.lon);
+      b.intent.direction = `${compass(brg, lang)} ${String(brg).padStart(3, '0')}° · ${km.toFixed(0)} km · ${p.name || b.landing.icao}`;
+    }
+  } else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' });
+  return b.landing;
+}
+/** Beschriftung einer Zeitplan-Zeile (Etappen mit Namen). */
+export function scheduleRowLabel(r, b, tr) {
+  if (r.kind === 'depart') return `${tr('sch_departAt')}${r.name ? ' · ' + r.name : ''}`;
+  if (r.key === 'arrive') return `${tr('sch_arrive')}${b.site?.name ? ' · ' + b.site.name : ''}`;
+  return tr('sch_' + r.key);
 }
 
 /** Vorschläge Spezialausrüstung aus Fahrtabsicht und Nacht. */

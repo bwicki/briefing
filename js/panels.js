@@ -34,7 +34,7 @@ export const PANELS = [
   { key: 'B.pdiff', section: 'B', kind: 'auto', auto: 'pdiff', de: 'Druckdifferenzprognose', en: 'Pressure difference forecast', grade: 'auto', link: 'meteoswiss', phase2: 'Bise/Föhn aus Modell und SwissMetNet' },
   { key: 'B.traj', section: 'B', kind: 'auto', auto: 'traj', de: 'Trajektorien', en: 'Trajectories', grade: 'auto', link: 'meteoblue', phase2: 'eigene Berechnung, Szenarien, Ensemble' },
   { key: 'B.sigwx', section: 'B', kind: 'auto', auto: 'sigmet', de: 'SIGWX low Alps', en: 'SIGWX low Alps', grade: 'half', link: 'skybriefing', phase2: 'SIGMET/AIRMET automatisch' },
-  { key: 'B.thermal', section: 'B', kind: 'text', de: 'Thermik', en: 'Thermals', grade: 'manual' },
+  { key: 'B.thermal', section: 'B', kind: 'auto', auto: 'thermal', de: 'Thermik', en: 'Thermals', grade: 'auto', phase2: 'eigene Abschätzung aus Modellwerten (Strahlung, Grenzschicht): Einsetzen, Stärke, Abschwächen' },
   { key: 'B.meteogram', section: 'B', kind: 'auto', auto: 'meteogram', de: 'Meteogramm, Take-off Forecast o. ä.', en: 'Meteogram, take-off forecast', grade: 'auto', link: 'meteoblue', phase2: 'meteoblue Images API, eigenes Meteogramm' },
   { key: 'B.radar', section: 'B', kind: 'auto', auto: 'radar', de: 'Radar / Blitz / Satellit / Webcams', en: 'Radar / lightning / satellite / webcams', grade: 'auto', link: 'windy', phase2: 'RainViewer, EUMETSAT, Windy-Webcams', optional: true },
   { key: 'B.warnings', section: 'B', kind: 'paste', de: 'Warnungen', en: 'Warnings', grade: 'auto', link: 'meteoswiss', phase2: 'MeteoSchweiz/DWD-Warnungen', optional: true },

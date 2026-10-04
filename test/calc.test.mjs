@@ -142,10 +142,17 @@ console.log('Tagesplanung');
 const start = fromLocal(tz, '2026-10-10', '06:30');
 const rows = buildSchedule({ startMs: start, type: 'hab', rigMin: 45, driveMin: trailerMinutes(24 * 60), bufferMin: 0, durationMin: 120 });
 const by = Object.fromEntries(rows.map((r) => [r.key, hhmm(tz, r.ms)]));
-ok(by.start === '06:30' && by.arrive === '05:45' && by.depart === '05:10' && by.landing === '08:30', JSON.stringify(by));
+ok(by.start === '06:30' && by.arrive === '05:45' && by['depart:m1'] === '05:10' && by.landing === '08:30', JSON.stringify(by));
 const gasRows = buildSchedule({ startMs: start, type: 'gas', rigMin: 30, fillMin: 150, driveMin: 30, bufferMin: 10, durationMin: 24 * 60 });
 const gby = Object.fromEntries(gasRows.map((r) => [r.key, hhmm(tz, r.ms)]));
-ok(gby.arrive === '03:30' && gby.fillStart === '04:00' && gby.fillEnd === '06:30' && gby.depart === '02:50', JSON.stringify(gby));
+ok(gby.arrive === '03:30' && gby.fillStart === '04:00' && gby.fillEnd === '06:30' && gby['depart:m1'] === '02:50', JSON.stringify(gby));
+// mehrere Etappen + Pins: Ankunft gepinnt → Etappen rückwärts; Abfahrt der mittleren Etappe gepinnt → erste rechnet davon
+const multi = buildSchedule({ startMs: start, type: 'hab', rigMin: 45, bufferMin: 0, durationMin: 120, stops: [{ id: 'a', name: 'A', driveMin: 20 }, { id: 'b', name: 'B', driveMin: 30 }], overrides: { arrive: fromLocal(tz, '2026-10-10', '06:00') } });
+const mby = Object.fromEntries(multi.map((r) => [r.key, hhmm(tz, r.ms)]));
+ok(mby.arrive === '06:00' && mby['depart:b'] === '05:30' && mby['depart:a'] === '05:10', JSON.stringify(mby));
+const multi2 = buildSchedule({ startMs: start, type: 'hab', rigMin: 45, bufferMin: 0, durationMin: 120, stops: [{ id: 'a', name: 'A', driveMin: 20 }, { id: 'b', name: 'B', driveMin: 30 }], overrides: { 'depart:b': fromLocal(tz, '2026-10-10', '05:00') } });
+const m2 = Object.fromEntries(multi2.map((r) => [r.key, hhmm(tz, r.ms)]));
+ok(m2.arrive === '05:45' && m2['depart:b'] === '05:00' && m2['depart:a'] === '04:40', JSON.stringify(m2));
 
 
 console.log('Trajektorien / Open-Meteo-Helfer');

@@ -35,7 +35,13 @@
   .brief .bsum{background:#f3f5f8 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
 
+@media print {
 .metar-cols{display:grid;grid-template-columns:1fr 1.3fr;gap:4px 10px}
 .metar-cols ul.decoded{margin:2px 0 0;padding-left:14px;font-size:9.5pt}
 .metar-cols ul.decoded li:first-child{list-style:none;margin-left:-14px;font-weight:600}
 .metar-cols .lbl{font-size:8pt;color:#666;text-transform:uppercase}
+.metar .bad{color:#c9271f;font-weight:600}
+.dirarrow{display:inline-block;transform-origin:50% 50%}
+.side-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4mm;align-items:start}
+.side-grid table.auto{font-size:8pt}
+}

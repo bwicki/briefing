@@ -7,6 +7,7 @@
 import * as OM from './openmeteo.js';
 import { tracks } from './traj.js';
 import { sunFor, scheduleFor } from '../model.js';
+import { thermalHours, thermalSummary, classOf } from '../calc/thermal.js';
 import { isoDate, hhmm } from '../calc/time.js';
 import { distKm, bearing, icao } from '../calc/geo.js';
 import { t, getLang } from '../i18n.js';
@@ -48,7 +49,26 @@ export async function meteogram(ctx, b) {
   const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, light(r.ms), lim, getLang()); return { ...r, night: !light(r.ms), fog: OM.fogRisk(r).level, baseFt: OM.cloudBaseFt(r), fly: fr.level, why: fr.why }; });
   const z = b.site.tz || 'Europe/Zurich';
   const text = recs.map((r) => `${hhmm(z, r.ms)} T ${r.temp?.toFixed(0)}°/Td ${r.dew?.toFixed(0)}° Wind ${r.d10 != null ? Math.round(r.d10).toString().padStart(3, '0') : '–'}/${Math.round((r.w10 || 0) * OM.MS_TO_KT)}G${Math.round((r.gust || 0) * OM.MS_TO_KT)} kt Wolken ${r.cloud ?? '–'}% RR ${r.precip ?? 0} mm CAPE ${r.cape ?? '–'} → ${['nein', 'grenzwertig', 'fahrbar'][r.fly] || '–'}${r.why?.length ? ' (' + r.why.join(', ') + ')' : ''}`).join('\n');
-  return { kind: 'meteogram', ...standOf(j, b), data: { recs, fromMs: b.time.startMs, toMs: landing }, text };
+  return { kind: 'meteogram', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { recs, fromMs: b.time.startMs, toMs: landing }, text };
+}
+
+/** Thermik: Tagesgang des Starttags (Sonnenaufgang−2 h … Sonnenuntergang+2 h) aus Strahlung und Grenzschicht. */
+export async function thermal(ctx, b) {
+  const j = await getForecast(ctx, b);
+  const sun = sunFor(b, ctx.settings, ctx.racTable);
+  const from = (sun?.official?.bcmt || b.time.startMs - 6 * 3600000) - 2 * 3600000, to = (sun?.official?.ecet || b.time.startMs + 10 * 3600000) + 2 * 3600000;
+  const idx = OM.window(j, from, to);
+  if (!idx.length) throw new Error(t('auto_noHours'));
+  const light = lightFn(b, ctx);
+  const recs = idx.map((i) => ({ ...OM.rec(j, i) })).map((r) => ({ ...r, night: !light(r.ms) }));
+  const hours = thermalHours(recs);
+  const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
+  const sum = thermalSummary(hours);
+  const z = b.site.tz || 'Europe/Zurich';
+  const inWin = hours.filter((x) => x.ms >= b.time.startMs - 1800000 && x.ms <= landing);
+  const winMax = inWin.reduce((a, x) => Math.max(a, x.wstar), 0);
+  const text = `${t('th_onset')}: ${sum.onsetMs ? hhmm(z, sum.onsetMs) : '–'} · ${t('th_peak')}: ${sum.peak ? `${hhmm(z, sum.peak.ms)} w* ${sum.peak.wstar} m/s (${t('th_' + sum.peak.klass)})` : '–'} · ${t('th_end')}: ${sum.endMs ? hhmm(z, sum.endMs) : '–'} · ${t('th_window')}: ${t('th_' + classOf(winMax))} (max w* ${winMax} m/s)\n` + hours.map((x) => `${hhmm(z, x.ms)} ${x.rad} W/m² zi ${x.pbl != null ? Math.round(x.pbl) : '–'} m w* ${x.wstar} ${t('th_' + x.klass)}`).join('\n');
+  return { kind: 'thermal', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { hours, fromMs: b.time.startMs, toMs: landing, onsetMs: sum.onsetMs, endMs: sum.endMs, peak: sum.peak, winMax, winClass: classOf(winMax) }, text };
 }
 
 /** Start-Ampel für den Ablauf: schlechteste Stundenampel im Fahrtfenster (Start … Landung). */
@@ -86,7 +106,7 @@ export async function wind(ctx, b) {
   for (const h of hours) h.profile = h.profile.filter((l) => l.ft <= Math.max(top, 8000) + 2000);
   const z = b.site.tz || 'Europe/Zurich';
   const text = hours.map((h) => `${hhmm(z, h.ms)} LT: ` + h.profile.slice().reverse().map((l) => `${l.ft} ft ${l.dir != null ? Math.round(l.dir).toString().padStart(3, '0') : '–'}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ')).join('\n');
-  return { kind: 'wind', ...standOf(j, b), data: { hours, elev }, text };
+  return { kind: 'wind', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { hours, elev }, text };
 }
 
 /** Stüve zur Startzeit (volles Profil bis topHpa). */
@@ -102,7 +122,7 @@ export async function temps(ctx, b) {
   const asc = prof.filter((l) => l.temp != null).sort((a, b2) => a.m - b2.m);
   for (let k = 1; k < asc.length; k++) if (asc[k].temp > asc[k - 1].temp + 0.2) inv.push({ fromFt: asc[k - 1].ft, toFt: asc[k].ft, dT: +(asc[k].temp - asc[k - 1].temp).toFixed(1) });
   const text = `${t('auto_profileAt')} ${hhmm(b.site.tz || 'Europe/Zurich', b.time.startMs)} LT: ` + asc.map((l) => `${l.ft} ft ${l.temp?.toFixed(1)}°/${l.dew?.toFixed(1)}° ${l.dir != null ? Math.round(l.dir).toString().padStart(3, '0') : '–'}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ') + (inv.length ? ` · Inversion: ${inv.map((x) => `${x.fromFt}–${x.toFt} ft (+${x.dT} K)`).join(', ')}` : '') + (pbl != null ? ` · Grenzschicht ${Math.round(pbl * OM.M_TO_FT)} ft AGL` : '') + (fzl != null ? ` · 0 °C ${Math.round(fzl * OM.M_TO_FT)} ft` : '');
-  return { kind: 'temps', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev }, text };
+  return { kind: 'temps', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev }, text };
 }
 
 /** Trajektorien je Niveau. */
@@ -117,7 +137,7 @@ export async function traj(ctx, b) {
   const z = b.site.tz || 'Europe/Zurich';
   const text = trs.map((x) => `${x.label} (${x.altFt} ft): ` + x.hourly.map((h) => `${hhmm(z, h.ms)} ${h.km.toFixed(1)} km/${Math.round(h.brg).toString().padStart(3, '0')}° ${h.icao}`).join(' → ') + (x.ok ? '' : ` (${t('auto_trajCut')})`)).join('\n');
   const slim = trs.map((x) => ({ label: x.label, altFt: x.altFt, altM: Math.round(x.altM), ok: x.ok, points: x.points.filter((_, k) => k % 3 === 0 || k === x.points.length - 1).map((p) => ({ ms: p.ms, lat: +p.lat.toFixed(4), lon: +p.lon.toFixed(4) })), hourly: x.hourly.map((h) => ({ ...h, lat: +h.lat.toFixed(4), lon: +h.lon.toFixed(4), km: +h.km.toFixed(1), brg: Math.round(h.brg), spdKt: Math.round(h.spdKt), dir: Math.round(h.dir) })), end: { ...x.end, lat: +x.end.lat.toFixed(4), lon: +x.end.lon.toFixed(4), km: +x.end.km.toFixed(1), brg: Math.round(x.end.brg) } }));
-  return { kind: 'traj', ...standOf(j, b), data: { tracks: slim, startMs, durationMin, levels, landing: b.landing?.lat != null ? { lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name } : null }, text };
+  return { kind: 'traj', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { tracks: slim, startMs, durationMin, levels, landing: b.landing?.lat != null ? { lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name } : null }, text };
 }
 
 /** Ballonprognose: DWD-Gebietsvorhersage (DE, nächstes Gebiet) + eigene Stundentabelle. */
@@ -135,7 +155,7 @@ export async function balloon(ctx, b) {
       } else note = t('auto_dwdFar', { km: Math.round(near.d) });
     }
   } catch (e) { note = `DWD: ${e.message}`; }
-  return { kind: 'balloon', stand: mg.stand, model: mg.model, modelName: mg.modelName, source: dwd ? 'DWD Gebietsvorhersage Ballonsport + Open-Meteo' : 'Open-Meteo', data: { recs: mg.data.recs, fromMs: mg.data.fromMs, toMs: mg.data.toMs, dwd, note }, text: (dwd ? `DWD Gebiet ${dwd.id} ${dwd.name} (${dwd.issued}):\n${(dwd.text || '').slice(0, 4000)}\n\n` : '') + mg.text };
+  return { kind: 'balloon', sourceUrl: 'https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/gebietsvorhersagen_ballonsport/gebietsvorhersagen_ballonsport_node.html', stand: mg.stand, model: mg.model, modelName: mg.modelName, source: dwd ? 'DWD Gebietsvorhersage Ballonsport + Open-Meteo' : 'Open-Meteo', data: { recs: mg.data.recs, fromMs: mg.data.fromMs, toMs: mg.data.toMs, dwd, note }, text: (dwd ? `DWD Gebiet ${dwd.id} ${dwd.name} (${dwd.issued}):\n${(dwd.text || '').slice(0, 4000)}\n\n` : '') + mg.text };
 }
 
 /** Punkt in Polygon (GeoJSON-Ring [lon, lat]). */
@@ -171,7 +191,7 @@ export async function fwp(ctx, b) {
   const text = `${office ? office.fullText || office.text : ''}
 
 GAFOR ${area.id} ${area.name}${gafor ? ` (${gafor.title}): ${(gafor.periods || []).map((pp, i) => `${pp} UTC ${det?.codes?.[i] || '?'}${det?.remarks?.[i] ? ' ' + det.remarks[i] : ''}`).join(' · ')}` : ''}`;
-  return { kind: 'fwp', stand: Date.now(), source: 'DWD Luftsportberichte (Kopie gafor.wicki.aero)', data: { area, office: office ? { bereich: office.bereich, office: office.office, issued: office.issued, validFrom: office.validFrom, validTo: office.validTo, source: office.source, text: office.fullText || office.text } : null, gafor: gafor ? { title: gafor.title, periods: gafor.periods, codes: det?.codes, remarks: det?.remarks, source: gafor.source, issued: gafor.issued } : null }, text };
+  return { kind: 'fwp', sourceUrl: 'https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/luftsportberichte_node.html', stand: Date.now(), source: 'DWD Luftsportberichte (Kopie gafor.wicki.aero)', data: { area, office: office ? { bereich: office.bereich, office: office.office, issued: office.issued, validFrom: office.validFrom, validTo: office.validTo, source: office.source, text: office.fullText || office.text } : null, gafor: gafor ? { title: gafor.title, periods: gafor.periods, codes: det?.codes, remarks: det?.remarks, source: gafor.source, issued: gafor.issued } : null }, text };
 }
 
 /** Druckdifferenz (Bise/Föhn) aus Modell-QNH an Referenzpunkten. */
@@ -200,21 +220,21 @@ export async function pdiff(ctx, b) {
   }
   const z = b.site.tz || 'Europe/Zurich';
   const text = out.map((p) => `${p.name}: ` + p.rows.filter((r) => r.ms >= b.time.startMs - 3600000 && r.ms <= landing + 3600000).map((r) => `${hhmm(z, r.ms)} ${r.d > 0 ? '+' : ''}${r.d} hPa`).join(', ') + ` (${p.hint})`).join('\n');
-  return { kind: 'pdiff', stand: Date.now(), model, modelName: OM.modelName(model), source: 'Open-Meteo', data: { pairs: out, fromMs: b.time.startMs, toMs: landing }, text };
+  return { kind: 'pdiff', sourceUrl: 'https://open-meteo.com/', stand: Date.now(), model, modelName: OM.modelName(model), source: 'Open-Meteo', data: { pairs: out, fromMs: b.time.startMs, toMs: landing }, text };
 }
 
 /** METAR/TAF der nächsten Plätze. */
 export async function metar(ctx, b) {
-  const j = await ctx.store.data('metar', { lat: b.site.lat, lon: b.site.lon, km: ctx.settings.metarRadiusKm || 150, limit: ctx.settings.metarCount || 40 }, shareTok(ctx));
+  const j = await ctx.store.data('metar', { lat: b.site.lat, lon: b.site.lon, km: b.metarKm || ctx.settings.metarRadiusKm || 150, limit: ctx.settings.metarCount || 40 }, shareTok(ctx));
   const text = (j.metar || []).map((m) => `${m.icaoId} (${Math.round(m.distKm)} km): ${m.rawOb || ''}${j.taf?.[m.icaoId] ? `\nTAF ${j.taf[m.icaoId].rawTAF || ''}` : ''}`).join('\n\n');
-  return { kind: 'metar', stand: Date.now(), source: j.source, data: { metar: j.metar || [], taf: j.taf || {}, generated: j.generated, radiusKm: ctx.settings.metarRadiusKm || 150 }, text };
+  return { kind: 'metar', sourceUrl: 'https://aviationweather.gov/data/metar/', stand: Date.now(), source: j.source, data: { metar: j.metar || [], taf: j.taf || {}, generated: j.generated, radiusKm: b.metarKm || ctx.settings.metarRadiusKm || 150 }, text };
 }
 
 /** SIGMET/AIRMET in der Umgebung. */
 export async function sigmet(ctx, b) {
   const j = await ctx.store.data('sigmet', { lat: b.site.lat, lon: b.site.lon }, shareTok(ctx));
   const text = (j.sigmet || []).map((s) => s.raw || `${s.fir} ${s.hazard} ${s.validFrom}–${s.validTo}`).join('\n\n') || t('auto_none');
-  return { kind: 'sigmet', stand: Date.now(), source: j.source, data: { list: j.sigmet || [] }, text };
+  return { kind: 'sigmet', sourceUrl: 'https://aviationweather.gov/data/sigmet/', stand: Date.now(), source: j.source, data: { list: j.sigmet || [] }, text };
 }
 
 /** NOTAM entlang Start → Landeraum/Trajektorien-Endpunkte (Korridor), VFR-Filter. */
@@ -233,7 +253,7 @@ export async function notam(ctx, b, opts = {}) {
   const items = [...all.values()].map((it) => ({ ...it, vfr: vfrRelevant(it, maxFt, b.time.startMs, b.time.startMs + (b.intent.durationMin || 0) * 60000) }));
   const rel = items.filter((x) => x.vfr.relevant).sort((x, y) => (x.start || '').localeCompare(y.start || ''));
   const text = rel.map((x) => `${x.icao || x.location} ${x.number || ''}: ${(x.formatted || x.text || '').replace(/\s+/g, ' ').slice(0, 400)}`).join('\n\n');
-  return { kind: 'notam', stand: Date.now(), source: 'FAA NOTAM API', data: { items, relevantCount: rel.length, points: pts, nm, errors }, text };
+  return { kind: 'notam', sourceUrl: 'https://notams.aim.faa.gov/', stand: Date.now(), source: 'FAA NOTAM API', data: { items, relevantCount: rel.length, points: pts, nm, errors }, text };
 }
 /** VFR-Relevanz: zeitlich überlappend, untere Grenze unter maxFt, keine reinen IFR-/Infrastruktur-Themen. */
 export function vfrRelevant(it, maxFt, fromMs, toMs) {
@@ -249,7 +269,7 @@ export function vfrRelevant(it, maxFt, fromMs, toMs) {
 }
 
 /** Alle automatischen Panels eines Briefings nacheinander; onStep(key, status, err). */
-export const AUTO_FETCHERS = { 'B.meteogram': meteogram, 'B.wind': wind, 'B.temps': temps, 'B.traj': traj, 'B.balloon': balloon, 'B.pdiff': pdiff, 'B.metar': metar, 'B.sigwx': sigmet, 'B.fwp': fwp, 'C.notam': notam };
+export const AUTO_FETCHERS = { 'B.thermal': thermal, 'B.meteogram': meteogram, 'B.wind': wind, 'B.temps': temps, 'B.traj': traj, 'B.balloon': balloon, 'B.pdiff': pdiff, 'B.metar': metar, 'B.sigwx': sigmet, 'B.fwp': fwp, 'C.notam': notam };
 export async function refreshAll(ctx, b, keys, onStep) {
   const out = {};
   for (const k of keys) {

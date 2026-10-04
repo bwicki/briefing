@@ -4,10 +4,11 @@ import { h, fmt } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { hhmm, fmtDateTime, fmtDate } from '../calc/time.js';
 import { MS_TO_KT, M_TO_FT } from '../auto/openmeteo.js';
-import { meteogram as meteogramSvg, windChart, stueveChart } from '../auto/charts.js';
+import { meteogram as meteogramSvg, windChart, stueveChart, mk } from '../auto/charts.js';
 import { trajSvg, TRAJ_COLORS } from '../auto/traj.js';
 import { mapsLink } from './place.js';
-import { decodeMetar, decodeTaf } from '../calc/metar.js';
+import { decodeMetar, decodeTaf, badToken, MARK0, MARK1 } from '../calc/metar.js';
+import { bearing, compass } from '../calc/geo.js';
 
 const kt = (ms) => (ms == null ? '–' : Math.round(ms * MS_TO_KT));
 const deg = (d) => (d == null ? '–' : Math.round(d).toString().padStart(3, '0'));
@@ -48,6 +49,38 @@ export function renderMeteogram(snap, b, ctx, opts = {}) {
   return h('div.auto-wrap', [svg, legend, h('div.tbl-scroll', table), h('div.note', t('auto_flyLegend'))]);
 }
 
+// ---------------------------------------------------------------- Thermik
+export function renderThermal(snap, b) {
+  const d = snap.data, z = b.site.tz || 'Europe/Zurich';
+  const hs = d.hours || [];
+  if (!hs.length) return h('div.note', t('auto_none'));
+  const cls = { none: '', weak: 'pos', moderate: 'half', strong: 'neg', severe: 'neg' };
+  const summary = h('div.stat-strip.th-sum', [
+    h('div.stat', [h('div.k', t('th_onset')), h('div.v', d.onsetMs ? hhmm(z, d.onsetMs) + ' LT' : '–')]),
+    h('div.stat', [h('div.k', t('th_peak')), h('div.v', d.peak ? `${hhmm(z, d.peak.ms)} · w* ${d.peak.wstar} m/s` : '–')]),
+    h('div.stat', [h('div.k', t('th_end')), h('div.v', d.endMs ? hhmm(z, d.endMs) + ' LT' : '–')]),
+    h('div.stat', [h('div.k', t('th_window')), h('div.v.' + (cls[d.winClass] || 'x'), `${t('th_' + d.winClass)} · max w* ${d.winMax} m/s`)]),
+  ]);
+  // Balken w* je Stunde
+  const W = 760, H = 150, L = 36, R = 10, T = 10, B = 26, n = hs.length, cw = (W - L - R) / n;
+  const vMax = Math.max(2, Math.ceil(Math.max(...hs.map((x) => x.wstar)) * 2) / 2);
+  const y = (v) => H - B - (v / vMax) * (H - T - B);
+  const svg = mk('svg', { viewBox: `0 0 ${W} ${H}`, class: 'mg-svg', role: 'img' });
+  for (const v of [0, 1, 2, 3].filter((v) => v <= vMax)) { svg.appendChild(mk('line', { x1: L, y1: y(v), x2: W - R, y2: y(v), class: 'mg-grid' })); svg.appendChild(mk('text', { x: L - 4, y: y(v) + 3, class: 'mg-ax', 'text-anchor': 'end' }, `${v} m/s`)); }
+  if (d.fromMs != null) svg.appendChild(mk('rect', { x: L + ((d.fromMs - hs[0].ms) / 3600000) * cw, y: T, width: Math.max(2, ((d.toMs - d.fromMs) / 3600000) * cw), height: H - T - B, class: 'mg-window' }));
+  hs.forEach((x, i) => {
+    const col = { none: 'var(--text-dim)', weak: 'var(--green)', moderate: 'var(--amber)', strong: 'var(--temp)', severe: 'var(--temp)' }[x.klass];
+    svg.appendChild(mk('rect', { x: L + i * cw + 1, y: y(x.wstar), width: Math.max(1, cw - 2), height: Math.max(0, y(0) - y(x.wstar)), fill: col, 'fill-opacity': x.night ? 0.35 : 0.9 }));
+    if (i % (n > 20 ? 2 : 1) === 0) svg.appendChild(mk('text', { x: L + i * cw + cw / 2, y: H - B + 12, class: 'mg-ax', 'text-anchor': 'middle' }, hhmm(z, x.ms).slice(0, 2)));
+  });
+  svg.appendChild(mk('text', { x: L + 4, y: T + 10, class: 'mg-title' }, `w* (m/s) · ${t('th_class')}: ${t('th_weak')} < 1.2 < ${t('th_moderate')} < 2.0 < ${t('th_strong')} < 3.0`));
+  const table = h('table.auto', [
+    h('thead', h('tr', ['LT', `${t('th_rad')} W/m²`, `${t('th_zi')} ft AGL`, `${t('th_wstar')} m/s`, `${t('th_climb')} m/s`, `${t('th_gusty')} kt`, 'CAPE', t('th_class')].map((x) => h('th', x)))),
+    h('tbody', hs.map((x) => h('tr', { class: x.ms >= d.fromMs - 1800000 && x.ms <= d.toMs ? 'win' : '' }, [h('td.mono', hhmm(z, x.ms)), h('td', x.rad), h('td', x.pbl != null ? Math.round(x.pbl * M_TO_FT) : '–'), h('td.mono', x.wstar.toFixed(1)), h('td.mono', x.climb.toFixed(1)), h('td.mono', x.gusty != null ? Math.round(x.gusty * MS_TO_KT) : '–'), h('td', x.cape != null ? Math.round(x.cape) : '–'), h('td', h('span.tag.' + (cls[x.klass] || ''), t('th_' + x.klass)))]))),
+  ]);
+  return h('div.auto-wrap', [summary, h('div.side-grid', [h('div.num', h('div.tbl-scroll', table)), h('div.gfx', svg)]), h('div.note', t('th_note'))]);
+}
+
 // ---------------------------------------------------------------- Windprofil
 export function renderWind(snap, b, ctx, opts = {}) {
   const d = snap.data, z = b.site.tz || 'Europe/Zurich';
@@ -63,7 +96,7 @@ export function renderWind(snap, b, ctx, opts = {}) {
   if (b.intent.altMinFt) marks.push([b.intent.altMinFt, `${t('altMin')} ${b.intent.altMinFt}`]);
   if (b.intent.altMaxFt) marks.push([b.intent.altMaxFt, `${t('altMax')} ${b.intent.altMaxFt}`]);
   const charts = h('div.wind-charts', hours.filter((_, i) => i === 0 || i === hours.length - 1 || (hours.length > 4 && i === Math.floor(hours.length / 2))).map((hh) => h('figure', [windChart(hh.profile, { w: 240, h: 300, groundFt: Math.round((d.elev || 0) * M_TO_FT), pblFt: hh.pbl != null ? Math.round(((d.elev || 0) + hh.pbl) * M_TO_FT) : null, fzlFt: hh.fzl != null ? Math.round(hh.fzl * M_TO_FT) : null, marks, lang: getLang() }), h('figcaption.mini', `${hhmm(z, hh.ms)} LT`)])));
-  return h('div.auto-wrap', [charts, h('div.tbl-scroll', table), h('div.note', t('auto_windNote'))]);
+  return h('div.auto-wrap', [h('div.side-grid', [h('div.num', h('div.tbl-scroll', table)), h('div.gfx', charts)]), h('div.note', t('auto_windNote'))]);
 }
 
 // ---------------------------------------------------------------- Stüve
@@ -72,7 +105,8 @@ export function renderTemps(snap, b, ctx) {
   const svg = stueveChart(d.profile, { w: 560, h: 360, pblFt: d.pbl != null ? Math.round(((d.elev || 0) + d.pbl) * M_TO_FT) : null, fzlFt: d.fzl != null ? Math.round(d.fzl * M_TO_FT) : null, lang: getLang() });
   const inv = d.inversions?.length ? h('div.warn', `${t('auto_inversion')}: ${d.inversions.map((x) => `${x.fromFt}–${x.toFt} ft (+${x.dT} K)`).join(', ')}`) : h('div.note', t('auto_noInversion'));
   const rows = [...d.profile].sort((a, c) => c.ft - a.ft).map((l) => h('tr', [h('td', l.label), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)]));
-  return h('div.auto-wrap', [svg || h('div.note', t('auto_noProfile')), inv, h('div.note', `${t('auto_pbl')}: ${d.pbl != null ? Math.round(d.pbl * M_TO_FT) + ' ft AGL' : '–'} · 0 °C: ${d.fzl != null ? Math.round(d.fzl * M_TO_FT) + ' ft AMSL' : '–'}`), h('details', [h('summary.small', t('auto_table')), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', rows)]))])]);
+  const table = h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', rows)]));
+  return h('div.auto-wrap', [h('div.side-grid', [h('div.num', [table, inv, h('div.note', `${t('auto_pbl')}: ${d.pbl != null ? Math.round(d.pbl * M_TO_FT) + ' ft AGL' : '–'} · 0 °C: ${d.fzl != null ? Math.round(d.fzl * M_TO_FT) + ' ft AMSL' : '–'}`)]), h('div.gfx', svg || h('div.note', t('auto_noProfile')))])]);
 }
 
 // ---------------------------------------------------------------- Trajektorien
@@ -86,8 +120,8 @@ export function renderTraj(snap, b, ctx, opts = {}) {
   const legend = h('div.traj-legend', [h('span.muted.small', `${t('auto_legendAlt')}: `), ...d.tracks.filter((tr) => !tr.belowGround).map((tr, k) => h('span.item', [h('span.sw', { style: { background: TRAJ_COLORS[d.tracks.indexOf(tr) % TRAJ_COLORS.length] } }), ` ${tr.label} · ${tr.altFt} ft`]))]);
   const mapEl = opts.interactive ? h('div.map.traj') : null;
   const grid = h('div.traj-grid' + (mapEl ? '.maponly' : ''), [svg, mapEl]);
-  const wrap = h('div.auto-wrap', [legend, grid, h('div.note', `${t('auto_trajStart')} ${hhmm(z, d.startMs)} LT · ${d.durationMin} min · ${d.levels.join(', ')} · ${t('auto_trajNote')}`), h('div.tbl-scroll', table)]);
-  if (mapEl) setTimeout(() => drawTrajMap(mapEl, d, b, { onGrid: () => grid.classList.toggle('maponly') }), 0);
+  const wrap = h('div.auto-wrap', [legend, grid, h('div.note', `${t('auto_trajStart')} ${hhmm(z, d.startMs)} LT · ${d.durationMin} min · ${d.levels.join(', ')} · ${t('auto_trajNote')}${opts.onLanding ? ' · ' + t('auto_dragLanding') : ''}`), h('div.tbl-scroll', table)]);
+  if (mapEl) setTimeout(() => drawTrajMap(mapEl, d, b, { onGrid: () => grid.classList.toggle('maponly'), onLanding: opts.onLanding }), 0);
   return wrap;
 }
 let ctxAirspace = '';
@@ -120,7 +154,15 @@ function drawTrajMap(el, d, b, o = {}) {
     for (const hh of tr.hourly) L.circleMarker([hh.lat, hh.lon], { radius: 4, color: colors[k % colors.length], fillOpacity: 1 }).addTo(map).bindTooltip(`${tr.label} ${hhmm(b.site.tz || 'Europe/Zurich', hh.ms)} · ${hh.km} km`);
   });
   L.marker([b.site.lat, b.site.lon]).addTo(map).bindTooltip(b.site.name || 'Start');
-  if (d.landing) L.circleMarker([d.landing.lat, d.landing.lon], { radius: 7, color: '#2f8f4e', fillOpacity: .6 }).addTo(map).bindTooltip(d.landing.name || t('landingSite'));
+  // Landeraum: grüner Punkt, am Bildschirm verschiebbar (o.onLanding) – sonst nur Anzeige
+  const landIcon = L.divIcon({ className: 'land-dot', iconSize: [16, 16], iconAnchor: [8, 8] });
+  if (d.landing || o.onLanding) {
+    const pos = d.landing ? [d.landing.lat, d.landing.lon] : [b.site.lat, b.site.lon];
+    const mk = L.marker(pos, { icon: landIcon, draggable: !!o.onLanding, title: d.landing?.name || t('landingSite') }).addTo(map);
+    mk.bindTooltip(d.landing ? (d.landing.name || t('landingSite')) : t('auto_dragLanding'));
+    if (o.onLanding) mk.on('dragend', (e) => { const { lat, lng } = e.target.getLatLng(); o.onLanding({ lat, lon: lng }); });
+  }
+  if (o.onLanding && !d.landing) map.on('click', (e) => o.onLanding({ lat: e.latlng.lat, lon: e.latlng.lng }));
   setTimeout(() => { map.invalidateSize(); map.fitBounds(bounds, { padding: [20, 20] }); }, 60);
   return map;
 }
@@ -158,16 +200,21 @@ export function renderMetar(snap, b) {
   const d = snap.data, lang = getLang();
   if (!d.metar?.length) return h('div.note', t('auto_none'));
   const tafFmt = (raw) => (raw || '').replace(/\s(PROB\d{2}\s+TEMPO|PROB\d{2}|TEMPO|BECMG|FM\d{6})/g, '\n  $1');
+  // Rohtext: schlechte Gruppen rot
+  const rawNodes = (raw) => raw.split(/(\s+)/).map((tk) => (/^\s+$/.test(tk) || !badToken(tk) ? tk : h('span.bad', tk)));
+  // Klartext: Markierungen aus dem Decoder → rot
+  const marked = (line) => line.split(new RegExp(`(${MARK0}[^${MARK1}]*${MARK1})`)).filter(Boolean).map((x) => (x.startsWith(MARK0) ? h('span.bad', x.slice(1, -1)) : x));
   const pair = (label, raw, lines) => h('div.metar-cols', [
-    h('div.raw', [h('div.lbl', label), h('pre.report', raw)]),
-    h('div.dec', [h('div.lbl', t('auto_decoded')), h('ul.decoded', lines.map((x) => h('li', x)))]),
+    h('div.raw', [h('div.lbl', label), h('pre.report', rawNodes(raw))]),
+    h('div.dec', [h('div.lbl', t('auto_decoded')), h('ul.decoded', lines.map((x) => h('li', marked(x))))]),
   ]);
+  const arrow = (m) => { if (m.lat == null || b.site.lat == null) return null; const brg = bearing(b.site.lat, b.site.lon, m.lat, m.lon); return h('span.dirarrow', { title: `${Math.round(brg).toString().padStart(3, '0')}° ${compass(brg, lang)}`, style: { transform: `rotate(${Math.round(brg) - 90}deg)` } }, '➜'); };
   return h('div.auto-wrap', [
-    h('div.note', `${d.metar.length} ${t('auto_metarWithin')} ${d.radiusKm || ''} km`.replace('  ', ' ')),
+    h('div.note', `${d.metar.length} ${t('auto_metarWithin')} ${d.radiusKm || ''} km · ${t('auto_badLegend')}`),
     ...d.metar.map((m) => {
       const taf = d.taf?.[m.icaoId];
       return h('div.metar', [
-        h('div', [h('b', m.icaoId), ` ${m.name || ''} · ${Math.round(m.distKm)} km`, m.obsTime ? h('span.muted.small', ` · ${new Date(m.obsTime * 1000).toISOString().slice(11, 16)} UTC`) : null]),
+        h('div', [h('b', m.icaoId), ` ${m.name || ''} · ${Math.round(m.distKm)} km `, arrow(m), m.obsTime ? h('span.muted.small', ` · ${new Date(m.obsTime * 1000).toISOString().slice(11, 16)} UTC`) : null]),
         pair('METAR', m.rawOb || '', decodeMetar(m.rawOb || '', lang)),
         taf ? pair('TAF', tafFmt(taf.rawTAF), decodeTaf(taf.rawTAF || '', lang)) : h('div.note', `${t('auto_noTaf')}`),
       ]);
@@ -225,7 +272,7 @@ export function renderImages(snap, b, ctx, opts = {}) {
   return wrap;
 }
 
-export const RENDERERS = { meteogram: renderMeteogram, wind: renderWind, temps: renderTemps, traj: renderTraj, balloon: renderBalloon, pdiff: renderPdiff, metar: renderMetar, sigmet: renderSigmet, notam: renderNotam, dabs: renderImages, synoptic: renderImages, fwp: renderFwp };
+export const RENDERERS = { thermal: renderThermal, meteogram: renderMeteogram, wind: renderWind, temps: renderTemps, traj: renderTraj, balloon: renderBalloon, pdiff: renderPdiff, metar: renderMetar, sigmet: renderSigmet, notam: renderNotam, dabs: renderImages, synoptic: renderImages, fwp: renderFwp };
 export function renderSnapshot(snap, b, ctx, opts = {}) {
   if (!snap) return null;
   const f = RENDERERS[snap.kind];

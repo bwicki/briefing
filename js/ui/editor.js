@@ -6,7 +6,8 @@ import { setHeader } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing } from '../model.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding } from '../model.js';
+import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock } from './autopanels.js';
 import { refreshAll as refreshAllData } from '../auto/data.js';
@@ -116,12 +117,20 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const comment = h('details.sub.cmt', { open: !!(d.comment || '').trim() }, [h('summary', t('comment')), cm]);
     return [extra, ai, comment];
   }
+  /** Quelle eines Panels: Link aus den Einstellungen (p.link) oder aus dem Schnappschuss (PDF, Bild-URL, Quelle). */
+  function sourceUrlOf(p, d) {
+    const snap = d.content?.auto;
+    return (p.link && S.sources[p.link]) || snap?.data?.pdfUrl || snap?.sourceUrl || snap?.data?.sourceUrl || snap?.images?.find((im) => im.src)?.src || (snap?.source && /^https?:\/\//.test(snap.source) ? snap.source : '') || '';
+  }
+  const shortUrl = (u) => { const x = u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''); return x.length > 28 ? x.slice(0, 26) + '[…]' : x; };
   function renderPanel(p) {
     const d = b.panels[p.key] || (b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '' });
+    const srcUrl = sourceUrlOf(p, d);
     const head = h('div.panel-head', [
       h('div.ttl', tt(p)),
       mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
       p.grade === 'auto' ? tag('auto', 'AUTO') : p.grade === 'half' ? tag('half', 'LINK + EINFÜGEN') : p.grade === 'calc' ? tag('calc', 'CALC') : null,
+      srcUrl ? h('a.srclink', { href: srcUrl, target: '_blank', rel: 'noopener', title: srcUrl }, shortUrl(srcUrl)) : null,
       d.updatedAt ? h('span.src', `${t('stand')}: ${fmtDateTime(z, d.updatedAt, lang)} · ${d.updatedBy || ''}`) : null,
     ]);
     const body = h('div.panel-body');
@@ -142,8 +151,9 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       case 'landing': {
         const ro = shared?.role === 'read';
         const box = h('div');
-        const drawLand = () => { clear(box); box.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, readOnly: ro, from: b.site, onPick: (pl) => { if (pl) Object.assign(b.landing, { name: pl.name, lat: pl.lat, lon: pl.lon, elev: pl.elev, icao: pl.icao, address: pl.address || '' }); else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' }); touched(p.key); drawLand(); } })); };
+        const drawLand = () => { clear(box); box.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, readOnly: ro, from: b.site, onPick: (pl) => { applyLanding(b, pl, lang); touched(p.key); drawLand(); } })); };
         drawLand();
+        document.addEventListener('fb:landing', (e) => { if (e.detail?.id === b.id && box.isConnected) drawLand(); });
         content = h('div', [box, field(t('landingText'), textarea(d.content.text || '', { rows: 2, readOnly: ro, oninput: (e) => { d.content.text = e.target.value; touched(p.key); } }))]);
         break;
       }
@@ -151,7 +161,6 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         const link = p.link && S.sources[p.link];
         if (!d.content) d.content = {};
         content = h('div', [
-          h('div.row-actions', { style: { marginBottom: '6px' } }, [link ? h('a.btn', { href: link, target: '_blank', rel: 'noopener' }, t('panel_open')) : null]),
           autoBlock(p, d, b, ctx, { onChange: () => touched(p.key), readOnly: shared?.role === 'read', upload }),
           h('details.sub.extra', { open: !!((d.content.text || '').trim() || (d.content.images || []).length) || p.grade === 'half' }, [h('summary', t('panel_pasteSummary')), pasteArea(d.content, (v) => { Object.assign(d.content, { text: v.text, images: v.images }); touched(p.key); }, upload)]),
         ]);
@@ -160,7 +169,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       case 'paste': default: {
         const link = p.link && S.sources[p.link];
         content = h('div', [
-          h('div.row-actions', { style: { marginBottom: '6px' } }, [link ? h('a.btn', { href: link, target: '_blank', rel: 'noopener' }, t('panel_open')) : null, p.phase2 ? h('span.note', t('panel_phase2', { s: p.phase2 })) : null]),
+          p.phase2 ? h('div.note', { style: { marginBottom: '6px' } }, t('panel_phase2', { s: p.phase2 })) : null,
           pasteArea(d.content, (v) => { d.content = v; touched(p.key); }, upload),
         ]);
       }
@@ -175,6 +184,8 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       [t('core_pic'), b.persons.pic], [t('core_pax'), `${b.persons.pax.length}: ${b.persons.pax.map((x) => x.name).join(', ') || '–'}`], [t('core_retrieve'), b.persons.retrieve || '–'],
       [t('core_site'), h('span', [placeLine(b.site), ` · ${b.site.country || ''}`])],
       [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}`],
+      ...(docsLine(b.balloon.docs) ? [[t('docs'), docsLine(b.balloon.docs)]] : []),
+      ...(docsLine(ctx.stamm?.persons?.find((x) => x.id === b.persons.picId)?.docs) ? [[`${t('docs')} PIC`, docsLine(ctx.stamm.persons.find((x) => x.id === b.persons.picId).docs)]] : []),
     ];
     return h('div', [kv(rows), canOwn || shared?.role === 'edit' ? h('div.row-actions', { style: { marginTop: '8px' } }, [h('button.btn', { type: 'button', onclick: async () => { b.wizardStep = 1; await saveNow(); ctx.navigate(shared ? `#/s/${shared.token}/w` : `#/new/${b.id}`); } }, `✎ ${t('masterData')}`)]) : null]);
   }
@@ -203,7 +214,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     return h('div', [box, extraGas, h('details', [h('summary.small', 'AMC1 BOP.BAS.115'), h('pre.report', AMC1_BOP_BAS_115)])]);
   }
   async function refreshAll(statusEl) {
-    const keys = panels.filter((p) => p.kind === 'auto' && (['meteogram', 'wind', 'temps', 'traj', 'balloon', 'pdiff', 'metar', 'sigmet'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE'))).map((p) => p.key);
+    const keys = panels.filter((p) => p.kind === 'auto' && (['meteogram', 'wind', 'temps', 'traj', 'balloon', 'pdiff', 'metar', 'sigmet', 'thermal'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE'))).map((p) => p.key);
     let n = 0;
     ctx.autoLoad = false;
     const res = await refreshAllData(ctx, b, keys, (k, st, e) => { if (statusEl) statusEl.textContent = `${k} ${st === 'loading' ? '…' : st === 'ok' ? '✓' : '✗ ' + (e?.message || '')}`; });

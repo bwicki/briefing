@@ -2,9 +2,9 @@
 import { h, clear, toast, num, fmt, fmtSigned, debounce } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { setHeader } from '../app.js';
-import { field, input, select, textarea, check, kv, stats } from './widgets.js';
+import { field, input, select, textarea, check, kv, stats, fieldAdd } from './widgets.js';
 import { scheduleEditor } from './parts.js';
-import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing } from '../model.js';
+import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, ensureStops, syncMeeting, applyLanding } from '../model.js';
 import { placeRow, placeLine, pickPlace, mapsLink, typeToPick } from './place.js';
 import { stammLabel } from '../stamm.js';
 import { resolveBalloon } from '../defaults.js';
@@ -243,7 +243,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     async function setSite(s) {
       Object.assign(b.site, { name: s.name, lat: s.lat, lon: s.lon, elev: s.elev ?? b.site.elev, tz: s.tz || b.site.tz, country: s.country || countryGuess(s.lat, s.lon), icao: icao(s.lat, s.lon), favoriteId: s.id || '' });
       nameIn.value = b.site.name; icaoIn.value = b.site.icao; elevIn.value = b.site.elev ?? ''; ctry.value = b.site.country; tzIn.value = b.site.tz;
-      if (s.meetingId) { const m = M.meetings.find((x) => x.id === s.meetingId); if (m) Object.assign(b.schedule, { meetingId: m.id, meetingName: m.name, meetingLat: m.lat, meetingLon: m.lon }); }
+      if (s.meetingId) { const m = M.meetings.find((x) => x.id === s.meetingId); if (m) { ensureStops(b.schedule); Object.assign(b.schedule.stops[0], { meetingId: m.id, name: m.name, lat: m.lat, lon: m.lon, driveMin: null, driveSource: '' }); syncMeeting(b.schedule); } }
       setStart(b, b.time.date, b.time.time);
       refreshSun(); persistSoon(); ampelSoon();
       if (s.elev == null || !s.tz) {
@@ -295,11 +295,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const suggBox = h('div.note');
     const landBox = h('div');
     const setLanding = (p) => {
-      if (p) {
-        Object.assign(b.landing, { name: p.name, lat: p.lat, lon: p.lon, elev: p.elev ?? null, icao: icao(p.lat, p.lon), address: p.address || '' });
-        const brg = Math.round(bearing(b.site.lat, b.site.lon, p.lat, p.lon)), km = distKm(b.site.lat, b.site.lon, p.lat, p.lon);
-        it.direction = `${compass(brg, lang)} ${String(brg).padStart(3, '0')}° · ${km.toFixed(0)} km · ${p.name}`; dir.value = it.direction;
-      } else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' });
+      applyLanding(b, p, lang); if (p) dir.value = it.direction;
       persistSoon(); drawLand();
     };
     const drawLand = () => { clear(landBox); landBox.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, from: b.site, onPick: setLanding })); landBox.appendChild(h('div.note', t('landingHint'))); };
@@ -340,8 +336,8 @@ export async function renderWizard(view, ctx, id, opts = {}) {
         const sel = select(retOpts, r.id || 'custom', { onchange: (e) => { r.id = e.target.value; custom.hidden = r.id !== 'custom'; r.name = r.id === 'custom' ? custom.value : P.find((p) => p.id === r.id)?.name || ''; syncRetrieve(); persistSoon(); } });
         retBox.appendChild(h('div.pax-row.ret-row', [h('div', { style: { display: 'flex', gap: '6px', flex: 1, minWidth: 0 } }, [sel, custom]), h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { b.persons.retrievers.splice(i, 1); syncRetrieve(); drawRet(); persistSoon(); } }, '✕')]));
       });
-      retBox.appendChild(h('button.btn', { type: 'button', onclick: () => { const free = retOpts.find((o) => o.value !== 'custom' && !b.persons.retrievers.some((r) => r.id === o.value)); b.persons.retrievers.push(free ? { id: free.value, name: free.label.replace(/ \(.*\)$/, '') } : { id: 'custom', name: '' }); syncRetrieve(); drawRet(); persistSoon(); } }, t('retrieveAdd')));
     }
+    const retAdd = () => { const free = retOpts.find((o) => o.value !== 'custom' && !b.persons.retrievers.some((r) => r.id === o.value)); b.persons.retrievers.push(free ? { id: free.value, name: free.label.replace(/ \(.*\)$/, '') } : { id: 'custom', name: '' }); syncRetrieve(); drawRet(); persistSoon(); };
     drawRet();
     const paxBox = h('div');
     const preview = h('div');
@@ -353,21 +349,22 @@ export async function renderWizard(view, ctx, id, opts = {}) {
         const wIn = input('number', p.weight ?? '', { placeholder: `${bal.personWeight} ${t('normWeight')}`, step: 1, oninput: (e) => { p.weight = num(e.target.value, null); drawPreview(); persistSoon(); } });
         paxBox.appendChild(h('div.pax-row', [nameIn, wIn, h('button.btn.icon', { type: 'button', onclick: () => { b.persons.pax.splice(i, 1); drawPax(); drawPreview(); persistSoon(); } }, '✕')]));
       });
-      paxBox.appendChild(h('button.btn', { type: 'button', onclick: () => { b.persons.pax.push({ name: '', weight: null }); drawPax(); drawPreview(); persistSoon(); setTimeout(() => paxBox.querySelectorAll('.pax-row input[type=text]')[b.persons.pax.length - 1]?.focus(), 30); } }, t('paxAdd')));
     }
+    const paxAdd = () => { b.persons.pax.push({ name: '', weight: null }); drawPax(); drawPreview(); persistSoon(); setTimeout(() => paxBox.querySelectorAll('.pax-row input[type=text]')[b.persons.pax.length - 1]?.focus(), 30); };
     function drawPreview() {
       clear(preview);
       const { type, r } = massPerf(b, ctx.settings);
       const src = b.weather.source === 'model' ? t('mp_modelStand', { t: b.weather.stand || '' }) : `${t('mp_temp')} ${b.weather.tempC} °C · QNH ${b.weather.qnh}`;
       if (type === 'hab') {
-        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title', `${t('previewLift')} (${bal.reg}) · ${src}`)]), stats([
+        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewLift')} (${bal.reg})`), h('span.sub2', src)])]), stats([
           [t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'],
           [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (b.weather.envTempC || bal.envTempC) ? 'neg' : ''],
           [t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m` : '–'],
           [t('mp_need', { d: fmtDur(b.intent.durationMin), r: Math.round(r.reserveMin) + ' min' }), `${fmt(r.needKg)} kg`], [t('mp_usable'), `${fmt(r.usable)} kg`, r.fuelMargin < 0 ? 'neg' : 'pos'],
+          [t('mp_enduranceRes'), fmtDur(Math.max(0, r.enduranceMin - r.reserveMin))], [t('mp_margin'), `${fmtSigned(Math.round(r.fuelMargin))} kg`, r.fuelMargin < 0 ? 'neg' : 'pos'],
         ])]));
       } else {
-        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title', `${t('previewBallast')} (${bal.label}) · ${src}`)]), stats([
+        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewBallast')} (${bal.label})`), h('span.sub2', src)])]), stats([
           [t('gb_gross'), `${fmt(r.grossLift)} kg`], [t('gb_net'), `${fmt(r.net)} kg`], [t('gb_ballast'), `${fmt(r.ballast)} kg · ${fmt(r.ballastPct)} %`, r.ballast < r.reserveKg ? 'neg' : 'pos'],
           [t('gb_units'), r.units != null ? `${fmt(r.units, 1)} × ${bal.ballastUnitKg} kg` : '–'],
         ])]));
@@ -375,7 +372,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       if ((b.persons.pax.length + 1) > (bal.maxPersons || 99)) preview.appendChild(h('div.warn', `⚠ ${t('b_maxPersons')}: ${bal.maxPersons}`));
     }
     drawPax(); drawPreview();
-    body.append(h('div.frow.top', [field(t('pic'), h('div', [picSel, picCustom])), field(t('retrieve'), retBox)]), field(t('pax'), paxBox), preview);
+    body.append(h('div.frow.top', [field(t('pic'), h('div', [picSel, picCustom])), fieldAdd(t('retrieve'), retBox, retAdd, t('retrieveAdd'))]), fieldAdd(t('pax'), paxBox, paxAdd, t('paxAdd')), preview);
     // Modellwerte für die Vorschau holen (einmal je Ort/Zeit)
     if (b.site.lat != null && b.weather.source !== 'model' && (b.time.startMs - Date.now()) < 15 * 86400000) {
       const p = localParts(tz(), b.time.startMs);
@@ -385,19 +382,12 @@ export async function renderWizard(view, ctx, id, opts = {}) {
 
   // ---------------------------------------------------------------- 5
   function step5(body) {
-    const S = ctx.settings, sc = b.schedule;
-    const ms = ctx.stamm.meetings.map((m) => ({ value: m.id, label: stammLabel(m, m.name) })).concat([{ value: 'custom', label: t('meetingCustom') }]);
+    const sc = b.schedule;
     const holder = h('div');
-    const mCustom = input('text', sc.meetingId === 'custom' ? sc.meetingName : '', { placeholder: t('meeting') }); mCustom.hidden = sc.meetingId !== 'custom';
-    const mSel = select(ms, sc.meetingId || 'custom', { onchange: (e) => { sc.meetingId = e.target.value; mCustom.hidden = e.target.value !== 'custom'; const m = ctx.stamm.meetings.find((x) => x.id === e.target.value); sc.meetingName = m ? m.name : mCustom.value; sc.meetingLat = m?.lat ?? null; sc.meetingLon = m?.lon ?? null; sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } });
-    const meetBox = h('div');
-    const meetPlace = () => ({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon, elev: null });
-    typeToPick(mCustom, meetPlace, { title: t('meeting'), onPick: (p) => { sc.meetingName = p.name; sc.meetingLat = p.lat; sc.meetingLon = p.lon; sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); }, onCancel: (v) => { sc.meetingName = v; persistSoon(); } });
-    function drawMeet() { clear(meetBox); meetBox.appendChild(placeRow(meetPlace(), { label: `${t('meeting')} · ${t('coords')}`, title: t('meeting'), noName: true, onPick: (p) => { sc.meetingLat = p.lat; sc.meetingLon = p.lon; if (sc.meetingId === 'custom' || !sc.meetingName) { sc.meetingName = p.name; mCustom.value = p.name; } sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } })); }
-    function drawEditor() { clear(holder); if (sc.skip) { holder.appendChild(h('div.note', t('sch_skipped'))); return; } holder.appendChild(scheduleEditor(b, ctx, () => persistSoon(), false, { hideMeeting: true })); }
+    function drawEditor() { clear(holder); if (sc.skip) { holder.appendChild(h('div.note', t('sch_skipped'))); return; } holder.appendChild(scheduleEditor(b, ctx, () => persistSoon())); }
     const skipBox = check(t('sch_skip'), !!sc.skip, (v) => { sc.skip = v; drawEditor(); persistSoon(); });
-    body.append(skipBox, h('div.frow.meet', [field(t('meeting'), h('div', [mSel, mCustom])), meetBox]), holder);
-    drawMeet(); drawEditor();
+    body.append(skipBox, holder);
+    drawEditor();
   }
 
   // ---------------------------------------------------------------- 6
@@ -408,12 +398,12 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const { type, r } = massPerf(b, S);
     const { rows } = scheduleFor(b, sun);
     body.append(
-      h('div.frow', [
+      h('div.sumcols', [
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s1'))), h('div.card-body', kv([[t('registration'), b.balloon.label], [t('flightKind'), t('kind_' + b.flight.kind)], [t('operator'), b.flight.operatorName], [t('occasion'), b.flight.occasion || '–']]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s2'))), h('div.card-body', kv([[t('site'), placeLine(b.site)], [t('date'), `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('sun'), sun ? `BCMT ${hhmm(z, sun.official.bcmt)} · SR ${hhmm(z, sun.official.sr)} · SS ${hhmm(z, sun.official.ss)} · ECET ${hhmm(z, sun.official.ecet)}` : '–'], sun?.nightStart ? ['', h('span.warn', t('night'))] : null]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s3'))), h('div.card-body', kv([[t('duration'), fmtDur(b.intent.durationMin)], [t('altBand'), `${b.intent.altMinFt}–${b.intent.altMaxFt} ft`], [t('direction'), b.intent.direction || '–'], b.landing?.lat != null ? [t('landingSite'), placeLine(b.landing)] : null, [t('levels'), b.intent.levels.join(', ')]]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s4'))), h('div.card-body', kv([[t('pic'), b.persons.pic], [t('retrieve'), b.persons.retrieve || '–'], [t('pax'), b.persons.pax.map((p) => p.name).join(', ') || '–'], type === 'hab' ? [t('mp_takeoff'), `${fmt(r.takeoff)} kg (${fmtSigned(r.massDelta)} kg)`] : [t('gb_ballast'), `${fmt(r.ballast)} kg`]]))]),
-        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv([[t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–')]].concat(b.schedule.skip ? [[t('sch_title'), t('sch_skipped')]] : rows.map((row) => [hhmm(z, row.ms), t('sch_' + row.key)]))))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv([[t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–')]].concat(b.schedule.skip ? [[t('sch_title'), t('sch_skipped')]] : rows.map((row) => [hhmm(z, row.ms), scheduleRowLabel(row, b, t)]))))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_mandatory'))), h('div.card-body', [h('ul', { style: { margin: 0, paddingLeft: '18px' } }, mandatoryPanels(S, b).map((p) => h('li', tt(p)))), h('div.note', t('wiz_createHint'))])]),
       ]),
     );

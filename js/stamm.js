@@ -30,3 +30,10 @@ export function mergedStamm(settings, shared = []) {
 
 /** Anzeigename mit Geber-Zusatz für freigegebene Einträge. */
 export const stammLabel = (x, base) => (x?.shared ? `${base} (${x.ownerName})` : base);
+
+/** Kurzzeile der Dokumente eines Stammdatensatzes: «Typ bis 2027-03-31 · …»; abgelaufene mit ⚠. */
+export function docsLine(docs, today = new Date().toISOString().slice(0, 10)) {
+  const list = Array.isArray(docs) ? docs.filter((d) => d.type || d.name) : [];
+  if (!list.length) return '';
+  return list.map((d) => `${d.type || d.name}${d.name && d.type ? ` ${d.name}` : ''}${d.validTo ? ` → ${d.validTo}${d.validTo < today ? ' ⚠' : ''}` : ''}`).join(' · ');
+}

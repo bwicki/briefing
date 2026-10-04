@@ -235,7 +235,7 @@ async function route(req, env, url, ctx) {
   if (p === '/api/health') return json({ ok: true, version: env.APP_VERSION || '', time: Date.now() });
 
   // ---- Dateien (unerratbare Schlüssel, öffentlich lesbar; Cache 1 Jahr)
-  let mm = m(/^\/files\/([a-z0-9]+)\/([a-z0-9-]+\.(?:jpg|png|webp|gif|pdf))$/);
+  let mm = m(/^\/files\/([a-z0-9-]+)\/([a-z0-9-]+\.(?:jpg|png|webp|gif|pdf))$/);
   if (mm && req.method === 'GET') {
     const obj = await env.FILES.get(`${mm[1]}/${mm[2]}`);
     if (!obj) return err('not found', 404);
@@ -368,6 +368,8 @@ async function route(req, env, url, ctx) {
     const given = (await listShares(env, user.id)).filter((s) => s.from === user.id).map((s) => ({ to: s.to, toName: s.toName, categories: s.categories }));
     return json({ user: { id: user.id, name: user.name, role: user.role, flags: user.flags }, shared: await sharedStamm(env, user.id), given });
   }
+  // ---- Dokumente zu Stammdaten (Ballon, Person): Ablage wie Briefing-Dateien unter docs-<Benutzer>/…
+  if (p === '/api/docs' && req.method === 'POST') return uploadFile(env, ctx, `docs-${user.id.toLowerCase().replace(/[^a-z0-9]/g, 'x')}`, await body(), user.id);
   if (p === '/api/password' && req.method === 'POST') {
     const { oldPassword, newPassword } = await body();
     if (!(await verifyUser(env, user.id, oldPassword))) return err('wrong password', 403);

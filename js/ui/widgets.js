@@ -26,6 +26,12 @@ export function check(label, checked, onchange, attrs = {}) {
 }
 export const tag = (cls, text) => h('span.tag' + (cls ? '.' + cls : ''), text);
 export const kv = (rows) => h('div.kv', rows.filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', typeof v === 'string' ? v : v)]));
+/** Einheitliches «+»-Kästchen zum Anlegen neuer Einträge (hinter der Beschriftung). */
+export const addBtn = (onclick, title) => h('button.btn.add', { type: 'button', title: title || t('add'), 'aria-label': title || t('add'), onclick }, '+');
+/** Kartenkopf mit Titel und «+»; die Liste (box) trägt ihre Anlegefunktion als box.addFn. */
+export const listHead = (title, box, label) => h('div.card-head', [h('div.section-title', title), addBtn(() => box.addFn?.(), label)]);
+/** Feld mit Beschriftung und «+» daneben. */
+export const fieldAdd = (label, content, onAdd, title) => h('div.f', [h('div.lblrow', [h('label', label), addBtn(onAdd, title)]), content]);
 export const stats = (items) => h('div.stat-strip', items.map(([k, v, cls]) => h('div.stat', [h('div.k', k), h('div.v' + (cls ? '.' + cls : ''), v)])));
 export function card(title, body, opts = {}) {
   const el = h('div.card', [title ? h('div.card-head', [h('div.section-title', title), ...(opts.headExtra || [])]) : null, h('div.card-body', body)]);
@@ -144,4 +150,48 @@ export function liftCurve(rows, takeoff, maxAlt) {
     <text x="${x(takeoff) + 3}" y="${pt + 9}" font-size="8" fill="var(--temp)" font-family="monospace">${fmt(takeoff)} kg</text>
     <text x="${W - pr}" y="${H - 2}" font-size="7.5" fill="var(--text-dim)" font-family="monospace" text-anchor="end">kg Tragfähigkeit → · m AMSL ↑</text>`;
   return svg;
+}
+
+/** Dokumentliste zu einem Stammdatensatz (Ballon, Person): Typ aus der Standardliste, Bezeichnung,
+ * gültig bis, Datei (PDF/Bild) als Ablage im Worker (R2). owner.docs = [{id,type,name,validTo,url,key,uploadedAt}]. */
+export function docsEditor(owner, types, ctx, opts = {}) {
+  owner.docs = Array.isArray(owner.docs) ? owner.docs : [];
+  const box = h('div.docs');
+  const remote = ctx.store.mode === 'remote';
+  async function pick(doc) {
+    if (!remote) { toast(t('doc_remoteOnly')); return; }
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'application/pdf,image/*';
+    inp.onchange = async () => {
+      const f = inp.files?.[0]; if (!f) return;
+      try {
+        toast(t('loading'));
+        let dataUrl;
+        if (f.type === 'application/pdf') { if (f.size > 12 * 1024 * 1024) throw new Error('> 12 MB'); dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
+        else dataUrl = await shrinkImage(f, 2000, 0.85);
+        const r = await ctx.store.uploadDoc(dataUrl);
+        doc.url = r.url; doc.key = r.key; doc.uploadedAt = Date.now(); if (!doc.name) doc.name = f.name.replace(/\.[^.]+$/, '');
+        draw(); opts.onChange?.(); toast(t('ok'));
+      } catch (e) { toast(`${t('error')}: ${e.message}`); }
+    };
+    inp.click();
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  function draw() {
+    clear(box);
+    owner.docs.forEach((doc, i) => {
+      const exp = doc.validTo && doc.validTo < today, soon = !exp && doc.validTo && doc.validTo < new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 10);
+      box.appendChild(h('div.doc-row', [
+        h('select', { onchange: (e) => { doc.type = e.target.value; opts.onChange?.(); } }, [...new Set([...(types || []), doc.type].filter(Boolean))].map((ty) => h('option', { value: ty, selected: ty === doc.type }, ty))),
+        input('text', doc.name || '', { placeholder: t('doc_name'), oninput: (e) => { doc.name = e.target.value; opts.onChange?.(); } }),
+        input('date', doc.validTo || '', { title: t('doc_validTo'), class: exp ? 'neg' : soon ? 'half' : '', onchange: (e) => { doc.validTo = e.target.value; opts.onChange?.(); draw(); } }),
+        doc.url ? h('a.btn.small', { href: doc.url, target: '_blank', rel: 'noopener', title: doc.key || '' }, t('doc_open')) : null,
+        h('button.btn.small', { type: 'button', onclick: () => pick(doc) }, doc.url ? t('doc_replace') : t('doc_upload')),
+        h('button.btn.icon.small', { type: 'button', title: t('remove'), onclick: () => { if (confirm(t('remove') + '?')) { owner.docs.splice(i, 1); draw(); opts.onChange?.(); } } }, '✕'),
+        exp ? h('span.tag.neg', t('doc_expired')) : soon ? h('span.tag.half', t('doc_soon')) : null,
+      ]));
+    });
+  }
+  box.addFn = () => { owner.docs.push({ id: uid(6), type: (types || [])[0] || '', name: '', validTo: '', url: '', key: '' }); draw(); opts.onChange?.(); };
+  draw();
+  return box;
 }

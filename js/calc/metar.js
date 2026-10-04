@@ -28,6 +28,24 @@ const L = {
 };
 
 const T = (n) => (n == null ? '' : String(+n));
+/** Schwellen für die Hervorhebung (rot): Wind/Böen ab kt, Sicht unter m, Wolkenbasis BKN/OVC unter ft. */
+export const BAD = { windKt: 14, visM: 5000, baseFt: 1500 };
+export const MARK0 = '\u0001', MARK1 = '\u0002';
+const B = (txt) => MARK0 + txt + MARK1;
+/** Ist eine Rohgruppe «schlechtes Wetter» (für die Rot-Markierung im RAW-Text)? */
+export function badToken(tk) {
+  let m;
+  if ((m = /^(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/.exec(tk))) { const f = m[4] === 'MPS' ? 1.944 : 1; return +m[2] * f >= BAD.windKt || (m[3] && +m[3] * f >= BAD.windKt); }
+  if (/^WS\d{3}\//.test(tk)) return true;
+  if (/^\d{4}(NDV)?$/.test(tk)) return +tk.slice(0, 4) < BAD.visM;
+  if (/^\d{4}(N|S|E|W|NE|NW|SE|SW)$/.test(tk)) return +tk.slice(0, 4) < BAD.visM;
+  if ((m = /^(\d+)(?:\/(\d+))?SM$/.exec(tk))) return (+m[1] / (m[2] ? +m[2] : 1)) < 3;
+  if (/^R\d{2}[LCR]?\//.test(tk)) return true;
+  if ((m = /^(FEW|SCT|BKN|OVC)(\d{3}|\/\/\/)(CB|TCU|\/\/\/)?$/.exec(tk))) return (m[3] === 'CB' || m[3] === 'TCU') || ((m[1] === 'BKN' || m[1] === 'OVC') && m[2] !== '///' && +m[2] * 100 <= BAD.baseFt);
+  if (/^VV(\d{3}|\/\/\/)$/.test(tk)) return true;
+  if (/^[-+]?(VC)?(MI|BC|PR|DR|BL|SH|TS|FZ)*(DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PY|PO|SQ|FC|SS|DS)+$/.test(tk) && tk !== 'NSW') return true;
+  return false;
+}
 function windTxt(m, s) {
   const dir = m[1], spd = +m[2], g = m[3] ? +m[3] : null, unit = m[4];
   const kt = (v) => (unit === 'MPS' ? Math.round(v * 1.944) : v);
@@ -81,20 +99,20 @@ function decodeGroups(tokens, s, out) {
     if ((m = /^(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/.exec(tk))) {
       let txt = `${s.wind} ${windTxt(m, s)}`;
       const v = /^(\d{3})V(\d{3})$/.exec(tokens[i] || ''); if (v) { txt += ` (${s.vrb} ${v[1]}°–${v[2]}°)`; i++; }
-      out.push(txt); continue;
+      out.push(badToken(tk) ? B(txt) : txt); continue;
     }
-    if ((m = /^WS(\d{3})\/(\d{3})(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/.exec(tk))) { out.push(`${s.ws} ${+m[1] * 100} ft: ${windTxt([null, m[2], m[3], m[4], m[5]], s)}`); continue; }
-    if (/^\d{4}(NDV)?$/.test(tk)) { const vt = visTxt(tk.slice(0, 4), s); if (vt) { out.push(vt); continue; } }
-    if (/^(\d+ )?\d+(\/\d+)?SM$/.test(tk) || (/^\d+$/.test(tk) && /^\d+\/\d+SM$/.test(tokens[i] || ''))) { const v = /^\d+$/.test(tk) ? `${tk} ${tokens[i++]}` : tk; const vt = visTxt(v, s); if (vt) { out.push(vt); continue; } }
-    if ((m = /^(\d{4})(N|S|E|W|NE|NW|SE|SW)$/.exec(tk))) { out.push(`${s.vis} ${m[2]} ${+m[1] >= 1000 ? (+m[1] / 1000).toFixed(1) + ' km' : m[1] + ' m'}`); continue; }
-    if ((m = /^R(\d{2}[LCR]?)\/([PM]?\d{4})(?:V([PM]?\d{4}))?([UDN])?$/.exec(tk))) { out.push(`${s.rvr} ${m[1]}: ${m[2].replace(/^P/, '>').replace(/^M/, '<')} m${m[3] ? `–${m[3].replace(/^P/, '>').replace(/^M/, '<')} m` : ''}`); continue; }
-    if ((m = /^(FEW|SCT|BKN|OVC)(\d{3}|\/\/\/)(CB|TCU|\/\/\/)?$/.exec(tk))) { clouds.push(cloudTxt(m, s)); continue; }
-    if ((m = /^VV(\d{3}|\/\/\/)$/.exec(tk))) { clouds.push(`${s.vv} ${m[1] === '///' ? '?' : +m[1] * 100 + ' ft'}`); continue; }
+    if ((m = /^WS(\d{3})\/(\d{3})(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/.exec(tk))) { out.push(B(`${s.ws} ${+m[1] * 100} ft: ${windTxt([null, m[2], m[3], m[4], m[5]], s)}`)); continue; }
+    if (/^\d{4}(NDV)?$/.test(tk)) { const vt = visTxt(tk.slice(0, 4), s); if (vt) { out.push(badToken(tk) ? B(vt) : vt); continue; } }
+    if (/^(\d+ )?\d+(\/\d+)?SM$/.test(tk) || (/^\d+$/.test(tk) && /^\d+\/\d+SM$/.test(tokens[i] || ''))) { const v = /^\d+$/.test(tk) ? `${tk} ${tokens[i++]}` : tk; const vt = visTxt(v, s); if (vt) { out.push(badToken(v.replace(/^\d+ /, '')) ? B(vt) : vt); continue; } }
+    if ((m = /^(\d{4})(N|S|E|W|NE|NW|SE|SW)$/.exec(tk))) { const vt = `${s.vis} ${m[2]} ${+m[1] >= 1000 ? (+m[1] / 1000).toFixed(1) + ' km' : m[1] + ' m'}`; out.push(badToken(tk) ? B(vt) : vt); continue; }
+    if ((m = /^R(\d{2}[LCR]?)\/([PM]?\d{4})(?:V([PM]?\d{4}))?([UDN])?$/.exec(tk))) { out.push(B(`${s.rvr} ${m[1]}: ${m[2].replace(/^P/, '>').replace(/^M/, '<')} m${m[3] ? `–${m[3].replace(/^P/, '>').replace(/^M/, '<')} m` : ''}`)); continue; }
+    if ((m = /^(FEW|SCT|BKN|OVC)(\d{3}|\/\/\/)(CB|TCU|\/\/\/)?$/.exec(tk))) { clouds.push(badToken(tk) ? B(cloudTxt(m, s)) : cloudTxt(m, s)); continue; }
+    if ((m = /^VV(\d{3}|\/\/\/)$/.exec(tk))) { clouds.push(B(`${s.vv} ${m[1] === '///' ? '?' : +m[1] * 100 + ' ft'}`)); continue; }
     if ((m = /^(M?\d{2})\/(M?\d{2})?$/.exec(tk))) { out.push(`${s.temp} ${tempVal(m[1])} °C${m[2] ? `, ${s.dew} ${tempVal(m[2])} °C` : ''}`); continue; }
     if ((m = /^Q(\d{4})$/.exec(tk))) { out.push(`${s.qnh} ${+m[1]} hPa`); continue; }
     if ((m = /^A(\d{4})$/.exec(tk))) { out.push(`${s.qnh} ${(+m[1] / 100).toFixed(2)} inHg (${Math.round(+m[1] / 100 * 33.8639)} hPa)`); continue; }
     if ((m = /^T([XN])(M?\d{2})\/(\d{2})(\d{2})Z$/.exec(tk))) { out.push(`${m[1] === 'X' ? s.tx : s.tn} ${tempVal(m[2])} °C (${m[3]}. ${m[4]}:00 UTC)`); continue; }
-    if (/^[-+]?(VC)?[A-Z]{2,8}$/.test(tk)) { const w = wxTxt(tk, s); if (w) { wx.push(w); continue; } }
+    if (/^[-+]?(VC)?[A-Z]{2,8}$/.test(tk)) { const w = wxTxt(tk, s); if (w) { wx.push(B(w)); continue; } }
     if (tk === 'NOSIG') { out.push(s.nosig); continue; }
     if (tk === 'RMK') break;   // Bemerkungen nicht übersetzen
     out.push(tk);   // unbekannt → roh

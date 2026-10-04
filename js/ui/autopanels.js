@@ -9,6 +9,9 @@ import { renderSnapshot, setAirspaceUrl } from './autorender.js';
 import * as DATA from '../auto/data.js';
 import { MODELS, modelsFor, modelName, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDateTime } from '../calc/time.js';
+import { pointInfo } from '../net.js';
+import { icao } from '../calc/geo.js';
+import { applyLanding } from '../model.js';
 import { panelPrompt, aiHint } from '../auto/ai.js';
 
 const shareTok = (ctx) => ctx.shared?.token;
@@ -34,7 +37,7 @@ export function meteoBar(b, ctx, { onChange, refreshAll, readOnly }) {
 export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   setAirspaceUrl(ctx.settings.airspaceTileUrl);
   const wrap = h('div.autoblock');
-  const toolbar = h('div.row-actions.no-print');
+  const toolbar = h('div.row-actions.no-print.ptools');
   const body = h('div');
   const status = h('span.note');
   const setSnap = (snap) => { d.content.auto = snap; onChange(); draw(); };
@@ -52,17 +55,25 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   function draw() {
     clear(toolbar); clear(body);
     if (!readOnly) {
-      toolbar.appendChild(h('button.btn', { type: 'button', onclick: run }, d.content.auto ? t('auto_refresh') : t('auto_load')));
+      toolbar.appendChild(h('button.btn.small', { type: 'button', onclick: run }, d.content.auto ? t('auto_refresh') : t('auto_load')));
       if (p.auto === 'traj') toolbar.appendChild(trajControls(b, ctx, () => { onChange(); run(); }));
       if (p.auto === 'dabs') toolbar.appendChild(select([{ value: 'today', label: t('auto_today') }, { value: 'tomorrow', label: t('auto_tomorrow') }], b.dabsDay || dabsDayFor(b), { onchange: (e) => { b.dabsDay = e.target.value; onChange(); } }));
+      if (p.auto === 'metar') toolbar.appendChild(h('span.inline', [h('span.note', t('auto_metarKm')), input('number', b.metarKm || ctx.settings.metarRadiusKm || 150, { step: 10, min: 20, max: 400, style: { width: '74px' }, onchange: (e) => { b.metarKm = Math.min(400, Math.max(20, num(e.target.value, 150))); onChange(); run(); } })]));
       if (p.auto === 'notam') toolbar.appendChild(h('span.note', ctx.can('notam') ? `${t('auto_notamRadius')} ${ctx.settings.notamRadiusNm || 25} NM` : t('feat_disabled')));
-      if (d.content.auto && ctx.store.mode === 'remote' && ctx.can('ai')) toolbar.appendChild(h('button.btn', { type: 'button', onclick: () => askAi(p, d, b, ctx, onChange, draw) }, d.ai?.text ? t('ai_again') : t('ai_ask')));
-      if (d.content.auto) toolbar.appendChild(h('button.btn.icon', { type: 'button', title: t('auto_clear'), onclick: () => { if (confirm(t('auto_clear') + '?')) { d.content.auto = null; onChange(); draw(); } } }, '✕'));
+      if (d.content.auto && ctx.store.mode === 'remote' && ctx.can('ai')) toolbar.appendChild(h('button.btn.small', { type: 'button', onclick: () => askAi(p, d, b, ctx, onChange, draw) }, d.ai?.text ? t('ai_again') : t('ai_ask')));
+      if (d.content.auto) toolbar.appendChild(h('button.btn.icon.small', { type: 'button', title: t('auto_clear'), onclick: () => { if (confirm(t('auto_clear') + '?')) { d.content.auto = null; onChange(); draw(); } } }, '✕'));
       toolbar.appendChild(status);
     }
     if (p.auto === 'radar') body.appendChild(radarLive(b, ctx));
     const snap = d.content.auto;
-    if (snap) body.appendChild(renderSnapshot(snap, b, ctx, { interactive: !readOnly }));
+    const onLanding = (!readOnly && p.auto === 'traj') ? async (pt) => {
+      let info = {}; try { info = await pointInfo(pt.lat, pt.lon); } catch { /* ohne Name */ }
+      applyLanding(b, { lat: pt.lat, lon: pt.lon, name: info.name || icao(pt.lat, pt.lon), elev: info.elev != null ? Math.round(info.elev) : null }, getLang());
+      if (d.content.auto?.data) d.content.auto.data.landing = { lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name };
+      onChange(); draw(); toast(`${t('landingSite')}: ${b.landing.name}`);
+      document.dispatchEvent(new CustomEvent('fb:landing', { detail: { id: b.id } }));
+    } : null;
+    if (snap) body.appendChild(renderSnapshot(snap, b, ctx, { interactive: !readOnly, onLanding }));
     else if (p.auto !== 'radar') body.appendChild(h('div.note', readOnly ? t('auto_empty') : t('auto_hint_' + p.auto, { s: p.phase2 || '' })));
   }
   draw();
@@ -70,7 +81,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   // beim ersten Öffnen ohne Schnappschuss automatisch laden: Modell-Panels sofort; DABS, Karten und
   // NOTAM (Worker-Abrufe, Freigabe) etwas später, damit die Modellpanels zuerst stehen
   const remote = ctx.store.mode === 'remote';
-  const auto = ['meteogram', 'wind', 'temps', 'traj', 'metar', 'sigmet', 'balloon', 'pdiff'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE');
+  const auto = ['meteogram', 'wind', 'temps', 'traj', 'metar', 'sigmet', 'balloon', 'pdiff', 'thermal'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE');
   const later = remote && (p.auto === 'dabs' || (p.auto === 'synoptic' && (ctx.settings.synopticCharts || []).length) || (p.auto === 'notam' && ctx.can('notam')));
   if (!readOnly && !d.content.auto && (auto || later) && b.site.lat != null && ctx.autoLoad !== false) setTimeout(run, (later ? 1500 : 50) + Math.random() * 400);
   return wrap;
@@ -129,10 +140,12 @@ function radarLive(b, ctx) {
   const note = h('div.note', t('auto_radarNote'));
   setTimeout(async () => {
     if (typeof L === 'undefined' || b.site.lat == null) return;
-    const map = L.map(el).setView([b.site.lat, b.site.lon], 8);
+    const map = L.map(el).setView([b.site.lat, b.site.lon], 7);   // weit genug für die Niederschlagsgebiete
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 12, attribution: '© OpenStreetMap' }).addTo(map);
-    if (ctx.settings.airspaceTileUrl) L.tileLayer(ctx.settings.airspaceTileUrl, { maxZoom: 14, opacity: 0.75, attribution: 'Luftraum: openAIP' }).addTo(map);
-    L.marker([b.site.lat, b.site.lon]).addTo(map);
+    L.marker([b.site.lat, b.site.lon]).addTo(map).bindTooltip(`${t('site')}: ${b.site.name || ''}`);
+    if (b.landing?.lat != null) L.marker([b.landing.lat, b.landing.lon], { icon: L.divIcon({ className: 'land-dot', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(map).bindTooltip(`${t('landingSite')}: ${b.landing.name || ''}`);
+    // Webcams (Einstellungen → Meteo): Kamera-Symbol mit Link
+    for (const w of ctx.settings.webcams || []) if (w.lat != null && w.lon != null) L.marker([w.lat, w.lon], { icon: L.divIcon({ className: 'cam-ico', html: '📷', iconSize: [22, 22], iconAnchor: [11, 11] }), title: w.name }).addTo(map).bindPopup(`<b>${w.name || 'Webcam'}</b><br><a href="${w.url}" target="_blank" rel="noopener">${(w.url || '').replace(/^https?:\/\/(www\.)?/, '').slice(0, 40)} ↗</a>`);
     try {
       const j = await fetch('https://api.rainviewer.com/public/weather-maps.json').then((r) => r.json());
       const frames = j.radar?.past || [];

@@ -8,17 +8,33 @@
 import { addMin, floorToMin, roundToMin } from './time.js';
 
 /**
- * in: { startMs, type:'hab'|'gas', rigMin, fillMin, driveMin, bufferMin, durationMin,
- *       recoveryMin, meetingName, siteName }
- * out: [{ key, ms, label(de/en via key), editable:true }]
+ * in: { startMs, type:'hab'|'gas', rigMin, fillMin, bufferMin, durationMin, recoveryMin,
+ *       stops: [{ id, name, driveMin (zur nächsten Etappe bzw. zum Startplatz), dwellMin }],
+ *       overrides: { 'depart:<id>'|arrive|rig|fillStart|fillEnd|landing|return: ms } }
+ *       (Altform: driveMin/meetingName ohne stops = eine Etappe)
+ * out: [{ key, kind?, stopId?, name?, ms, overridden? }] — Etappen-Abfahrten, Ankunft Startplatz,
+ *       Aufrüsten/Füllen, Start, Landung, Rückkehr. Pins gelten rückwärts: die Zeilen davor
+ *       rechnen vom Pin aus, die danach vom Start.
  */
 export function buildSchedule(i) {
   const rows = [];
   const prep = (i.type === 'gas' ? (i.fillMin || 0) : 0) + (i.rigMin || 0);
-  const arrive = floorToMin(addMin(i.startMs, -prep), 5);
-  const depart = floorToMin(addMin(arrive, -((i.driveMin || 0) + (i.bufferMin || 0))), 5);
-  rows.push({ key: 'depart', ms: depart });
-  rows.push({ key: 'arrive', ms: arrive });
+  const ov = i.overrides || {};
+  // Ankunft Startplatz (Pin überschreibt die Rückrechnung vom Start)
+  const arrive = ov.arrive != null ? ov.arrive : floorToMin(addMin(i.startMs, -prep), 5);
+  // Etappen rückwärts: letzte Etappe fährt mit Puffer zum Startplatz, davor jede zur nächsten
+  const stops = Array.isArray(i.stops) && i.stops.length ? i.stops : [{ id: 'm1', name: i.meetingName || '', driveMin: i.driveMin ?? 30 }];
+  const departs = new Array(stops.length);
+  let next = arrive;
+  for (let k = stops.length - 1; k >= 0; k--) {
+    const st = stops[k];
+    const key = `depart:${st.id}`;
+    const drive = (st.driveMin ?? 30) + (k === stops.length - 1 ? (i.bufferMin || 0) : 0);
+    departs[k] = ov[key] != null ? ov[key] : floorToMin(addMin(next, -drive), 5);
+    next = addMin(departs[k], -(st.dwellMin || 0));
+  }
+  stops.forEach((st, k) => rows.push({ key: `depart:${st.id}`, kind: 'depart', stopId: st.id, name: st.name || '', ms: departs[k], overridden: ov[`depart:${st.id}`] != null, drive: st.driveMin ?? null }));
+  rows.push({ key: 'arrive', kind: 'arrive', ms: arrive, overridden: ov.arrive != null });
   if (i.type === 'gas') {
     rows.push({ key: 'rig', ms: arrive });
     const fillStart = addMin(arrive, i.rigMin || 0);
@@ -31,8 +47,11 @@ export function buildSchedule(i) {
   if (i.durationMin) {
     const land = roundToMin(addMin(i.startMs, i.durationMin), 5);
     rows.push({ key: 'landing', ms: land });
-    if (i.recoveryMin) rows.push({ key: 'return', ms: roundToMin(addMin(land, i.recoveryMin + (i.driveMin || 0)), 5) });
+    const lastDrive = stops[stops.length - 1]?.driveMin ?? i.driveMin ?? 0;
+    if (i.recoveryMin) rows.push({ key: 'return', ms: roundToMin(addMin(land, i.recoveryMin + lastDrive), 5) });
   }
+  // übrige Pins (rig, fillStart, fillEnd, landing, return) anwenden
+  for (const r of rows) if (!r.kind && r.key !== 'start' && ov[r.key] != null) { r.ms = ov[r.key]; r.overridden = true; }
   return rows;
 }
 

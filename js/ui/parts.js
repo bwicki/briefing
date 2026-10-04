@@ -1,16 +1,17 @@
 /* Fahrtbriefing — Bausteine, die Ablauf, Erarbeitungssicht und Briefingsicht teilen:
  * Sonne/Mond-Block, Tragkraft-/Ballast-Editor, Zeitplan-Editor. */
-import { h, clear, num, fmt, fmtSigned, toast } from '../util.js';
+import { h, clear, num, fmt, fmtSigned, toast, uid } from '../util.js';
 import { t, getLang } from '../i18n.js';
-import { field, input, kv, stats, liftCurve, check } from './widgets.js';
-import { sunFor, massPerf, scheduleFor, setStart } from '../model.js';
+import { field, input, select, kv, stats, liftCurve, check, fieldAdd } from './widgets.js';
+import { sunFor, massPerf, scheduleFor, setStart, ensureStops, syncMeeting, scheduleRowLabel } from '../model.js';
+import { stammLabel } from '../stamm.js';
+import { placeRow, placeLine, typeToPick } from './place.js';
 import { hhmm, localParts, fmtDur, fmtDate } from '../calc/time.js';
 import { moonPhaseName } from '../calc/sun.js';
 import { racValidity } from '../calc/rac.js';
 import { siteWeatherAt, route } from '../net.js';
 import { trailerMinutes } from '../calc/schedule.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
-import { placeRow, placeLine } from './place.js';
 
 const tzOf = (b) => b.site.tz || 'Europe/Zurich';
 
@@ -72,7 +73,7 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
         // Resultate Masse
         section(t('mp_resMass'), 'res', [stats([[t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_mtom'), `${fmt(r.mtom)} kg`], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'], [t('mp_required'), `${r.required.toFixed(3)} kg/m³`]])]),
         // Resultate Höhe / Hüllentemperatur
-        section(t('mp_resAlt'), 'res', [stats([[t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m AMSL` : '> 10 000 m'], [t('mp_maxAltExact'), r.maxAltExact != null ? `${fmt(r.maxAltExact)} m` : '–'], [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (w.envTempC ?? bal.envTempC) ? 'neg' : 'pos'], [t('mp_envMargin', { t: w.envTempC ?? bal.envTempC }), r.envMargin != null ? `${fmtSigned(r.envMargin)} K` : '–', r.envMargin < 0 ? 'neg' : '']]), liftCurve(r.rows, r.takeoff, r.maxAltExcel)]),
+        section(t('mp_resAlt'), 'res', [h('div.alt-grid', [stats([[t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m AMSL` : '> 10 000 m'], [t('mp_maxAltExact'), r.maxAltExact != null ? `${fmt(r.maxAltExact)} m` : '–'], [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (w.envTempC ?? bal.envTempC) ? 'neg' : 'pos'], [t('mp_envMargin', { t: w.envTempC ?? bal.envTempC }), r.envMargin != null ? `${fmtSigned(r.envMargin)} K` : '–', r.envMargin < 0 ? 'neg' : ''], [t('mp_maxAgl'), r.maxAltExcel != null ? `${fmt(Math.max(0, r.maxAltExcel - (b.site.elev || 0)))} m AGL` : '–'], [t('mp_envTemp'), `${w.envTempC ?? bal.envTempC} °C`]]), h('figure.curve-fig', [liftCurve(r.rows, r.takeoff, r.maxAltExcel), h('figcaption.mini', t('mp_curve'))])])]),
         // Gasplanung (Vorgabe: Flaschen; Resultat: Vorrat, Dauer, Bedarf)
         section(t('mp_gasPlan'), 'gas', [
           h('table.cyl', [h('thead', h('tr', [h('th', t('mp_cyl')), h('th', t('mp_count')), h('th', 'l (80 %)'), h('th', 'kg Gas'), h('th', 'kg'), h('th', 'kg total')])), h('tbody', cylRows)]),
@@ -96,28 +97,74 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
   return wrap;
 }
 
-/** Zeitplan-Tabelle mit Überschreibungen und Routing. */
+/** Etappen (Treffpunkte) der Anfahrt: Liste mit Ort, Fahrzeit zur nächsten Etappe, Umsortieren
+ * per Ziehen (oder ▲▼); «+» über box.addFn. Jede Änderung löscht die Abfahrts-Pins. */
+export function stopsEditor(b, ctx, onChange, opts = {}) {
+  const S = ctx.settings, sc = b.schedule;
+  ensureStops(sc);
+  const box = h('div.stops');
+  const meetOpts = () => ctx.stamm.meetings.map((m) => ({ value: m.id, label: stammLabel(m, m.name) })).concat([{ value: 'custom', label: t('meetingCustom') }]);
+  const clearDepartPins = () => { for (const k of Object.keys(sc.overrides || {})) if (k.startsWith('depart:')) delete sc.overrides[k]; };
+  const changed = () => { syncMeeting(sc); onChange(); };
+  async function routeLeg(k) {
+    const a = sc.stops[k]; if (!a) return;
+    const nx = sc.stops[k + 1] || { lat: b.site.lat, lon: b.site.lon };
+    if (a.lat == null || nx.lat == null) { a.driveSource = a.driveMin == null ? '' : 'manual'; return; }
+    try {
+      const r = await route(a.lat, a.lon, nx.lat, nx.lon);
+      a.driveMin = trailerMinutes(r.seconds, S.scheduleDefaults.trailerFactor, S.scheduleDefaults.surchargeMin); a.driveKm = Math.round(r.meters / 1000); a.driveSource = 'routing';
+    } catch (e) { a.driveSource = 'manual'; if (a.driveMin == null) a.driveMin = 30; }
+  }
+  async function routeAll() { await Promise.all(sc.stops.map((_, k) => routeLeg(k))); draw(); changed(); }
+  function move(k, to) { if (to < 0 || to >= sc.stops.length) return; const [st] = sc.stops.splice(k, 1); sc.stops.splice(to, 0, st); clearDepartPins(); routeAll(); }
+  let dragFrom = null;
+  function draw() {
+    clear(box);
+    sc.stops.forEach((st, k) => {
+      const last = k === sc.stops.length - 1;
+      const custom = input('text', st.meetingId === 'custom' || !st.meetingId ? st.name : '', { placeholder: t('meeting') }); custom.hidden = !!st.meetingId && st.meetingId !== 'custom';
+      typeToPick(custom, () => ({ name: st.name, lat: st.lat, lon: st.lon, elev: null }), { title: t('meeting'), onPick: (p) => { st.name = p.name; st.lat = p.lat; st.lon = p.lon; st.meetingId = 'custom'; clearDepartPins(); routeAll(); }, onCancel: (v) => { st.name = v; changed(); } });
+      const sel = select(meetOpts(), st.meetingId || 'custom', { onchange: (e) => { st.meetingId = e.target.value; const m = ctx.stamm.meetings.find((x) => x.id === st.meetingId); if (m) { st.name = m.name; st.lat = m.lat ?? null; st.lon = m.lon ?? null; } else { st.name = custom.value; st.lat = null; st.lon = null; } custom.hidden = st.meetingId !== 'custom'; clearDepartPins(); routeAll(); } });
+      const drive = input('number', st.driveMin ?? '', { step: 5, min: 0, style: { width: '84px' }, title: last ? t('sch_driveSite') : t('sch_driveNext'), oninput: (e) => { st.driveMin = num(e.target.value, null); st.driveSource = 'manual'; clearDepartPins(); changed(); redrawTimes(); } });
+      const place = placeRow({ name: st.name, lat: st.lat, lon: st.lon }, { label: '', title: t('meeting'), noName: true, onPick: (p) => { st.lat = p.lat; st.lon = p.lon; if (!st.name || st.meetingId === 'custom') { st.name = st.name || p.name; custom.value = st.name; } st.meetingId = st.meetingId || 'custom'; clearDepartPins(); routeAll(); } });
+      const row = h('div.stop-row', { draggable: true }, [
+        h('div.stop-main', [
+          h('span.handle', { title: t('sch_drag') }, '≡'),
+          h('span.stop-no', String(k + 1)),
+          h('div.stop-sel', [sel, custom]),
+          h('button.btn.icon.small', { type: 'button', title: t('sch_moveUp'), disabled: k === 0, onclick: () => move(k, k - 1) }, '▲'),
+          h('button.btn.icon.small', { type: 'button', title: t('sch_moveDown'), disabled: last, onclick: () => move(k, k + 1) }, '▼'),
+          h('button.btn.icon.small', { type: 'button', title: t('remove'), disabled: sc.stops.length < 2, onclick: () => { sc.stops.splice(k, 1); clearDepartPins(); routeAll(); } }, '✕'),
+        ]),
+        h('div.stop-sub', [place, h('span.inline.small', [h('span.muted', `${last ? t('sch_driveSite') : t('sch_driveNext')}: `), drive, h('span.muted.small', st.driveSource === 'routing' ? ` ${t('driveAuto')}${st.driveKm ? ` · ${st.driveKm} km` : ''}` : st.driveSource === 'manual' ? ` ${t('driveManual')}` : '')])]),
+      ]);
+      row.addEventListener('dragstart', (e) => { dragFrom = k; e.dataTransfer.effectAllowed = 'move'; row.classList.add('dragging'); });
+      row.addEventListener('dragend', () => row.classList.remove('dragging'));
+      row.addEventListener('dragover', (e) => { e.preventDefault(); row.classList.add('over'); });
+      row.addEventListener('dragleave', () => row.classList.remove('over'));
+      row.addEventListener('drop', (e) => { e.preventDefault(); row.classList.remove('over'); if (dragFrom != null && dragFrom !== k) move(dragFrom, k); dragFrom = null; });
+      box.appendChild(row);
+    });
+  }
+  const redrawTimes = () => opts.onTimes?.();
+  box.addFn = () => { sc.stops.push({ id: uid(5), meetingId: 'custom', name: '', lat: null, lon: null, driveMin: null, driveKm: null, driveSource: '', dwellMin: 0 }); clearDepartPins(); draw(); changed(); setTimeout(() => box.querySelectorAll('.stop-sel input')[sc.stops.length - 1]?.focus(), 30); };
+  box.routeAll = routeAll;
+  draw();
+  if (sc.stops.some((st) => st.driveMin == null && st.lat != null) && b.site.lat != null) routeAll();
+  return box;
+}
+
+/** Zeitplan-Tabelle mit Überschreibungen; opts.hideStops lässt die Etappen-Liste weg (Ablauf zeigt sie selbst). */
 export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
   const S = ctx.settings, sc = b.schedule, z = tzOf(b);
+  ensureStops(sc);
   const wrap = h('div');
   const table = h('table.sched');
   const warnBox = h('div');
   const note = h('div.note');
-  const driveIn = input('number', sc.driveMin ?? '', { step: 1, readOnly, oninput: (e) => { sc.driveMin = num(e.target.value, null); sc.driveSource = 'manual'; redraw(); onChange(); } });
   const rigIn = input('number', sc.rigMin, { step: 5, readOnly, oninput: (e) => { sc.rigMin = num(e.target.value); redraw(); onChange(); } });
   const fillIn = input('number', sc.fillMin, { step: 5, readOnly, oninput: (e) => { sc.fillMin = num(e.target.value); redraw(); onChange(); } });
   const bufIn = input('number', sc.bufferMin, { step: 5, readOnly, oninput: (e) => { sc.bufferMin = num(e.target.value); redraw(); onChange(); } });
-  async function doRoute() {
-    if (sc.meetingLat == null || b.site.lat == null) { redraw(); return; }
-    note.textContent = t('loading');
-    try {
-      const r = await route(sc.meetingLat, sc.meetingLon, b.site.lat, b.site.lon);
-      sc.driveMin = trailerMinutes(r.seconds, S.scheduleDefaults.trailerFactor, S.scheduleDefaults.surchargeMin);
-      sc.driveKm = Math.round(r.meters / 1000); sc.driveSource = 'routing'; driveIn.value = sc.driveMin;
-      note.textContent = `${t('driveAuto')}: ${sc.driveKm} km · ${Math.round(r.seconds / 60)} min × ${S.scheduleDefaults.trailerFactor} + ${S.scheduleDefaults.surchargeMin} min`;
-    } catch (e) { note.textContent = `${t('driveManual')} (${e.message})`; if (sc.driveMin == null) { sc.driveMin = 30; driveIn.value = 30; } }
-    redraw(); onChange();
-  }
   function redraw() {
     clear(table); clear(warnBox);
     const sun = sunFor(b, S, ctx.racTable);
@@ -132,27 +179,20 @@ export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
       } });
       if (r.overridden && !readOnly) tIn.classList.add('ov');
       const dd = localParts(z, r.ms).d !== localParts(z, b.time.startMs).d ? ` (${fmtDate(z, r.ms, getLang()).slice(0, 2)})` : '';
-      table.appendChild(h('tr', [h('td.tm', tIn), h('td', [t('sch_' + r.key), r.key === 'depart' && sc.meetingName ? ` · ${sc.meetingName}` : '', r.key === 'arrive' && b.site.name ? ` · ${b.site.name}` : '', dd ? h('span.muted.small', dd) : null]), h('td.act', r.overridden && !readOnly ? h('button.btn.icon', { type: 'button', title: t('recompute'), onclick: () => { delete sc.overrides[r.key]; redraw(); onChange(); } }, '↺') : null)]));
+      table.appendChild(h('tr', [h('td.tm', tIn), h('td', [scheduleRowLabel(r, b, t), dd ? h('span.muted.small', dd) : null]), h('td.act', r.overridden && !readOnly ? h('button.btn.icon', { type: 'button', title: t('recompute'), onclick: () => { delete sc.overrides[r.key]; redraw(); onChange(); } }, '↺') : null)]));
     }
     for (const wkey of warnings) warnBox.appendChild(h('div.warn', '⚠ ' + (wkey === 'nightStart' ? t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) }) : wkey === 'nightLanding' ? t('nightLandWarn', { e: hhmm(z, sun.official.ecet) }) : (getLang() === 'en' ? 'Return after sunset' : 'Rückfahrt nach Sonnenuntergang'))));
   }
-  const meetBox = h('div');
-  const drawMeet = () => { clear(meetBox); meetBox.appendChild(placeRow({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon }, { label: `${t('meeting')} · ${t('coords')}`, title: t('meeting'), noName: true, onPick: (p) => { sc.meetingLat = p.lat; sc.meetingLon = p.lon; if (!sc.meetingName) sc.meetingName = p.name; sc.meetingId = sc.meetingId || 'custom'; sc.overrides = {}; drawMeet(); doRoute(); } })); };
-  const timeFields = [field(`${t('driveTime')} (min)`, driveIn), field(`${t('rigTime')} (min)`, rigIn), b.balloon.type === 'gas' ? field(`${t('fillTime')} (min)`, fillIn) : field(`${t('buffer')} (min)`, bufIn)];
-  if (!readOnly && opts.hideMeeting) wrap.append(
-    h('div.frow.c3', timeFields),
-    h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => { sc.overrides = {}; doRoute(); } }, t('recompute')), note]),
+  const timeFields = [field(`${t('rigTime')} (min)`, rigIn), b.balloon.type === 'gas' ? field(`${t('fillTime')} (min)`, fillIn) : field(`${t('buffer')} (min)`, bufIn)];
+  let stops = null;
+  if (!readOnly && !opts.hideStops) { stops = stopsEditor(b, ctx, () => { redraw(); onChange(); }, { onTimes: redraw }); wrap.append(fieldAdd(t('sch_stops'), stops, () => stops.addFn(), t('sch_stopAdd'))); }
+  if (!readOnly) wrap.append(
+    h('div.frow.c3', [...timeFields, h('div.f', [h('label', ' '), h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => { sc.overrides = {}; (stops || opts.stops)?.routeAll?.(); redraw(); onChange(); } }, t('recompute')), note])])]),
   );
-  else if (!readOnly) wrap.append(
-    h('div.frow.c4', [field(`${t('meeting')}`, input('text', sc.meetingName, { oninput: (e) => { sc.meetingName = e.target.value; onChange(); redraw(); } })), ...timeFields]),
-    meetBox,
-    h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => { sc.overrides = {}; doRoute(); } }, t('recompute')), note]),
-  );
-  else wrap.append(h('div.note', [`${t('meeting')}: `, sc.meetingLat != null ? placeLine({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon }) : (sc.meetingName || '–'), sc.driveMin != null ? ` · ${t('driveTime')} ${sc.driveMin} min` : '']));
-  if (!readOnly && !opts.hideMeeting) drawMeet();
+  else wrap.append(h('div.note', [`${t('sch_stops')}: `, ...sc.stops.map((st, k) => h('span', [k ? ' → ' : '', st.lat != null ? placeLine({ name: st.name, lat: st.lat, lon: st.lon }) : (st.name || '–'), st.driveMin != null ? h('span.muted', ` (${st.driveMin} min)`) : null]))]));
   wrap.append(table, warnBox);
   if (!readOnly) wrap.append(h('div.note', t('sch_rule')));
-  if (!readOnly && (sc.driveMin == null)) doRoute(); else redraw();
+  redraw();
   return wrap;
 }
 

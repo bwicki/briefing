@@ -5,7 +5,7 @@ import { t, tt, getLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { textarea, field, check } from './widgets.js';
 import { placeLine, mapsUrl } from './place.js';
-import { sunFor, scheduleFor, upgradeBriefing } from '../model.js';
+import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel } from '../model.js';
 import { hhmm, fmtDate, fmtDateTime, fmtDur } from '../calc/time.js';
 import { goNoGo } from '../calc/gonogo.js';
 import { flightContext, aiHint } from '../auto/ai.js';
@@ -23,7 +23,7 @@ export function icsFor(b, ctx, opts = {}) {
   const { rows } = scheduleFor(b, sun);
   const first = rows[0]?.ms ?? b.time.startMs, last = rows[rows.length - 1]?.ms ?? b.time.startMs + 4 * 3600000;
   const zz = z(b), lang = getLang();
-  const lines = rows.map((r) => `${hhmm(zz, r.ms)} ${t('sch_' + r.key)}`);
+  const lines = rows.map((r) => `${hhmm(zz, r.ms)} ${scheduleRowLabel(r, b, t)}`);
   const sc = b.schedule;
   const loc = sc.meetingLat != null ? `${sc.meetingName} (${sc.meetingLat.toFixed(5)}, ${sc.meetingLon.toFixed(5)})` : sc.meetingName || b.site.name;
   const desc = [`${t('appName')} ${fmtDate(zz, b.time.startMs, lang)} · ${b.site.name} · ${b.balloon.label}`, `PIC ${b.persons.pic}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''}`, '', ...lines, '', sc.meetingLat != null ? `${t('meeting')}: ${mapsUrl(sc.meetingLat, sc.meetingLon)}` : '', b.site.lat != null ? `${t('site')}: ${mapsUrl(b.site.lat, b.site.lon)}` : '', opts.link ? `Briefing: ${opts.link}` : ''].filter((x) => x !== null).join('\n');
@@ -50,9 +50,9 @@ export function crewMessage(b, ctx, link) {
     `${L ? 'Balloon flight' : 'Ballonfahrt'} ${fmtDate(zz, b.time.startMs, lang)} – ${b.site.name} (${b.site.icao})`,
     `${b.balloon.label} · PIC ${b.persons.pic}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''} · ${b.persons.pax.length} Pax`,
     '',
-    ...rows.map((r) => `${hhmm(zz, r.ms)}  ${t('sch_' + r.key)}${r.key === 'depart' && sc.meetingName ? ` – ${sc.meetingName}` : ''}${r.key === 'arrive' ? ` – ${b.site.name}` : ''}`),
+    ...rows.map((r) => `${hhmm(zz, r.ms)}  ${scheduleRowLabel(r, b, t)}`),
     '',
-    sc.meetingLat != null ? `${t('meeting')}: ${mapsUrl(sc.meetingLat, sc.meetingLon)}` : '',
+    ...(sc.stops || []).filter((st) => st.lat != null).map((st) => `${t('meeting')} ${st.name}: ${mapsUrl(st.lat, st.lon)}`),
     b.site.lat != null ? `${t('site')}: ${mapsUrl(b.site.lat, b.site.lon)}` : '',
     sun ? `BCMT ${hhmm(zz, sun.official.bcmt)} · SR ${hhmm(zz, sun.official.sr)} · SS ${hhmm(zz, sun.official.ss)} · ECET ${hhmm(zz, sun.official.ecet)}` : '',
     link ? `Briefing: ${link}` : '',

@@ -24,13 +24,13 @@ export const DEFAULT_SETTINGS = {
     defaultBasket: 'wettkampf',
     hab: [
       {
-        id: 'HB-QWP', name: 'HB-QWP', model: 'Heissluft 3400 m³', volume: 3400,
+        id: 'HB-QWP', name: 'HB-QWP', model: 'BB34Z', hex: '', volume: 3400,
         masses: { envelope: 139, burner: 26, basket: 68, equipment: 20 }, mtom: 883,
         personWeight: 80, envTempC: 100, envMaxC: null, usableFraction: 0.9, burnRate: 25,
         cylinders: [cyl('va70', 4)], rigMin: 45, maxPersons: 5,
       },
       {
-        id: 'HB-QWZ', name: 'HB-QWZ', model: 'Heissluft 2600 m³', volume: 2600,
+        id: 'HB-QWZ', name: 'HB-QWZ', model: 'BB26E', hex: '4c4b4', volume: 2600,
         masses: { envelope: 103, burner: 14, basket: 49, equipment: 15 }, mtom: 730,
         personWeight: 85, envTempC: 110, envMaxC: null, usableFraction: 1.0, burnRate: 25,
         cylinders: [cyl('wo_s', 4)], rigMin: 45, maxPersons: 4,
@@ -77,6 +77,8 @@ export const DEFAULT_SETTINGS = {
   flyLimits: { wind: [4, 6], gust: [6, 8], gustSpread: [4, 6], cape: [300, 800], precip: 0.1, visKm: 1.5, baseFt: 1000 },
   trajDefaults: { hab: 120, gas: 1440, stepMin: 10 },
   meteoDefaults: { topHpa: 500 },
+  docTypes: { balloon: ['Lufttüchtigkeitszeugnis (ARC)', 'Eintragungsschein', 'Lärmzeugnis', 'Versicherungsnachweis', 'Funkkonzession', 'Wägebericht'], person: ['Lizenz (BPL)', 'Medical', 'Funkzeugnis', 'Ausweis / Pass', 'Versicherung'] },
+  webcams: [{ id: 'uetliberg', name: 'Uetliberg (Roundshot)', lat: 47.3496, lon: 8.4913, url: 'https://uetliberg.roundshot.com/' }, { id: 'rigi', name: 'Rigi Kulm (Roundshot)', lat: 47.0569, lon: 8.4854, url: 'https://rigi.roundshot.com/' }],
   metarRadiusKm: 150, metarCount: 0, notamRadiusNm: 25, aiModel: 'claude-sonnet-5-5',
   synopticCharts: [
     { name: 'DWD Bodenanalyse Europa/Nordatlantik', url: 'https://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_na_ana.png' },
@@ -123,7 +125,7 @@ export function resolveBalloon(settings, sel) {
     if (!env || !bas) return null;
     return {
       type: 'gas', envelopeId: env.id, basketId: bas.id, reg: env.reg || env.id, ownerId: env.ownerId || bas.ownerId || null,
-      label: `${env.reg || env.id} × ${bas.name}`, volume: env.volume, gas: env.gas, purity: env.purity, fillFraction: env.fillFraction,
+      label: `${env.reg || env.id}${env.model ? ' · ' + env.model : ''}${env.hex ? ` (${env.hex})` : ''} × ${bas.name}`, hex: env.hex || '', docs: env.docs || [], volume: env.volume, gas: env.gas, purity: env.purity, fillFraction: env.fillFraction,
       masses: { envelope: env.mass, basket: bas.mass, equipment: bas.equipment, instruments: bas.instruments },
       personWeight: b.gasDefaults.personWeight, maxPersons: bas.maxPersons,
       ballastUnitKg: bas.ballastUnitKg, reserveUnits: bas.reserveUnits,
@@ -132,7 +134,7 @@ export function resolveBalloon(settings, sel) {
   }
   const h = b.hab.find((x) => x.id === sel.id) || b.hab[0];
   if (!h) return null;
-  return { type: 'hab', ownerId: null, ...JSON.parse(JSON.stringify(h)), id: h.id, reg: h.reg || h.id, label: `${h.reg || h.id} · ${h.model}` };
+  return { type: 'hab', ownerId: null, ...JSON.parse(JSON.stringify(h)), id: h.id, reg: h.reg || h.id, label: `${h.reg || h.id}${h.model ? ' · ' + h.model : ''}${h.hex ? ` (${h.hex})` : ''}` };
 }
 
 /** Tiefes Zusammenführen gespeicherter Einstellungen mit den Standards (neue Felder ergänzen). */
@@ -149,5 +151,11 @@ export function mergeSettings(saved) {
   const out = merge(base, saved);
   // 0.6: alte Standardwerte (120 km / 4 Plätze) auf neue Standards heben (150 km / alle im Umkreis)
   if (out.metarRadiusKm === 120 && out.metarCount === 4) { out.metarRadiusKm = 150; out.metarCount = 0; }
+  // 0.7: Beispielballone «Heissluft NNNN m³» → Muster (Beispiel) + Transponder-Hexcode
+  for (const x of out.balloons?.hab || []) {
+    if (x.id === 'HB-QWZ' && /^Heissluft/.test(x.model || '')) { x.model = 'BB26E'; if (!x.hex) x.hex = '4c4b4'; }
+    if (x.id === 'HB-QWP' && /^Heissluft/.test(x.model || '')) x.model = 'BB34Z';
+    if (x.hex == null) x.hex = '';
+  }
   return out;
 }

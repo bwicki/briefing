@@ -5,7 +5,8 @@ import { setHeader } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunRows } from './parts.js';
-import { massPerf, scheduleFor, sunFor, upgradeBriefing } from '../model.js';
+import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel } from '../model.js';
+import { docsLine } from '../stamm.js';
 import { placeLine } from './place.js';
 import { renderSnapshot, standLine } from './autorender.js';
 import { load, save } from '../util.js';
@@ -69,7 +70,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
         case 'core': cell.appendChild(coreRows()); break;
         case 'sun': cell.appendChild(h('div', [h('div.kv', sunR.filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', v)])), sun?.nightStart ? h('div.ns', `⚠ ${t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })}`) : null, sun?.nightLanding ? h('div.ns', `⚠ ${t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })}`) : null])); break;
         case 'massperf': cell.appendChild(massBlock()); break;
-        case 'schedule': if (b.schedule.skip) { cell.appendChild(h('div', t('sch_skipped'))); break; } cell.appendChild(h('div', [h('div.mini', [`${t('meeting')}: `, b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–'), b.schedule.driveMin != null ? ` · ${t('driveTime')} ${b.schedule.driveMin} min` : '']), h('table.inner', sched.rows.map((r) => h('tr', [h('td', { style: { textAlign: 'left', fontFamily: 'monospace' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, `${t('sch_' + r.key)}${r.key === 'depart' && b.schedule.meetingName ? ' · ' + b.schedule.meetingName : ''}${r.key === 'arrive' ? ' · ' + b.site.name : ''}`)])))])); break;
+        case 'schedule': if (b.schedule.skip) { cell.appendChild(h('div', t('sch_skipped'))); break; } cell.appendChild(h('div', [h('div.mini', [`${t('sch_stops')}: `, ...(b.schedule.stops || []).map((st, k) => h('span', [k ? ' → ' : '', st.lat != null ? placeLine({ name: st.name, lat: st.lat, lon: st.lon }) : (st.name || '–'), st.driveMin != null ? ` (${st.driveMin} min)` : '']))]), h('table.inner', sched.rows.map((r) => h('tr', [h('td', { style: { textAlign: 'left', fontFamily: 'monospace' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, scheduleRowLabel(r, b, t))])))])); break;
         case 'equipment': { const items = d.content.items || ['none']; cell.appendChild(h('div', S.equipmentItems.map((it) => h('span.chk', `${items.includes(it) ? '☑' : '☐'} ${t('eq_' + it)}`)))); break; }
         case 'transition': { const items = d.content.items || S.transitionDefaults[b.site.country] || []; cell.appendChild(h('div', S.transitionAltitudes.map((ta) => h('span.chk', `${items.includes(ta.id) ? '☑' : '☐'} ${ta.label}`)))); break; }
         case 'paxbriefing': cell.appendChild(h('div', [h('div', S.paxBriefingItems.map((it) => h('span.chk', `${(d.content.items || S.paxBriefingItems).includes(it) ? '☑' : '☐'} ${t('pb_' + it)}`))), b.balloon.type === 'gas' ? h('ul', { style: { margin: '4px 0', paddingLeft: '16px' } }, GAS_BRIEFING_EXTRA[lang].map((x) => h('li', x))) : null, h('div.mini', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, AMC1_BOP_BAS_115)])); break;
@@ -116,6 +117,8 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       [t('core_pax'), `${b.persons.pax.length}: ${b.persons.pax.map((x, i) => x.name || t('paxPlaceholder', { n: i + 1 })).join(', ') || '–'}`], [t('core_retrieve'), b.persons.retrieve || '–'],
       [t('core_site'), placeLine(b.site)],
       [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}${b.intent.remark ? ' · ' + b.intent.remark : ''}`],
+      ...(docsLine(b.balloon.docs) ? [[t('docs'), docsLine(b.balloon.docs)]] : []),
+      ...(docsLine(ctx.stamm?.persons?.find((x) => x.id === b.persons.picId)?.docs) ? [[`${t('docs')} PIC`, docsLine(ctx.stamm.persons.find((x) => x.id === b.persons.picId).docs)]] : []),
     ].map(([k, v]) => [h('div.k', k), h('div.v', v)]));
   }
   function massBlock() {

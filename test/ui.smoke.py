@@ -60,8 +60,8 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         assert 'Google Maps' in pg.inner_text('.wiz'), 'Maps-Link nach Ortswahl'
         pg.screenshot(path=f'{OUT}/{name}_04_wiz3.png', full_page=True)
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1500)
-        pg.click('button:has-text("Pax hinzufügen")'); pg.wait_for_timeout(200)
-        pg.click('button:has-text("Pax hinzufügen")'); pg.wait_for_timeout(300)
+        pg.click('button.add[title="Pax hinzufügen (Name oder Platzhalter)"]'); pg.wait_for_timeout(200)
+        pg.click('button.add[title="Pax hinzufügen (Name oder Platzhalter)"]'); pg.wait_for_timeout(300)
         rows = pg.query_selector_all('.pax-row:not(.ret-row) input[type=text]')
         if rows: rows[0].fill('Viviane Graf')
         pg.wait_for_timeout(300)
