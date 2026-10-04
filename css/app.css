@@ -510,3 +510,6 @@ details.wxtext pre.report.wx{white-space:pre-wrap;font-size:12.5px;line-height:1
 .pax-meet .pax-kv{flex:1;min-width:0}
 .pax-qr{margin:0;flex:0 0 auto;text-align:center} .pax-qr svg{width:96px;height:96px;display:block}
 .paxsheet .copy{display:none}
+
+table.auto.as-tbl{white-space:normal;width:100%}.as-tbl td,.as-tbl th{vertical-align:top}.as-tbl td:first-child{white-space:nowrap}.as-tbl td:nth-child(3),.as-tbl td:nth-child(4),.as-tbl td:nth-child(5){white-space:nowrap}.as-tbl td:nth-child(2){min-width:140px}.as-tbl td:nth-child(6){min-width:160px}.as-tbl tr.as-cross td:first-child{border-left:3px solid #c2481a}.as-tbl tr.as-near td:first-child{border-left:3px solid #d08a1a}.as-tbl tr.as-above{color:var(--text-dim)}.as-fir{margin:4px 0 6px;font-size:.95em}
+.brief table.bp table.auto th{width:auto;font-size:10px}.brief table.bp table.auto td{overflow-wrap:normal}.brief .as-tbl td,.brief .as-tbl th{border:0;border-bottom:1px solid #d1d5db;padding:3px 6px}.brief .as-tbl td:nth-child(6){overflow-wrap:anywhere}

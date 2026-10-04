@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.8.0 — 2026-10-04 · Luftraum entlang des Fahrtwegs
+
+* Neues Panel «Luftraum entlang des Fahrtwegs» (Abschnitt C, vor DABS): Lufträume aus
+  openAIP für die berechneten Trajektorien — je Luftraum *durchfahren* (Bahn innerhalb und
+  Untergrenze unter der geplanten Maximalhöhe; km ab Start und ETA je Bahn), *nahe* (im
+  Korridor, Standard 5 km, Einstellungen → Meteo) oder *oberhalb der Maximalhöhe*
+  (eingeklappt); Typ und ICAO-Klasse, Unter-/Obergrenze (GND/AGL/ft/FL), Hinweis je Typ
+  (CTR-Freigabe, Transponder, Hörbereitschaft, Aktivierung per NOTAM, Frequenzen);
+  FIR-Folge je Bahn mit Wechselpunkt (km, LT) als Vorarbeit für den Flugplan; Karte mit
+  Polygonen und Bahnen (Bildschirm, mit openAIP-Overlay) und Nord-oben-Skizze (Druck);
+  Text für KI-Hinweis und Leselink. Lädt im Server-Modus von selbst nach den Trajektorien.
+* Worker `GET /api/wx/airspace?bbox=…` (openAIP Core API, Schlüssel `openaip` unter Zugänge
+  oder Kachel-Schlüssel der Overlay-URL, 6 h Cache); Analyse im Browser
+  (`js/calc/airspace.js`, 12 neue Tests).
+* SETUP: Anleitung für den openAIP-Schlüssel.
+
 ## 0.7.1 — 2026-10-04 · Antworten auf die offenen Fragen
 
 * Webcams europaweit automatisch: der Worker sucht Kameras im Umkreis des Startplatzes

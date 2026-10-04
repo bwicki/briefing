@@ -41,6 +41,7 @@ export const PANELS = [
   { key: 'B.remarks', section: 'B', kind: 'text', de: 'Bemerkungen', en: 'Remarks', grade: 'manual' },
   // C
   { key: 'C.fpl', section: 'C', kind: 'text', de: 'Flugplan', en: 'Flight plan', grade: 'manual', defaultText: { de: 'keiner', en: 'none' } },
+  { key: 'C.airspace', section: 'C', kind: 'auto', auto: 'airspace', de: 'Luftraum entlang des Fahrtwegs', en: 'Airspace along the route', grade: 'auto', phase2: 'openAIP: Lufträume entlang der Trajektorien, Höhenband, Korridor, FIR-Folge' },
   { key: 'C.dabs', section: 'C', kind: 'auto', auto: 'dabs', de: 'DABS', en: 'DABS', grade: 'auto', link: 'skybriefingDabs', phase2: 'DABS-PDF automatisch (CH)', chOnly: true },
   { key: 'C.notam', section: 'C', kind: 'auto', auto: 'notam', de: 'Strecken-NOTAM (VFR-relevant)', en: 'Route NOTAM (VFR relevant)', grade: 'auto', link: 'skybriefing', phase2: 'FAA-NOTAM-API mit Korridor und VFR-Filter' },
   { key: 'C.agreements', section: 'C', kind: 'text', de: 'Besondere Absprachen', en: 'Special agreements', grade: 'manual', defaultText: { de: 'keine', en: 'none' } },

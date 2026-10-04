@@ -241,6 +241,38 @@ async function webcams(env, decrypt, ctx, q) {
   return json(data);
 }
 
+// ------------------------------------------------------------ Lufträume (openAIP Core API)
+/** Lufträume im Kartenausschnitt; Schlüssel `openaip` (Zugänge) oder – Rückfall – der Kachel-Schlüssel aus den
+ *  Einstellungen (`key`, im Browser ohnehin sichtbar). 6 h Cache je Ausschnitt (auf 0.05° gerundet). */
+async function airspace(env, decrypt, ctx, q) {
+  const bb = (q.get('bbox') || '').split(',').map(Number);
+  if (bb.length !== 4 || bb.some((v) => !isFinite(v)) || bb[0] >= bb[2] || bb[1] >= bb[3] || Math.abs(bb[1]) > 90 || Math.abs(bb[3]) > 90) return err('bbox');
+  if ((bb[2] - bb[0]) > 6 || (bb[3] - bb[1]) > 4) return err('bbox too large');
+  const key = await getSecret(env, decrypt, 'openaip') || (/^[A-Za-z0-9]{16,80}$/.test(q.get('key') || '') ? q.get('key') : null);
+  if (!key) return err('openAIP-Schlüssel fehlt (Einstellungen → Zugänge: openaip)', 424);
+  const r5 = (v) => (Math.round(v / 0.05) * 0.05).toFixed(2);
+  const cell = bb.map(r5).join(',');
+  const data = await cached(ctx, `airspace/${cell}`, 21600, async () => {
+    const fetchAll = async (bboxStr) => {
+      const items = [];
+      for (let page = 1; page <= 4; page++) {
+        const u = `https://api.core.openaip.net/api/airspaces?bbox=${bboxStr}&limit=1000&page=${page}`;
+        const j = await (await get(u, { headers: { 'x-openaip-api-key': key } }, 25000)).json();
+        items.push(...(j.items || []));
+        if (!j.totalPages || page >= j.totalPages) break;
+      }
+      return items;
+    };
+    // openAIP erwartet minLon,minLat,maxLon,maxLat; zur Sicherheit Rückfall auf lat/lon-Reihenfolge
+    let items = [];
+    try { items = await fetchAll(cell); } catch (e) { if (!/HTTP 4/.test(e.message)) throw e; }
+    if (!items.length) { try { items = await fetchAll([bb[1], bb[0], bb[3], bb[2]].map(r5).join(',')); } catch { /* bleibt leer */ } }
+    const slim = items.map((it) => ({ _id: it._id, name: it.name, type: it.type, icaoClass: it.icaoClass, country: it.country, activity: it.activity, onDemand: it.onDemand, onRequest: it.onRequest, byNotam: it.byNotam, specialAgreement: it.specialAgreement, upperLimit: it.upperLimit, lowerLimit: it.lowerLimit, hoursOfOperation: it.hoursOfOperation, transponderCode: it.transponderCode, frequencies: it.frequencies, geometry: it.geometry }));
+    return { items: slim, total: slim.length, source: 'openAIP', generated: new Date().toISOString() };
+  });
+  return json(data);
+}
+
 // ------------------------------------------------------------ FAA NOTAM
 async function notam(env, decrypt, ctx, q) {
   const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
@@ -329,6 +361,7 @@ export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
     case 'snapshot': if (!canWrite) return err('forbidden', 403); return snapshot(env, body, briefingId, q);
     case 'wxtext': return wxText(ctx, q);
     case 'webcams': return webcams(env, decrypt, ctx, q);
+    case 'airspace': return airspace(env, decrypt, ctx, q);
     case 'notam': return notam(env, decrypt, ctx, q);
     case 'ai': if (!canWrite) return err('forbidden', 403); return ai(env, decrypt, body);
     case 'pdf': if (!auth.owner) return err('forbidden', 403); return pdfRender(env, decrypt, ctx, body, auth);

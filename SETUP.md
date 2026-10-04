@@ -159,6 +159,13 @@ funktioniert genauso.
         `client_id` und `client_secret` kopieren und in der App unter
         Einstellungen → Zugänge eintragen.
      Ohne Zugang bleibt das NOTAM-Panel auf Einfügen (skybriefing).
+   * `openaip` — openAIP-Schlüssel für das Panel «Luftraum entlang des
+     Fahrtwegs» (Lufträume aus der openAIP-Datenbank; derselbe Schlüssel wie
+     für das Karten-Overlay): https://www.openaip.net → anmelden/registrieren
+     (kostenlos) → Benutzermenü → **API Clients** (bzw. Account → API) → Client
+     anlegen → Schlüssel kopieren → Einstellungen → Zugänge als «openAIP API
+     key» eintragen. Steht der Schlüssel bereits in der Overlay-Kachel-URL
+     (Einstellungen → Experte, `…?apiKey=…`), wird er als Rückfall verwendet.
    * `windy_webcams` — Windy Webcams API (kostenlos, europaweit ~60 000
      Kameras mit Vorschaubild) für das Panel «Radar / Blitz / Satellit /
      Webcams»: https://api.windy.com/keys öffnen → mit dem Windy-Konto

@@ -80,6 +80,7 @@ export const DEFAULT_SETTINGS = {
   thermalLimits: { none: 0.6, weak: 1.2, moderate: 2.0, strong: 3.0, onset: 1.0 },
   docTypes: { balloon: ['Lufttüchtigkeitszeugnis (ARC)', 'Eintragungsschein', 'Lärmzeugnis', 'Versicherungsnachweis', 'Funkkonzession', 'Wägebericht'], person: ['Lizenz (BPL)', 'Medical', 'Funkzeugnis', 'Ausweis / Pass', 'Versicherung'] },
   webcamKm: 40,
+  airspaceCorridorKm: 5,
   webcams: [{ id: 'uetliberg', name: 'Uetliberg (Roundshot)', lat: 47.3496, lon: 8.4913, url: 'https://uetliberg.roundshot.com/' }, { id: 'rigi', name: 'Rigi Kulm (Roundshot)', lat: 47.0569, lon: 8.4854, url: 'https://rigi.roundshot.com/' }],
   metarRadiusKm: 150, metarCount: 0, notamRadiusNm: 25, aiModel: 'claude-sonnet-5-5',
   synopticCharts: [

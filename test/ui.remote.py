@@ -1,7 +1,11 @@
 """Playwright-Durchlauf im Server-Modus (wrangler dev --local auf 8787, http.server auf 8080):
 Login, Ablauf, Editor, Berechtigungs-Link erstellen, Link in neuem Kontext öffnen (Mitarbeit), Änderung sichtbar.
 """
-import sys, os
+import sys, os, json
+from urllib.parse import urlparse, parse_qs
+sys.path.insert(0, os.path.dirname(__file__))
+from om_fixture import fixture
+from as_fixture import airspace_fixture
 from playwright.sync_api import sync_playwright
 BASE = 'http://localhost:8080/'; API = 'http://localhost:8787'
 OUT = '/tmp/claude-0/-home-claude/966811e7-696d-5075-85c3-3620d38610ae/scratchpad/ui'; os.makedirs(OUT, exist_ok=True)
@@ -13,6 +17,10 @@ with sync_playwright() as p:
     pg.on('console', lambda m: errors.append(f'console.{m.type}: {m.text}') if m.type == 'error' and 'ERR_TUNNEL' not in m.text else None)
     pg.on('pageerror', lambda e: errors.append(f'pageerror: {e}'))
     pg.route('**/js/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body=f"window.BRIEFING_CONFIG = {{ apiBase: '{API}' }};"))
+    # Modell- und Luftraumdaten ohne Netz: Fixtures für /api/wx/om und /api/wx/airspace
+    pg.route('**/api/wx/om**', lambda r: r.fulfill(status=200, content_type='application/json', body=json.dumps(fixture(parse_qs(urlparse(r.request.url).query).get('query', [''])[0]))))
+    pg.route('**/api/wx/airspace**', lambda r: r.fulfill(status=200, content_type='application/json', body=json.dumps(airspace_fixture(parse_qs(urlparse(r.request.url).query).get('bbox', ['8,47,9,48'])[0]))))
+    pg.route('**/tile.openstreetmap.org/**', lambda r: r.abort())
     pg.goto(BASE + '#/list'); pg.wait_for_timeout(800)
     assert pg.is_visible('#gate'), 'gate sichtbar'
     assert pg.is_visible('#gateUser'), 'Benutzerfeld im Server-Modus'
@@ -41,6 +49,17 @@ with sync_playwright() as p:
     assert 'Seite 1/' in dabs_txt, 'DABS-Seiten als Bilder: ' + dabs_txt[:200]
     assert pg.query_selector('#panel-C\\.dabs img.pimg') is not None, 'DABS-Bild'
     pg.screenshot(path=f'{OUT}/remote_dabs.png')
+    # Luftraum entlang des Fahrtwegs (openAIP-Fixture): lädt im Server-Modus von selbst, sonst «Laden»
+    pg.wait_for_timeout(2500)
+    if 'TEST CTR' not in pg.inner_text('#panel-C\\.airspace'): pg.click('#panel-C\\.airspace button:has-text("Laden")'); pg.wait_for_timeout(3000)
+    as_txt = pg.inner_text('#panel-C\\.airspace')
+    assert 'TEST CTR' in as_txt and 'SWITZERLAND FIR' in as_txt and 'LANGEN FIR' in as_txt, 'Luftraum-Panel: ' + as_txt[:300]
+    assert 'oberhalb' in as_txt and 'TEST TMA 4' not in as_txt, 'TMA über Maximalhöhe eingeklappt: ' + as_txt[:300]
+    pg.click('#panel-C\\.airspace details summary'); pg.wait_for_timeout(200)
+    assert 'TEST TMA 4' in pg.inner_text('#panel-C\\.airspace'), 'TMA nach Aufklappen sichtbar'
+    assert pg.query_selector('#panel-C\\.airspace table.as-tbl tr.as-cross') is not None, 'durchfahrener Luftraum in Tabelle'
+    assert pg.query_selector('#panel-C\\.airspace .as-map .leaflet-overlay-pane path') is not None, 'Polygone auf der Karte'
+    pg.query_selector('#panel-C\\.airspace').screenshot(path=f'{OUT}/remote_airspace.png')
     # Berechtigungen
     pg.click('button:has-text("Berechtigungen")'); pg.wait_for_timeout(800)
     pg.click('button:has-text("Person hinzufügen")'); pg.wait_for_timeout(1200)

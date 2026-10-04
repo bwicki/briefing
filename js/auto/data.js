@@ -8,6 +8,7 @@ import * as OM from './openmeteo.js';
 import { tracks } from './traj.js';
 import { sunFor, scheduleFor } from '../model.js';
 import { thermalHours, thermalSummary, classOf, THERMAL_DEFAULTS } from '../calc/thermal.js';
+import { normalizeAirspace, analyzeAirspaces, thinRing } from '../calc/airspace.js';
 import { isoDate, hhmm } from '../calc/time.js';
 import { distKm, bearing, icao } from '../calc/geo.js';
 import { t, getLang } from '../i18n.js';
@@ -269,8 +270,35 @@ export function vfrRelevant(it, maxFt, fromMs, toMs) {
   return { relevant: !why.length, why };
 }
 
+/** Lufträume entlang der Trajektorien (openAIP über den Worker): durchfahren / nahe / darüber, FIR-Folge. */
+export async function airspace(ctx, b) {
+  let trj = b.panels['B.traj']?.content?.auto?.data;
+  if (!trj?.tracks?.length) trj = (await traj(ctx, b)).data;
+  const tracks = trj.tracks.filter((x) => !x.belowGround);
+  const corridorKm = +ctx.settings.airspaceCorridorKm || 5;
+  const pts = tracks.flatMap((x) => x.points).concat([{ lat: b.site.lat, lon: b.site.lon }], b.landing?.lat != null ? [{ lat: b.landing.lat, lon: b.landing.lon }] : []);
+  const dLat = (corridorKm + 3) / 111.2, dLon = (corridorKm + 3) / (111.2 * Math.max(0.2, Math.cos(b.site.lat * Math.PI / 180)));
+  const bbox = [Math.min(...pts.map((p) => p.lon)) - dLon, Math.min(...pts.map((p) => p.lat)) - dLat, Math.max(...pts.map((p) => p.lon)) + dLon, Math.max(...pts.map((p) => p.lat)) + dLat].map((v) => +v.toFixed(3));
+  const tileKey = /[?&]apiKey=([A-Za-z0-9]+)/.exec(ctx.settings.airspaceTileUrl || '')?.[1];
+  const j = await ctx.store.data('airspace', { bbox: bbox.join(','), key: tileKey || null }, shareTok(ctx));
+  const elevM = b.site.elev || 0;
+  const items = (j.items || []).map((it) => normalizeAirspace(it, elevM));
+  const altMaxFt = b.intent.altMaxFt || 6000, altMinFt = b.intent.altMinFt || 0;
+  const a = analyzeAirspaces(tracks, items, { altMinFt, altMaxFt, corridorKm, siteElevFt: elevM * 3.28084 });
+  const slimAs = (x) => ({ ...x, as: { ...x.as, polys: x.as.polys.map((p) => [thinRing(p[0], 160)]) } });
+  const z = b.site.tz || 'Europe/Zurich';
+  const line = (x) => `${x.as.name} (${x.as.typeKey}${x.as.cls ? ' ' + x.as.cls : ''}) ${x.as.lowerTxt}–${x.as.upperTxt}${x.firstKm != null ? ` · ${x.firstKm} km · ${hhmm(z, x.firstMs)} LT` : ` · ${x.minDistKm} km`}`;
+  const text = [
+    a.firs.length ? `FIR: ` + a.firs.map((f) => `${f.label}: ${f.seq.map((s) => `${s.name}${s.fromKm ? ` (${t('as_fromKm')} ${s.fromKm} km)` : ''}`).join(' → ')}`).join('; ') : '',
+    a.crossed.length ? `${t('as_crossed')}:\n` + a.crossed.map(line).join('\n') : t('as_noneCrossed'),
+    a.near.length ? `${t('as_near')} (${corridorKm} km):\n` + a.near.map(line).join('\n') : '',
+    a.above.length ? `${t('as_above')} (> ${altMaxFt} ft):\n` + a.above.map(line).join('\n') : '',
+  ].filter(Boolean).join('\n\n');
+  return { kind: 'airspace', sourceUrl: 'https://www.openaip.net/map', stand: Date.now(), source: 'openAIP', data: { crossed: a.crossed.map(slimAs), near: a.near.map(slimAs), above: a.above.map((x) => ({ ...x, as: { ...x.as, polys: [] } })), firs: a.firs, altMinFt, altMaxFt, corridorKm, bbox, total: j.total, tracks: tracks.map((x) => ({ label: x.label, altFt: x.altFt, points: x.points })), landing: trj.landing || null, trajStand: b.panels['B.traj']?.content?.auto?.stand || null }, text };
+}
+
 /** Alle automatischen Panels eines Briefings nacheinander; onStep(key, status, err). */
-export const AUTO_FETCHERS = { 'B.thermal': thermal, 'B.meteogram': meteogram, 'B.wind': wind, 'B.temps': temps, 'B.traj': traj, 'B.balloon': balloon, 'B.pdiff': pdiff, 'B.metar': metar, 'B.sigwx': sigmet, 'B.fwp': fwp, 'C.notam': notam };
+export const AUTO_FETCHERS = { 'B.thermal': thermal, 'B.meteogram': meteogram, 'B.wind': wind, 'B.temps': temps, 'B.traj': traj, 'B.balloon': balloon, 'B.pdiff': pdiff, 'B.metar': metar, 'B.sigwx': sigmet, 'B.fwp': fwp, 'C.airspace': airspace, 'C.notam': notam };
 export async function refreshAll(ctx, b, keys, onStep) {
   const out = {};
   for (const k of keys) {

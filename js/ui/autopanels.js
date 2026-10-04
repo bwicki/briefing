@@ -62,6 +62,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
       if (p.auto === 'dabs') toolbar.appendChild(select([{ value: 'today', label: t('auto_today') }, { value: 'tomorrow', label: t('auto_tomorrow') }], b.dabsDay || dabsDayFor(b), { onchange: (e) => { b.dabsDay = e.target.value; onChange(); } }));
       if (p.auto === 'metar') toolbar.appendChild(h('span.inline', [h('span.note', t('auto_metarKm')), input('number', b.metarKm || ctx.settings.metarRadiusKm || 150, { step: 10, min: 20, max: 400, style: { width: '74px' }, onchange: (e) => { b.metarKm = Math.min(400, Math.max(20, num(e.target.value, 150))); onChange(); run(); } })]));
       if (p.auto === 'notam') toolbar.appendChild(h('span.note', ctx.can('notam') ? `${t('auto_notamRadius')} ${ctx.settings.notamRadiusNm || 25} NM` : t('feat_disabled')));
+      if (p.auto === 'airspace') toolbar.appendChild(h('span.note', `${t('as_corridor')} ${ctx.settings.airspaceCorridorKm || 5} km · ${b.intent.altMinFt || 0}–${b.intent.altMaxFt || 6000} ft`));
       if (d.content.auto && ctx.store.mode === 'remote' && ctx.can('ai')) toolbar.appendChild(h('button.btn.small', { type: 'button', onclick: () => askAi(p, d, b, ctx, onChange, draw) }, d.ai?.text ? t('ai_again') : t('ai_ask')));
       if (d.content.auto) toolbar.appendChild(h('button.btn.icon.small', { type: 'button', title: t('auto_clear'), onclick: () => { if (confirm(t('auto_clear') + '?')) { d.content.auto = null; onChange(); draw(); } } }, '✕'));
       toolbar.appendChild(status);
@@ -76,7 +77,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
       document.dispatchEvent(new CustomEvent('fb:landing', { detail: { id: b.id } }));
     } : null;
     if (snap) body.appendChild(renderSnapshot(snap, b, ctx, { interactive: !readOnly, onLanding }));
-    else if (p.auto !== 'radar') body.appendChild(h('div.note', readOnly ? t('auto_empty') : t('auto_hint_' + p.auto, { s: p.phase2 || '' })));
+    else if (p.auto !== 'radar') body.appendChild(h('div.note', readOnly ? t('auto_empty') : p.auto === 'airspace' && ctx.store.mode !== 'remote' ? t('auto_asLocal') : t('auto_hint_' + p.auto, { s: p.phase2 || '' })));
   }
   draw();
   wrap.append(toolbar, body);
@@ -84,7 +85,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   // NOTAM (Worker-Abrufe, Freigabe) etwas später, damit die Modellpanels zuerst stehen
   const remote = ctx.store.mode === 'remote';
   const auto = ['meteogram', 'wind', 'temps', 'traj', 'metar', 'sigmet', 'balloon', 'pdiff', 'thermal'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE');
-  const later = remote && (p.auto === 'dabs' || (p.auto === 'synoptic' && (ctx.settings.synopticCharts || []).length) || (p.auto === 'notam' && ctx.can('notam')));
+  const later = remote && (p.auto === 'dabs' || p.auto === 'airspace' || (p.auto === 'synoptic' && (ctx.settings.synopticCharts || []).length) || (p.auto === 'notam' && ctx.can('notam')));
   if (!readOnly && !d.content.auto && (auto || later) && b.site.lat != null && ctx.autoLoad !== false) setTimeout(() => run(true), (later ? 1500 : 50) + Math.random() * 400);
   return wrap;
 }
