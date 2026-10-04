@@ -263,3 +263,18 @@ details.exp summary{cursor:pointer;font-weight:600;padding:8px 0;}
   .header-tools::-webkit-scrollbar{display:none;}
   .header-tools .btn,.header-tools .viewtoggle{flex:0 0 auto;}
 }
+
+/* ---------- Ortswahl ---------- */
+.prow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:38px;}
+.prow .row-actions{margin:0;}
+.pline{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:0 2px;}
+.pline .pname{color:var(--text-strong);font-weight:600;}
+.pline .sep{color:var(--text-dim);}
+a.maps{color:var(--amber);text-decoration:none;font-weight:600;white-space:nowrap;}
+a.maps:hover{text-decoration:underline;}
+.dialog.wide{max-width:820px;}
+.pick-body .map.pick{height:42vh;min-height:220px;max-height:420px;margin-top:8px;}
+.pick-body .coords{font-size:14px;padding-top:8px;}
+.pick-body .inline{display:flex;gap:6px;}
+.pick-body .inline input{flex:1;min-width:0;}
+@media (max-width:599px){ .backdrop{padding:6px;align-items:flex-start;} .dialog{max-height:calc(100vh - 12px);} .pick-body .map.pick{height:38vh;} }

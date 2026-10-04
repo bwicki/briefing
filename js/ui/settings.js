@@ -6,6 +6,7 @@ import { field, input, select, textarea, check } from './widgets.js';
 import { PANELS, SECTIONS } from '../panels.js';
 import { parseRacText, racValidity, linesFromPdfItems } from '../calc/rac.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
+import { placeRow, mapsUrl } from './place.js';
 
 const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'rac', 'transition', 'gonogo', 'panels', 'links', 'access', 'expert'];
 
@@ -128,8 +129,9 @@ export async function renderSettings(view, ctx) {
       clear(sBox);
       S.sites.forEach((s, i) => sBox.appendChild(h('div.item-box', [
         h('div.head', [h('b', s.name), h('button.btn.icon', { type: 'button', onclick: () => { S.sites.splice(i, 1); drawS(); } }, '🗑')]),
-        h('div.frow.c4', [txtField(s, 'name', t('name')), numField(s, 'lat', t('s_lat'), 0.0001), numField(s, 'lon', t('s_lon'), 0.0001), numField(s, 'elev', t('s_elev'))]),
-        h('div.frow.c4', [txtField(s, 'country', t('s_country')), txtField(s, 'tz', t('s_tz')), field(t('s_meeting'), select([{ value: '', label: '–' }].concat(S.meetings.map((m) => ({ value: m.id, label: m.name }))), s.meetingId, { onchange: (e) => { s.meetingId = e.target.value; } })), field(t('s_fav'), check('', s.favorite, (v) => { s.favorite = v; }))]),
+        h('div.frow', [txtField(s, 'name', t('name')), placeRow(s, { label: t('coords'), title: t('site'), noName: true, onPick: (p) => { Object.assign(s, { lat: p.lat, lon: p.lon, elev: p.elev ?? s.elev, tz: p.tz || s.tz, country: p.country || s.country }); if (!s.name) s.name = p.name; drawS(); } })]),
+        h('div.frow.c4', [numField(s, 'elev', t('s_elev')), txtField(s, 'country', t('s_country')), txtField(s, 'tz', t('s_tz')), field(t('s_meeting'), select([{ value: '', label: '–' }].concat(S.meetings.map((m) => ({ value: m.id, label: m.name }))), s.meetingId, { onchange: (e) => { s.meetingId = e.target.value; } }))]),
+        field(t('s_fav'), check('', s.favorite, (v) => { s.favorite = v; })),
         field(t('s_notes'), textarea(s.notes, { rows: 2, oninput: (e) => { s.notes = e.target.value; } })),
       ])));
       sBox.appendChild(h('button.btn', { type: 'button', onclick: () => { S.sites.push({ id: uid(6), name: '', lat: null, lon: null, elev: null, country: 'CH', tz: 'Europe/Zurich', notes: '', meetingId: '', favorite: true }); drawS(); } }, t('add')));
@@ -138,8 +140,8 @@ export async function renderSettings(view, ctx) {
       clear(mBox);
       S.meetings.forEach((m, i) => mBox.appendChild(h('div.item-box', [
         h('div.head', [h('b', m.name), h('label.check', [h('input', { type: 'radio', name: 'defM', checked: !!m.default, onchange: () => { S.meetings.forEach((x) => { x.default = false; }); m.default = true; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { S.meetings.splice(i, 1); drawM(); } }, '🗑')]),
-        h('div.frow.c4', [txtField(m, 'name', t('name')), txtField(m, 'address', t('m_address')), numField(m, 'lat', t('s_lat'), 0.0001), numField(m, 'lon', t('s_lon'), 0.0001)]),
-        txtField(m, 'mapsUrl', t('m_maps')),
+        h('div.frow', [txtField(m, 'name', t('name')), txtField(m, 'address', t('m_address'))]),
+        placeRow(m, { label: t('coords'), title: t('meeting'), noName: true, onPick: (p) => { Object.assign(m, { lat: p.lat, lon: p.lon, mapsUrl: mapsUrl(p.lat, p.lon) }); if (!m.address && p.address) m.address = p.address; if (!m.name) m.name = p.name; drawM(); } }),
       ])));
       mBox.appendChild(h('button.btn', { type: 'button', onclick: () => { S.meetings.push({ id: uid(6), name: '', address: '', lat: null, lon: null, mapsUrl: '' }); drawM(); } }, t('add')));
     };

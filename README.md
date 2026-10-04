@@ -48,18 +48,31 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
 
 1. **Ballon & Fahrt** — Heissluft (Kennung) oder Gas (Hülle × Korb), Typ der Fahrt,
    Lufttransportführer, Anlass.
-2. **Ort & Zeit** — Favoriten-Chips, Ortssuche (Name oder «lat, lon»), Karte mit
-   verschiebbarem Marker. Kurzkoordinaten, Höhe, Land und Zeitzone werden
-   ermittelt (Open-Meteo, Nominatim); Datum, Startzeit, LT/UTC; Sonne/Dämmerung
-   sofort, Warnung bei Nachtfahrt; Planungshorizont mit verfügbaren Modellen.
-3. **Fahrtabsicht** — Dauer, Höhenband, Zielrichtung, Tag/Nacht, Trajektorien-
+2. **Ort & Zeit** — Favoriten-Chips und **Ortswahl** (siehe unten). Kurzkoordinaten,
+   Höhe, Land und Zeitzone werden ermittelt (Open-Meteo, Nominatim); Datum,
+   Startzeit, LT/UTC; Sonne/Dämmerung sofort, Warnung bei Nachtfahrt;
+   Planungshorizont mit verfügbaren Modellen.
+3. **Fahrtabsicht** — Dauer, Höhenband, Zielrichtung, Tag/Nacht, optional
+   **geplanter Landeraum** (Ortswahl; Distanz und Kurs ab Startort), Trajektorien-
    Niveaus (Startwerte je Ballontyp aus den Einstellungen).
 4. **Personen** — PIC, Nachfahrer, Pax (Name oder Platzhalter, Gewicht), Vorschau
    Tragkraft bzw. Ballast; Temperatur/QNH/Feuchte werden, wenn der Start innert
    15 Tagen liegt, aus dem Modell geholt.
-5. **Tagesplanung** — Treffpunkt, Fahrzeit mit Anhänger (OSRM-Routing × Faktor +
-   Zuschlag), Aufrüst-/Füllzeit, Tabelle mit überschreibbaren Zeiten.
+5. **Tagesplanung** — Treffpunkt (Liste oder Ortswahl), Fahrzeit mit Anhänger
+   (OSRM-Routing × Faktor + Zuschlag), Aufrüst-/Füllzeit, Tabelle mit
+   überschreibbaren Zeiten.
 6. **Prüfen** — Zusammenfassung und Pflicht-Panels; *Briefing anlegen*.
+
+### Ortswahl (Startort, Treffpunkt, Landeraum, Stammdaten)
+
+Der Knopf **Ort wählen …** öffnet ein Fenster mit Karte (Marker setzen oder
+ziehen), Suche und Koordinatenausgabe. Die Suche versteht Ortsnamen (Open-Meteo),
+Adressen mit Hausnummer (Nominatim/OpenStreetMap), Dezimalkoordinaten
+«47.3, 8.4», ICAO-Kurzkoordinaten «4719N00824E», Grad/Minuten
+«47°19.0'N 008°24.0'E» und eingefügte Google-Maps-Links. 📍 übernimmt den
+eigenen Standort (Handy). Höhe, Zeitzone und Land werden automatisch ergänzt.
+Ergebnis in allen Sichten: **Name · Kurzkoordinaten · Höhe · Google Maps ↗**
+(öffnet in neuem Fenster, auch im PDF klickbar); ⎘ kopiert Koordinaten und Link.
 
 ### Erarbeitungssicht
 
@@ -201,6 +214,9 @@ test/                      Rechentests (node) und Oberflächen-Durchläufe (Play
 
 ## Lizenz
 
-Siehe `LICENSE`. Drittkomponenten: Leaflet (BSD-2-Clause), qrcode-generator (MIT),
+Alle Rechte vorbehalten; Quelltext zur Einsicht veröffentlicht. Jede Nutzung
+über das Lesen hinaus nur mit vorheriger ausdrücklicher Zustimmung von
+Balthasar Wicki / Wicki Aero GmbH und mit Quellenangabe — siehe `LICENSE`
+(DE/EN). Drittkomponenten: Leaflet (BSD-2-Clause), qrcode-generator (MIT),
 pdf.js (Apache-2.0, nur beim RAC-Upload von cdnjs geladen). Logo und Name
 «Wicki Partners Ballonteam» sind nicht Teil der Lizenz.

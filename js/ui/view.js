@@ -5,13 +5,16 @@ import { setHeader } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunRows } from './parts.js';
-import { massPerf, scheduleFor, sunFor } from '../model.js';
+import { massPerf, scheduleFor, sunFor, upgradeBriefing } from '../model.js';
+import { placeLine } from './place.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
+import { distKm, bearing } from '../calc/geo.js';
 
 export async function renderBrief(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
   const b = opts.briefing || await ctx.store.getBriefing(id);
   if (!b) { view.appendChild(h('div.err', 'not found')); return; }
+  upgradeBriefing(b);
   const S = ctx.settings, z = b.site.tz || 'Europe/Zurich', lang = getLang();
   const canEdit = !shared || shared.role === 'edit';
   const tools = [];
@@ -44,11 +47,12 @@ export async function renderBrief(view, ctx, id, opts = {}) {
         case 'core': cell.appendChild(coreRows()); break;
         case 'sun': cell.appendChild(h('div', [h('div.kv', sunR.map(([k, v]) => [h('div.k', k), h('div.v', v)])), sun?.nightStart ? h('div.ns', `⚠ ${t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })}`) : null, sun?.nightLanding ? h('div.ns', `⚠ ${t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })}`) : null])); break;
         case 'massperf': cell.appendChild(massBlock()); break;
-        case 'schedule': cell.appendChild(h('div', [h('div.mini', `${t('meeting')}: ${b.schedule.meetingName || '–'}${b.schedule.driveMin != null ? ` · ${t('driveTime')} ${b.schedule.driveMin} min` : ''}`), h('table.inner', sched.rows.map((r) => h('tr', [h('td', { style: { textAlign: 'left', fontFamily: 'monospace' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, `${t('sch_' + r.key)}${r.key === 'depart' && b.schedule.meetingName ? ' · ' + b.schedule.meetingName : ''}${r.key === 'arrive' ? ' · ' + b.site.name : ''}`)])))])); break;
+        case 'schedule': cell.appendChild(h('div', [h('div.mini', [`${t('meeting')}: `, b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–'), b.schedule.driveMin != null ? ` · ${t('driveTime')} ${b.schedule.driveMin} min` : '']), h('table.inner', sched.rows.map((r) => h('tr', [h('td', { style: { textAlign: 'left', fontFamily: 'monospace' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, `${t('sch_' + r.key)}${r.key === 'depart' && b.schedule.meetingName ? ' · ' + b.schedule.meetingName : ''}${r.key === 'arrive' ? ' · ' + b.site.name : ''}`)])))])); break;
         case 'equipment': { const items = d.content.items || ['none']; cell.appendChild(h('div', S.equipmentItems.map((it) => h('span.chk', `${items.includes(it) ? '☑' : '☐'} ${t('eq_' + it)}`)))); break; }
         case 'transition': { const items = d.content.items || S.transitionDefaults[b.site.country] || []; cell.appendChild(h('div', S.transitionAltitudes.map((ta) => h('span.chk', `${items.includes(ta.id) ? '☑' : '☐'} ${ta.label}`)))); break; }
         case 'paxbriefing': cell.appendChild(h('div', [h('div', S.paxBriefingItems.map((it) => h('span.chk', `${(d.content.items || S.paxBriefingItems).includes(it) ? '☑' : '☐'} ${t('pb_' + it)}`))), b.balloon.type === 'gas' ? h('ul', { style: { margin: '4px 0', paddingLeft: '16px' } }, GAS_BRIEFING_EXTRA[lang].map((x) => h('li', x))) : null, h('div.mini', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, AMC1_BOP_BAS_115)])); break;
         case 'text': cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (p.defaultText ? tt(p.defaultText) : '–')))); break;
+        case 'landing': cell.appendChild(h('div', [b.landing?.lat != null ? h('div', [h('b', `${t('landingSite')}: `), placeLine(b.landing), b.site.lat != null ? h('span.mini', ` · ${distKm(b.site.lat, b.site.lon, b.landing.lat, b.landing.lon).toFixed(1)} km · ${Math.round(bearing(b.site.lat, b.site.lon, b.landing.lat, b.landing.lon)).toString().padStart(3, '0')}°`) : null]) : null, h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (b.landing?.lat != null ? '' : '–')))])); break;
         case 'paste': default: {
           if (d.content.text) cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text)));
           for (const im of d.content.images || []) cell.appendChild(h('figure', { style: { margin: '4px 0' } }, [h('img.pimg', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]));
@@ -74,7 +78,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       [t('core_kind'), ['private', 'commercial', 'training', 'exam'].map((k) => `${b.flight.kind === k ? '☑' : '☐'} ${t('kind_' + k)}`).join('  ') + ` · LTF: ${b.flight.operatorName}`],
       [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('core_pic'), b.persons.pic],
       [t('core_pax'), `${b.persons.pax.length}: ${b.persons.pax.map((x) => x.name).join(', ') || '–'}`], [t('core_retrieve'), b.persons.retrieve || '–'],
-      [t('core_site'), `${b.site.name} (${b.site.icao}) · ${b.site.elev ?? '?'} m AMSL`],
+      [t('core_site'), placeLine(b.site)],
       [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}${b.intent.remark ? ' · ' + b.intent.remark : ''}`],
     ].map(([k, v]) => [h('div.k', k), h('div.v', v)]));
   }

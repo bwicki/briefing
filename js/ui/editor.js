@@ -6,7 +6,8 @@ import { setHeader } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest } from '../model.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing } from '../model.js';
+import { placeRow, placeLine } from './place.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { openAccessDialog } from './access.js';
 
@@ -14,6 +15,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
   const b = opts.briefing || await ctx.store.getBriefing(id);
   if (!b) { view.appendChild(h('div.err', 'not found')); return; }
+  upgradeBriefing(b);
   const S = ctx.settings, z = b.site.tz || 'Europe/Zurich', lang = getLang();
   const canOwn = !shared;
 
@@ -116,6 +118,14 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         content = textarea(d.content.text || '', { rows: 2, oninput: (e) => { d.content.text = e.target.value; touched(p.key); } });
         break;
       }
+      case 'landing': {
+        const ro = shared?.role === 'read';
+        const box = h('div');
+        const drawLand = () => { clear(box); box.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, readOnly: ro, from: b.site, onPick: (pl) => { if (pl) Object.assign(b.landing, { name: pl.name, lat: pl.lat, lon: pl.lon, elev: pl.elev, icao: pl.icao, address: pl.address || '' }); else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' }); touched(p.key); drawLand(); } })); };
+        drawLand();
+        content = h('div', [box, field(t('landingText'), textarea(d.content.text || '', { rows: 2, readOnly: ro, oninput: (e) => { d.content.text = e.target.value; touched(p.key); } }))]);
+        break;
+      }
       case 'paste': default: {
         const link = p.link && S.sources[p.link];
         content = h('div', [
@@ -132,7 +142,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       [t('core_reg'), b.balloon.label], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
       [t('core_kind'), `${t('kind_' + b.flight.kind)} · LTF: ${b.flight.operatorName}`], [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`],
       [t('core_pic'), b.persons.pic], [t('core_pax'), `${b.persons.pax.length}: ${b.persons.pax.map((x) => x.name).join(', ') || '–'}`], [t('core_retrieve'), b.persons.retrieve || '–'],
-      [t('core_site'), `${b.site.name} (${b.site.icao}) · ${b.site.elev ?? '?'} m AMSL · ${b.site.country || ''}`],
+      [t('core_site'), h('span', [placeLine(b.site), ` · ${b.site.country || ''}`])],
       [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}`],
     ];
     return h('div', [kv(rows), canOwn || shared?.role === 'edit' ? h('div.row-actions', { style: { marginTop: '8px' } }, [h('button.btn', { type: 'button', onclick: async () => { b.wizardStep = 1; await saveNow(); ctx.navigate(shared ? `#/s/${shared.token}/w` : `#/new/${b.id}`); } }, `✎ ${t('masterData')}`)]) : null]);

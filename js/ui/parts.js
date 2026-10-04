@@ -10,6 +10,7 @@ import { racValidity } from '../calc/rac.js';
 import { siteWeatherAt, route } from '../net.js';
 import { trailerMinutes } from '../calc/schedule.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
+import { placeRow, placeLine } from './place.js';
 
 const tzOf = (b) => b.site.tz || 'Europe/Zurich';
 
@@ -131,11 +132,15 @@ export function scheduleEditor(b, ctx, onChange, readOnly = false) {
     }
     for (const wkey of warnings) warnBox.appendChild(h('div.warn', '⚠ ' + (wkey === 'nightStart' ? t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) }) : wkey === 'nightLanding' ? t('nightLandWarn', { e: hhmm(z, sun.official.ecet) }) : (getLang() === 'en' ? 'Return after sunset' : 'Rückfahrt nach Sonnenuntergang'))));
   }
+  const meetBox = h('div');
+  const drawMeet = () => { clear(meetBox); meetBox.appendChild(placeRow({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon }, { label: `${t('meeting')} · ${t('coords')}`, title: t('meeting'), noName: true, onPick: (p) => { sc.meetingLat = p.lat; sc.meetingLon = p.lon; if (!sc.meetingName) sc.meetingName = p.name; sc.meetingId = sc.meetingId || 'custom'; sc.overrides = {}; drawMeet(); doRoute(); } })); };
   if (!readOnly) wrap.append(
     h('div.frow.c4', [field(`${t('meeting')}`, input('text', sc.meetingName, { oninput: (e) => { sc.meetingName = e.target.value; onChange(); redraw(); } })), field(`${t('driveTime')} (min)`, driveIn), field(`${t('rigTime')} (min)`, rigIn), b.balloon.type === 'gas' ? field(`${t('fillTime')} (min)`, fillIn) : field(`${t('buffer')} (min)`, bufIn)]),
+    meetBox,
     h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => { sc.overrides = {}; doRoute(); } }, t('recompute')), note]),
   );
-  else wrap.append(h('div.note', `${t('meeting')}: ${sc.meetingName || '–'}${sc.driveMin != null ? ` · ${t('driveTime')} ${sc.driveMin} min` : ''}`));
+  else wrap.append(h('div.note', [`${t('meeting')}: `, sc.meetingLat != null ? placeLine({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon }) : (sc.meetingName || '–'), sc.driveMin != null ? ` · ${t('driveTime')} ${sc.driveMin} min` : '']));
+  if (!readOnly) drawMeet();
   wrap.append(table, warnBox);
   if (!readOnly) wrap.append(h('div.note', t('sch_rule')));
   if (!readOnly && (sc.driveMin == null)) doRoute(); else redraw();

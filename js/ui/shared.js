@@ -7,6 +7,7 @@ import { renderEditor } from './editor.js';
 import { renderBrief } from './view.js';
 import { renderWizard } from './wizard.js';
 import { mergeSettings } from '../defaults.js';
+import { upgradeBriefing } from '../model.js';
 
 export async function renderShared(view, ctx, tokenAndMore) {
   const [token, sub] = tokenAndMore.split('/');
@@ -24,7 +25,7 @@ export async function renderShared(view, ctx, tokenAndMore) {
     view.appendChild(form); return;
   }
   if (res.role === 'edit' && who) ctx.shared.person = who;
-  const b = res.briefing;
+  const b = upgradeBriefing(res.briefing);
   if (res.role === 'read' || sub === 'v') await renderBrief(view, ctx, b.id, { briefing: b });
   else if (sub === 'w') await renderWizard(view, ctx, b.id, { briefing: b });
   else await renderEditor(view, ctx, b.id, { briefing: b });

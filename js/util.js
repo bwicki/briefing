@@ -52,10 +52,10 @@ export function toast(msg, ms = 2600) {
 }
 
 /** Modaler Dialog: content ist ein Node; Promise löst mit dem Wert von close(v). */
-export function dialog(title, content, buttons = []) {
+export function dialog(title, content, buttons = [], opts = {}) {
   return new Promise((resolve) => {
     const back = h('div.backdrop');
-    const box = h('div.dialog', [h('div.dialog-head', [h('div.section-title', title), h('button.btn.icon', { onclick: () => close(null), 'aria-label': 'close' }, '✕')]), h('div.dialog-body', content)]);
+    const box = h('div.dialog' + (opts.cls ? '.' + opts.cls : ''), [h('div.dialog-head', [h('div.section-title', title), h('button.btn.icon', { onclick: () => close(null), 'aria-label': 'close' }, '✕')]), h('div.dialog-body', content)]);
     const foot = h('div.dialog-foot');
     for (const b of buttons) foot.appendChild(h('button.btn' + (b.primary ? '.primary' : ''), { onclick: () => close(b.value === undefined ? true : b.value) }, b.label));
     if (buttons.length) box.appendChild(foot);

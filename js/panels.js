@@ -19,7 +19,7 @@ export const PANELS = [
   { key: 'A.core', section: 'A', kind: 'core', de: 'Stammdaten', en: 'Flight data', grade: 'calc', always: true },
   { key: 'A.sun', section: 'A', kind: 'sun', de: 'Sonnenauf-/untergang', en: 'Sunrise / sunset', grade: 'calc', always: true },
   { key: 'A.massperf', section: 'A', kind: 'massperf', de: 'Tragkraft-, Treibstoff- und Massenberechnung', en: 'Lift, fuel and mass calculation', grade: 'calc', always: true },
-  { key: 'A.landing', section: 'A', kind: 'text', de: 'Geplante Landeorte, Besonderheiten', en: 'Planned landing areas, particulars', grade: 'manual' },
+  { key: 'A.landing', section: 'A', kind: 'landing', de: 'Geplante Landeorte, Besonderheiten', en: 'Planned landing areas, particulars', grade: 'manual' },
   { key: 'A.equipment', section: 'A', kind: 'equipment', de: 'Erforderliche Spezialausrüstung', en: 'Special equipment required', grade: 'calc' },
   { key: 'A.schedule', section: 'A', kind: 'schedule', de: 'Tagesplanung (LT)', en: 'Day schedule (LT)', grade: 'calc', always: true },
   { key: 'A.remarks', section: 'A', kind: 'text', de: 'Bemerkungen', en: 'Remarks', grade: 'manual' },
@@ -71,6 +71,8 @@ export function panelFilled(p, briefing) {
       return true;
     case 'text':
       return !!((d.content?.text || '').trim() || extraText);
+    case 'landing':
+      return !!((d.content?.text || '').trim() || extraText || briefing.landing?.lat != null);
     case 'paste':
       return !!((d.content?.text || '').trim() || (d.content?.images || []).length || extraText || extraImg);
     default:

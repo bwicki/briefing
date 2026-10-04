@@ -29,7 +29,14 @@ def run(name, viewport, scale=1.5, mobile=False):
         pg.screenshot(path=f'{OUT}/{name}_03_wiz2.png')
         pg.fill('input[type=time]', '06:30')
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(500)
-        pg.screenshot(path=f'{OUT}/{name}_04_wiz3.png')
+        # Ortswahl: geplanter Landeraum per ICAO-Kurzkoordinaten
+        pg.click('button:has-text("Ort wählen")'); pg.wait_for_timeout(900)
+        pg.fill('.pick-body input[type=search]', '4725N00816E'); pg.press('.pick-body input[type=search]', 'Enter'); pg.wait_for_timeout(1500)
+        pg.screenshot(path=f'{OUT}/{name}_04a_pick.png')
+        assert '4725N00816E' in pg.inner_text('.pick-body .coords'), 'ICAO-Koordinaten im Dialog'
+        pg.click('.dialog-foot button:has-text("Übernehmen")'); pg.wait_for_timeout(500)
+        assert 'Google Maps' in pg.inner_text('.wiz'), 'Maps-Link nach Ortswahl'
+        pg.screenshot(path=f'{OUT}/{name}_04_wiz3.png', full_page=True)
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1500)
         pg.click('button:has-text("Pax hinzufügen")'); pg.wait_for_timeout(200)
         pg.click('button:has-text("Pax hinzufügen")'); pg.wait_for_timeout(300)
@@ -43,6 +50,7 @@ def run(name, viewport, scale=1.5, mobile=False):
         pg.screenshot(path=f'{OUT}/{name}_07_wiz6.png', full_page=True)
         pg.click('button:has-text("Briefing anlegen")'); pg.wait_for_timeout(1200)
         pg.screenshot(path=f'{OUT}/{name}_08_editor.png', full_page=True)
+        assert '4725N00816E' in pg.inner_text('#panel-A\\.landing'), 'Landeraum im Editor'
         # Text in ein Paste-Panel
         ta = pg.query_selector('#panel-B\\.fwp textarea')
         if ta: ta.fill('LSZH 100420Z VRB01KT CAVOK 15/14 Q1015\nFlugwetterprognose: Hochdrucklage, schwache Winde.'); pg.wait_for_timeout(1300)
@@ -51,6 +59,8 @@ def run(name, viewport, scale=1.5, mobile=False):
         bid = href.split('/')[-1]
         pg.goto(BASE + f'#/v/{bid}'); pg.wait_for_timeout(900)
         pg.screenshot(path=f'{OUT}/{name}_09_brief.png', full_page=True)
+        assert pg.query_selector('.brief a.maps[target=_blank]') is not None, 'Maps-Link in Briefingsicht'
+        assert '4725N00816E' in pg.inner_text('.brief'), 'Landeraum in Briefingsicht'
         pg.emulate_media(media='print')
         pg.pdf(path=f'{OUT}/{name}_brief.pdf', format='A4', print_background=True) if not mobile else None
         pg.emulate_media(media='screen')

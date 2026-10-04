@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-10-04
+
+* Ortswahl-Fenster (Karte, Suche nach Ort/Adresse/Koordinaten/ICAO/Google-Maps-Link,
+  eigener Standort) für Startort, Treffpunkt, geplanten Landeraum und die
+  Stammdaten in den Einstellungen; Ausgabe überall als Name · ICAO-Kurzkoordinaten ·
+  Höhe · Google-Maps-Link (neues Fenster, im PDF klickbar).
+* Neues Feld «Geplanter Landeraum» (Fahrtabsicht, Panel A «Geplante Landeorte») mit
+  Distanz und Kurs ab Startort.
+* Lizenz: «Alle Rechte vorbehalten – Nutzung nur mit Zustimmung und Quellenangabe»
+  (ersetzt Unlicense).
+
 ## 0.1.0 — 2026-10-04 · Phase 1
 
 * Kennwortseite (Prüfung im Worker; lokaler Modus ohne Server), Sperre nach 2 h.

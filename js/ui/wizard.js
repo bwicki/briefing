@@ -2,9 +2,10 @@
 import { h, clear, toast, num, fmt, fmtSigned, debounce } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { setHeader } from '../app.js';
-import { field, input, select, textarea, check, mapPicker, kv, stats } from './widgets.js';
+import { field, input, select, textarea, check, kv, stats } from './widgets.js';
 import { scheduleEditor } from './parts.js';
-import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf } from '../model.js';
+import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing } from '../model.js';
+import { placeRow, placeLine, pickPlace, mapsLink } from './place.js';
 import { resolveBalloon } from '../defaults.js';
 import { icao, countryGuess } from '../calc/geo.js';
 import { hhmm, fmtDate, fmtDur, localParts, isoDate } from '../calc/time.js';
@@ -20,6 +21,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
   let b = opts.briefing || (id && !ctx.shared ? await ctx.store.getBriefing(id) : null);
   let fresh = false;
   if (!b) { b = newBriefing(ctx.settings); fresh = true; }
+  upgradeBriefing(b);
   let step = b.wizardStep || (id ? 6 : 1);
   const tz = () => b.site.tz || 'Europe/Zurich';
   const lang = getLang();
@@ -145,11 +147,9 @@ export async function renderWizard(view, ctx, id, opts = {}) {
   function step2(body) {
     const S = ctx.settings;
     const favs = h('div.chips');
-    const results = h('div.results');
-    const mapEl = h('div.map');
-    const nameIn = input('text', b.site.name, { oninput: (e) => { b.site.name = e.target.value; persistSoon(); } });
+    const nameIn = input('text', b.site.name, { oninput: (e) => { b.site.name = e.target.value; drawPlace(); persistSoon(); } });
     const icaoIn = input('text', b.site.icao, { readOnly: true });
-    const elevIn = input('number', b.site.elev ?? '', { step: 1, oninput: (e) => { b.site.elev = num(e.target.value, null); persistSoon(); } });
+    const elevIn = input('number', b.site.elev ?? '', { step: 1, oninput: (e) => { b.site.elev = num(e.target.value, null); drawPlace(); persistSoon(); } });
     const ctry = select([['CH', 'CH'], ['DE', 'DE'], ['AT', 'AT'], ['FR', 'FR'], ['IT', 'IT'], ['LI', 'LI'], ['', t('unknown')]].map(([v, l]) => ({ value: v, label: l })), b.site.country, { onchange: (e) => { b.site.country = e.target.value; refreshSun(); persistSoon(); } });
     const tzIn = input('text', b.site.tz, { oninput: (e) => { b.site.tz = e.target.value || 'Europe/Zurich'; applyTime(); } });
     const dateIn = input('date', b.time.date, { onchange: applyTime });
@@ -157,7 +157,6 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const baseRow = h('div.chips', ['LT', 'UTC'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': b.time.base === k, onclick: (e) => { b.time.base = k; baseRow.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); applyTime(); } }, k)));
     const sunBox = h('div.note');
     const horizonBox = h('div.note');
-    let picker = null;
     function applyTime() {
       const d = dateIn.value || b.time.date, tm = timeIn.value || b.time.time;
       if (b.time.base === 'UTC') { b.time.date = d; b.time.time = tm; b.time.startMs = Date.UTC(...d.split('-').map((x, i) => i === 1 ? +x - 1 : +x), ...tm.split(':').map(Number)); b.time.date = isoDate(tz(), b.time.startMs); b.time.time = hhmm(tz(), b.time.startMs); }
@@ -183,27 +182,19 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       nameIn.value = b.site.name; icaoIn.value = b.site.icao; elevIn.value = b.site.elev ?? ''; ctry.value = b.site.country; tzIn.value = b.site.tz;
       if (s.meetingId) { const m = S.meetings.find((x) => x.id === s.meetingId); if (m) Object.assign(b.schedule, { meetingId: m.id, meetingName: m.name, meetingLat: m.lat, meetingLon: m.lon }); }
       setStart(b, b.time.date, b.time.time);
-      picker?.setPos(s.lat, s.lon, 11);
       refreshSun(); persistSoon();
       if (s.elev == null || !s.tz) {
-        try { const info = await pointInfo(s.lat, s.lon); if (info.elev != null) { b.site.elev = Math.round(info.elev); elevIn.value = b.site.elev; } if (info.tz) { b.site.tz = info.tz; tzIn.value = info.tz; } if (!b.site.name && info.name) { b.site.name = info.name; nameIn.value = info.name; } if (info.country) { b.site.country = info.country; ctry.value = info.country; } setStart(b, b.time.date, b.time.time); refreshSun(); persistSoon(); } catch { /* optional */ }
+        try { const info = await pointInfo(s.lat, s.lon); if (info.elev != null) { b.site.elev = Math.round(info.elev); elevIn.value = b.site.elev; } if (info.tz) { b.site.tz = info.tz; tzIn.value = info.tz; } if (!b.site.name && info.name) { b.site.name = info.name; nameIn.value = info.name; } if (info.country) { b.site.country = info.country; ctry.value = info.country; } setStart(b, b.time.date, b.time.time); refreshSun(); drawPlace(); persistSoon(); } catch { /* optional */ }
       }
     }
     function drawFavs() {
       clear(favs);
       for (const s of S.sites.filter((x) => x.favorite)) favs.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.site.favoriteId === s.id, onclick: () => { setSite(s); drawFavs(); } }, s.name));
     }
-    const q = input('search', '', { placeholder: t('siteSearch'), onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); doSearch(); } } });
-    async function doSearch() {
-      clear(results);
-      if (!q.value.trim()) return;
-      results.appendChild(h('div.note', t('loading')));
-      try {
-        const rs = await geocode(q.value.trim(), lang);
-        clear(results);
-        if (!rs.length) results.appendChild(h('div.note', '–'));
-        for (const r of rs) results.appendChild(h('button', { type: 'button', onclick: () => { clear(results); setSite({ ...r, id: '' }); drawFavs(); } }, `${r.name}${r.admin ? ' · ' + r.admin : ''} · ${r.lat.toFixed(3)}, ${r.lon.toFixed(3)}${r.elev != null ? ' · ' + Math.round(r.elev) + ' m' : ''}`));
-      } catch (e) { clear(results); results.appendChild(h('div.err', e.message)); }
+    const placeBox = h('div');
+    function drawPlace() {
+      clear(placeBox);
+      placeBox.appendChild(placeRow(b.site, { label: t('site'), title: t('site'), onPick: (p) => { setSite({ name: p.name, lat: p.lat, lon: p.lon, elev: p.elev, tz: p.tz, country: p.country, id: '' }); drawFavs(); drawPlace(); } }));
     }
     const favBtn = h('button.btn', { type: 'button', onclick: async () => {
       if (b.site.lat == null) return;
@@ -213,17 +204,15 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       if (ex) Object.assign(ex, rec); else S.sites.push(rec);
       b.site.favoriteId = id; await ctx.saveSettings(S); drawFavs(); toast(t('set_saved'));
     } }, t('siteSaveFav'));
-    drawFavs();
+    drawFavs(); drawPlace();
     body.append(
       field(t('siteFavorites'), favs),
-      h('div.inline', [q, h('button.btn', { type: 'button', onclick: doSearch }, t('siteSearchBtn'))]), results,
-      h('div.lbl', { style: { margin: '8px 0 4px' } }, t('siteMap')), mapEl,
-      h('div.frow.c4', [field(t('site'), nameIn), field(t('coords'), icaoIn), field(t('elevation') + ' (m)', elevIn), field(t('countryRules'), ctry)]),
+      placeBox,
+      h('div.frow.c4', [field(t('name'), nameIn), field(t('coords'), icaoIn), field(t('elevation') + ' (m)', elevIn), field(t('countryRules'), ctry)]),
       h('div.frow.c4', [field(t('date'), dateIn), field(t('startTime'), timeIn), field(t('timeBase'), baseRow), field(t('s_tz'), tzIn)]),
       h('div.row-actions', [favBtn]),
       field(t('sun'), sunBox), horizonBox,
     );
-    setTimeout(() => { picker = mapPicker(mapEl, b.site.lat, b.site.lon, (la, lo) => setSite({ name: b.site.name, lat: la, lon: lo, elev: null, tz: '', country: '' })); }, 0);
     refreshSun();
   }
 
@@ -238,6 +227,9 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const rem = textarea(it.remark, { rows: 2, oninput: (e) => { it.remark = e.target.value; persistSoon(); } });
     const lv = input('text', it.levels.join(', '), { oninput: (e) => { it.levels = e.target.value.split(/[,;]+/).map((x) => x.trim()).filter(Boolean); persistSoon(); } });
     const suggBox = h('div.note');
+    const landBox = h('div');
+    const drawLand = () => { clear(landBox); landBox.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, from: b.site, onPick: (p) => { if (p) Object.assign(b.landing, { name: p.name, lat: p.lat, lon: p.lon, elev: p.elev, icao: p.icao, address: p.address || '' }); else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' }); persistSoon(); drawLand(); } })); landBox.appendChild(h('div.note', t('landingHint'))); };
+    drawLand();
     function sugg() {
       const sun = sunFor(b, ctx.settings, ctx.racTable);
       const s = equipmentSuggest(b, sun);
@@ -249,6 +241,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     body.append(
       h('div.frow.c3', [field(t('duration') + ' (h:mm)', durIn), field(`${t('altBand')} ${t('altMin')} (ft)`, minIn), field(`${t('altBand')} ${t('altMax')} (ft)`, maxIn)]),
       h('div.frow', [field(t('direction'), dir), field(t('dayNight'), dn)]),
+      landBox,
       field(t('levels'), lv), field(t('intentRemark'), rem), suggBox,
     );
   }
@@ -306,10 +299,13 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const ms = S.meetings.map((m) => ({ value: m.id, label: m.name })).concat([{ value: 'custom', label: t('meetingCustom') }]);
     const holder = h('div');
     const mCustom = input('text', sc.meetingId === 'custom' ? sc.meetingName : '', { placeholder: t('meeting'), oninput: (e) => { sc.meetingName = e.target.value; persistSoon(); } }); mCustom.hidden = sc.meetingId !== 'custom';
-    const mSel = select(ms, sc.meetingId || 'custom', { onchange: (e) => { sc.meetingId = e.target.value; mCustom.hidden = e.target.value !== 'custom'; const m = S.meetings.find((x) => x.id === e.target.value); sc.meetingName = m ? m.name : mCustom.value; sc.meetingLat = m?.lat ?? null; sc.meetingLon = m?.lon ?? null; sc.driveMin = null; sc.overrides = {}; drawEditor(); persistSoon(); } });
+    const mSel = select(ms, sc.meetingId || 'custom', { onchange: (e) => { sc.meetingId = e.target.value; mCustom.hidden = e.target.value !== 'custom'; const m = S.meetings.find((x) => x.id === e.target.value); sc.meetingName = m ? m.name : mCustom.value; sc.meetingLat = m?.lat ?? null; sc.meetingLon = m?.lon ?? null; sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } });
+    const meetBox = h('div');
+    const meetPlace = () => ({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon, elev: null });
+    function drawMeet() { clear(meetBox); meetBox.appendChild(placeRow(meetPlace(), { label: `${t('meeting')} · ${t('coords')}`, title: t('meeting'), onPick: (p) => { sc.meetingLat = p.lat; sc.meetingLon = p.lon; if (sc.meetingId === 'custom' || !sc.meetingName) { sc.meetingName = p.name; mCustom.value = p.name; } sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } })); }
     function drawEditor() { clear(holder); holder.appendChild(scheduleEditor(b, ctx, () => persistSoon())); }
-    body.append(field(t('meeting'), h('div', [mSel, mCustom])), holder);
-    drawEditor();
+    body.append(h('div.frow', [field(t('meeting'), h('div', [mSel, mCustom])), meetBox]), holder);
+    drawMeet(); drawEditor();
   }
 
   // ---------------------------------------------------------------- 6
@@ -322,10 +318,10 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     body.append(
       h('div.frow', [
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s1'))), h('div.card-body', kv([[t('registration'), b.balloon.label], [t('flightKind'), t('kind_' + b.flight.kind)], [t('operator'), b.flight.operatorName], [t('occasion'), b.flight.occasion || '–']]))]),
-        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s2'))), h('div.card-body', kv([[t('site'), `${b.site.name} · ${b.site.icao} · ${b.site.elev ?? '?'} m`], [t('date'), `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('sun'), sun ? `BCMT ${hhmm(z, sun.official.bcmt)} · SR ${hhmm(z, sun.official.sr)} · SS ${hhmm(z, sun.official.ss)} · ECET ${hhmm(z, sun.official.ecet)}` : '–'], sun?.nightStart ? ['', h('span.warn', t('night'))] : null]))]),
-        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s3'))), h('div.card-body', kv([[t('duration'), fmtDur(b.intent.durationMin)], [t('altBand'), `${b.intent.altMinFt}–${b.intent.altMaxFt} ft`], [t('direction'), b.intent.direction || '–'], [t('levels'), b.intent.levels.join(', ')]]))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s2'))), h('div.card-body', kv([[t('site'), placeLine(b.site)], [t('date'), `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('sun'), sun ? `BCMT ${hhmm(z, sun.official.bcmt)} · SR ${hhmm(z, sun.official.sr)} · SS ${hhmm(z, sun.official.ss)} · ECET ${hhmm(z, sun.official.ecet)}` : '–'], sun?.nightStart ? ['', h('span.warn', t('night'))] : null]))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s3'))), h('div.card-body', kv([[t('duration'), fmtDur(b.intent.durationMin)], [t('altBand'), `${b.intent.altMinFt}–${b.intent.altMaxFt} ft`], [t('direction'), b.intent.direction || '–'], b.landing?.lat != null ? [t('landingSite'), placeLine(b.landing)] : null, [t('levels'), b.intent.levels.join(', ')]]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s4'))), h('div.card-body', kv([[t('pic'), b.persons.pic], [t('retrieve'), b.persons.retrieve || '–'], [t('pax'), b.persons.pax.map((p) => p.name).join(', ') || '–'], type === 'hab' ? [t('mp_takeoff'), `${fmt(r.takeoff)} kg (${fmtSigned(r.massDelta)} kg)`] : [t('gb_ballast'), `${fmt(r.ballast)} kg`]]))]),
-        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv(rows.map((row) => [hhmm(z, row.ms), t('sch_' + row.key)])))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv([[t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–')]].concat(rows.map((row) => [hhmm(z, row.ms), t('sch_' + row.key)]))))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_mandatory'))), h('div.card-body', [h('ul', { style: { margin: 0, paddingLeft: '18px' } }, mandatoryPanels(S, b).map((p) => h('li', tt(p)))), h('div.note', t('wiz_createHint'))])]),
       ]),
     );
