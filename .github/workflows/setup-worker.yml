@@ -77,7 +77,16 @@ jobs:
           echo "id=$id" >> "$GITHUB_OUTPUT"
       - name: R2-Bucket «briefing-files»
         run: |
-          if npx wrangler r2 bucket list 2>/dev/null | grep -q 'briefing-files'; then echo "Bucket vorhanden"; else npx wrangler r2 bucket create briefing-files; fi
+          if npx wrangler r2 bucket list 2>/dev/null | grep -q 'briefing-files'; then echo "Bucket vorhanden"; exit 0; fi
+          if out=$(npx wrangler r2 bucket create briefing-files 2>&1); then echo "$out"; exit 0; fi
+          echo "$out"
+          case "$out" in
+            *10042*|*nable\ R2*|*not\ enabled*|*subscription*|*billing*|*payment*)
+              echo "::error::R2 ist für dieses Cloudflare-Konto noch nicht aktiviert. Dashboard → links «R2 Object Storage» → «Enable R2» / «Get started» (Zahlungsmethode hinterlegen; das Free-Kontingent von 10 GB bleibt kostenlos). Danach den Workflow erneut starten." ;;
+            *uthentication*|*10000*|*ermission*|*nauthorized*|*orbidden*)
+              echo "::error::Das API-Token darf R2 nicht verwalten. Cloudflare → My Profile → API Tokens → Token «Edit» → Berechtigung «Account · Workers R2 Storage · Edit» ergänzen → Continue to summary → Update token (der Token-Wert bleibt gleich). Danach den Workflow erneut starten." ;;
+          esac
+          exit 1
       - name: Schema anlegen (und Migration 0.5 bei bestehender Datenbank)
         run: |
           npx wrangler d1 execute briefing --remote --yes --file=schema.sql
