@@ -97,7 +97,7 @@ function decodeGroups(tokens, s, out) {
     if (tk === 'NCD') { clouds.push(s.ncd); continue; }
     if (tk === 'SKC' || tk === 'CLR') { clouds.push(s.skc); continue; }
     if ((m = /^(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/.exec(tk))) {
-      let txt = `${s.wind} ${windTxt(m, s)}`;
+      const wt = windTxt(m, s); let txt = wt === s.calm ? wt : `${s.wind} ${wt}`;
       const v = /^(\d{3})V(\d{3})$/.exec(tokens[i] || ''); if (v) { txt += ` (${s.vrb} ${v[1]}°–${v[2]}°)`; i++; }
       out.push(badToken(tk) ? B(txt) : txt); continue;
     }
@@ -107,6 +107,7 @@ function decodeGroups(tokens, s, out) {
     if ((m = /^(\d{4})(N|S|E|W|NE|NW|SE|SW)$/.exec(tk))) { const vt = `${s.vis} ${m[2]} ${+m[1] >= 1000 ? (+m[1] / 1000).toFixed(1) + ' km' : m[1] + ' m'}`; out.push(badToken(tk) ? B(vt) : vt); continue; }
     if ((m = /^R(\d{2}[LCR]?)\/([PM]?\d{4})(?:V([PM]?\d{4}))?([UDN])?$/.exec(tk))) { out.push(B(`${s.rvr} ${m[1]}: ${m[2].replace(/^P/, '>').replace(/^M/, '<')} m${m[3] ? `–${m[3].replace(/^P/, '>').replace(/^M/, '<')} m` : ''}`)); continue; }
     if ((m = /^(FEW|SCT|BKN|OVC)(\d{3}|\/\/\/)(CB|TCU|\/\/\/)?$/.exec(tk))) { clouds.push(badToken(tk) ? B(cloudTxt(m, s)) : cloudTxt(m, s)); continue; }
+    if ((m = /^\/\/\/(CB|TCU)$/.exec(tk))) { clouds.push(B(m[1] === 'CB' ? s.cb : s.tcu)); continue; }
     if ((m = /^VV(\d{3}|\/\/\/)$/.exec(tk))) { clouds.push(B(`${s.vv} ${m[1] === '///' ? '?' : +m[1] * 100 + ' ft'}`)); continue; }
     if ((m = /^(M?\d{2})\/(M?\d{2})?$/.exec(tk))) { out.push(`${s.temp} ${tempVal(m[1])} °C${m[2] ? `, ${s.dew} ${tempVal(m[2])} °C` : ''}`); continue; }
     if ((m = /^Q(\d{4})$/.exec(tk))) { out.push(`${s.qnh} ${+m[1]} hPa`); continue; }
