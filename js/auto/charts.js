@@ -170,7 +170,7 @@ export function meteogram(recs, o = {}) {
     if (i % every === 0 || midnight) svg.appendChild(mk('text', { x: x(r.ms), y: plotBot + 13, class: 'mg-ax', 'text-anchor': 'middle' }, hr));
     if ((midnight || i === 0) && o.dayLabel) svg.appendChild(mk('text', { x: x(r.ms) + 3, y: plotBot + 25, class: 'mg-ax mg-dayl', 'text-anchor': 'start' }, o.dayLabel(r.ms)));
   });
-  svg.appendChild(mk('text', { x: W - R + 4, y: plotBot + 13, class: 'mg-ax', 'text-anchor': 'start' }, lab.lt));
+  svg.appendChild(mk('text', { x: W - R + 10, y: plotBot + 13, class: 'mg-ax', 'text-anchor': 'start' }, lab.lt));
   let yTop = T;
   const band = (hh) => { const y0 = yTop; yTop += hh; svg.appendChild(mk('line', { x1: L, y1: y0 + hh, x2: W - R, y2: y0 + hh, class: 'mg-grid mg-sep' })); return [y0, y0 + hh]; };
   const title = (y0, txt) => svg.appendChild(mk('text', { x: L + 4, y: y0 + 10, class: 'mg-title' }, txt));
@@ -225,7 +225,7 @@ export function meteogram(recs, o = {}) {
   if (o.rating) {
     const ys = plotBot + 30;
     svg.appendChild(mk('text', { x: L - 4, y: ys + 7, class: 'mg-ax', 'text-anchor': 'end' }, lab.fly));
-    for (const r of recs) { const lv = o.rating(r); if (lv != null) svg.appendChild(mk('rect', { x: x(r.ms) - colW / 2 + 0.5, y: ys, width: Math.max(1, colW - 1), height: 8, class: `mg-fly f${lv}` })); }
+    for (const r of recs) { const lv = o.rating(r); if (lv == null) continue; const x0 = Math.max(L, x(r.ms) - colW / 2 + 0.5), x1 = Math.min(W - R, x(r.ms) + colW / 2 - 0.5); if (x1 > x0) svg.appendChild(mk('rect', { x: x0, y: ys, width: x1 - x0, height: 8, class: `mg-fly f${lv}` })); }
   }
   // Start-/Landemarke
   const mark = (ms, txt, cls) => { if (ms == null || ms < t0 || ms > t1) return; svg.appendChild(mk('line', { x1: x(ms), y1: plotTop, x2: x(ms), y2: plotBot, class: 'mg-mark ' + cls })); svg.appendChild(mk('text', { x: x(ms) + 3, y: plotTop + 9, class: 'mg-val ' + cls }, txt)); };

@@ -375,7 +375,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       if ((b.persons.pax.length + 1) > (bal.maxPersons || 99)) preview.appendChild(h('div.warn', `⚠ ${t('b_maxPersons')}: ${bal.maxPersons}`));
     }
     drawPax(); drawPreview();
-    body.append(h('div.frow', [field(t('pic'), h('div', [picSel, picCustom])), field(t('retrieve'), retBox)]), field(t('pax'), paxBox), preview);
+    body.append(h('div.frow.top', [field(t('pic'), h('div', [picSel, picCustom])), field(t('retrieve'), retBox)]), field(t('pax'), paxBox), preview);
     // Modellwerte für die Vorschau holen (einmal je Ort/Zeit)
     if (b.site.lat != null && b.weather.source !== 'model' && (b.time.startMs - Date.now()) < 15 * 86400000) {
       const p = localParts(tz(), b.time.startMs);

@@ -207,6 +207,9 @@ svg.curve{width:100%;height:auto;display:block;background:var(--panel-2);border-
 .stat-strip .v.pos{color:var(--green);} .stat-strip .v.neg{color:var(--temp);}
 .stat{display:flex;flex-direction:column;justify-content:space-between;}   /* Werte unten auf einer Linie, Beschriftung oben */
 .stat .v{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-size:14px;line-height:1.25;}
+.stat .k{overflow-wrap:break-word;}
+.ret-row{grid-template-columns:minmax(0,1fr) 40px;}
+.ret-row select{flex:1;min-width:0;}
 
 /* ---------- Dialog / Toast ---------- */
 .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;}
