@@ -19,11 +19,13 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   if (!b) { view.appendChild(h('div.err', 'not found')); return; }
   upgradeBriefing(b);
   const S = ctx.settings, z = b.site.tz || 'Europe/Zurich', lang = getLang();
-  const canEdit = !shared || shared.role === 'edit';
+  const foreign = !shared && b.access === 'read';   // Briefing eines anderen Benutzers (Super / Materialeigner): nur lesen
+  const canEdit = !foreign && (!shared || shared.role === 'edit');
   const tools = [];
   const toggle = h('div.viewtoggle', [canEdit ? h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}` : `#/b/${b.id}`) }, t('view_edit')) : null, h('button.on', { type: 'button' }, t('view_brief'))]);
   tools.push(toggle, h('button.btn', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`) }, t('pax_title')), h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print')));
-  setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}`, tools });
+  const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
+  setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${ownerNote}`, tools });
 
   const brief = h('div.brief');
   view.appendChild(brief);

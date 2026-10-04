@@ -77,7 +77,7 @@ export async function crewDialog(b, ctx) {
   await dialog(t('crew_title'), content, [{ label: t('close'), primary: true }], { cls: 'wide' });
 }
 function crewEmails(b, ctx) {
-  const P = ctx.settings.persons || [];
+  const P = (ctx.stamm || ctx.settings).persons || [];
   const ids = [b.persons.picId, b.persons.retrieveId];
   return P.filter((p) => ids.includes(p.id) && p.email).map((p) => p.email).join(',');
 }
@@ -165,9 +165,9 @@ const PAX_SAFETY = {
 };
 
 // ---------------------------------------------------------------- Export
-export async function exportAll(ctx) {
+export async function exportAll(ctx, all = false) {
   let data;
-  if (ctx.store.mode === 'remote') data = await ctx.store.exportAll();
+  if (ctx.store.mode === 'remote') data = await ctx.store.exportAll(all);
   else data = { exportedAt: Date.now(), settings: ctx.settings, briefings: await Promise.all((await ctx.store.listBriefings()).map((s) => ctx.store.getBriefing(s.id))) };
   downloadText(`fahrtbriefing-export-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data, null, 1), 'application/json');
 }

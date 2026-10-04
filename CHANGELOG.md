@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.5.0 — 2026-10-04 · Mehrbenutzer
+
+* Benutzer mit Rollen Supermaster/Master (Anmeldename + Kennwort, Sitzung je
+  Benutzer): eigener Stamm, eigene Briefings, eigenes Kennwort je Master; Zugänge
+  (API-Schlüssel) zentral, nur Supermaster ändert sie; Freischaltungen KI/NOTAM/PDF
+  je Benutzer.
+* Freigaben per Klickbox je Kategorie (Ballone, Personen, Startplätze, Treffpunkte,
+  Betreiber); freigegebene Einträge im Ablauf mit Geber; Eigner sieht «Fahrten mit
+  meinem Material» lesend (Ballonbuch).
+* Supermaster: Benutzer anlegen (Stamm kopieren), Kennwort setzen, deaktivieren,
+  Stamm ansehen, Sicht «Alle Benutzer» (nur lesen), Export aller Benutzer,
+  Nutzungsstatistik (je Benutzer/Monat, Fahrten je Ballon, Speicher; CSV).
+* Worker: Tabellen `users`, `shares`, `usage`; `briefings.owner_id/material_owner`
+  (`migrate-0.5.sql`); `/api/me`, `/api/users`, `/api/shares`, `/api/admin/*`,
+  `?scope=` für Listen; Mitarbeit-Links und Datenabrufe protokolliert.
+* Fix: `aria-pressed` wurde als leeres Attribut gesetzt (Chips ohne Markierung).
+
 ## 0.4.0 — 2026-10-04 · Phase 3
 
 * Hauptnavigation Briefings · Neu · Einstellungen in jeder Sicht; Einstellungs-

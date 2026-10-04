@@ -6,6 +6,7 @@ import { field, input, select, textarea, check, kv, stats } from './widgets.js';
 import { scheduleEditor } from './parts.js';
 import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing } from '../model.js';
 import { placeRow, placeLine, pickPlace, mapsLink } from './place.js';
+import { stammLabel } from '../stamm.js';
 import { resolveBalloon } from '../defaults.js';
 import { icao, countryGuess } from '../calc/geo.js';
 import { hhmm, fmtDate, fmtDur, localParts, isoDate } from '../calc/time.js';
@@ -106,7 +107,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
 
   // ---------------------------------------------------------------- 1
   function step1(body) {
-    const S = ctx.settings.balloons;
+    const S = ctx.stamm.balloons;
     const typeRow = h('div.chips');
     const combo = h('div.frow');
     const redraw = () => {
@@ -114,14 +115,14 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       for (const ty of ['hab', 'gas']) typeRow.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.balloonSel.type === ty, onclick: () => { b.balloonSel = ty === 'gas' ? { type: 'gas', envelopeId: S.defaultEnvelope, basketId: S.defaultBasket } : { type: 'hab', id: S.defaultHab }; applyBalloon(); redraw(); } }, t(ty)));
       clear(combo);
       if (b.balloonSel.type === 'gas') {
-        combo.appendChild(field(t('envelope'), select(S.envelopes.map((e) => ({ value: e.id, label: `${e.id} · ${e.model} ${e.volume} m³` })), b.balloonSel.envelopeId, { onchange: (e) => { b.balloonSel.envelopeId = e.target.value; applyBalloon(); } })));
-        combo.appendChild(field(t('basket'), select(S.baskets.map((k) => ({ value: k.id, label: `${k.name} · ${k.mass} kg · max ${k.maxPersons} P.` })), b.balloonSel.basketId, { onchange: (e) => { b.balloonSel.basketId = e.target.value; applyBalloon(); } })));
+        combo.appendChild(field(t('envelope'), select(S.envelopes.map((e) => ({ value: e.id, label: stammLabel(e, `${e.reg || e.id} · ${e.model} ${e.volume} m³`) })), b.balloonSel.envelopeId, { onchange: (e) => { b.balloonSel.envelopeId = e.target.value; applyBalloon(); } })));
+        combo.appendChild(field(t('basket'), select(S.baskets.map((k) => ({ value: k.id, label: stammLabel(k, `${k.name} · ${k.mass} kg · max ${k.maxPersons} P.`) })), b.balloonSel.basketId, { onchange: (e) => { b.balloonSel.basketId = e.target.value; applyBalloon(); } })));
       } else {
-        combo.appendChild(field(t('registration'), select(S.hab.map((x) => ({ value: x.id, label: `${x.id} · ${x.model}` })), b.balloonSel.id, { onchange: (e) => { b.balloonSel.id = e.target.value; applyBalloon(); } })));
+        combo.appendChild(field(t('registration'), select(S.hab.map((x) => ({ value: x.id, label: stammLabel(x, `${x.reg || x.id} · ${x.model}`) })), b.balloonSel.id, { onchange: (e) => { b.balloonSel.id = e.target.value; applyBalloon(); } })));
       }
     };
     function applyBalloon() {
-      const bal = resolveBalloon(ctx.settings, b.balloonSel);
+      const bal = resolveBalloon(ctx.stamm, b.balloonSel);
       if (!bal) return;
       const typeChanged = b.balloon?.type !== bal.type;
       b.balloon = bal;
@@ -131,10 +132,10 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       persistSoon();
     }
     const kinds = h('div.chips', ['private', 'commercial', 'training', 'exam'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': b.flight.kind === k, onclick: (e) => { b.flight.kind = k; kinds.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); persistSoon(); } }, t('kind_' + k))));
-    const ops = ctx.settings.operators.map((o) => ({ value: o.id, label: o.name })).concat([{ value: 'custom', label: t('operatorCustom') }]);
+    const ops = ctx.stamm.operators.map((o) => ({ value: o.id, label: stammLabel(o, o.name) })).concat([{ value: 'custom', label: t('operatorCustom') }]);
     const custom = input('text', b.flight.operatorId === 'custom' ? b.flight.operatorName : '', { placeholder: t('operatorCustom'), oninput: (e) => { b.flight.operatorName = e.target.value; persistSoon(); } });
     custom.hidden = b.flight.operatorId !== 'custom';
-    const opSel = select(ops, b.flight.operatorId, { onchange: (e) => { b.flight.operatorId = e.target.value; custom.hidden = e.target.value !== 'custom'; b.flight.operatorName = e.target.value === 'custom' ? custom.value : ctx.settings.operators.find((o) => o.id === e.target.value)?.name || ''; persistSoon(); } });
+    const opSel = select(ops, b.flight.operatorId, { onchange: (e) => { b.flight.operatorId = e.target.value; custom.hidden = e.target.value !== 'custom'; b.flight.operatorName = e.target.value === 'custom' ? custom.value : ctx.stamm.operators.find((o) => o.id === e.target.value)?.name || ''; persistSoon(); } });
     redraw();
     body.append(
       field(t('balloonType'), typeRow), combo,
@@ -145,7 +146,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
 
   // ---------------------------------------------------------------- 2
   function step2(body) {
-    const S = ctx.settings;
+    const S = ctx.settings, M = ctx.stamm;   // S: eigener Stamm (speichern), M: inkl. Freigaben (auswählen)
     const favs = h('div.chips');
     const nameIn = input('text', b.site.name, { oninput: (e) => { b.site.name = e.target.value; drawPlace(); persistSoon(); } });
     const icaoIn = input('text', b.site.icao, { readOnly: true });
@@ -180,7 +181,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     async function setSite(s) {
       Object.assign(b.site, { name: s.name, lat: s.lat, lon: s.lon, elev: s.elev ?? b.site.elev, tz: s.tz || b.site.tz, country: s.country || countryGuess(s.lat, s.lon), icao: icao(s.lat, s.lon), favoriteId: s.id || '' });
       nameIn.value = b.site.name; icaoIn.value = b.site.icao; elevIn.value = b.site.elev ?? ''; ctry.value = b.site.country; tzIn.value = b.site.tz;
-      if (s.meetingId) { const m = S.meetings.find((x) => x.id === s.meetingId); if (m) Object.assign(b.schedule, { meetingId: m.id, meetingName: m.name, meetingLat: m.lat, meetingLon: m.lon }); }
+      if (s.meetingId) { const m = M.meetings.find((x) => x.id === s.meetingId); if (m) Object.assign(b.schedule, { meetingId: m.id, meetingName: m.name, meetingLat: m.lat, meetingLon: m.lon }); }
       setStart(b, b.time.date, b.time.time);
       refreshSun(); persistSoon();
       if (s.elev == null || !s.tz) {
@@ -189,7 +190,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     }
     function drawFavs() {
       clear(favs);
-      for (const s of S.sites.filter((x) => x.favorite)) favs.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.site.favoriteId === s.id, onclick: () => { setSite(s); drawFavs(); } }, s.name));
+      for (const s of M.sites.filter((x) => x.favorite)) favs.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.site.favoriteId === s.id, title: s.shared ? s.ownerName : null, onclick: () => { setSite(s); drawFavs(); } }, stammLabel(s, s.name)));
     }
     const placeBox = h('div');
     function drawPlace() {
@@ -248,8 +249,8 @@ export async function renderWizard(view, ctx, id, opts = {}) {
 
   // ---------------------------------------------------------------- 4
   function step4(body) {
-    const P = ctx.settings.persons, bal = b.balloon;
-    const pers = (role) => P.filter((p) => !role || p.roles?.includes(role)).map((p) => ({ value: p.id, label: p.name })).concat([{ value: 'custom', label: t('operatorCustom') }]);
+    const P = ctx.stamm.persons, bal = b.balloon;
+    const pers = (role) => P.filter((p) => !role || p.roles?.includes(role)).map((p) => ({ value: p.id, label: stammLabel(p, p.name) })).concat([{ value: 'custom', label: t('operatorCustom') }]);
     const picCustom = input('text', b.persons.picId === 'custom' ? b.persons.pic : '', { placeholder: t('name'), oninput: (e) => { b.persons.pic = e.target.value; persistSoon(); } }); picCustom.hidden = b.persons.picId !== 'custom';
     const picSel = select(pers('pic'), b.persons.picId, { onchange: (e) => { b.persons.picId = e.target.value; picCustom.hidden = e.target.value !== 'custom'; b.persons.pic = e.target.value === 'custom' ? picCustom.value : P.find((p) => p.id === e.target.value)?.name || ''; persistSoon(); } });
     const retCustom = input('text', b.persons.retrieveId === 'custom' ? b.persons.retrieve : '', { placeholder: t('name'), oninput: (e) => { b.persons.retrieve = e.target.value; persistSoon(); } }); retCustom.hidden = b.persons.retrieveId !== 'custom';
@@ -296,10 +297,10 @@ export async function renderWizard(view, ctx, id, opts = {}) {
   // ---------------------------------------------------------------- 5
   function step5(body) {
     const S = ctx.settings, sc = b.schedule;
-    const ms = S.meetings.map((m) => ({ value: m.id, label: m.name })).concat([{ value: 'custom', label: t('meetingCustom') }]);
+    const ms = ctx.stamm.meetings.map((m) => ({ value: m.id, label: stammLabel(m, m.name) })).concat([{ value: 'custom', label: t('meetingCustom') }]);
     const holder = h('div');
     const mCustom = input('text', sc.meetingId === 'custom' ? sc.meetingName : '', { placeholder: t('meeting'), oninput: (e) => { sc.meetingName = e.target.value; persistSoon(); } }); mCustom.hidden = sc.meetingId !== 'custom';
-    const mSel = select(ms, sc.meetingId || 'custom', { onchange: (e) => { sc.meetingId = e.target.value; mCustom.hidden = e.target.value !== 'custom'; const m = S.meetings.find((x) => x.id === e.target.value); sc.meetingName = m ? m.name : mCustom.value; sc.meetingLat = m?.lat ?? null; sc.meetingLon = m?.lon ?? null; sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } });
+    const mSel = select(ms, sc.meetingId || 'custom', { onchange: (e) => { sc.meetingId = e.target.value; mCustom.hidden = e.target.value !== 'custom'; const m = ctx.stamm.meetings.find((x) => x.id === e.target.value); sc.meetingName = m ? m.name : mCustom.value; sc.meetingLat = m?.lat ?? null; sc.meetingLon = m?.lon ?? null; sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } });
     const meetBox = h('div');
     const meetPlace = () => ({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon, elev: null });
     function drawMeet() { clear(meetBox); meetBox.appendChild(placeRow(meetPlace(), { label: `${t('meeting')} · ${t('coords')}`, title: t('meeting'), onPick: (p) => { sc.meetingLat = p.lat; sc.meetingLon = p.lon; if (sc.meetingId === 'custom' || !sc.meetingName) { sc.meetingName = p.name; mCustom.value = p.name; } sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } })); }

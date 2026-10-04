@@ -20,6 +20,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
   const b = opts.briefing || await ctx.store.getBriefing(id);
   if (!b) { view.appendChild(h('div.err', 'not found')); return; }
+  if (!shared && b.access === 'read') { ctx.navigate(`#/v/${b.id}`); return; }   // fremdes Briefing: nur Briefingsicht
   upgradeBriefing(b);
   const S = ctx.settings, z = b.site.tz || 'Europe/Zurich', lang = getLang();
   const canOwn = !shared;
@@ -49,8 +50,8 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const more = h('div.more', [h('button.btn', { type: 'button', onclick: (e) => { e.stopPropagation(); more.classList.toggle('open'); } }, t('more') + ' ▾'), h('div.menu.more-menu', [
       h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`) }, t('pax_title')),
       h('button', { type: 'button', onclick: () => crewDialog(b, ctx) }, t('crew_title')),
-      canOwn && ctx.store.mode === 'remote' ? h('button', { type: 'button', onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }) }, t('ass_title')) : null,
-      canOwn && ctx.store.mode === 'remote' ? h('button', { type: 'button', onclick: () => finalPdfDialog(b, ctx, () => { touched(); drawHeader(); }) }, t('pdf_title')) : null,
+      canOwn && ctx.store.mode === 'remote' && ctx.can('ai') ? h('button', { type: 'button', onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }) }, t('ass_title')) : null,
+      canOwn && ctx.store.mode === 'remote' && ctx.can('pdf') ? h('button', { type: 'button', onclick: () => finalPdfDialog(b, ctx, () => { touched(); drawHeader(); }) }, t('pdf_title')) : null,
       canOwn ? h('button', { type: 'button', onclick: () => exportOne(b) }, t('export_one')) : null,
     ])]);
     document.addEventListener('click', (e) => { if (!e.target.closest('.more')) more.classList.remove('open'); });

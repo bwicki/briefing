@@ -15,10 +15,14 @@ with sync_playwright() as p:
     pg.route('**/js/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body=f"window.BRIEFING_CONFIG = {{ apiBase: '{API}' }};"))
     pg.goto(BASE + '#/list'); pg.wait_for_timeout(800)
     assert pg.is_visible('#gate'), 'gate sichtbar'
-    pg.fill('#gatePw', '0000'); pg.click('#gateOpen'); pg.wait_for_timeout(600)
+    assert pg.is_visible('#gateUser'), 'Benutzerfeld im Server-Modus'
+    pg.fill('#gateUser', 'bwicki'); pg.fill('#gatePw', '0000'); pg.click('#gateOpen'); pg.wait_for_timeout(600)
     assert pg.is_visible('#gateErr'), 'Fehlermeldung bei falschem Kennwort'
     pg.fill('#gatePw', '1234'); pg.click('#gateOpen'); pg.wait_for_timeout(900)
     assert not pg.is_visible('#gate'), 'eingeloggt'
+    pg.click('#menuBtn'); pg.wait_for_timeout(200)
+    assert 'Supermaster' in pg.inner_text('#menu'), 'Rolle im Menü: ' + pg.inner_text('#menu')
+    pg.keyboard.press('Escape'); pg.click('body', position={'x': 5, 'y': 400}); pg.wait_for_timeout(200)
     assert 'Lokaler' not in pg.inner_text('#modeBadge') if pg.query_selector('#modeBadge') else True
     pg.goto(BASE + '#/new'); pg.wait_for_timeout(700)
     for i in range(5):
@@ -57,7 +61,7 @@ with sync_playwright() as p:
     p2.route('**/js/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body=f"window.BRIEFING_CONFIG = {{ apiBase: '{API}' }};"))
     p2.goto(link); p2.wait_for_timeout(1200)
     p2.screenshot(path=f'{OUT}/remote_link_name.png')
-    p2.fill('input[type=text]', 'Martin Baumann'); p2.click('button:has-text("Weiter")'); p2.wait_for_timeout(1500)
+    p2.fill('#view input[type=text]', 'Martin Baumann'); p2.click('button:has-text("Weiter")'); p2.wait_for_timeout(1500)
     p2.screenshot(path=f'{OUT}/remote_link_editor.png')
     assert 'Mitarbeit' in p2.inner_text('#subtitle'), 'Mitarbeit-Rolle im Kopf: ' + p2.inner_text('#subtitle')
     p2.fill('#panel-A\\.landing textarea', 'Raum Wohlen – Bremgarten'); p2.wait_for_timeout(1800)
@@ -77,5 +81,67 @@ with sync_playwright() as p:
     pg.goto(BASE + '#/settings?access'); pg.wait_for_timeout(900)
     pg.click('summary:has-text("Zugänge")'); pg.wait_for_timeout(400)
     pg.screenshot(path=f'{OUT}/remote_settings_access.png', full_page=True)
+
+    # ---- Mehrbenutzer: Super legt Master «mtest» an (Stamm kopiert, ohne KI) und gibt Ballone + Startplätze frei
+    pg.goto(BASE + '#/settings?users'); pg.wait_for_timeout(1200)
+    pg.screenshot(path=f'{OUT}/remote_users_empty.png', full_page=True)
+    assert 'Neuer Benutzer' in pg.inner_text('#view'), 'Admin-Formular sichtbar'
+    box = pg.query_selector('.item-box:has-text("Neuer Benutzer")')
+    inputs = box.query_selector_all('input')
+    inputs[0].fill('mtest'); inputs[1].fill('Max Test'); inputs[2].fill('abcd')
+    box.query_selector_all('select')[1].select_option('bwicki')
+    box.query_selector('label.check:has-text("KI") input').uncheck()
+    box.query_selector('button:has-text("Anlegen")').click(); pg.wait_for_timeout(1500)
+    assert 'Max Test' in pg.inner_text('table.tbl'), 'Benutzer in Liste: ' + pg.inner_text('table.tbl')[:300]
+    row = pg.query_selector('.share-row:has-text("Max Test")')
+    assert row is not None, 'Freigabe-Zeile für mtest'
+    row.query_selector('label.check:has-text("Ballone") input').check(); pg.wait_for_timeout(600)
+    row.query_selector('label.check:has-text("Startplätze") input').check(); pg.wait_for_timeout(600)
+    pg.screenshot(path=f'{OUT}/remote_users.png', full_page=True)
+    # Statistik-Seite
+    pg.goto(BASE + '#/settings?stats'); pg.wait_for_timeout(1500)
+    st = pg.inner_text('#view').upper()
+    assert 'JE BENUTZER UND MONAT' in st and 'ANMELDUNGEN' in st, 'Statistik: ' + st[:200]
+    pg.screenshot(path=f'{OUT}/remote_stats.png', full_page=True)
+    # Sperren → neuer Benutzer meldet sich an
+    pg.click('#menuBtn'); pg.click('#menu button:has-text("Sperren")'); pg.wait_for_timeout(500)
+    assert pg.is_visible('#gate'), 'gesperrt'
+    assert pg.input_value('#gateUser') == 'bwicki', 'letzter Benutzer vorgeschlagen'
+    pg.fill('#gateUser', 'mtest'); pg.fill('#gatePw', 'abcd'); pg.click('#gateOpen'); pg.wait_for_timeout(1200)
+    assert not pg.is_visible('#gate'), 'mtest eingeloggt'
+    pg.goto(BASE + '#/list'); pg.wait_for_timeout(800)
+    lst = pg.inner_text('#view')
+    assert 'Keine Briefings' in lst or 'test0000' not in lst, 'mtest sieht keine fremden Briefings'
+    assert 'Alle Benutzer' not in lst, 'Master hat keine Sicht «Alle Benutzer»'
+    assert 'Ballone' in lst and 'Von anderen erhalten' in lst, 'erhaltene Freigabe in Stammkarte: ' + lst[-300:]
+    # Zugänge nur lesend
+    pg.goto(BASE + '#/settings?access'); pg.wait_for_timeout(900)
+    assert 'nur der Supermaster' in pg.inner_text('#view'), 'Zugänge read-only für Master'
+    # Neues Briefing mit freigegebenem Ballon (Eintrag «(B. Wicki)»)
+    pg.goto(BASE + '#/new'); pg.wait_for_timeout(900)
+    sel = pg.query_selector('select')
+    opts = [o.inner_text() for o in sel.query_selector_all('option')]
+    shared_opts = [o for o in opts if '(B. Wicki)' in o or '(Balthasar' in o]
+    assert shared_opts, 'freigegebene Ballone im Auswahlfeld: ' + ', '.join(opts)
+    sel.select_option(label=shared_opts[0]); pg.wait_for_timeout(600)
+    pg.screenshot(path=f'{OUT}/remote_wizard_shared.png')
+    for i in range(5):
+        pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(700)
+    pg.click('button:has-text("Briefing anlegen")'); pg.wait_for_timeout(1500)
+    bid2 = pg.evaluate('location.hash').split('/')[-1]; print('briefing mtest', bid2)
+    assert pg.query_selector('button:has-text("KI")') is None or 'KI fragen' not in pg.inner_text('#view'), 'KI-Knöpfe für mtest ausgeblendet'
+    # Super meldet sich wieder an: Sicht «Fahrten mit meinem Material» und «Alle Benutzer», fremdes Briefing nur lesen
+    pg.click('#menuBtn'); pg.click('#menu button:has-text("Sperren")'); pg.wait_for_timeout(400)
+    pg.fill('#gateUser', 'bwicki'); pg.fill('#gatePw', '1234'); pg.click('#gateOpen'); pg.wait_for_timeout(1200)
+    pg.goto(BASE + '#/list?scope=material'); pg.wait_for_timeout(1000)
+    assert 'Max Test' in pg.inner_text('#view'), 'Material-Sicht zeigt Briefing von Max Test: ' + pg.inner_text('#view')[:300]
+    pg.screenshot(path=f'{OUT}/remote_list_material.png')
+    pg.click('button.chip:has-text("Alle Benutzer")'); pg.wait_for_timeout(900)
+    assert 'Max Test' in pg.inner_text('table') and 'B. Wicki' in pg.inner_text('table'), 'Alle-Sicht'
+    pg.goto(BASE + f'#/b/{bid2}'); pg.wait_for_timeout(1200)
+    assert pg.evaluate('location.hash').startswith('#/v/'), 'fremdes Briefing wird zur Briefingsicht umgeleitet: ' + pg.evaluate('location.hash')
+    assert 'Nur lesen' in pg.inner_text('#subtitle'), 'Nur-lesen-Hinweis: ' + pg.inner_text('#subtitle')
+    assert pg.query_selector('.viewtoggle button:has-text("Erarbeitung")') is None, 'kein Bearbeiten-Umschalter'
+    pg.screenshot(path=f'{OUT}/remote_foreign_view.png')
     b.close()
 print('\n'.join(errors) if errors else 'OK – keine Seitenfehler')

@@ -95,7 +95,9 @@ eine andere Adresse verwendet, dort eintragen und pushen.
 
 1. https://briefing.wicki.aero öffnen — die Kopfzeile zeigt jetzt **nicht** mehr
    «Lokaler Modus».
-2. Kennwort `1234`, dann **Einstellungen → Experte → Kennwort ändern** (längeres
+2. Benutzer `bwicki`, Kennwort `1234` (bei einer bestehenden Installation das
+   bisherige Kennwort — es wird beim ersten Start in den Supermaster-Benutzer
+   übernommen), dann **Einstellungen → Experte → Kennwort ändern** (längeres
    Kennwort wählen).
 3. Einstellungen → Zugänge: API-Schlüssel und Logins eintragen; sie werden
    verschlüsselt im Worker gespeichert. Für Phase 2 relevant:
@@ -113,6 +115,24 @@ eine andere Adresse verwendet, dort eintragen und pushen.
    speichern.
 5. Daten aus dem lokalen Modus werden nicht automatisch übernommen — Briefings dort
    neu anlegen (Phase 1 ist dafür gedacht, mit dem Server zu beginnen).
+6. Weitere Benutzer: **Einstellungen → Benutzer & Freigaben → Neuer Benutzer**
+   (Anmeldename, Anzeigename, Startkennwort, Rolle, «Stamm kopieren von», KI/NOTAM/
+   PDF freischalten). Der neue Benutzer ändert sein Kennwort selbst unter Experte.
+
+## 7b Bestehende Datenbank auf 0.5.0 heben (Mehrbenutzer)
+
+Einmalig nach dem Deploy von 0.5.0 (nur bei einer Installation, die schon mit 0.4.x
+lief; neue Installationen brauchen nur `schema.sql`):
+
+```
+cd worker
+npx wrangler d1 execute briefing --remote --file=schema.sql      # neue Tabellen users, shares, usage
+npx wrangler d1 execute briefing --remote --file=migrate-0.5.sql  # Spalten owner_id, material_owner
+```
+
+Bestehende Briefings gehören danach `bwicki`; Einstellungen und Kennwort werden
+beim ersten Aufruf automatisch in den Supermaster übernommen. Alte Sitzungen sind
+ungültig — einmal neu anmelden.
 
 ## 7a DWD-/METAR-Kopie (GitHub Action)
 
@@ -127,8 +147,11 @@ die App automatisch die Kopie von gafor.wicki.aero.
 
 * **RAC 4-4:** jedes Jahr das neue PDF aus dem eVFR-Manual unter
   Einstellungen → Sonne / RAC 4-4 hochladen.
-* **Sicherung:** `GET https://api.briefing.wicki.aero/api/export` mit dem
-  Sitzungs-Token liefert alle Briefings als JSON (Export-Knopf in Phase 3).
+* **Sicherung:** Einstellungen → Experte → *Alle Briefings exportieren* (eigene)
+  bzw. *Alle Benutzer exportieren* (Supermaster; `GET /api/export?all=1`).
+* **Nutzungsstatistik:** Einstellungen → Statistik (Supermaster), CSV-Export; die
+  Tabelle `usage` wächst mit jedem Abruf (ein paar hundert Zeilen je Briefing) und
+  kann bei Bedarf mit `DELETE FROM usage WHERE ts < …` gekürzt werden.
 * **Limits (Cloudflare Free):** D1 5 Mio. Zeilen-Lesungen/Tag, 100 000
   Schreibungen/Tag, R2 10 GB — für Briefings weit ausreichend; bei Bedarf Workers
   Paid (5 $/Monat).

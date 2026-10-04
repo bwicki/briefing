@@ -236,7 +236,7 @@ async function pdfRender(env, decrypt, ctx, body, auth) {
   }
 }
 
-/** Einstieg: kind, Query, Body; auth = { owner: bool, link: row|null }. */
+/** Einstieg: kind, Query, Body; auth = { owner: bool (Sitzung mit Schreibrecht), link: row|null, user: {id,role,flags}|null }. */
 export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
   const canWrite = auth.owner || auth.link?.role === 'edit';
   const briefingId = q.get('b') || auth.link?.briefing_id || null;

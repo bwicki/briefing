@@ -11,7 +11,16 @@ import { tag } from './widgets.js';
 export async function renderList(view, ctx) {
   const newBtn = h('button.btn.primary', { type: 'button', onclick: () => ctx.navigate('#/new') }, t('newBriefing'));
   setHeader({ title: t('briefings'), tools: [newBtn] });
-  const all = await ctx.store.listBriefings();
+  // Sichten: eigene · alle Benutzer (Super) · Fahrten mit meinem Material (Ballon freigegeben)
+  const remote = ctx.store.mode === 'remote';
+  const scopes = ['own'];
+  if (remote && ctx.isSuper) scopes.push('all');
+  if (remote && (ctx.given || []).some((g) => g.categories?.includes('balloons'))) scopes.push('material');
+  const want = (location.hash.split('?')[1] || '').replace(/^scope=/, '');
+  let scope = scopes.includes(want) ? want : 'own';
+  let all = await ctx.store.listBriefings(scope);
+  const foreign = (b) => ctx.user && b.owner && b.owner !== ctx.user.id;
+  const openHash = (b) => (foreign(b) ? `#/v/${b.id}` : `#/b/${b.id}`);
   let filter = 'planned', q = '';
   const now = Date.now();
 
@@ -24,7 +33,7 @@ export async function renderList(view, ctx) {
       const ph = phaseOf(b.startMs || 0, now);
       if (filter === 'planned' && ph === 'past') return false;
       if (filter === 'archive' && ph !== 'past') return false;
-      if (q) { const s = `${b.site || ''} ${b.reg || ''} ${b.balloon || ''} ${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)}`.toLowerCase(); if (!s.includes(q.toLowerCase())) return false; }
+      if (q) { const s = `${b.site || ''} ${b.reg || ''} ${b.balloon || ''} ${b.ownerName || ''} ${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)}`.toLowerCase(); if (!s.includes(q.toLowerCase())) return false; }
       return true;
     });
   }
@@ -33,6 +42,7 @@ export async function renderList(view, ctx) {
     const search = h('input', { type: 'search', placeholder: t('search'), value: q, oninput: (e) => { q = e.target.value; drawTable(); } });
     const chips = h('div.chips', ['all', 'planned', 'archive'].map((f) => h('button.chip.lg', { type: 'button', 'aria-pressed': filter === f, onclick: () => { filter = f; draw(); } }, t(f === 'all' ? 'filterAll' : f === 'planned' ? 'filterPlanned' : 'filterArchive'))));
     body.appendChild(h('div.list-head', [h('h2', t('briefings')), chips]));
+    if (scopes.length > 1) body.appendChild(h('div.chips.scopes', scopes.map((sc) => h('button.chip', { type: 'button', 'aria-pressed': scope === sc, onclick: async () => { scope = sc; all = await ctx.store.listBriefings(scope); draw(); } }, t('scope_' + sc)))));
     body.appendChild(h('div', { style: { marginBottom: '10px' } }, search));
     body.appendChild(tableWrap);
     drawTable();
@@ -44,28 +54,30 @@ export async function renderList(view, ctx) {
     if (!rs.length) { tableWrap.appendChild(h('div.note', t('noBriefings'))); return; }
     const narrow = window.innerWidth < 700;
     if (narrow) {
-      tableWrap.appendChild(h('div.cards-list', rs.map((b) => h('div.bcard', { onclick: () => ctx.navigate(`#/b/${b.id}`) }, [
+      tableWrap.appendChild(h('div.cards-list', rs.map((b) => h('div.bcard', { onclick: () => ctx.navigate(openHash(b)) }, [
         h('div.t', `${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)} · ${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)} LT · ${b.reg || ''}`),
-        h('div', `${b.site || '–'}`),
+        h('div', `${b.site || '–'}${scope !== 'own' ? ` · ${b.ownerName || b.owner || ''}` : ''}`),
         h('div.m', [phaseTag(b), ' ', statusText(b)]),
       ]))));
       return;
     }
-    const tbl = h('table.tbl', [h('thead', h('tr', [h('th', t('colDate')), h('th', t('colSite')), h('th', t('colBalloon')), h('th', t('colType')), h('th', t('colPhase')), h('th', t('colStatus')), h('th', t('colShared')), h('th', '')])),
+    const showOwner = scope !== 'own';
+    const tbl = h('table.tbl', [h('thead', h('tr', [h('th', t('colDate')), h('th', t('colSite')), showOwner ? h('th', t('colOwner')) : null, h('th', t('colBalloon')), h('th', t('colType')), h('th', t('colPhase')), h('th', t('colStatus')), h('th', t('colShared')), h('th', '')].filter(Boolean))),
       h('tbody', rs.map((b) => h('tr', [
         h('td', [fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0), h('br'), h('span.sm', `${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)} LT`)]),
         h('td', [b.site || '–', h('br'), h('span.sm', `${b.icao || ''}${b.elev != null ? ' · ' + Math.round(b.elev) + ' m' : ''}`)]),
+        showOwner ? h('td', [b.ownerName || b.owner || '–', b.materialOwner && b.materialOwner !== b.owner ? h('div.sm', `${t('colMaterial')}: ${b.materialOwner}`) : null]) : null,
         h('td', b.reg || b.balloon || '–'),
         h('td', t('kind_' + (b.kind || 'commercial'))),
         h('td', phaseTag(b)),
         h('td', statusText(b)),
         h('td', b.links ? `🔗 ${b.links}` : '–'),
-        h('td.row-actions', [
+        h('td.row-actions', foreign(b) ? [h('button.btn', { type: 'button', onclick: () => ctx.navigate(openHash(b)) }, t('view_brief'))] : [
           h('button.btn', { type: 'button', onclick: () => ctx.navigate(`#/b/${b.id}`) }, t('open')),
           h('button.btn.icon', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, '⧉'),
           h('button.btn.icon', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, '🗑'),
         ]),
-      ])))]);
+      ].filter(Boolean))))]);
     tableWrap.appendChild(tbl);
   }
   function phaseTag(b) {
@@ -91,7 +103,7 @@ export async function renderList(view, ctx) {
   }
 
   // rechte Spalte: nächste Fahrt, Stammdaten
-  const upcoming = all.filter((b) => (b.startMs || 0) > now - 6 * 3600000).sort((a, b) => a.startMs - b.startMs)[0];
+  const upcoming = all.filter((b) => !foreign(b) && (b.startMs || 0) > now - 6 * 3600000).sort((a, b) => a.startMs - b.startMs)[0];
   const sideCards = [];
   if (upcoming) {
     const full = await ctx.store.getBriefing(upcoming.id);
@@ -107,6 +119,7 @@ export async function renderList(view, ctx) {
   const s = ctx.settings;
   sideCards.push(h('div.card', [h('div.card-head', h('div.section-title', t('masterData'))), h('div.card-body.note', [
     h('div', `${t('set_balloons')}: ${s.balloons.hab.length + s.balloons.envelopes.length} · ${t('set_persons')}: ${s.persons.length} · ${t('set_sites')}: ${s.sites.length}`),
+    (ctx.sharedStamm || []).length ? h('div', `${t('sh_received')}: ${ctx.sharedStamm.map((x) => `${x.fromName} (${x.categories.map((c) => t('sh_cat_' + c)).join(', ')})`).join(' · ')}`) : null,
     h('div', `${t('racValid')}: ${ctx.racTable ? racValidity(ctx.racTable).split('–')[1].trim() : '–'}`),
     h('div', { style: { marginTop: '8px' } }, h('button.btn', { type: 'button', onclick: () => ctx.navigate('#/settings') }, t('nav_settings'))),
   ])]));

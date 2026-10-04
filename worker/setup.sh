@@ -29,6 +29,10 @@ npx wrangler r2 bucket list 2>&1 | grep -q briefing-files || npx wrangler r2 buc
 echo ok
 
 step 'Schema'; npx wrangler d1 execute briefing --remote --file=schema.sql >/dev/null; echo ok
+# bestehende Datenbank (vor 0.5.0): Spalten owner_id/material_owner nachziehen; bei neuer DB schon vorhanden → Fehler ignorieren
+if ! npx wrangler d1 execute briefing --remote --command "SELECT owner_id FROM briefings LIMIT 1" >/dev/null 2>&1; then
+  step 'Migration 0.5'; npx wrangler d1 execute briefing --remote --file=migrate-0.5.sql >/dev/null; echo ok
+fi
 
 step 'Secrets'
 EXISTING=$(npx wrangler secret list 2>&1 || true)

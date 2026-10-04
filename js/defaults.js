@@ -122,8 +122,8 @@ export function resolveBalloon(settings, sel) {
     const bas = b.baskets.find((k) => k.id === sel.basketId) || b.baskets[0];
     if (!env || !bas) return null;
     return {
-      type: 'gas', envelopeId: env.id, basketId: bas.id, reg: env.id,
-      label: `${env.id} × ${bas.name}`, volume: env.volume, gas: env.gas, purity: env.purity, fillFraction: env.fillFraction,
+      type: 'gas', envelopeId: env.id, basketId: bas.id, reg: env.reg || env.id, ownerId: env.ownerId || bas.ownerId || null,
+      label: `${env.reg || env.id} × ${bas.name}`, volume: env.volume, gas: env.gas, purity: env.purity, fillFraction: env.fillFraction,
       masses: { envelope: env.mass, basket: bas.mass, equipment: bas.equipment, instruments: bas.instruments },
       personWeight: b.gasDefaults.personWeight, maxPersons: bas.maxPersons,
       ballastUnitKg: bas.ballastUnitKg, reserveUnits: bas.reserveUnits,
@@ -132,7 +132,7 @@ export function resolveBalloon(settings, sel) {
   }
   const h = b.hab.find((x) => x.id === sel.id) || b.hab[0];
   if (!h) return null;
-  return { type: 'hab', id: h.id, reg: h.id, label: `${h.id} · ${h.model}`, ...JSON.parse(JSON.stringify(h)) };
+  return { type: 'hab', ownerId: null, ...JSON.parse(JSON.stringify(h)), id: h.id, reg: h.reg || h.id, label: `${h.reg || h.id} · ${h.model}` };
 }
 
 /** Tiefes Zusammenführen gespeicherter Einstellungen mit den Standards (neue Felder ergänzen). */

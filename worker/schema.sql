@@ -26,9 +26,12 @@ CREATE TABLE IF NOT EXISTS briefings (
   kind TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  updated_by TEXT
+  updated_by TEXT,
+  owner_id TEXT NOT NULL DEFAULT 'bwicki',
+  material_owner TEXT
 );
 CREATE INDEX IF NOT EXISTS briefings_start ON briefings(start_ms);
+CREATE INDEX IF NOT EXISTS briefings_owner ON briefings(owner_id, start_ms);
 CREATE TABLE IF NOT EXISTS access_links (
   token TEXT PRIMARY KEY,
   briefing_id TEXT NOT NULL,
@@ -52,3 +55,33 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   ts INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS login_ip ON login_attempts(ip, ts);
+
+-- Mehrbenutzer (0.5.0)
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,            -- Kurzname, Anmeldename (klein)
+  name TEXT NOT NULL,             -- Anzeigename
+  role TEXT NOT NULL DEFAULT 'master',   -- super | master
+  salt TEXT NOT NULL,
+  hash TEXT NOT NULL,
+  active INTEGER NOT NULL DEFAULT 1,
+  flags TEXT NOT NULL DEFAULT '{}',      -- JSON: { ai: true, notam: true, pdf: true }
+  created_at INTEGER NOT NULL,
+  last_login_at INTEGER
+);
+CREATE TABLE IF NOT EXISTS shares (
+  id TEXT PRIMARY KEY,
+  from_user TEXT NOT NULL,
+  to_user TEXT NOT NULL,
+  categories TEXT NOT NULL,       -- JSON-Liste: balloons, persons, sites, meetings, operators
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS shares_to ON shares(to_user);
+CREATE TABLE IF NOT EXISTS usage (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
+  ts INTEGER NOT NULL,
+  kind TEXT NOT NULL,             -- login, briefing_create, briefing_save, release, wx_<kind>, ai, pdf, file, link_create, link_open
+  detail TEXT,                    -- z. B. Briefing-ID, Kennung, Modell
+  n INTEGER NOT NULL DEFAULT 1    -- Zähler: Tokens, Bytes, Anzahl
+);
+CREATE INDEX IF NOT EXISTS usage_user_ts ON usage(user_id, ts);

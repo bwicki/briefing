@@ -20,13 +20,39 @@ die KI-Hinweise folgen in Phase 2 (siehe Konzept v0.4 im Projektordner).
 
 ## Die App von oben nach unten
 
-### Kennwortseite
+### Anmeldeseite
 
-Beim ersten Laden fragt die App ein Kennwort. Im **Server-Modus** prüft es der
-Worker (Hash in der Datenbank, Startwert `1234`, Fehlversuche werden gebremst);
-nach zwei Stunden ohne Benutzung wird wieder gefragt, Menü → *Sperren* sofort.
-Das Kennwort wird in **Einstellungen → Experte** geändert — nach der
-Inbetriebnahme bitte ein längeres setzen, weil die Briefings Pax-Namen enthalten.
+Beim ersten Laden fragt die App Benutzer und Kennwort. Im **Server-Modus** prüft
+sie der Worker (Hash in der Datenbank, Fehlversuche werden gebremst); nach zwei
+Stunden ohne Benutzung wird wieder gefragt, Menü → *Sperren* sofort. Der zuletzt
+benutzte Anmeldename wird vorgeschlagen. Das eigene Kennwort wird in
+**Einstellungen → Experte** geändert — nach der Inbetriebnahme bitte ein längeres
+setzen, weil die Briefings Pax-Namen enthalten.
+
+### Benutzer, Rollen und Freigaben (ab 0.5.0)
+
+Die App kennt zwei Rollen. Der **Supermaster** (Startbenutzer `bwicki`) verwaltet
+Benutzer, die zentralen Zugänge (API-Schlüssel) und sieht die Nutzungsstatistik;
+er hat lesende Einsicht in alle Briefings (Sicht *Alle Benutzer*) und in den Stamm
+jedes Benutzers (*Stamm ansehen*), ändert fremde Briefings aber nicht. Ein
+**Master** hat eigenen Stamm (Ballone, Personen, Startplätze, Treffpunkte,
+Betreiber), eigene Briefings und eigenes Kennwort; Master sehen einander nicht.
+Beim Anlegen kann der Supermaster den Stamm eines bestehenden Benutzers kopieren
+(oder leer beginnen lassen) und je Benutzer KI, NOTAM und Final-PDF freischalten.
+
+**Freigaben** (Einstellungen → Benutzer & Freigaben): jeder Benutzer gibt per
+Klickbox je Kategorie Teile seines Stamms einem anderen Benutzer zur Auswahl frei
+— etwa die Ballone, wenn jemand das eigene Material mitbenützt. Freigegebene
+Einträge erscheinen im Ablauf mit dem Namen des Gebers in Klammern und bleiben
+dessen Eigentum (der Empfänger ändert sie nicht). Verwendet ein Benutzer einen
+freigegebenen Ballon, sieht der Eigner das Briefing lesend unter *Fahrten mit
+meinem Material* — die Grundlage für das Ballonbuch. Persönliche Links (Mitarbeit,
+Nur lesen) bleiben wie bisher je Briefing.
+
+**Nutzungsstatistik** (Supermaster, Einstellungen → Statistik): je Benutzer und
+Monat Anmeldungen, neue Briefings, Freigaben als Final, Datenabrufe je Quelle,
+KI-Aufrufe und Tokens, PDFs, Dateien/Bytes, Links; Fahrten je Ballon (Eigner,
+Material von), Speicher je Benutzer; Export als CSV.
 
 Ist der Worker nicht erreichbar (oder in `js/config.js` keine Adresse eingetragen),
 läuft die App im **lokalen Modus**: Daten bleiben im Browser dieses Geräts,
@@ -37,8 +63,10 @@ das mit «Lokaler Modus» an.
 
 Alle Briefings mit Datum, Startort (ICAO-Kurzkoordinaten, Höhe), Ballon, Fahrttyp,
 Phase (Vorplanung > 72 h, Planung 24–72 h, Final < 24 h), Status, Arbeitsversion und
-Anzahl Links. Filter *Geplant / Alle / Archiv*, Suche. Rechts die nächste Fahrt mit
-Sonnenzeiten. **⧉** dupliziert ein Briefing als Vorlage (gleicher Startort, Ballon,
+Anzahl Links. Filter *Geplant / Alle / Archiv*, Suche; Sichten *Meine Briefings*,
+*Alle Benutzer* (Supermaster) und *Fahrten mit meinem Material* (wenn Ballone
+freigegeben sind; fremde Briefings öffnen sich nur in der Briefingsicht). Rechts
+die nächste Fahrt mit Sonnenzeiten. **⧉** dupliziert ein Briefing als Vorlage (gleicher Startort, Ballon,
 Crew; Datum + 7 Tage; Meteo-Panels leer) und öffnet den Ablauf bei Schritt 6.
 
 ### Neues Briefing — geführter Ablauf
@@ -198,9 +226,11 @@ Meteo & Auto-Panels (Ampel-Grenzen, Trajektorien-Dauer, Profilhöhe, METAR-Umkre
 NOTAM-Radius, KI-Modell, Karten für «Allgemeine Lage»)
 (Anhänger-Faktor, Zuschlag, Puffer, Bergezeit), Sonne/RAC 4-4 (PDF-Upload, siehe
 unten), Übergangshöhen, Go/No-Go-Kriterien (Ampel ab Phase 3), Panels & Pflicht,
-Freigabe-Links, Zugänge (API-Schlüssel und Logins, nur Server-Modus, verschlüsselt),
-Experte (Kennwort ändern, Reserve-Regel). *Export/Import JSON* sichert die
-Einstellungen (ohne Zugänge).
+Freigabe-Links, Benutzer & Freigaben (Stamm-Freigaben; Supermaster: Benutzer
+anlegen, Kennwort setzen, Freischaltungen, Stamm ansehen), Statistik (Supermaster),
+Zugänge (API-Schlüssel und Logins, zentral, verschlüsselt; nur der Supermaster
+ändert sie), Experte (Kennwort ändern, Reserve-Regel). *Export/Import JSON* sichert
+die Einstellungen (ohne Zugänge).
 
 ---
 

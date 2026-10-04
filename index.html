@@ -26,7 +26,8 @@
     <img class="gate-logo" alt="Wicki Partners Ballonteam" src="img/wicki-logo.png">
     <h1 id="gateTitle">Fahrtbriefing</h1>
     <p id="gateText">Private Fahrtvorbereitung.<br>Bitte Kennwort eingeben.</p>
-    <input id="gatePw" type="password" inputmode="numeric" enterkeyhint="go" aria-label="Kennwort" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input id="gateUser" type="text" inputmode="text" enterkeyhint="next" aria-label="Benutzer" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Benutzer">
+    <input id="gatePw" type="password" inputmode="numeric" enterkeyhint="go" aria-label="Kennwort" autocomplete="current-password" autocorrect="off" spellcheck="false" placeholder="Kennwort">
     <div class="gate-hint" id="gateHint" hidden></div>
     <div class="gate-err" id="gateErr" hidden>Kennwort stimmt nicht.</div>
     <button class="btn primary" type="submit" id="gateOpen">Öffnen</button>

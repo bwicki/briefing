@@ -8,8 +8,9 @@ import { parseRacText, racValidity, linesFromPdfItems } from '../calc/rac.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
 import { placeRow, mapsUrl } from './place.js';
 import { exportAll } from './extras.js';
+import { usersSection, statsSection } from './users.js';
 
-const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'rac', 'transition', 'gonogo', 'meteo', 'panels', 'links', 'access', 'expert'];
+const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'rac', 'transition', 'gonogo', 'meteo', 'panels', 'links', 'users', 'stats', 'access', 'expert'];
 
 export async function renderSettings(view, ctx) {
   let S = deepCopy(ctx.settings);
@@ -25,10 +26,12 @@ export async function renderSettings(view, ctx) {
 
   function draw() {
     clear(nav);
-    for (const s of SECTS) nav.appendChild(h('button', { type: 'button', class: cur === s ? 'on' : '', onclick: () => { cur = s; draw(); } }, t('set_' + s)));
+    const sects = SECTS.filter((x) => x !== 'stats' || (ctx.isSuper && ctx.store.mode === 'remote'));
+    if (!sects.includes(cur)) cur = 'general';
+    for (const s of sects) nav.appendChild(h('button', { type: 'button', class: cur === s ? 'on' : '', onclick: () => { cur = s; draw(); } }, t('set_' + s)));
     setTimeout(() => nav.querySelector('button.on')?.scrollIntoView({ inline: 'center', block: 'nearest' }), 0);
     clear(body);
-    body.appendChild(({ general, balloons, persons, operators, sites, intent, schedule, rac, transition, gonogo, meteo, panels, links, access, expert })[cur]());
+    body.appendChild(({ general, balloons, persons, operators, sites, intent, schedule, rac, transition, gonogo, meteo, panels, links, users, stats, access, expert })[cur]());
   }
   const numField = (obj, key, label, step = 1, cls) => field(label, input('number', obj[key] ?? '', { step, oninput: (e) => { obj[key] = num(e.target.value, null); } }), cls);
   const txtField = (obj, key, label, cls) => field(label, input('text', obj[key] ?? '', { oninput: (e) => { obj[key] = e.target.value; } }), cls);
@@ -242,21 +245,26 @@ export async function renderSettings(view, ctx) {
     return h('div.card', h('div.card-body', h('div.frow.c3', [numField(S.links, 'defaultExpiryDays', t('set_linkDays'))])));
   }
 
+  const users = () => usersSection(ctx);
+  const stats = () => statsSection(ctx);
+
   function access() {
     const box = h('div');
+    const ro = ctx.store.mode === 'remote' && !ctx.isSuper;
     const names = [['openmeteo', 'Open-Meteo API key'], ['meteoblue', 'meteoblue API key'], ['anthropic', 'Anthropic API key'], ['pcmet_user', 'pc_met Benutzer'], ['pcmet_pass', 'pc_met Kennwort'], ['skybriefing_user', 'skybriefing Benutzer'], ['skybriefing_pass', 'skybriefing Kennwort'], ['ors', 'OpenRouteService key'], ['windy_webcams', 'Windy Webcams key'], ['faa_client_id', 'FAA NOTAM client_id'], ['faa_client_secret', 'FAA NOTAM client_secret'], ['cf_account_id', 'Cloudflare Account-ID (Final-PDF)'], ['cf_api_token', 'Cloudflare API-Token mit «Browser Rendering» (Final-PDF)']];
     const drawA = async () => {
       clear(box);
       if (ctx.store.mode !== 'remote') { box.appendChild(h('div.note', t('ac_localOnly'))); return; }
       let have = {};
       try { have = await ctx.store.listSecrets(); } catch (e) { box.appendChild(h('div.err', e.message)); return; }
+      if (ro) { box.appendChild(h('div.note', t('set_secretsReadOnly'))); box.appendChild(h('ul.plain', names.map(([k, label]) => h('li', `${label}: ${have[k] ? t('set_secretSet') : t('set_secretUnset')}`)))); return; }
       for (const [k, label] of names) {
         const inp = input('password', '', { placeholder: have[k] ? '••••••••' : '', autocomplete: 'off' });
         box.appendChild(h('div.frow.c3', [field(label, inp), h('div.f', [h('label', have[k] ? t('set_secretSet') : t('set_secretUnset')), h('div.row-actions', [h('button.btn', { type: 'button', onclick: async () => { if (!inp.value) return; await ctx.store.setSecret(k, inp.value); inp.value = ''; toast(t('set_saved')); drawA(); } }, t('set_secretSave')), have[k] ? h('button.btn', { type: 'button', onclick: async () => { await ctx.store.deleteSecret(k); drawA(); } }, t('set_secretDelete')) : null])])]));
       }
     };
     drawA();
-    return h('div.card', h('div.card-body', [h('details.exp', { open: false }, [h('summary', t('set_access')), h('div.note', t('set_secretsHint')), box])]));
+    return h('div.card', h('div.card-body', [h('details.exp', { open: ro }, [h('summary', t('set_access')), h('div.note', t('set_secretsHint')), box])]));
   }
 
   function expert() {
@@ -272,7 +280,7 @@ export async function renderSettings(view, ctx) {
       h('div.card', [h('div.card-head', h('div.section-title', t('set_password'))), h('div.card-body', [h('div.frow.c3', [field(t('set_pwOld'), pwOld), field(t('set_pwNew'), pwNew), field(t('set_pwNew2'), pwNew2)]), pwBtn])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_reserve'))), h('div.card-body', h('div.frow.c3', [numField(r, 'pct', `${t('set_reservePct')} %`), numField(r, 'capMin', t('set_reserveCap')), numField(r, 'minMin', t('set_reserveMin'))]))]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_expertMode'))), h('div.card-body', check(t('set_expertMode'), S.expert, (v) => { S.expert = v; }))]),
-      h('div.card', [h('div.card-head', h('div.section-title', t('set_export'))), h('div.card-body', [h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => exportAll(ctx).catch((e) => toast(e.message)) }, t('export_all'))]), h('div.note', t('export_hint'))])]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_export'))), h('div.card-body', [h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => exportAll(ctx).catch((e) => toast(e.message)) }, t('export_all')), ctx.isSuper && ctx.store.mode === 'remote' ? h('button.btn', { type: 'button', onclick: () => exportAll(ctx, true).catch((e) => toast(e.message)) }, t('export_allUsers')) : null]), h('div.note', t('export_hint'))])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('pax_title'))), h('div.card-body', [field(t('pax_bring') + ' (DE, eine Zeile je Punkt)', textarea((S.paxCardItems?.de || []).join('\n'), { rows: 5, oninput: (e) => { S.paxCardItems = S.paxCardItems || {}; S.paxCardItems.de = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } })), field(t('pax_bring') + ' (EN)', textarea((S.paxCardItems?.en || []).join('\n'), { rows: 5, oninput: (e) => { S.paxCardItems = S.paxCardItems || {}; S.paxCardItems.en = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } }))])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_airspace'))), h('div.card-body', [txtField(S, 'airspaceTileUrl', t('set_airspaceUrl')), h('div.note', t('set_airspaceHint'))])]),
     ]);

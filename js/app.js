@@ -19,16 +19,25 @@ import { renderBrief } from './ui/view.js';
 import { renderSettings } from './ui/settings.js';
 import { renderPaxCard } from './ui/extras.js';
 import { renderShared } from './ui/shared.js';
+import { mergedStamm } from './stamm.js';
 
 const GATE_IDLE_MS = 2 * 60 * 60 * 1000;
 
 export const ctx = {
   settings: null, racDefault: null, store, lang: 'de',
   get racTable() { return this.settings?.rac?.custom || this.racDefault; },
-  get who() { return this.shared?.person || this.settings?.ownerName || 'Owner'; },
+  get who() { return this.shared?.person || this.user?.name || this.settings?.ownerName || 'Owner'; },
   shared: null, // { token, role, person } bei persönlichem Link
+  user: null,   // { id, name, role, flags } angemeldeter Benutzer (Super/Master)
+  sharedStamm: [], given: [], // von anderen freigegebener Stamm; eigene Freigaben
+  get isSuper() { return this.user?.role === 'super'; },
+  /** Freischaltung (ai, notam, pdf): Super immer; Link-Nutzer erben die des Eigners (Worker prüft). */
+  can(flag) { return !this.user || this.user.role === 'super' || this.user.flags?.[flag] !== false; },
+  /** Eigener Stamm + freigegebene Teile — für Auswahlfelder (nie zum Speichern). */
+  get stamm() { if (!this._stamm) this._stamm = mergedStamm(this.settings || {}, this.sharedStamm); return this._stamm; },
+  _stamm: null,
   navigate: (hash) => { location.hash = hash; },
-  async saveSettings(s) { this.settings = s; await store.saveSettings(s); applyPrefs(); },
+  async saveSettings(s) { this.settings = s; this._stamm = null; await store.saveSettings(s); applyPrefs(); },
 };
 
 // ---------------------------------------------------------------- Kopfzeile
@@ -66,6 +75,7 @@ function buildMenu() {
   item(t('nav_theme'), () => { applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true); });
   item(t('nav_lang'), () => { setLang(getLang() === 'de' ? 'en' : 'de'); save('fb.lang', getLang()); buildMenu(); route(); });
   m.appendChild(h('div.sep'));
+  if (ctx.user && !ctx.shared && store.mode === 'remote') { m.appendChild(h('div.menu-user', `${ctx.user.name} · ${ctx.user.id} · ${t(ctx.user.role === 'super' ? 'role_super' : 'role_master')}`)); m.appendChild(h('div.sep')); }
   item(t('nav_about'), () => dialog(t('nav_about'), h('div.note', [h('p', `${APP.name} ${APP.version} · ${APP.date}`), h('p', t('about')), h('p', [h('a', { href: APP.repo, target: '_blank', rel: 'noopener' }, APP.repo)])]), [{ label: t('close'), primary: true }]));
   if (!ctx.shared) item(t('nav_lock'), () => lock());
 }
@@ -86,7 +96,9 @@ function showGate(hint) {
   $('gateTitle').textContent = t('gateTitle'); $('gateText').innerHTML = t('gateText'); $('gateOpen').textContent = t('gateOpen'); $('gateErr').textContent = t('gateErr');
   $('gateNote').textContent = store.mode === 'local' ? t('gateLocalNote') : '';
   const hintEl = $('gateHint'); hintEl.hidden = !hint; hintEl.textContent = hint || '';
-  setTimeout(() => $('gatePw').focus(), 60);
+  const u = $('gateUser'); u.hidden = store.mode === 'local'; u.placeholder = t('gateUser'); $('gatePw').placeholder = t('gatePw');
+  if (!u.value) u.value = store.lastUser();
+  setTimeout(() => (store.mode !== 'local' && !u.value ? u : $('gatePw')).focus(), 60);
 }
 function hideGate() { $('gate').hidden = true; }
 function lock() { store.logout(); showGate(); }
@@ -100,6 +112,8 @@ function touchGate() {
 async function afterLogin() {
   hideGate();
   ctx.settings = await store.getSettings();
+  try { const me = await store.me(); ctx.user = me.user; ctx.sharedStamm = me.shared || []; ctx.given = me.given || []; ctx._stamm = null; }
+  catch (e) { if (e.status === 401) { showGate(); return; } console.warn('me', e); ctx.user = store.cachedUser(); }
   applyPrefs();
   buildMenu();
   touchGate();
@@ -151,9 +165,10 @@ async function main() {
   $('gateForm').onsubmit = async (e) => {
     e.preventDefault();
     const pw = $('gatePw').value.trim();
+    const user = $('gateUser').value.trim().toLowerCase();
     $('gateOpen').disabled = true;
     try {
-      const ok = await store.login(pw);
+      const ok = await store.login(user, pw);
       if (ok) { $('gatePw').value = ''; $('gateErr').hidden = true; await afterLogin(); }
       else { $('gateErr').hidden = false; $('gatePw').value = ''; $('gatePw').focus(); }
     } catch (err) { $('gateErr').hidden = false; $('gateErr').textContent = `${t('error')}: ${err.message}`; }
@@ -168,7 +183,7 @@ async function main() {
   buildMenu();
   const hash = location.hash || '';
   if (hash.startsWith('#/s/')) { await route(); return; }
-  if (store.isAuthed() && !store.idleExpired(GATE_IDLE_MS)) await afterLogin();
+  if (store.isAuthed() && !store.idleExpired(GATE_IDLE_MS)) { ctx.user = store.cachedUser(); await afterLogin(); }
   else { if (store.isAuthed()) store.logout(); showGate(); }
 }
 main();

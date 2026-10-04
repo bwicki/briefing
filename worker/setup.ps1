@@ -46,6 +46,9 @@ Write-Host 'ok'
 
 Step 'Schema anlegen'
 npx wrangler d1 execute briefing --remote --file=schema.sql | Out-Null
+# bestehende Datenbank (vor 0.5.0): Spalten owner_id/material_owner nachziehen
+$null = npx wrangler d1 execute briefing --remote --command "SELECT owner_id FROM briefings LIMIT 1" 2>&1
+if ($LASTEXITCODE -ne 0) { Write-Host 'Migration 0.5 ...'; npx wrangler d1 execute briefing --remote --file=migrate-0.5.sql | Out-Null }
 Write-Host 'ok'
 
 Step 'Secrets'

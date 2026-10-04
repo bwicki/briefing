@@ -55,8 +55,8 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
       toolbar.appendChild(h('button.btn', { type: 'button', onclick: run }, d.content.auto ? t('auto_refresh') : t('auto_load')));
       if (p.auto === 'traj') toolbar.appendChild(trajControls(b, ctx, () => { onChange(); run(); }));
       if (p.auto === 'dabs') toolbar.appendChild(select([{ value: 'today', label: t('auto_today') }, { value: 'tomorrow', label: t('auto_tomorrow') }], b.dabsDay || dabsDayFor(b), { onchange: (e) => { b.dabsDay = e.target.value; onChange(); } }));
-      if (p.auto === 'notam') toolbar.appendChild(h('span.note', `${t('auto_notamRadius')} ${ctx.settings.notamRadiusNm || 25} NM`));
-      if (d.content.auto && ctx.store.mode === 'remote') toolbar.appendChild(h('button.btn', { type: 'button', onclick: () => askAi(p, d, b, ctx, onChange, draw) }, d.ai?.text ? t('ai_again') : t('ai_ask')));
+      if (p.auto === 'notam') toolbar.appendChild(h('span.note', ctx.can('notam') ? `${t('auto_notamRadius')} ${ctx.settings.notamRadiusNm || 25} NM` : t('feat_disabled')));
+      if (d.content.auto && ctx.store.mode === 'remote' && ctx.can('ai')) toolbar.appendChild(h('button.btn', { type: 'button', onclick: () => askAi(p, d, b, ctx, onChange, draw) }, d.ai?.text ? t('ai_again') : t('ai_ask')));
       if (d.content.auto) toolbar.appendChild(h('button.btn.icon', { type: 'button', title: t('auto_clear'), onclick: () => { if (confirm(t('auto_clear') + '?')) { d.content.auto = null; onChange(); draw(); } } }, '✕'));
       toolbar.appendChild(status);
     }

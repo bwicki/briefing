@@ -16,7 +16,7 @@ export function h(spec, attrs, ...children) {
     else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
     else if (k === 'dataset') Object.assign(el.dataset, v);
     else if (k in el && typeof v !== 'string' && k !== 'value') el[k] = v;
-    else el.setAttribute(k, v === true ? '' : v);
+    else el.setAttribute(k, v === true ? (k.startsWith('aria-') ? 'true' : '') : v);   // aria-pressed="true" (CSS-Selektor)
   }
   append(el, children);
   return el;

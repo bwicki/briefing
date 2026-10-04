@@ -5,7 +5,7 @@ import { field, input, select } from './widgets.js';
 import { fmtDate, fmtDateTime } from '../calc/time.js';
 
 export async function openAccessDialog(ctx, b) {
-  const S = ctx.settings, z = b.site.tz || 'Europe/Zurich';
+  const S = ctx.stamm || ctx.settings, z = b.site.tz || 'Europe/Zurich';
   if (ctx.store.mode !== 'remote') { await dialog(t('ac_title'), h('p.note', t('ac_localOnly')), [{ label: t('close'), primary: true }]); return; }
   const listBox = h('div');
   const persons = S.persons.map((p) => ({ value: p.name, label: p.name })).concat([{ value: '', label: t('operatorCustom') }]);
