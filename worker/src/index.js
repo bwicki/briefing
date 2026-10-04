@@ -42,9 +42,16 @@ async function hmac(secret, data) {
   const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return b64u(await crypto.subtle.sign('HMAC', key, enc.encode(data)));
 }
+/** AES-Schlüssel aus ENC_KEY: 32 Bytes base64 werden direkt verwendet, jede andere
+ *  Zeichenkette (≥ 32 Zeichen, z. B. aus dem Passwortmanager) über SHA-256 abgeleitet. */
 async function aesKey(env) {
-  const raw = unb64u(env.ENC_KEY || '');
-  if (raw.length !== 32) throw new Error('ENC_KEY muss 32 Bytes (base64) sein');
+  const s = env.ENC_KEY || '';
+  if (!s) throw new Error('ENC_KEY fehlt (wrangler secret put ENC_KEY)');
+  let raw; try { raw = unb64u(s); } catch { raw = new Uint8Array(0); }
+  if (raw.length !== 32) {
+    if (s.length < 32) throw new Error('ENC_KEY zu kurz (mindestens 32 Zeichen)');
+    raw = new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(s)));
+  }
   return crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
 }
 async function encrypt(env, text) {

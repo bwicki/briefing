@@ -1,0 +1,138 @@
+# Einmalige Einrichtung des Cloudflare Workers — ohne lokalen Rechner.
+#
+# Start: GitHub → Actions → «Setup worker» → Run workflow.
+# Benötigt die Repository-Secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN   Token «Edit Cloudflare Workers» + D1 Edit + R2 Edit
+#   CLOUDFLARE_ACCOUNT_ID  Account-ID aus dem Cloudflare-Dashboard
+#   SESSION_SECRET         beliebige lange Zufallszeichenkette (≥ 32 Zeichen)
+#   ENC_KEY                beliebige lange Zufallszeichenkette (≥ 32 Zeichen) — sicher aufbewahren,
+#                          ohne sie sind gespeicherte Zugänge (API-Schlüssel) nicht mehr lesbar
+#
+# Was passiert: D1-Datenbank «briefing» (ID in wrangler.toml), R2-Bucket «briefing-files»,
+# Schema (+ Migration 0.5 bei bestehender DB), Deploy, Worker-Secrets, Gesundheitsprüfung,
+# optional die workers.dev-Adresse in js/config.js, Commit der geänderten Dateien.
+# Wiederholbar: Vorhandenes wird erkannt und übersprungen.
+name: Setup worker
+on:
+  workflow_dispatch:
+    inputs:
+      api_base:
+        description: 'js/config.js: «auto» trägt die workers.dev-Adresse ein (kein eigener Domainname nötig), «keep» lässt die Datei unverändert (eigene Domain)'
+        type: choice
+        default: auto
+        options: [auto, keep]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: setup-worker
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Voraussetzungen prüfen
+        env:
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ENC_KEY: ${{ secrets.ENC_KEY }}
+        run: |
+          ok=1
+          [ -n "$CLOUDFLARE_API_TOKEN" ]  || { echo "::error::Secret CLOUDFLARE_API_TOKEN fehlt"; ok=0; }
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Secret CLOUDFLARE_ACCOUNT_ID fehlt"; ok=0; }
+          [ -n "$SESSION_SECRET" ]        || { echo "::error::Secret SESSION_SECRET fehlt (beliebige Zufallszeichenkette, ≥ 32 Zeichen)"; ok=0; }
+          [ -n "$ENC_KEY" ]               || { echo "::error::Secret ENC_KEY fehlt (beliebige Zufallszeichenkette, ≥ 32 Zeichen)"; ok=0; }
+          [ "${#SESSION_SECRET}" -ge 32 ] || { echo "::error::SESSION_SECRET ist kürzer als 32 Zeichen"; ok=0; }
+          [ "${#ENC_KEY}" -ge 32 ]        || { echo "::error::ENC_KEY ist kürzer als 32 Zeichen"; ok=0; }
+          [ "$ok" = 1 ]
+      - name: wrangler installieren
+        run: npm ci --no-audit --no-fund
+      - name: Cloudflare-Zugang prüfen
+        run: npx wrangler whoami
+      - name: D1-Datenbank «briefing»
+        id: d1
+        run: |
+          id=$(npx wrangler d1 info briefing --json 2>/dev/null | grep -oE '"uuid": *"[0-9a-f-]{36}"' | grep -oE '[0-9a-f-]{36}' | head -1 || true)
+          if [ -z "$id" ]; then
+            echo "Datenbank wird angelegt …"
+            out=$(npx wrangler d1 create briefing 2>&1); echo "$out"
+            id=$(echo "$out" | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
+          else
+            echo "Datenbank vorhanden"
+          fi
+          [ -n "$id" ] || { echo "::error::database_id nicht ermittelbar"; exit 1; }
+          sed -i -E "s/database_id = \"[^\"]*\"/database_id = \"$id\"/" wrangler.toml
+          echo "database_id = $id"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+      - name: R2-Bucket «briefing-files»
+        run: |
+          if npx wrangler r2 bucket list 2>/dev/null | grep -q 'briefing-files'; then echo "Bucket vorhanden"; else npx wrangler r2 bucket create briefing-files; fi
+      - name: Schema anlegen (und Migration 0.5 bei bestehender Datenbank)
+        run: |
+          npx wrangler d1 execute briefing --remote --yes --file=schema.sql
+          if ! npx wrangler d1 execute briefing --remote --yes --command "SELECT owner_id FROM briefings LIMIT 1" >/dev/null 2>&1; then
+            echo "Migration 0.5 …"; npx wrangler d1 execute briefing --remote --yes --file=migrate-0.5.sql
+          else
+            echo "Schema aktuell"
+          fi
+      - name: Deploy
+        id: deploy
+        run: |
+          out=$(npx wrangler deploy 2>&1); echo "$out"
+          url=$(echo "$out" | grep -oE 'https://[a-z0-9.-]+\.workers\.dev' | head -1)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Worker-Adresse: $url"
+      - name: Worker-Secrets setzen
+        env:
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ENC_KEY: ${{ secrets.ENC_KEY }}
+        run: |
+          printf '%s' "$SESSION_SECRET" | npx wrangler secret put SESSION_SECRET
+          printf '%s' "$ENC_KEY" | npx wrangler secret put ENC_KEY
+      - name: Gesundheitsprüfung
+        run: |
+          url='${{ steps.deploy.outputs.url }}'
+          [ -n "$url" ] || { echo "::warning::workers.dev-Adresse nicht erkannt — Prüfung übersprungen"; exit 0; }
+          sleep 5
+          curl -sS --max-time 20 "$url/api/health" && echo
+      - name: js/config.js auf workers.dev-Adresse setzen
+        if: inputs.api_base == 'auto' && steps.deploy.outputs.url != ''
+        run: |
+          sed -i -E "s#apiBase: *'[^']*'#apiBase: '${{ steps.deploy.outputs.url }}'#" ../js/config.js
+          cat ../js/config.js
+      - name: Änderungen committen (wrangler.toml, js/config.js)
+        run: |
+          cd ..
+          git config user.name  "briefing-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add worker/wrangler.toml js/config.js
+          if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+          git commit -m "Setup worker: database_id${{ inputs.api_base == 'auto' && ', apiBase' || '' }}"
+          git pull --rebase
+          git push
+      - name: Zusammenfassung
+        run: |
+          {
+            echo "## Worker eingerichtet"
+            echo
+            echo "* Worker-Adresse: ${{ steps.deploy.outputs.url }}"
+            echo "* Prüfung: ${{ steps.deploy.outputs.url }}/api/health"
+            echo "* database_id: ${{ steps.d1.outputs.id }}"
+            echo
+            echo "Nächste Schritte: https://briefing.wicki.aero öffnen (GitHub Pages braucht nach dem Commit 1–2 Minuten),"
+            echo "Benutzer **bwicki**, Kennwort **1234**, dann Einstellungen → Experte → Kennwort ändern; Zugänge eintragen."
+            echo
+            echo "Eigene Domain (optional): Cloudflare → Workers & Pages → briefing-api → Settings → Domains & Routes → Add → Custom domain api.briefing.wicki.aero;"
+            echo "danach in js/config.js apiBase auf https://api.briefing.wicki.aero stellen (Workflow mit «keep» erneut laufen lassen oder von Hand ändern)."
+          } >> "$GITHUB_STEP_SUMMARY"

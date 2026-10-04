@@ -8,6 +8,9 @@
 * Neue Benutzer ohne «Stamm kopieren von» starten mit dem Beispiel-Stamm der App.
 * Fix: Flugwetterprognose DE warf bei GAFOR-Perioden ohne bekannten Code einen
   Fehler (leere CSS-Klasse); `h()` ignoriert leere Klassensegmente.
+* Einrichtung ohne lokalen Rechner: GitHub-Workflow «Setup worker» (D1, R2,
+  Schema/Migration, Deploy, Secrets, `database_id` und workers.dev-Adresse in
+  `js/config.js`); `ENC_KEY` darf jede Zeichenkette ab 32 Zeichen sein.
 
 ## 0.5.0 — 2026-10-04 · Mehrbenutzer
 

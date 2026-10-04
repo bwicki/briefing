@@ -26,7 +26,34 @@ schreiben und nie im Chat weitergeben.
    repository secret: `CLOUDFLARE_API_TOKEN` (das Token) und
    `CLOUDFLARE_ACCOUNT_ID` (die Account-ID).
 
-## 3 Schnellweg: Setup-Skript (empfohlen)
+## 3 Schnellweg ohne lokalen Rechner: GitHub-Workflow «Setup worker» (empfohlen)
+
+Voraussetzung ist nur Abschnitt 2 (die beiden Secrets `CLOUDFLARE_API_TOKEN`
+und `CLOUDFLARE_ACCOUNT_ID` im Repository). Dann:
+
+1. Zwei weitere Repository-Secrets anlegen (Settings → Secrets and variables →
+   Actions → New repository secret): `SESSION_SECRET` und `ENC_KEY`, je eine
+   lange Zufallszeichenkette (mindestens 32 Zeichen; am einfachsten im
+   Passwortmanager «Passwort generieren», 48 Zeichen, dort auch ablegen).
+   `ENC_KEY` verschlüsselt die Zugänge (API-Schlüssel) in der Datenbank — ohne
+   diesen Wert sind sie nicht mehr lesbar; `SESSION_SECRET` signiert Sitzungen.
+2. GitHub → **Actions** → links «Setup worker» → rechts **Run workflow** →
+   Auswahl `api_base` auf `auto` lassen → grüner Knopf **Run workflow**.
+3. Der Lauf dauert 1–2 Minuten. Er legt die D1-Datenbank und den R2-Bucket an,
+   trägt die `database_id` in `worker/wrangler.toml` ein, spielt das Schema ein
+   (bei bestehender Datenbank auch die Migration 0.5), deployt den Worker, setzt
+   die beiden Secrets, prüft `/api/health` und trägt die erhaltene Adresse
+   `https://briefing-api.<konto>.workers.dev` in `js/config.js` ein (Commit
+   «Setup worker: database_id, apiBase»). Die Zusammenfassung des Laufs zeigt
+   die Adresse und die nächsten Schritte.
+4. Weiter mit Abschnitt 7 (erste Anmeldung). Abschnitt 6 (eigene Domain
+   `api.briefing.wicki.aero`) ist optional und kann jederzeit nachgeholt werden.
+
+Bricht ein Schritt ab, steht die Ursache rot im Protokoll des Laufs (meist ein
+fehlendes Secret oder ein Token ohne «D1 Edit»/«R2 Edit»). Der Workflow ist
+wiederholbar: Vorhandenes wird erkannt und übersprungen.
+
+## 3b Alternative: Setup-Skript auf dem eigenen Rechner
 
 Auf einem Rechner mit Node 20+ im Ordner `worker\`:
 
@@ -62,15 +89,16 @@ npx wrangler r2 bucket create briefing-files
 npx wrangler d1 execute briefing --remote --file=schema.sql
 ```
 
-## 4 Geheimnisse des Workers setzen
+## 4 Geheimnisse des Workers setzen (von Hand; der Workflow erledigt das)
 
 ```bash
 openssl rand -base64 48 | npx wrangler secret put SESSION_SECRET
 openssl rand -base64 32 | npx wrangler secret put ENC_KEY
 ```
 
-`SESSION_SECRET` signiert die Sitzungen, `ENC_KEY` (genau 32 Bytes, base64)
-verschlüsselt die Zugänge in der Datenbank. Beide Werte sicher ablegen
+`SESSION_SECRET` signiert die Sitzungen, `ENC_KEY` verschlüsselt die Zugänge in
+der Datenbank (32 Bytes base64 werden direkt verwendet, jede andere Zeichenkette
+ab 32 Zeichen wird per SHA-256 abgeleitet). Beide Werte sicher ablegen
 (Passwortmanager) — ohne `ENC_KEY` sind gespeicherte Zugänge nicht mehr lesbar.
 
 ## 5 Worker veröffentlichen
@@ -82,14 +110,16 @@ Entweder lokal `npx wrangler deploy` oder die geänderte `wrangler.toml` nach
 Prüfung: `https://briefing-api.<account>.workers.dev/api/health` liefert
 `{"ok":true,…}`.
 
-## 6 Eigene Domain für den Worker
+## 6 Eigene Domain für den Worker (optional)
 
 Dashboard → Workers & Pages → `briefing-api` → Settings → Domains & Routes →
 **Add → Custom domain** `api.briefing.wicki.aero`. Cloudflare legt den DNS-Eintrag
 und das Zertifikat an. Prüfung: `https://api.briefing.wicki.aero/api/health`.
 
-`js/config.js` enthält bereits `apiBase: 'https://api.briefing.wicki.aero'`; wird
-eine andere Adresse verwendet, dort eintragen und pushen.
+Danach in `js/config.js` `apiBase: 'https://api.briefing.wicki.aero'` eintragen
+(direkt auf GitHub: Datei öffnen → Stift → ändern → Commit changes). Ohne eigene
+Domain bleibt die vom Workflow eingetragene workers.dev-Adresse — das
+funktioniert genauso.
 
 ## 7 Erste Anmeldung
 
