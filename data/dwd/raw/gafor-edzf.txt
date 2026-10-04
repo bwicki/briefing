@@ -1,69 +1,68 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-734
-FBEU40 EDZF 041200
+565
+FBEU40 EDZF 041800 COR
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 04.10.2026, 12.00 UTC bis 05.10.2026, 09.00 UTC
+gültig vom 04.10.2026, 18.00 UTC bis 05.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Unter Hochdruckeinfluss zeigt sich unter einer westlichen, zum Montag
-auf Nordwest drehenden Strömung eine sehr milde und meist recht
-trockene Luftmasse. Ein Höhentief führt ab dem Nachmittag
-vorübergehend deutlich feuchtere und labile Luft vor allem in den
-Süden des Gebietes.
+Ein Höhentief führt anfangs feuchte und labile Luft vor allem nach
+Baden-Württemberg. Sonst setzt sich von Nordwesten, mit einer
+nordwestlichen Strömung, Hochdruckeinfluss durch. Dabei ist eine sehr
+milde und trockene Luft wetterbestimmend. In der Nacht bildet sich
+gebietsweise eine feuchte Grundschicht aus, die am Vormittag
+abtrocknet.
 
 Wettergeschehen:
-Zum Nachmittag zeigt sich über Hessen, Rheinland-Pfalz, dem Saarland
-und dem westlichen Baden-Württemberg BKN LYR AC/CI oberhalb etwa
-FL150. Diese breitet sich im Laufe des Nachmittages auf das gesamte
-Gebiet aus. Über dem Bergland kann sich flacher CU mit Basis zwischen
-3000-4000 FT AMSL ausbilden der sich zum Abend wieder auflöst. Dort
-ist und bleibt es niederschlagsfrei. Über Baden-Württemberg zeigt
-sich am Nachmittag und bis in die erste Nachthälfte hinein BKN
-SC/AC/CI mit Basis um FL070 und Obergrenzen oberhalb FL245. Darin
-können sich EMBD CB mit TOPs um FL280 ausbilden. Daraus teils mäßige
-Regenschauer, einzelne Entladungen sind nicht ausgeschlossen.
+Anfangs dominiert verbreitet BKN LYR AC/CI oberhalb etwa FL150. Über
+Baden-Württemberg zeigt sich anfangs BKN SC/AC/CI mit Basis um FL070
+und Obergrenzen oberhalb FL245. Darin können sich EMBD CB mit TOPs um
+FL280 ausbilden. Damit verbunden treten Regenschauer auf, einzelne
+Entladungen sind nicht gänzlich ausgeschlossen. Westlich des Rheins
+ist es bereits häufig wolkenlos oder es zeigt sich CI oberhalb von
+FL200.
 
 Ende der ersten, zum Beginn der zweiten Nachthälfte zieht die
 hochreichende Bewölkung über Baden-Württemberg ostwärts ab und geht
 in SCT/BKN SC/AC mit Basis zwischen 3000-4000 FT AMSL und Obergrenzen
 um FL090 über. Es ist dann wieder niederschlagsfrei. Nördlich davon
-bilden sich vor allem in Flussniederungen und Tallagen erste Dunst-
-und Nebelfelder aus.
+bilden sich, bei meist wolkenlosem Himmel, vor allem in
+Flussniederungen und Tallagen erste Dunst- und Nebelfelder aus.
 
 In der zweiten Nachthälfte dann meist wolkenfrei und in weiten Teilen
-Dunst und Nebel. Über Baden-Württemberg zusätzlich teils kompakter ST
-mit Basis in wenigen 100 FT AGL und Obergrenze bei 4000 FT AMSL.
+Dunst und Nebel. Über Baden-Württemberg zusätzlich teils FEW/SCT
+SC-Bewölkung um FL070.
 
-Am Vormittag löst sich der Nebel wieder auf und es ist meist gering
-bewölkt oder auch wolkenlos. Vor allem im südlichen Rheingraben hält
-sich der Nebel oder tiefe ST bis zum späten Vormittag.
+Am Vormittag löst sich der Nebel auf und es bildet sich verbreitet
+flacher FEW/SCT CU um 4000 FT AMSL. In Baden-Württemberg verdichtet
+sich der CU gebietsweise auch zu BKN. Am Mittag und Nachmittag heben
+die Untergrenzen des CUs auf 5000 FT AMSL an, während er am Abend
+langsam auflockert.
 
 Sichtweite:
-30-50 km. Im Niederschlag 15-5 km. Im Dunst 5-1 km. Im Nebel unter 1
-km.
+30-50 km. Im Dunst 2-4 km. Im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 010/05KT  18C | 020/05KT  03C |
-1500FT | 360/05KT  16C | 200/05KT  13C |
-2000FT | 360/05KT  15C | 240/05KT  13C |
-3000FT | 330/05KT  11C | 310/05KT  12C |
-5000FT | 350/05KT  09C | 310/05KT  09C |
-FL100  | 270/05KT  03C | 290/05KT  02C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 060/05KT  13C | 200/05KT  08C |
+1500FT | 120/05KT  15C | 210/05KT  12C |
+2000FT | 130/05KT  14C | 210/05KT  13C |
+3000FT | 250/05KT  12C | 240/05KT  12C |
+5000FT | 270/05KT  09C | 260/10KT  09C |
+FL100  | 290/05KT  02C | 240/05KT  03C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 030/05KT  19C | 050/10KT  13C |
-1500FT | 030/05KT  17C | 050/05KT  14C |
-2000FT | 040/05KT  16C | 050/05KT  14C |
-3000FT | 040/05KT  14C | 050/05KT  12C |
-5000FT | 280/05KT  11C | 340/05KT  09C |
-FL100  | 270/15KT  01C | 010/10KT  02C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 050/05KT  17C | 030/05KT  14C |
+1500FT | 080/05KT  16C | 060/05KT  15C |
+2000FT | 100/05KT  16C | 070/05KT  15C |
+3000FT | 140/05KT  13C | 080/05KT  13C |
+5000FT | 270/05KT  10C | 180/05KT  09C |
+FL100  | 280/15KT  01C | 010/05KT  02C |
 
 Turbulenz:
 In und in der Umgebung von CB mäßig bis stark. Abseits nicht
@@ -73,20 +72,20 @@ Vereisung:
 In CB mäßig bis stark. Abseits nicht signifikant.
 
 Nullgradgrenze:
-Zwischen FL105 und FL115.
+Zwischen FL105 und FL115. Am Montag allgemein auf FL120 ansteigend.
 
 Inversionen:
 In der zweiten Nachthälfte zum Montag Ausbildung einer Bodeninversion
 unterhalb 1000 FT AGL, die sich am Vormittag teils nur zögerlich
 auflöst.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Gießen  16.57 | 17.30 | 04.59 | 05.32
-Karlsruhe  16.59 | 17.30 | 05.01 | 05.32
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Gießen  04.59 | 05.32 | 16.55 | 17.28
+Karlsruhe  05.01 | 05.32 | 16.57 | 17.28
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 05.10.2026 um 02.00
+UTC
 
-Flugwetterzentrale Frankfurt/CH
+Flugwetterzentrale Frankfurt/mu

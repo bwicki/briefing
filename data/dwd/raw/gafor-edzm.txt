@@ -1,43 +1,38 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-741
-FBEU40 EDZM 041200
+970
+FBEU40 EDZM 041800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 04.10.2026, 12.00 UTC bis 05.10.2026, 09.00 UTC
+gültig vom 04.10.2026, 18.00 UTC bis 05.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
 Wetterlage und -entwicklung:
 Eine Hochdruckzone erstreckt sich vom Atlantik Richtung
-Ostdeutschland. Mit westlicher Strömung wird sehr milde Luft
-herangeführt, wobei sich nachts oft eine feuchtkalte Grundschicht
-bildet.
-Ein Höhentief, welches sich von Westdeutschland Richtung Alpen
-verlagert, führt vor allem im Süden feuchtere Luft heran.
+Ostdeutschland. Nachts bildet sich vor allem in der Nordhälfte und
+örtlich im Osten eine feuchte Grundschicht aus. Ein Höhentief,
+welches sich von Westdeutschland Richtung Alpen verlagert, führt vor
+allem im Süden feuchtere und leicht labile Luft heran, die anfangs am
+Montag noch an den Alpen staut.
 
 Wettergeschehen:
-Heute Nachmittag zeigt sich meist FEW/SCT CU mit Basis um 5000 FT
-AMSL. Darüber ziehen CI-Felder durch, vor allem im Nordwesten auch
-SCT/BKN AC/CI oberhalb FL180.
+Östlich etwa der Linie Schweinfurt - Allgäu zeigt sich meist SCT/BKN
+CI oberhalb FL240 sowie FEW/SCT SC/AC bei FL060-080. Westlich davon
+ist die Bewölkung dichter mit BKN SC/AC/CI mit Basis bei 5000 bis
+7000 FT AMSL. Darin sind TCU eingelagert, die schauerartigen Regen
+bringen.
 
-Zum Abend hin zieht im Südwesten BKN SC/AC/CI mit Basis bei 5000 bis
-7000 FT AMSL heran. In Oberschwaben und im Bereich der Schwäbischen
-Alb fallen erste Tropfen.
-In den übrigen Gebieten lösen sich die Quellwolken meist auf, nur
-örtlich bleiben dünne SC-Felder bei FL060 erhalten. Die
-AC/CI-Bewölkung verdichtet sich von Nordwesten her etwas.
-
-In der Nacht breitet sich die Schichtbewölkung mit den Niederschlägen
-ostwärts Richtung Oberbayern aus. Stellenweise fällt durch
-eingelagerte CBs (Tops FL300) dann schauerartiger Regen. Der
-Schwerpunkt wird von Oberschwaben Richtung östliche Alpen erwartet,
-dort sind auch einzelne Blitze möglich. Die Untergrenzen sinken in
-diesem Bereich oft ab auf 2500 bis 4000 FT AMSL.
-In der Mitte und im Norden ist es währenddessen oft gering bewölkt
-oder wolkenlos, die AC/CI-Bewölkung lockert von Nordwesten wieder
-auf. In der zweiten Nachthälfte bildet sich in tieferen Lagen örtlich
-dichter Nebel mit BKN ST.
+In der Nacht breitet sich die dichtere Schichtbewölkung mit den
+Niederschlägen südostwärts Richtung Oberbayern aus. Stellenweise
+fällt durch eingelagerte CBs (Tops bis maximal FL300) weiterhin
+schauerartiger Regen. Der Schwerpunkt wird von Oberschwaben Richtung
+östliche Alpen erwartet, dort sind auch einzelne Blitze möglich. Die
+Untergrenzen sinken in diesem Bereich oft ab auf 2500 bis 4000 FT
+AMSL. In der Mitte und im Norden ist es währenddessen oft gering
+bewölkt oder wolkenlos, die AC/CI-Bewölkung lockert von Nordwesten
+wieder auf. In der zweiten Nachthälfte bildet sich in tieferen Lagen
+örtlich dichter Nebel oder ST in wenigen 100 FT AGL.
 
 Am Montagvormittag zieht sich die dichte Schichtbewölkung mit den
 eingelagerten CBs an die Alpen zurück.
@@ -48,40 +43,47 @@ AMSL. In Niederbayern zeigt sich stellenweise noch SCT/BKN SC bei
 Wald und nördlich davon lösen sich örtliche ST-Felder auf und es ist
 gering bewölkt oder wolkenlos.
 
+Über Mittag und am Nachmittag zieht die Schichtbewölkung in die Alpen
+ab und es bleibt vor allem südlich der Donau nur mehr SCT/BKN CU/SC
+mit Basis bei 4000-5000 FT AMSL übrig. Nur direkt an den Alpen zeigt
+sich am Nachmittag öfter noch BKN CU/SC bei 3500-4500 FT AMSL. Weiter
+gen Norden nimmt der Bedeckungsgrad sukzessive ab, teils ist es auch
+wolkenfrei.
+
 Sichtweite:
-30 bis 50 km, nachts zurückgehend auf 10 bis 20 km. Im Niederschlag
-im Süden 5 bis 10 km, bei schauerartigen Verstärkungen 2 bis 5 km.
-Vor allem in der Mitte und im Norden örtlich Nebelfelder oder Nebel
-mit Sichten von unter 1 bis 4 km.
+30 bis 50 km, im Laufe der Nacht zurückgehend auf 10 bis 20 km. Im
+Niederschlag im Süden 5 bis 10 km, bei schauerartigen Verstärkungen 2
+bis 5 km. Vor allem in der Mitte und im Norden örtlich Nebelfelder
+oder Nebel mit Sichten von unter 1 bis 4 km.
 Montagvormittag Besserung auf 15 bis 30 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  15 UTC  |  06 UTC  |
-1500FT | 350/05KT  18C | 080/05KT  13C |
-2000FT | 350/05KT  17C | 040/05KT  13C |
-3000FT | 340/05KT  13C | 340/05KT  11C |
-5000FT | 300/05KT  09C | 330/05KT  08C |
-FL100  | 290/05KT  04C | 050/05KT  03C |
+AMSL  |  21 UTC  |  09 UTC  |
+1500FT | 330/05KT  16C | 140/05KT  13C |
+2000FT | 340/05KT  15C | 130/05KT  14C |
+3000FT | 310/05KT  12C | 110/05KT  11C |
+5000FT | 280/05KT  09C | 200/05KT  09C |
+FL100  | 310/10KT  03C | 310/05KT  02C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  15 UTC  |  06 UTC  |
-2000FT | 020/05KT  19C | 310/05KT  13C |
-3000FT | 020/05KT  15C | 280/05KT  12C |
-5000FT | 020/05KT  11C | 290/05KT  10C |
-FL100  | 260/20KT  03C | 090/05KT  00C |
+AMSL  |  21 UTC  |  09 UTC  |
+2000FT | 070/05KT  17C | 330/05KT  14C |
+3000FT | 040/05KT  14C | 350/05KT  12C |
+5000FT | 260/05KT  11C | 200/05KT  09C |
+FL100  | 280/15KT  03C | 050/05KT  01C |
 
 Turbulenz:
-Am Nachmittag und Abend im Nordwesten aufkommende mäßige Turbulenz
-oberhalb FL180, nachts unter leichter Abschwächung nach Südosten
-verlagernd. Montagvormittag weiter abschwächend.
-Im Bereich von CBs mäßige bis starke Turbulenzen möglich.
+Im Nordwesten aufkommende mäßige Turbulenz oberhalb FL180, nachts
+unter leichter Abschwächung nach Südosten verlagernd und
+Montagvormittag weiter abschwächend. Im Bereich von CBs mäßige bis
+starke Turbulenzen möglich.
 
 Vereisung:
-Zum Abend hin im Südwesten aufkommende mäßige Vereisung zwischen
-FL100 und FL180, nachts Richtung Oberbayern ausbreitend und am Montag
-von Nordwesten langsam abschwächend.
-Im Bereich von CBs mäßige bis starke Turbulenzen.
+Im Südwesten aufkommende mäßige Vereisung zwischen FL100 und FL180,
+nachts Richtung Oberbayern ausbreitend und am Montag von Nordwesten
+langsam abschwächend. Über Mittag in die Alpen abziehend.
+Im Bereich von CBs mäßige bis starke Vereisung.
 
 Nullgradgrenze:
 Bei FL110, in der zweiten Nachthälfte von Westen absinkend auf FL100.
@@ -89,15 +91,17 @@ Bei FL110, in der zweiten Nachthälfte von Westen absinkend auf FL100.
 Inversionen:
 Vor allem im Norden schwache Absinkinversion zwischen 4000 und 6000
 FT AMSL. Darunter in der Nacht vor allem im Norden Bildung einer
-markanten, im Süden einer schwachen Bodeninversion.
+markanten, im Süden einer schwachen Bodeninversion. Montag wird diese
+wieder abgebaut. Die Absinkinversion ist dann nur mehr im Norden
+ausgeprägt.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Nürnberg  16.48 | 17.20 | 04.50 | 05.21
-München  16.46 | 17.17 | 04.45 | 05.17
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Nürnberg  04.50 | 05.21 | 16.46 | 17.17
+München  04.45 | 05.17 | 16.44 | 17.15
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 05.10.2026 um 02.00
+UTC
 
-Luftfahrtberatungszentrale München/gs
+Luftfahrtberatungszentrale München/pk

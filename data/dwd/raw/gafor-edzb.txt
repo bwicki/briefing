@@ -1,60 +1,59 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-704
-FBEU40 EDZB 041200
+974
+FBEU40 EDZB 041800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 04.10.2026, 12.00 UTC bis 05.10.2026, 09.00 UTC
+gültig vom 04.10.2026, 18.00 UTC bis 05.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
 Ein Hochdruckgebiet erstreckt sich von den Britischen Inseln über
 Deutschland bis nach Südosteuropa. Bei geringen Luftdruckgegensätzen
-ist weiterhin milde und stabile Luft wetterbestimmend, die im Süden
-anfangs noch durch eine feuchte Grundschicht geprägt ist.
+ist weiterhin milde und stabile Luft wetterbestimmend, die in der
+Nacht teils eine feuchte Grundschicht ausbildet und rasch am Montag
+abgebaut wird.
 
 Wettergeschehen:
-Durchzug von SCT/BKN AC/CI oberhalb von FL200.
+Zu Beginn häufig noch sich auflösende FEW/SCT CU/SC in 3000-4000 FT
+AMSL, ansonsten vielerorts wolkenlos. Am Erzgebirge und Zittauer
+Gebirge anstauend, hier SCT/BKN. Stellenweise Bildung ersten flachen
+Nebelfeldern.
 
-Im südöstlichen Thüringen und Sachsen-Anhalt sowie in Sachsen anfangs
-noch verbreitet BKN/OVC ST in 400 bis 1000 FT AGL, im weiteren
-Verlauf anhebend und auflösend bzw. in CU übergehend und mit der
-Basis auf 2000 bis 4000 FT AMSL ansteigend
+Im Laufe der Nacht weiter Wolkenauflösung, dann meist wolkenfrei,
+hier verbreitet Bildung von flachem Nebel unterhalb 300 FT AGL. In
+Mecklenburg-Vorpommern geringste Nebelneigung, hier von Nordwest
+Aufzug von BKN/OVC AS/CI oberhalb FL140.
 
-In Mecklenburg-Vorpommern SCT/BKN SC zwischen 2000 und 4000 FT AMSL,
-Tops FL050, sonst vereinzelt FEW/SCT CU/SC in 3000 bis 5000 FT AMSL.
-Am Nachmittag dann häufiger SCT/BKN CU zwischen 2500 und 5000 FT
-AMSL, der sich am Abend größtenteils wieder auflöst.
-
-Im Laufe der Nacht erneut Bildung von Dunst und Nebel, im Norden
-wahrscheinlich früher (in der ersten Nachthälfte) als im Süden und am
-Montagvormittag allgemein auflösend.
+Am Morgen verbreitet die flachen Nebelfeldern, meist im Laufe des
+frühen Vormittags auflösend. Bis zum Mittag und am Nachmittag neben
+FEW/SCT CU/SC um 3000 FT AMSL häufig wolkenlos.
 
 Sichtweite:
-Verbreitet 20 bis 50 km, im Südosten oftmals noch 2 bis 5 km, weiter
+Verbreitet 5 bis 15 km, im Laufe der Nacht verschlechternd auf 1-5
+km, im flachen Nebel wenige 100 m. Im Laufe des Montages auf 20-50 km
 bessernd.
-Im Laufe der Nacht erneut häufig unter 1000 m.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  15 UTC  |  06 UTC  |
- 500FT | 300/10KT  17C | 240/10KT  11C |
-1000FT | 300/10KT  15C | 260/20KT  12C |
-1500FT | 300/10KT  13C | 270/20KT  12C |
-2000FT | 300/10KT  13C | 280/20KT  11C |
-3000FT | 290/10KT  09C | 290/25KT  09C |
-5000FT | 270/10KT  05C | 280/15KT  10C |
-FL100  | 290/20KT  00C | 290/15KT  02C |
+AMSL  |  21 UTC  |  09 UTC  |
+ 500FT | 320/05KT  13C | 240/10KT  12C |
+1000FT | 300/05KT  12C | 260/15KT  11C |
+1500FT | 280/10KT  11C | 280/20KT  12C |
+2000FT | 270/15KT  10C | 280/20KT  11C |
+3000FT | 260/20KT  09C | 280/20KT  11C |
+5000FT | 280/15KT  08C | 270/20KT  10C |
+FL100  | 290/20KT  01C | 290/15KT  02C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 330/05KT  16C | 220/05KT  13C |
-1500FT | 330/05KT  14C | 230/05KT  13C |
-2000FT | 330/05KT  13C | 230/05KT  13C |
-3000FT | 350/05KT  10C | 280/05KT  10C |
-5000FT | 350/10KT  07C | 310/10KT  10C |
-FL100  | 290/05KT  02C | 300/10KT  01C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 220/05KT  16C | 230/05KT  13C |
+1500FT | 250/05KT  14C | 230/10KT  14C |
+2000FT | 270/05KT  13C | 230/10KT  13C |
+3000FT | 330/05KT  10C | 250/05KT  11C |
+5000FT | 330/05KT  09C | 280/05KT  10C |
+FL100  | 320/10KT  01C | 270/10KT  01C |
 
 Turbulenz:
 Nicht signifikant.
@@ -63,19 +62,20 @@ Vereisung:
 Nicht signifikant.
 
 Nullgradgrenze:
-FL100 bis FL110.
+FL100 bis FL120.
 
 Inversionen:
-Schwache Inversion um FL050. In der Nacht Bildung einer
-Bodeninversion bis 500 FT AGL.
+In der Nacht Bildung einer Bodeninversion bis 500 FT AGL, im Laufe
+des frühen Vormittags auflösend. Am Montag sonst schwache
+Absinkinversion um 3000 FT AMSL.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Berlin  16.36 | 17.11  | 04.39 | 05.13
-Leipzig  16.42 | 17.15  | 04.43 | 05.18
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Berlin  04.39 | 05.13 | 16.34 | 17.08
+Leipzig  04.43 | 05.18 | 16.40 | 17.13
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 05.10.2026 um
+02.00/05.00 UTC
 
-Luftfahrtberatungszentrale Berlin/Wo
+Luftfahrtberatungszentrale Berlin/Hi

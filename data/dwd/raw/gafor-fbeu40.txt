@@ -56,19 +56,19 @@ Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
 21  Harz  O  O ISOL FG  D3 ISOL FG
 
-22  Leipziger Tieflandsbucht und Elbe-Elster-Niederung  D1  O ISOL FG  D3 ISOL FG
+22  Leipziger Tieflandsbucht und Elbe-Elster-Niederung  D1  D3 ISOL FG  M6 ISOL FG
 
 23  Niederlausitzer Heiden  O  O ISOL FG  D3 ISOL FG
 
 24  Thüringer Becken  O  O ISOL FG  D3 ISOL FG
 
-25  Mittelsächsisches Hügelland  D1  O ISOL FG  D3 ISOL FG
+25  Mittelsächsisches Hügelland  D1  M6 ISOL FG  M6 ISOL FG
 
 26  Oberlausitz und Lausitzer Gebirge  O  O ISOL FG  D3 ISOL FG
 
 27  Thüringer Wald  O  O ISOL FG  D3 ISOL FG
 
-28  Erzgebirge  D1  M2 ISOL FG  M5 ISOL FG
+28  Erzgebirge  D1  M6 ISOL FG  M6 ISOL FG
 
 GAFOR-Einstufung RWZ Essen
 
