@@ -97,7 +97,7 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
 }
 
 /** Zeitplan-Tabelle mit Überschreibungen und Routing. */
-export function scheduleEditor(b, ctx, onChange, readOnly = false) {
+export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
   const S = ctx.settings, sc = b.schedule, z = tzOf(b);
   const wrap = h('div');
   const table = h('table.sched');
@@ -138,13 +138,18 @@ export function scheduleEditor(b, ctx, onChange, readOnly = false) {
   }
   const meetBox = h('div');
   const drawMeet = () => { clear(meetBox); meetBox.appendChild(placeRow({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon }, { label: `${t('meeting')} · ${t('coords')}`, title: t('meeting'), noName: true, onPick: (p) => { sc.meetingLat = p.lat; sc.meetingLon = p.lon; if (!sc.meetingName) sc.meetingName = p.name; sc.meetingId = sc.meetingId || 'custom'; sc.overrides = {}; drawMeet(); doRoute(); } })); };
-  if (!readOnly) wrap.append(
-    h('div.frow.c4', [field(`${t('meeting')}`, input('text', sc.meetingName, { oninput: (e) => { sc.meetingName = e.target.value; onChange(); redraw(); } })), field(`${t('driveTime')} (min)`, driveIn), field(`${t('rigTime')} (min)`, rigIn), b.balloon.type === 'gas' ? field(`${t('fillTime')} (min)`, fillIn) : field(`${t('buffer')} (min)`, bufIn)]),
+  const timeFields = [field(`${t('driveTime')} (min)`, driveIn), field(`${t('rigTime')} (min)`, rigIn), b.balloon.type === 'gas' ? field(`${t('fillTime')} (min)`, fillIn) : field(`${t('buffer')} (min)`, bufIn)];
+  if (!readOnly && opts.hideMeeting) wrap.append(
+    h('div.frow.c3', timeFields),
+    h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => { sc.overrides = {}; doRoute(); } }, t('recompute')), note]),
+  );
+  else if (!readOnly) wrap.append(
+    h('div.frow.c4', [field(`${t('meeting')}`, input('text', sc.meetingName, { oninput: (e) => { sc.meetingName = e.target.value; onChange(); redraw(); } })), ...timeFields]),
     meetBox,
     h('div.row-actions', [h('button.btn', { type: 'button', onclick: () => { sc.overrides = {}; doRoute(); } }, t('recompute')), note]),
   );
   else wrap.append(h('div.note', [`${t('meeting')}: `, sc.meetingLat != null ? placeLine({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon }) : (sc.meetingName || '–'), sc.driveMin != null ? ` · ${t('driveTime')} ${sc.driveMin} min` : '']));
-  if (!readOnly) drawMeet();
+  if (!readOnly && !opts.hideMeeting) drawMeet();
   wrap.append(table, warnBox);
   if (!readOnly) wrap.append(h('div.note', t('sch_rule')));
   if (!readOnly && (sc.driveMin == null)) doRoute(); else redraw();

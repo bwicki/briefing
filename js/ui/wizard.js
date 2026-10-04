@@ -393,10 +393,10 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const meetBox = h('div');
     const meetPlace = () => ({ name: sc.meetingName, lat: sc.meetingLat, lon: sc.meetingLon, elev: null });
     typeToPick(mCustom, meetPlace, { title: t('meeting'), onPick: (p) => { sc.meetingName = p.name; sc.meetingLat = p.lat; sc.meetingLon = p.lon; sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); }, onCancel: (v) => { sc.meetingName = v; persistSoon(); } });
-    function drawMeet() { clear(meetBox); meetBox.appendChild(placeRow(meetPlace(), { label: `${t('meeting')} · ${t('coords')}`, title: t('meeting'), onPick: (p) => { sc.meetingLat = p.lat; sc.meetingLon = p.lon; if (sc.meetingId === 'custom' || !sc.meetingName) { sc.meetingName = p.name; mCustom.value = p.name; } sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } })); }
-    function drawEditor() { clear(holder); if (sc.skip) { holder.appendChild(h('div.note', t('sch_skipped'))); return; } holder.appendChild(scheduleEditor(b, ctx, () => persistSoon())); }
+    function drawMeet() { clear(meetBox); meetBox.appendChild(placeRow(meetPlace(), { label: `${t('meeting')} · ${t('coords')}`, title: t('meeting'), noName: true, onPick: (p) => { sc.meetingLat = p.lat; sc.meetingLon = p.lon; if (sc.meetingId === 'custom' || !sc.meetingName) { sc.meetingName = p.name; mCustom.value = p.name; } sc.driveMin = null; sc.overrides = {}; drawMeet(); drawEditor(); persistSoon(); } })); }
+    function drawEditor() { clear(holder); if (sc.skip) { holder.appendChild(h('div.note', t('sch_skipped'))); return; } holder.appendChild(scheduleEditor(b, ctx, () => persistSoon(), false, { hideMeeting: true })); }
     const skipBox = check(t('sch_skip'), !!sc.skip, (v) => { sc.skip = v; drawEditor(); persistSoon(); });
-    body.append(skipBox, h('div.frow', [field(t('meeting'), h('div', [mSel, mCustom])), meetBox]), holder);
+    body.append(skipBox, h('div.frow.meet', [field(t('meeting'), h('div', [mSel, mCustom])), meetBox]), holder);
     drawMeet(); drawEditor();
   }
 

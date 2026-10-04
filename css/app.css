@@ -62,8 +62,9 @@ header.topbar{position:sticky;top:0;z-index:60;background:var(--bg);
 .f > label, .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);}
 .frow .f > label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .f.span2{grid-column:span 2;}
-.wiz .card-body > .f{margin-bottom:10px;}   /* einzeln stehende Felder im Ablauf: Abstand wie Zeilen */
+.wiz .card-body > .f,.wiz .card-body > .row-actions,.wiz .card-body > .note{margin-bottom:10px;}   /* einzeln stehende Felder im Ablauf: Abstand wie Zeilen */
 .wiz .frow.top{align-items:start;}
+@media (min-width:600px){ .frow.meet{grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);} }
 input[type="text"],input[type="search"],input[type="number"],input[type="date"],input[type="time"],input[type="password"],input[type="email"],input[type="tel"],input[type="url"],select,textarea{
   width:100%;min-height:40px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;color:var(--text);
   font-family:var(--sans);font-size:15px;padding:8px 11px;outline:none;-webkit-appearance:none;appearance:none;}
