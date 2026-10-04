@@ -4,6 +4,17 @@ import { t } from '../i18n.js';
 import { field, input, select } from './widgets.js';
 import { fmtDate, fmtDateTime } from '../calc/time.js';
 
+/** QR lokal erzeugt (js/vendor/qrcode.js, MIT) – der Link verlässt das Gerät nicht. */
+export function showQr(url) {
+  const box = h('div', { style: { textAlign: 'center' } });
+  try {
+    const qr = window.qrcode(0, 'M'); qr.addData(url); qr.make();
+    box.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 8 });
+    box.firstChild.style.background = '#fff'; box.firstChild.style.maxWidth = '100%';
+  } catch (e) { box.textContent = e.message; }
+  dialog(t('ac_qr'), h('div', [box, h('div.small.mono', { style: { textAlign: 'center', marginTop: '6px', wordBreak: 'break-all' } }, url)]), [{ label: t('close'), primary: true }]);
+}
+
 export async function openAccessDialog(ctx, b) {
   const S = ctx.stamm || ctx.settings, z = b.site.tz || 'Europe/Zurich';
   if (ctx.store.mode !== 'remote') { await dialog(t('ac_title'), h('p.note', t('ac_localOnly')), [{ label: t('close'), primary: true }]); return; }
@@ -43,16 +54,6 @@ export async function openAccessDialog(ctx, b) {
         ]),
       ]));
     }
-  }
-  function showQr(url) {
-    // QR lokal erzeugt (js/vendor/qrcode.js, MIT) – der Link verlässt das Gerät nicht.
-    const box = h('div', { style: { textAlign: 'center' } });
-    try {
-      const qr = window.qrcode(0, 'M'); qr.addData(url); qr.make();
-      box.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 8 });
-      box.firstChild.style.background = '#fff'; box.firstChild.style.maxWidth = '100%';
-    } catch (e) { box.textContent = e.message; }
-    dialog(t('ac_qr'), h('div', [box, h('div.small.mono', { style: { textAlign: 'center', marginTop: '6px', wordBreak: 'break-all' } }, url)]), [{ label: t('close'), primary: true }]);
   }
   const content = h('div', [
     h('div.frow.c4', [field(t('ac_person'), h('div', [pSel, pFree])), field(t('ac_role'), role), field(t('ac_expires'), exp), h('div.f', [h('label', ' '), addBtn])]),

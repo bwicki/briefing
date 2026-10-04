@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.1 — 2026-10-04
+
+* Material-Links für Externe: Materialeigner ohne Konto sehen über einen Link
+  (`#/m/<token>`, 1 Jahr, widerrufbar) alle Briefings mit ihren Kennungen —
+  Liste, Briefingsicht, Pax-Karte, nur lesen (Tabelle `material_links`).
+* Neue Benutzer ohne «Stamm kopieren von» starten mit dem Beispiel-Stamm der App.
+* Fix: Flugwetterprognose DE warf bei GAFOR-Perioden ohne bekannten Code einen
+  Fehler (leere CSS-Klasse); `h()` ignoriert leere Klassensegmente.
+
 ## 0.5.0 — 2026-10-04 · Mehrbenutzer
 
 * Benutzer mit Rollen Supermaster/Master (Anmeldename + Kennwort, Sitzung je

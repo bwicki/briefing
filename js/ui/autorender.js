@@ -160,7 +160,7 @@ export function renderNotam(snap, b, ctx, opts = {}) {
 export function renderFwp(snap) {
   const d = snap.data;
   const parts = [];
-  if (d.gafor) parts.push(h('div', [h('b', `GAFOR ${d.area.id} ${d.area.name}`), ` (${d.area.refAltFt} ft) · ${d.gafor.title}: `, ...(d.gafor.periods || []).map((pp, i) => h('span.tag.' + ({ O: 'pos', C: 'pos', D: 'half', M: 'half', X: 'neg' }[d.gafor.codes?.[i]] || ''), { style: { marginRight: '4px' } }, `${pp} UTC ${d.gafor.codes?.[i] || '?'}${d.gafor.remarks?.[i] ? ' ' + d.gafor.remarks[i] : ''}`))]));
+  if (d.gafor) parts.push(h('div', [h('b', `GAFOR ${d.area.id} ${d.area.name}`), ` (${d.area.refAltFt} ft) · ${d.gafor.title}: `, ...(d.gafor.periods || []).map((pp, i) => h('span.tag' + ({ O: '.pos', C: '.pos', D: '.half', M: '.half', X: '.neg' }[d.gafor.codes?.[i]] || ''), { style: { marginRight: '4px' } }, `${pp} UTC ${d.gafor.codes?.[i] || '?'}${d.gafor.remarks?.[i] ? ' ' + d.gafor.remarks[i] : ''}`))]));
   if (d.office) parts.push(h('div.small.muted', `${d.office.bereich} (${d.office.office}) · ${(d.office.issued || '').slice(0, 16).replace('T', ' ')} UTC · ${t('auto_valid')} ${(d.office.validTo || '').slice(0, 16).replace('T', ' ')} UTC`), h('pre.report', d.office.text || ''), h('div.note', [h('a', { href: d.office.source, target: '_blank', rel: 'noopener' }, 'dwd.de ↗'), ` · ${t('auto_dwdTerms')}`]));
   return h('div.auto-wrap', parts);
 }

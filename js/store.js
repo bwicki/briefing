@@ -34,6 +34,10 @@ const local = {
   async adminUpdateUser() { throw new Error('local'); },
   async adminStats() { throw new Error('local'); },
   async adminStatsCsv() { throw new Error('local'); },
+  async listMaterialLinks() { return []; },
+  async createMaterialLink() { throw new Error('local'); },
+  async revokeMaterialLink() { throw new Error('local'); },
+  async openMaterial() { throw new Error('local'); },
   logout() { del(LS.unlocked); },
   isAuthed() { return load(LS.unlocked, 0) === 1; },
   async changePassword(oldPw, newPw) {
@@ -98,6 +102,11 @@ const remote = {
   async adminUpdateUser(id, body) { return (await api(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'PUT', body })).user; },
   async adminStats() { return api('/api/admin/stats'); },
   async adminStatsCsv() { const r = await fetch(API + '/api/admin/stats?format=csv', { headers: authHeaders() }); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); },
+  /** Material-Links: externer Materialeigner sieht alle Briefings mit seinen Kennungen (ohne Sitzung). */
+  async listMaterialLinks() { return (await api('/api/material-links')).links; },
+  async createMaterialLink(body) { return (await api('/api/material-links', { method: 'POST', body })).link; },
+  async revokeMaterialLink(token) { await api(`/api/material-links/${token}`, { method: 'DELETE' }); },
+  async openMaterial(token, id) { return api(`/api/material/${token}${id ? `/${id}` : ''}`); },
   isAuthed() { return !!load(LS.token, null); },
   async changePassword(oldPw, newPw) { await api('/api/password', { method: 'POST', body: { oldPassword: oldPw, newPassword: newPw } }); return true; },
   async getSettings() {
@@ -162,7 +171,8 @@ export const store = {
   idleExpired(ms = 2 * 60 * 60 * 1000) { const t = load(LS.touch, 0); return t && Date.now() - t > ms; },
 };
 for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'uploadImage', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'openShared', 'saveShared', 'getLog', 'data', 'exportAll',
-  'me', 'listUsers', 'listShares', 'setShare', 'getSettingsOf', 'adminUsers', 'adminCreateUser', 'adminUpdateUser', 'adminStats', 'adminStatsCsv']) {
+  'me', 'listUsers', 'listShares', 'setShare', 'getSettingsOf', 'adminUsers', 'adminCreateUser', 'adminUpdateUser', 'adminStats', 'adminStatsCsv',
+  'listMaterialLinks', 'createMaterialLink', 'revokeMaterialLink', 'openMaterial']) {
   store[k] = (...a) => store.impl[k](...a);
 }
 export { summary };

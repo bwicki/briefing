@@ -109,13 +109,17 @@ const DE = {
   sh_given: 'Meine Freigaben an andere', sh_received: 'Von anderen erhalten', sh_none: 'Keine Freigaben.', sh_noUsers: 'Keine anderen Benutzer.',
   sh_cat_balloons: 'Ballone', sh_cat_persons: 'Personen', sh_cat_sites: 'Startplätze', sh_cat_meetings: 'Treffpunkte', sh_cat_operators: 'Betreiber',
   us_title: 'Benutzer (Supermaster)', us_hint: 'Jeder Master hat eigenen Stamm, eigene Briefings und eigenes Kennwort; Zugänge (API-Schlüssel) sind zentral. Master sehen die Briefings anderer nicht.',
-  us_new: 'Neuer Benutzer', us_id: 'Anmeldename', us_name: 'Anzeigename', us_pw: 'Startkennwort', us_role: 'Rolle', us_copyFrom: 'Stamm kopieren von', us_copyNone: '– leer anlegen –', us_flags: 'Freischaltungen',
+  us_new: 'Neuer Benutzer', us_id: 'Anmeldename', us_name: 'Anzeigename', us_pw: 'Startkennwort', us_role: 'Rolle', us_copyFrom: 'Stamm kopieren von', us_flags: 'Freischaltungen',
   flag_ai: 'KI', flag_notam: 'NOTAM', flag_pdf: 'Final-PDF', us_create: 'Anlegen', us_badId: 'Anmeldename: Kleinbuchstaben, Ziffern, 2–31 Zeichen', us_exists: 'Anmeldename schon vergeben.',
   us_active: 'aktiv', us_inactive: 'deaktiviert', us_setPw: 'Kennwort setzen', us_viewStamm: 'Stamm ansehen', us_deactivate: 'Deaktivieren', us_activate: 'Aktivieren', us_lastLogin: 'Letzte Anmeldung', us_briefings: 'Briefings', us_stammOf: 'Stamm von {n} (nur lesen)', us_download: 'JSON herunterladen',
   st_title: 'Nutzungsstatistik', st_csv: 'CSV', st_perMonth: 'Je Benutzer und Monat', st_month: 'Monat', st_user: 'Benutzer', st_logins: 'Anmeldungen', st_created: 'Briefings neu', st_released: 'Freigaben', st_fetch: 'Datenabrufe', st_ai: 'KI (Aufrufe / Tokens)', st_pdf: 'PDF', st_files: 'Dateien (n / MB)', st_links: 'Links (neu / geöffnet)',
   st_flights: 'Fahrten je Ballon (Ballonbuch)', st_reg: 'Kennung', st_owner: 'Benutzer', st_material: 'Material von', st_count: 'Briefings', released_short: 'davon Final', st_storage: 'Speicher und Links je Benutzer', st_none: 'Noch keine Daten.',
   scope_own: 'Meine Briefings', scope_all: 'Alle Benutzer', scope_material: 'Fahrten mit meinem Material', colOwner: 'Benutzer', colMaterial: 'Material', readOnlyBriefing: 'Nur lesen · Briefing von {n}',
   set_secretsReadOnly: 'Zugänge sind zentral hinterlegt; nur der Supermaster kann sie ändern.', export_allUsers: 'Alle Benutzer exportieren (Supermaster)', feat_disabled: 'Für diesen Benutzer nicht freigeschaltet.',
+  ml_title: 'Fahrten mit meinem Material', ml_owner: 'Benutzer', ml_list: '{n} Briefings', ml_hint: 'Nur lesen · Link gültig bis {d}. Tippen öffnet die Briefingsicht.',
+  ml_hint_owner: 'Für Materialeigner ohne Benutzerkonto (z. B. Halter eines mitbenützten Ballons): der Link zeigt alle Briefings mit den gewählten Kennungen – eigene und solche anderer Benutzer, die den Ballon über eine Freigabe verwenden – in der Briefingsicht (nur lesen, inkl. Pax-Karte). Standard: 1 Jahr gültig, widerrufbar.',
+  ml_regs: 'Kennungen', ml_pickReg: 'Mindestens eine Kennung wählen.', ml_create: 'Material-Link erstellen',
+  us_copyNone: '– Beispiel-Stamm der App –',
 };
 
 const EN = {
@@ -217,13 +221,17 @@ const EN = {
   sh_given: 'My shares to others', sh_received: 'Received from others', sh_none: 'No shares.', sh_noUsers: 'No other users.',
   sh_cat_balloons: 'Balloons', sh_cat_persons: 'Persons', sh_cat_sites: 'Launch sites', sh_cat_meetings: 'Meeting points', sh_cat_operators: 'Operators',
   us_title: 'Users (super master)', us_hint: 'Each master has own master data, briefings and password; API credentials are central. Masters do not see each other’s briefings.',
-  us_new: 'New user', us_id: 'Login name', us_name: 'Display name', us_pw: 'Initial password', us_role: 'Role', us_copyFrom: 'Copy master data from', us_copyNone: '– start empty –', us_flags: 'Features',
+  us_new: 'New user', us_id: 'Login name', us_name: 'Display name', us_pw: 'Initial password', us_role: 'Role', us_copyFrom: 'Copy master data from', us_flags: 'Features',
   flag_ai: 'AI', flag_notam: 'NOTAM', flag_pdf: 'Final PDF', us_create: 'Create', us_badId: 'Login name: lowercase letters, digits, 2–31 characters', us_exists: 'Login name already taken.',
   us_active: 'active', us_inactive: 'deactivated', us_setPw: 'Set password', us_viewStamm: 'View master data', us_deactivate: 'Deactivate', us_activate: 'Activate', us_lastLogin: 'Last login', us_briefings: 'Briefings', us_stammOf: 'Master data of {n} (read only)', us_download: 'Download JSON',
   st_title: 'Usage statistics', st_csv: 'CSV', st_perMonth: 'Per user and month', st_month: 'Month', st_user: 'User', st_logins: 'Logins', st_created: 'New briefings', st_released: 'Releases', st_fetch: 'Data fetches', st_ai: 'AI (calls / tokens)', st_pdf: 'PDF', st_files: 'Files (n / MB)', st_links: 'Links (new / opened)',
   st_flights: 'Flights per balloon (logbook)', st_reg: 'Registration', st_owner: 'User', st_material: 'Material of', st_count: 'Briefings', released_short: 'of which final', st_storage: 'Storage and links per user', st_none: 'No data yet.',
   scope_own: 'My briefings', scope_all: 'All users', scope_material: 'Flights with my material', colOwner: 'User', colMaterial: 'Material', readOnlyBriefing: 'Read only · briefing by {n}',
   set_secretsReadOnly: 'Credentials are stored centrally; only the super master can change them.', export_allUsers: 'Export all users (super master)', feat_disabled: 'Not enabled for this user.',
+  ml_title: 'Flights with my material', ml_owner: 'User', ml_list: '{n} briefings', ml_hint: 'Read only · link valid until {d}. Tap to open the briefing view.',
+  ml_hint_owner: 'For material owners without a user account (e.g. the holder of a shared balloon): the link lists all briefings with the chosen registrations – your own and those of other users who use the balloon via a share – in the briefing view (read only, incl. pax card). Default: valid 1 year, revocable.',
+  ml_regs: 'Registrations', ml_pickReg: 'Choose at least one registration.', ml_create: 'Create material link',
+  us_copyNone: '– example master data –',
 };
 
 let lang = 'de';

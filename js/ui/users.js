@@ -7,14 +7,15 @@ import { h, clear, toast, dialog } from '../util.js';
 import { t } from '../i18n.js';
 import { field, input, select, check } from './widgets.js';
 import { SHARE_CATEGORIES } from '../stamm.js';
-import { fmtDateTime } from '../calc/time.js';
+import { fmtDate, fmtDateTime } from '../calc/time.js';
+import { showQr } from './access.js';
 
 const fmtMb = (b) => (b ? (b / 1048576).toFixed(b > 10485760 ? 0 : 1) : '0');
 
 export function usersSection(ctx) {
   const wrap = h('div');
   if (ctx.store.mode !== 'remote') { wrap.appendChild(h('div.card', h('div.card-body', h('div.note', t('us_remoteOnly'))))); return wrap; }
-  const redraw = () => { clear(wrap); wrap.appendChild(sharesCard(ctx)); if (ctx.isSuper) wrap.appendChild(adminCard(ctx, redraw)); };
+  const redraw = () => { clear(wrap); wrap.appendChild(sharesCard(ctx)); wrap.appendChild(materialLinksCard(ctx)); if (ctx.isSuper) wrap.appendChild(adminCard(ctx, redraw)); };
   redraw();
   return wrap;
 }
@@ -48,6 +49,51 @@ function sharesCard(ctx) {
     } catch (e) { clear(given); given.appendChild(h('div.err', e.message)); }
   })();
   return card;
+}
+
+// ---------------------------------------------------------------- Material-Links für Externe
+/** Externer Materialeigner (kein Benutzerkonto) erhält einen Link auf alle Briefings mit seinen Kennungen (nur lesen). */
+function materialLinksCard(ctx) {
+  const S = ctx.settings;
+  const regs = [...(S.balloons?.hab || []).map((x) => x.id), ...(S.balloons?.envelopes || []).map((x) => x.id)].filter(Boolean);
+  const chosen = new Set();
+  const regBoxes = h('div.chips', regs.map((r) => check(r, false, (v) => { if (v) chosen.add(r); else chosen.delete(r); })));
+  const person = input('text', '', { placeholder: t('name') });
+  const exp = input('date', new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10));
+  const list = h('div');
+  const createBtn = h('button.btn.primary', { type: 'button', onclick: async () => {
+    if (!person.value.trim()) { toast(t('name') + '?'); return; }
+    if (!chosen.size) { toast(t('ml_pickReg')); return; }
+    try { await ctx.store.createMaterialLink({ person: person.value.trim(), regs: [...chosen], expiresAt: new Date(exp.value + 'T23:59:59').getTime() }); person.value = ''; toast(t('ok')); drawList(); }
+    catch (e) { toast(`${t('error')}: ${e.message}`); }
+  } }, t('ml_create'));
+  async function drawList() {
+    clear(list);
+    let links = [];
+    try { links = await ctx.store.listMaterialLinks(); } catch (e) { list.appendChild(h('div.err', e.message)); return; }
+    if (!links.length) { list.appendChild(h('div.note', t('ac_none'))); return; }
+    for (const l of links) {
+      const url = `${location.origin}${location.pathname}#/m/${l.token}`;
+      list.appendChild(h('div.item-box', [
+        h('div.head', [h('b', l.person), h('span.tag', l.regs.join(', ')), h('span.muted.small', `${t('ac_expires')} ${fmtDate('Europe/Zurich', l.expiresAt)}`)]),
+        h('div.small.mono', { style: { wordBreak: 'break-all' } }, url),
+        h('div.note', `${t('ac_lastOpen')}: ${l.lastOpenedAt ? fmtDateTime('Europe/Zurich', l.lastOpenedAt) : '–'}`),
+        h('div.row-actions', { style: { marginTop: '6px' } }, [
+          h('button.btn', { type: 'button', onclick: () => navigator.clipboard.writeText(url).then(() => toast(t('copied'))) }, t('ac_copy')),
+          h('a.btn', { href: `https://wa.me/?text=${encodeURIComponent(`${t('ml_title')} ${l.regs.join(', ')}: ${url}`)}`, target: '_blank', rel: 'noopener' }, t('ac_whatsapp')),
+          h('a.btn', { href: `mailto:?subject=${encodeURIComponent(`${t('ml_title')} ${l.regs.join(', ')}`)}&body=${encodeURIComponent(url)}` }, t('ac_mail')),
+          h('button.btn', { type: 'button', onclick: () => showQr(url) }, t('ac_qr')),
+          h('button.btn', { type: 'button', onclick: async () => { await ctx.store.revokeMaterialLink(l.token); drawList(); } }, t('ac_revoke')),
+        ]),
+      ]));
+    }
+  }
+  drawList();
+  return h('div.card', [h('div.card-head', h('div.section-title', t('ml_title'))), h('div.card-body', [
+    h('div.note', t('ml_hint_owner')),
+    h('div.frow.c3', [field(t('ac_person'), person), field(t('ml_regs'), regBoxes), field(t('ac_expires'), exp)]),
+    h('div.row-actions', [createBtn]), h('hr'), list,
+  ])]);
 }
 
 // ---------------------------------------------------------------- Benutzerverwaltung (Super)

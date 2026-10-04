@@ -38,7 +38,8 @@ jedes Benutzers (*Stamm ansehen*), ändert fremde Briefings aber nicht. Ein
 **Master** hat eigenen Stamm (Ballone, Personen, Startplätze, Treffpunkte,
 Betreiber), eigene Briefings und eigenes Kennwort; Master sehen einander nicht.
 Beim Anlegen kann der Supermaster den Stamm eines bestehenden Benutzers kopieren
-(oder leer beginnen lassen) und je Benutzer KI, NOTAM und Final-PDF freischalten.
+(sonst beginnt der neue Benutzer mit dem Beispiel-Stamm der App) und je Benutzer
+KI, NOTAM und Final-PDF freischalten.
 
 **Freigaben** (Einstellungen → Benutzer & Freigaben): jeder Benutzer gibt per
 Klickbox je Kategorie Teile seines Stamms einem anderen Benutzer zur Auswahl frei
@@ -48,6 +49,15 @@ dessen Eigentum (der Empfänger ändert sie nicht). Verwendet ein Benutzer einen
 freigegebenen Ballon, sieht der Eigner das Briefing lesend unter *Fahrten mit
 meinem Material* — die Grundlage für das Ballonbuch. Persönliche Links (Mitarbeit,
 Nur lesen) bleiben wie bisher je Briefing.
+
+**Material-Links für Externe** (Einstellungen → Benutzer & Freigaben → *Fahrten mit
+meinem Material*): für Materialeigner ohne Benutzerkonto, etwa den Halter eines
+mitbenützten Ballons. Der Benutzer wählt Name und Kennungen aus seinem Stamm;
+der Link (`#/m/<token>`, Standard 1 Jahr gültig, widerrufbar, QR/WhatsApp/E-Mail)
+zeigt ohne Kennwort die Liste aller Briefings mit diesen Kennungen — eigene und
+solche anderer Benutzer, die den Ballon über eine Freigabe verwenden — und jedes
+davon in der Briefingsicht samt Pax-Karte, nur lesen. Jedes Öffnen zählt in der
+Statistik als Link-Öffnung des Erstellers.
 
 **Nutzungsstatistik** (Supermaster, Einstellungen → Statistik): je Benutzer und
 Monat Anmeldungen, neue Briefings, Freigaben als Final, Datenabrufe je Quelle,

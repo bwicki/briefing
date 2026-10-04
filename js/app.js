@@ -7,6 +7,7 @@
  *   #/v/<id>          Briefingsicht (Druck)
  *   #/settings        Einstellungen
  *   #/s/<token>       Persönlicher Link (Lesen oder Mitarbeit, ohne Kennwort)
+ *   #/m/<token>       Material-Link (externer Materialeigner: Liste + Briefingsicht, ohne Kennwort)
  */
 import { APP } from './version.js';
 import { $, h, clear, toast, load, save, dialog } from './util.js';
@@ -19,6 +20,7 @@ import { renderBrief } from './ui/view.js';
 import { renderSettings } from './ui/settings.js';
 import { renderPaxCard } from './ui/extras.js';
 import { renderShared } from './ui/shared.js';
+import { renderMaterial } from './ui/material.js';
 import { mergedStamm } from './stamm.js';
 
 const GATE_IDLE_MS = 2 * 60 * 60 * 1000;
@@ -130,6 +132,7 @@ async function route() {
   buildNav();
   try {
     if (name === 's' && arg) { await renderShared(view, ctx, arg); return; }
+    if (name === 'm' && arg) { await renderMaterial(view, ctx, arg); return; }
     if (!store.isAuthed() && !ctx.shared) { showGate(); return; }
     buildNav();
     if (!ctx.settings) ctx.settings = await store.getSettings();
@@ -182,7 +185,7 @@ async function main() {
 
   buildMenu();
   const hash = location.hash || '';
-  if (hash.startsWith('#/s/')) { await route(); return; }
+  if (hash.startsWith('#/s/') || hash.startsWith('#/m/')) { await route(); return; }
   if (store.isAuthed() && !store.idleExpired(GATE_IDLE_MS)) { ctx.user = store.cachedUser(); await afterLogin(); }
   else { if (store.isAuthed()) store.logout(); showGate(); }
 }

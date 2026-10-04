@@ -85,3 +85,14 @@ CREATE TABLE IF NOT EXISTS usage (
   n INTEGER NOT NULL DEFAULT 1    -- Zähler: Tokens, Bytes, Anzahl
 );
 CREATE INDEX IF NOT EXISTS usage_user_ts ON usage(user_id, ts);
+CREATE TABLE IF NOT EXISTS material_links (
+  token TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,          -- Ersteller (Materialeigner)
+  person TEXT NOT NULL,           -- externer Empfänger (Name)
+  regs TEXT NOT NULL,             -- JSON-Liste Kennungen, z. B. ["HB-QWZ"]
+  expires_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  last_opened_at INTEGER,
+  revoked INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS material_user ON material_links(user_id);

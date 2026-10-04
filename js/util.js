@@ -7,7 +7,7 @@ export function h(spec, attrs, ...children) {
   if (attrs && (typeof attrs !== 'object' || attrs instanceof Node || Array.isArray(attrs))) { children.unshift(attrs); attrs = null; }
   const [tag, ...rest] = spec.split(/(?=[.#])/);
   const el = document.createElement(tag || 'div');
-  for (const r of rest) { if (r[0] === '.') el.classList.add(r.slice(1)); else if (r[0] === '#') el.id = r.slice(1); }
+  for (const r of rest) { if (r[0] === '.') { if (r.length > 1) el.classList.add(r.slice(1)); } else if (r[0] === '#') el.id = r.slice(1); }   // leeres Segment («.tag.») ignorieren
   if (attrs) for (const [k, v] of Object.entries(attrs)) {
     if (v == null || v === false) continue;
     if (k === 'class') el.className += (el.className ? ' ' : '') + v;

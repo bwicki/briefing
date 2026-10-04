@@ -140,7 +140,7 @@ export async function renderPaxCard(view, ctx, id, opts = {}) {
   const { rows } = scheduleFor(b, sun);
   const depart = rows.find((r) => r.key === 'depart'), landing = rows.find((r) => r.key === 'landing');
   const pic = S.persons.find((p) => p.id === b.persons.picId);
-  const back = ctx.shared ? `#/s/${ctx.shared.token}/v` : `#/b/${b.id}`;
+  const back = ctx.shared?.material ? `#/m/${ctx.shared.token}/${b.id}` : ctx.shared ? `#/s/${ctx.shared.token}/v` : `#/b/${b.id}`;
   setHeader({ title: t('pax_title'), sub: `${fmtDate(zz, b.time.startMs, lang)} · ${b.site.name}`, tools: [h('button.btn', { type: 'button', onclick: () => ctx.navigate(back) }, '← ' + t('view_brief')), h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print'))] });
   const items = (S.paxCardItems?.[lang] || S.paxCardItems?.de || []);
   const card = h('div.brief.paxcard', [

@@ -23,7 +23,9 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const canEdit = !foreign && (!shared || shared.role === 'edit');
   const tools = [];
   const toggle = h('div.viewtoggle', [canEdit ? h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}` : `#/b/${b.id}`) }, t('view_edit')) : null, h('button.on', { type: 'button' }, t('view_brief'))]);
-  tools.push(toggle, h('button.btn', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`) }, t('pax_title')), h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print')));
+  const paxHash = shared?.material ? `#/m/${shared.token}/${b.id}/p` : shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`;
+  if (shared?.material) tools.push(h('button.btn', { type: 'button', onclick: () => ctx.navigate(`#/m/${shared.token}`) }, `← ${t('ml_title')}`));
+  tools.push(toggle, h('button.btn', { type: 'button', onclick: () => ctx.navigate(paxHash) }, t('pax_title')), h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print')));
   const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
   setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${ownerNote}`, tools });
 

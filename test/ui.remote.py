@@ -143,5 +143,31 @@ with sync_playwright() as p:
     assert 'Nur lesen' in pg.inner_text('#subtitle'), 'Nur-lesen-Hinweis: ' + pg.inner_text('#subtitle')
     assert pg.query_selector('.viewtoggle button:has-text("Erarbeitung")') is None, 'kein Bearbeiten-Umschalter'
     pg.screenshot(path=f'{OUT}/remote_foreign_view.png')
+    # ---- Material-Link für Externe: bwicki erstellt Link für HB-QWP, Externer sieht eigene + fremde Briefings mit HB-QWP
+    pg.goto(BASE + '#/settings?users'); pg.wait_for_timeout(1200)
+    card = pg.query_selector('.card:has(button:has-text("Material-Link erstellen"))')
+    assert card is not None, 'Material-Link-Karte'
+    card.query_selector('input[type=text]').fill('Halter Extern')
+    card.query_selector('label.check:has-text("HB-QWP") input').check()
+    card.query_selector('button:has-text("Material-Link erstellen")').click(); pg.wait_for_timeout(1200)
+    mlink = card.query_selector('.item-box .mono').inner_text().strip(); print('material link', mlink)
+    assert '#/m/' in mlink, 'Material-Link-URL'
+    pg.screenshot(path=f'{OUT}/remote_material_links.png', full_page=True)
+    c3 = b.new_context(viewport={'width': 390, 'height': 844}, locale='de-CH', timezone_id='Europe/Zurich')
+    p3 = c3.new_page()
+    p3.on('pageerror', lambda e: errors.append(f'[material] pageerror: {e}'))
+    p3.route('**/js/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body=f"window.BRIEFING_CONFIG = {{ apiBase: '{API}' }};"))
+    p3.goto(mlink); p3.wait_for_timeout(1500)
+    txt = p3.inner_text('#view')
+    assert 'HB-QWP' in txt and 'Max Test' in txt, 'Material-Liste zeigt fremdes Briefing mit HB-QWP: ' + txt[:300]
+    assert not p3.is_visible('#gate'), 'kein Kennwort für Material-Link'
+    p3.screenshot(path=f'{OUT}/remote_material_list.png', full_page=True)
+    p3.click('a.bcard >> nth=0'); p3.wait_for_timeout(1500)
+    assert p3.evaluate('location.hash').startswith('#/m/'), 'Briefingsicht unter #/m/: ' + p3.evaluate('location.hash')
+    assert 'Fahrtbriefing' in p3.inner_text('.brief'), 'Briefingsicht gerendert'
+    assert p3.query_selector('.viewtoggle button:has-text("Erarbeitung")') is None, 'Material-Link nur lesen'
+    p3.screenshot(path=f'{OUT}/remote_material_view.png')
+    p3.click('button:has-text("Pax-Sicherheitskarte")'); p3.wait_for_timeout(1000)
+    assert p3.evaluate('location.hash').endswith('/p'), 'Pax-Karte unter Material-Link: ' + p3.evaluate('location.hash')
     b.close()
 print('\n'.join(errors) if errors else 'OK – keine Seitenfehler')

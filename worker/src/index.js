@@ -316,6 +316,32 @@ async function route(req, env, url, ctx) {
     return err('method', 405);
   }
 
+  // ---- Material-Links (ohne Sitzung): externer Materialeigner sieht alle Briefings mit seinen Kennungen
+  mm = m(/^\/api\/material\/([A-Za-z0-9_-]+)(?:\/([a-z0-9]+))?$/);
+  if (mm && req.method === 'GET') {
+    const ml = await env.DB.prepare('SELECT * FROM material_links WHERE token=?').bind(mm[1]).first();
+    if (!ml || ml.revoked) return err('link revoked', 410);
+    if (ml.expires_at < Date.now()) return err('link expired', 410);
+    let regs = []; try { regs = JSON.parse(ml.regs); } catch { /* leer */ }
+    regs = regs.map((r) => String(r)).filter(Boolean);
+    if (!regs.length) return err('no regs', 410);
+    const owner = await getUser(env, ml.user_id);
+    if (!owner || !owner.active) return err('link revoked', 410);
+    const marks = regs.map(() => '?').join(',');
+    ctx.waitUntil(env.DB.prepare('UPDATE material_links SET last_opened_at=? WHERE token=?').bind(Date.now(), ml.token).run());
+    if (!mm[2]) {
+      const rows = await env.DB.prepare(`SELECT b.id,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name
+        FROM briefings b LEFT JOIN users u ON u.id=b.owner_id WHERE (b.owner_id=? OR b.material_owner=?) AND b.reg IN (${marks}) ORDER BY b.start_ms DESC`).bind(ml.user_id, ml.user_id, ...regs).all();
+      logUsage(env, ctx, ml.user_id, 'link_open', `material ${ml.person}`);
+      return json({ person: ml.person, regs, owner: owner.name, expiresAt: ml.expires_at, briefings: (rows.results || []).map(rowOut) });
+    }
+    const row = await env.DB.prepare(`SELECT id FROM briefings WHERE id=? AND (owner_id=? OR material_owner=?) AND reg IN (${marks})`).bind(mm[2], ml.user_id, ml.user_id, ...regs).first();
+    if (!row) return err('not found', 404);
+    const b = await loadBriefing(env, mm[2]);
+    logUsage(env, ctx, ml.user_id, 'link_open', `material ${ml.person} ${mm[2]}`);
+    return json({ briefing: b, role: 'read', person: ml.person, settings: await userSettings(env, b.ownerId) });
+  }
+
   // ---- Bild-Upload über Link (Mitarbeit)
   mm = m(/^\/api\/briefings\/([a-z0-9]+)\/files$/);
   if (mm && req.method === 'POST' && url.searchParams.get('t')) {
@@ -393,6 +419,25 @@ async function route(req, env, url, ctx) {
     await env.DB.prepare('DELETE FROM shares WHERE id=?').bind(mm[1]).run();
     return new Response(null, { status: 204 });
   }
+
+  // ---- Material-Links verwalten (eigene)
+  if (p === '/api/material-links') {
+    if (req.method === 'GET') {
+      const rows = await env.DB.prepare('SELECT token,person,regs,expires_at,created_at,last_opened_at FROM material_links WHERE user_id=? AND revoked=0 ORDER BY created_at').bind(user.id).all();
+      return json({ links: (rows.results || []).map((r) => { let regs = []; try { regs = JSON.parse(r.regs); } catch { /* leer */ } return { token: r.token, person: r.person, regs, expiresAt: r.expires_at, createdAt: r.created_at, lastOpenedAt: r.last_opened_at }; }) });
+    }
+    if (req.method === 'POST') {
+      const { person, regs, expiresAt } = await body();
+      const list = (Array.isArray(regs) ? regs : []).map((r) => String(r).trim().toUpperCase().slice(0, 20)).filter(Boolean).slice(0, 20);
+      if (!person || !list.length) return err('bad link');
+      const token = rnd(16);
+      await env.DB.prepare('INSERT INTO material_links (token,user_id,person,regs,expires_at,created_at) VALUES (?,?,?,?,?,?)').bind(token, user.id, String(person).slice(0, 80), JSON.stringify(list), +expiresAt || Date.now() + 365 * 86400000, Date.now()).run();
+      logUsage(env, ctx, user.id, 'link_create', `material ${list.join(',')}`);
+      return json({ link: { token, person, regs: list, expiresAt: +expiresAt || Date.now() + 365 * 86400000 } });
+    }
+  }
+  mm = m(/^\/api\/material-links\/([A-Za-z0-9_-]+)$/);
+  if (mm && req.method === 'DELETE') { await env.DB.prepare('UPDATE material_links SET revoked=1 WHERE token=? AND user_id=?').bind(mm[1], user.id).run(); return new Response(null, { status: 204 }); }
 
   // ---- Briefings: Liste nach Sicht (own | all [Super] | material)
   if (p === '/api/briefings' && req.method === 'GET') {
@@ -484,7 +529,7 @@ async function route(req, env, url, ctx) {
           const src = await userSettings(env, copyFrom);
           const copy = JSON.parse(JSON.stringify(src)); copy.ownerName = String(name || uid).slice(0, 80);
           await setKv(env, `settings:${uid}`, copy);
-        } else await setKv(env, `settings:${uid}`, { ownerName: String(name || uid).slice(0, 80), balloons: { defaultType: 'hab', defaultHab: '', defaultEnvelope: '', defaultBasket: '', hab: [], envelopes: [], baskets: [] }, persons: [], sites: [], meetings: [], operators: [] });
+        } else await setKv(env, `settings:${uid}`, { ownerName: String(name || uid).slice(0, 80) });   // Rest: Beispiel-Vorgaben der App (Client ergänzt)
         logUsage(env, ctx, user.id, 'user_create', uid);
         return json({ ok: true, user: await getUser(env, uid) });
       }

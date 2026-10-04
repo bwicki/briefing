@@ -116,8 +116,11 @@ eine andere Adresse verwendet, dort eintragen und pushen.
 5. Daten aus dem lokalen Modus werden nicht automatisch übernommen — Briefings dort
    neu anlegen (Phase 1 ist dafür gedacht, mit dem Server zu beginnen).
 6. Weitere Benutzer: **Einstellungen → Benutzer & Freigaben → Neuer Benutzer**
-   (Anmeldename, Anzeigename, Startkennwort, Rolle, «Stamm kopieren von», KI/NOTAM/
-   PDF freischalten). Der neue Benutzer ändert sein Kennwort selbst unter Experte.
+   (Anmeldename, Anzeigename, Startkennwort, Rolle, «Stamm kopieren von» oder
+   Beispiel-Stamm, KI/NOTAM/PDF freischalten). Der neue Benutzer ändert sein
+   Kennwort selbst unter Experte.
+7. Externe Materialeigner ohne Konto: Einstellungen → Benutzer & Freigaben →
+   *Fahrten mit meinem Material* → Name, Kennungen, Gültigkeit → Link weitergeben.
 
 ## 7b Bestehende Datenbank auf 0.5.0 heben (Mehrbenutzer)
 
@@ -132,7 +135,8 @@ npx wrangler d1 execute briefing --remote --file=migrate-0.5.sql  # Spalten owne
 
 Bestehende Briefings gehören danach `bwicki`; Einstellungen und Kennwort werden
 beim ersten Aufruf automatisch in den Supermaster übernommen. Alte Sitzungen sind
-ungültig — einmal neu anmelden.
+ungültig — einmal neu anmelden. `schema.sql` ist bei jeder Version erneut
+anzuwenden (legt nur Fehlendes an, z. B. `material_links` ab 0.5.1).
 
 ## 7a DWD-/METAR-Kopie (GitHub Action)
 

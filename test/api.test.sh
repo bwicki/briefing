@@ -53,6 +53,15 @@ echo "# Freigabe entziehen (leere Kategorien)"; j -H "$H" -X POST $A/api/shares 
 echo "# test2: Material-Eigner ohne Freigabe wird beim Speichern verworfen"; j -H "$H3" -X PUT $A/api/briefings/test00000003 -d '{"briefing":{"id":"test00000003","status":"draft","time":{"startMs":1791200000000},"site":{"name":"Gladbeck","tz":"Europe/Berlin"},"balloon":{"label":"HB-QWZ","reg":"HB-QWZ","ownerId":"bwicki"},"flight":{"kind":"private"},"panels":{},"log":[]},"who":"test2"}' > /dev/null; j -H "$H" "$A/api/briefings?scope=material" | grep -c test00000003 || true
 echo "# Benutzer ändern (Kennwort, deaktivieren)"; j -H "$H" -X PUT $A/api/admin/users/test2 -d '{"password":"efgh","active":false}' | head -c 120; echo; code -X POST $A/api/session -H 'Content-Type: application/json' -d '{"user":"test2","password":"efgh"}'; echo " (401 = deaktiviert)"
 j -H "$H" -X PUT $A/api/admin/users/test2 -d '{"active":true}' > /dev/null
+echo "# Material-Link (Extern): bwicki erstellt Link für HB-QWZ"; ML=$(j -H "$H" -X POST $A/api/material-links -d '{"person":"Halter Extern","regs":["HB-QWZ"],"expiresAt":1900000000000}'); echo "$ML"; MT=$(echo "$ML" | tok)
+echo "# Material-Link Liste (ohne Sitzung): eigenes test00000001 + fremdes test00000003 mit Material bwicki"
+j -H "$H" -X POST $A/api/shares -d '{"to":"test2","categories":["balloons"]}' > /dev/null; TOK3=$(j -X POST $A/api/session -d '{"user":"test2","password":"efgh"}' | tok)
+j -H "Authorization: Bearer $TOK3" -X PUT $A/api/briefings/test00000003 -d '{"briefing":{"id":"test00000003","status":"draft","time":{"startMs":1791200000000},"site":{"name":"Gladbeck","tz":"Europe/Berlin"},"balloon":{"label":"HB-QWZ","reg":"HB-QWZ","ownerId":"bwicki"},"flight":{"kind":"private"},"panels":{},"log":[]},"who":"test2"}' > /dev/null
+j "$A/api/material/$MT" | grep -o '"id":"test0000000[0-9]"' | tr '\n' ' '; echo
+echo "# Material-Link: Briefing lesen"; j "$A/api/material/$MT/test00000003" | grep -o '"role":"read"\|"person":"Halter Extern"' | tr '\n' ' '; echo
+echo "# Material-Link: Briefing mit anderer Kennung → 404"; j -H "$H" -X PUT $A/api/briefings/test00000004 -d '{"briefing":{"id":"test00000004","status":"draft","time":{"startMs":1791300000000},"site":{"name":"X","tz":"Europe/Zurich"},"balloon":{"label":"HB-QWP","reg":"HB-QWP"},"flight":{"kind":"private"},"panels":{},"log":[]},"who":"test"}' > /dev/null; code "$A/api/material/$MT/test00000004"; echo
+echo "# Material-Link widerrufen → 410"; code -H "$H" -X DELETE $A/api/material-links/$MT; echo; code "$A/api/material/$MT"; echo
+code -H "$H" -X DELETE $A/api/briefings/test00000004; echo
 echo "# Statistik"; j -H "$H" $A/api/admin/stats | head -c 400; echo
 echo "# Statistik CSV"; curl -s -H "$H" "$A/api/admin/stats?format=csv" | head -5
 echo "# Export all (Super)"; j -H "$H" "$A/api/export?all=1" | grep -o '"users":{"[a-z0-9]*"' ; echo
