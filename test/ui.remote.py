@@ -80,6 +80,18 @@ with sync_playwright() as p:
     # Settings: Zugänge
     pg.goto(BASE + '#/settings?access'); pg.wait_for_timeout(900)
     pg.click('summary:has-text("Zugänge")'); pg.wait_for_timeout(400)
+    row = pg.query_selector('.frow:has-text("Open-Meteo API key")')
+    inp = row.query_selector('input'); inp.fill('key-sichtbar-123')
+    assert inp.get_attribute('type') == 'password', 'Eingabe verdeckt'
+    row.query_selector('button.eye').click(); pg.wait_for_timeout(200)
+    assert inp.get_attribute('type') == 'text', 'Auge zeigt Eingabe'
+    row.query_selector('button:has-text("Speichern")').click(); pg.wait_for_timeout(1200)
+    row = pg.query_selector('.frow:has-text("Open-Meteo API key")'); inp = row.query_selector('input')
+    assert inp.input_value() == '', 'Feld nach Speichern leer'
+    row.query_selector('button.eye').click(); pg.wait_for_timeout(1000)
+    assert inp.input_value() == 'key-sichtbar-123' and inp.get_attribute('type') == 'text', 'gespeicherter Wert wird nachgeladen und angezeigt: ' + inp.input_value()
+    row.query_selector('button.eye').click(); pg.wait_for_timeout(200)
+    assert inp.input_value() == '' and inp.get_attribute('type') == 'password', 'Verbergen leert nachgeladenen Wert'
     pg.screenshot(path=f'{OUT}/remote_settings_access.png', full_page=True)
 
     # ---- Mehrbenutzer: Super legt Master «mtest» an (Stamm kopiert, ohne KI) und gibt Ballone + Startplätze frei

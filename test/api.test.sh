@@ -15,6 +15,7 @@ echo "# me"; j -H "$H" $A/api/me; echo
 echo "# Settings leer"; j -H "$H" $A/api/settings; echo
 echo "# Settings speichern"; j -H "$H" -X PUT $A/api/settings -d '{"settings":{"ownerName":"B. Wicki","lang":"de","balloons":{"hab":[{"id":"HB-QWZ","name":"HB-QWZ"}],"envelopes":[],"baskets":[]},"persons":[{"id":"p1","name":"Pilot"}],"sites":[{"id":"s1","name":"Oberlunkhofen"}],"meetings":[],"operators":[{"id":"o1","name":"Wicki Aero"}]}}'; echo
 echo "# Secret (Super)"; j -H "$H" -X PUT $A/api/secrets -d '{"name":"openmeteo","value":"abc123"}'; j -H "$H" $A/api/secrets; echo
+echo "# Secret anzeigen (Super)"; j -H "$H" $A/api/secrets/openmeteo | grep -o '"value":"abc123"'; code -H "$H" $A/api/secrets/nixda; echo
 echo "# Briefing anlegen"; j -H "$H" -X PUT $A/api/briefings/test00000001 -d '{"briefing":{"id":"test00000001","status":"draft","time":{"startMs":1791100800000},"site":{"name":"Oberlunkhofen","tz":"Europe/Zurich","icao":"4719N00824E","elev":461},"balloon":{"label":"HB-QWZ","reg":"HB-QWZ"},"flight":{"kind":"commercial"},"panels":{},"log":[]},"who":"test"}'; echo
 echo "# Liste (own)"; j -H "$H" $A/api/briefings; echo
 echo "# Link erstellen"; LINK=$(j -H "$H" -X POST $A/api/briefings/test00000001/access -d '{"person":"Martin","role":"edit","expiresAt":1900000000000}'); echo "$LINK"; T=$(echo "$LINK" | tok)
@@ -37,7 +38,7 @@ echo "# test2: me"; j -H "$H3" $A/api/me; echo
 echo "# test2: kopierter Stamm"; j -H "$H3" $A/api/settings | grep -o '"ownerName":"[^"]*"\|"sites":\[[^]]*\]'; echo
 echo "# test2: Liste leer, all → 403"; j -H "$H3" $A/api/briefings; echo; code -H "$H3" "$A/api/briefings?scope=all"; echo
 echo "# test2: fremdes Briefing → 403"; code -H "$H3" $A/api/briefings/test00000001; echo
-echo "# test2: Secrets lesen ok, schreiben → 403"; j -H "$H3" $A/api/secrets; echo; code -H "$H3" -X PUT $A/api/secrets -H 'Content-Type: application/json' -d '{"name":"x","value":"y"}'; echo
+echo "# test2: Secrets lesen ok, schreiben → 403, anzeigen → 403"; j -H "$H3" $A/api/secrets; echo; code -H "$H3" -X PUT $A/api/secrets -H 'Content-Type: application/json' -d '{"name":"x","value":"y"}'; echo; code -H "$H3" $A/api/secrets/openmeteo; echo
 echo "# test2: admin → 403"; code -H "$H3" $A/api/admin/users; echo
 echo "# test2: ai nicht freigeschaltet → 403"; code -H "$H3" -X POST "$A/api/wx/ai" -H 'Content-Type: application/json' -d '{"prompt":"x"}'; echo
 echo "# bwicki gibt test2 Ballone+Startplätze frei"; j -H "$H" -X POST $A/api/shares -d '{"to":"test2","categories":["balloons","sites"]}'; echo

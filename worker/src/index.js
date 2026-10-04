@@ -397,6 +397,14 @@ async function route(req, env, url, ctx) {
   }
   mm = m(/^\/api\/secrets\/([a-z0-9_]+)$/);
   if (mm && req.method === 'DELETE') { if (!isSuper) return err('forbidden', 403); await env.DB.prepare('DELETE FROM secrets WHERE name=?').bind(mm[1]).run(); return new Response(null, { status: 204 }); }
+  if (mm && req.method === 'GET') {
+    // Wert anzeigen (nur Supermaster, wird protokolliert) — z. B. um einen Schlüssel zu prüfen oder zu übernehmen
+    if (!isSuper) return err('forbidden', 403);
+    const row = await env.DB.prepare('SELECT iv, ct, updated_at FROM secrets WHERE name=?').bind(mm[1]).first();
+    if (!row) return err('not found', 404);
+    logUsage(env, ctx, user.id, 'secret_view', mm[1]);
+    return json({ name: mm[1], value: await decrypt(env, row.iv, row.ct), updatedAt: row.updated_at }, 200, { 'Cache-Control': 'no-store' });
+  }
 
   // ---- Benutzerliste (für Freigaben) und Freigaben
   if (p === '/api/users' && req.method === 'GET') {

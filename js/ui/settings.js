@@ -259,8 +259,20 @@ export async function renderSettings(view, ctx) {
       try { have = await ctx.store.listSecrets(); } catch (e) { box.appendChild(h('div.err', e.message)); return; }
       if (ro) { box.appendChild(h('div.note', t('set_secretsReadOnly'))); box.appendChild(h('ul.plain', names.map(([k, label]) => h('li', `${label}: ${have[k] ? t('set_secretSet') : t('set_secretUnset')}`)))); return; }
       for (const [k, label] of names) {
-        const inp = input('password', '', { placeholder: have[k] ? '••••••••' : '', autocomplete: 'off' });
-        box.appendChild(h('div.frow.c3', [field(label, inp), h('div.f', [h('label', have[k] ? t('set_secretSet') : t('set_secretUnset')), h('div.row-actions', [h('button.btn', { type: 'button', onclick: async () => { if (!inp.value) return; await ctx.store.setSecret(k, inp.value); inp.value = ''; toast(t('set_saved')); drawA(); } }, t('set_secretSave')), have[k] ? h('button.btn', { type: 'button', onclick: async () => { await ctx.store.deleteSecret(k); drawA(); } }, t('set_secretDelete')) : null])])]));
+        const inp = input('password', '', { placeholder: have[k] ? '••••••••' : '', autocomplete: 'off', spellcheck: 'false' });
+        // Auge: Eingabe im Klartext zeigen; bei leerem Feld den gespeicherten Wert nachladen (Supermaster, protokolliert)
+        let shown = false, loaded = '';
+        const eye = h('button.btn.icon.eye', { type: 'button', title: t('set_secretShow'), 'aria-label': t('set_secretShow') }, '👁');
+        eye.onclick = async () => {
+          if (!shown) {
+            if (!inp.value && have[k]) { try { loaded = (await ctx.store.getSecret(k)).value || ''; inp.value = loaded; } catch (e) { toast(e.status === 403 ? t('set_secretsReadOnly') : `${t('error')}: ${e.message}`); return; } }
+            inp.type = 'text'; shown = true; eye.textContent = '🙈'; eye.title = t('set_secretHide');
+          } else {
+            inp.type = 'password'; shown = false; eye.textContent = '👁'; eye.title = t('set_secretShow');
+            if (loaded && inp.value === loaded) { inp.value = ''; loaded = ''; }   // unverändert nachgeladen → wieder leeren (kein versehentliches Neu-Speichern)
+          }
+        };
+        box.appendChild(h('div.frow.c3', [field(label, h('div.pwwrap', [inp, eye])), h('div.f', [h('label', have[k] ? t('set_secretSet') : t('set_secretUnset')), h('div.row-actions', [h('button.btn', { type: 'button', onclick: async () => { if (!inp.value || inp.value === loaded) { toast(t('set_secretUnchanged')); return; } await ctx.store.setSecret(k, inp.value); inp.value = ''; loaded = ''; toast(t('set_saved')); drawA(); } }, t('set_secretSave')), have[k] ? h('button.btn', { type: 'button', onclick: async () => { if (!(await dialog(t('set_secretDelete'), h('p', `${label}: ${t('set_secretConfirm')}`), [{ label: t('cancel'), value: false }, { label: t('delete'), value: true, primary: true }]))) return; await ctx.store.deleteSecret(k); drawA(); } }, t('set_secretDelete')) : null])])]));
       }
     };
     drawA();

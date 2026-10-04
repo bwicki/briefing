@@ -61,6 +61,7 @@ const local = {
   async listSecrets() { return {}; },
   async setSecret() { throw new Error('local'); },
   async deleteSecret() { throw new Error('local'); },
+  async getSecret() { throw new Error('local'); },
   async openShared() { throw new Error('local'); },
   async saveShared() { throw new Error('local'); },
   async getLog(id) { const b = await this.getBriefing(id); return b?.log || []; },
@@ -134,6 +135,7 @@ const remote = {
   async listSecrets() { return (await api('/api/secrets')).secrets; },
   async setSecret(name, value) { await api('/api/secrets', { method: 'PUT', body: { name, value } }); },
   async deleteSecret(name) { await api(`/api/secrets/${name}`, { method: 'DELETE' }); },
+  async getSecret(name) { return api(`/api/secrets/${name}`); },
   async openShared(token, who) { return api(`/api/shared/${token}${who ? `?who=${encodeURIComponent(who)}` : ''}`); },
   async saveShared(token, b, who) {
     const j = await api(`/api/shared/${token}`, { method: 'PUT', body: { briefing: b, who } });
@@ -170,7 +172,7 @@ export const store = {
   cachedUser() { return load(LS.me, null); },
   idleExpired(ms = 2 * 60 * 60 * 1000) { const t = load(LS.touch, 0); return t && Date.now() - t > ms; },
 };
-for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'uploadImage', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'openShared', 'saveShared', 'getLog', 'data', 'exportAll',
+for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'uploadImage', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'getSecret', 'openShared', 'saveShared', 'getLog', 'data', 'exportAll',
   'me', 'listUsers', 'listShares', 'setShare', 'getSettingsOf', 'adminUsers', 'adminCreateUser', 'adminUpdateUser', 'adminStats', 'adminStatsCsv',
   'listMaterialLinks', 'createMaterialLink', 'revokeMaterialLink', 'openMaterial']) {
   store[k] = (...a) => store.impl[k](...a);

@@ -239,7 +239,8 @@ unten), Übergangshöhen, Go/No-Go-Kriterien (Ampel ab Phase 3), Panels & Pflich
 Freigabe-Links, Benutzer & Freigaben (Stamm-Freigaben; Supermaster: Benutzer
 anlegen, Kennwort setzen, Freischaltungen, Stamm ansehen), Statistik (Supermaster),
 Zugänge (API-Schlüssel und Logins, zentral, verschlüsselt; nur der Supermaster
-ändert sie), Experte (Kennwort ändern, Reserve-Regel). *Export/Import JSON* sichert
+ändert sie; das Auge zeigt die Eingabe im Klartext und lädt bei leerem Feld den
+gespeicherten Wert nach — protokolliert), Experte (Kennwort ändern, Reserve-Regel). *Export/Import JSON* sichert
 die Einstellungen (ohne Zugänge).
 
 ---

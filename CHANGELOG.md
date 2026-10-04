@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.2 — 2026-10-04
+
+* Zugänge: Auge zum Anzeigen/Verbergen der Eingabe; bei leerem Feld lädt es den
+  gespeicherten Wert nach (`GET /api/secrets/:name`, nur Supermaster, als
+  `secret_view` protokolliert). Löschen mit Rückfrage; «Speichern» ohne Änderung
+  wird gemeldet.
+
 ## 0.5.1 — 2026-10-04
 
 * Material-Links für Externe: Materialeigner ohne Konto sehen über einen Link
