@@ -23,3 +23,17 @@ echo "# zurück auf 1234"; TOK2=$(j -X POST $A/api/session -d '{"password":"5678
 echo "# Export"; j -H "$H" $A/api/export | head -c 200; echo
 echo "# ohne Token"; curl -s -o /dev/null -w "%{http_code}\n" $A/api/briefings
 echo "# löschen"; curl -s -o /dev/null -w "%{http_code}\n" -H "$H" -X DELETE $A/api/briefings/test00000001
+echo "# --- Datenabrufe (/api/wx) ---"
+TOK=$(j -X POST $A/api/session -d '{"password":"1234"}' | sed -E 's/.*"token":"([^"]+)".*/\1/'); H="Authorization: Bearer $TOK"
+echo "# wx ohne Token → 401"; curl -s -o /dev/null -w "%{http_code}\n" "$A/api/wx/metar?lat=47.3&lon=8.4"
+echo "# om ungültige Query → 400"; curl -s -w " %{http_code}\n" -H "$H" "$A/api/wx/om?query=foo"
+echo "# notam ohne Zugang → 424"; curl -s -w " %{http_code}\n" -H "$H" "$A/api/wx/notam?lat=47.3&lon=8.4"
+echo "# ai ohne Zugang → 424"; curl -s -w " %{http_code}\n" -H "$H" -X POST "$A/api/wx/ai" -d '{"prompt":"x"}'
+echo "# snapshot fremder Host → 400"; curl -s -w " %{http_code}\n" -H "$H" -X POST "$A/api/wx/snapshot?b=test00000001" -d '{"url":"https://example.com/x.png"}'
+echo "# unbekannt → 404"; curl -s -o /dev/null -w "%{http_code}\n" -H "$H" "$A/api/wx/foo"
+echo "# Link-Nutzer (read) darf dabs nicht → 403 (nach Anlage eines Links)"
+j -H "$H" -X PUT $A/api/briefings/test00000002 -d '{"briefing":{"id":"test00000002","status":"draft","time":{"startMs":1791100800000},"site":{"name":"X","tz":"Europe/Zurich"},"balloon":{"label":"HB-QWZ","reg":"HB-QWZ"},"flight":{"kind":"private"},"panels":{},"log":[]},"who":"test"}' > /dev/null
+T2=$(j -H "$H" -X POST $A/api/briefings/test00000002/access -d '{"person":"Leser","role":"read","expiresAt":1900000000000}' | sed -E 's/.*"token":"([^"]+)".*/\1/')
+curl -s -o /dev/null -w "%{http_code}\n" "$A/api/wx/dabs?t=$T2"
+echo "# Link-Nutzer darf metar (Abruf extern, hier Netz evtl. gesperrt → 200 oder 500)"; curl -s -o /dev/null -w "%{http_code}\n" "$A/api/wx/metar?lat=47.3&lon=8.4&t=$T2"
+curl -s -o /dev/null -w "%{http_code}\n" -H "$H" -X DELETE $A/api/briefings/test00000002

@@ -49,6 +49,8 @@ const local = {
   async openShared() { throw new Error('local'); },
   async saveShared() { throw new Error('local'); },
   async getLog(id) { const b = await this.getBriefing(id); return b?.log || []; },
+  /** Datenabrufe ohne Server: nur, was öffentlich und CORS-frei ist. */
+  async data(kind, params = {}, shareToken, body = null) { const { localData } = await import('./net.js'); return localData(kind, { ...params, ...(body || {}) }); },
 };
 
 // ---------------------------------------------------------------- remote
@@ -102,6 +104,12 @@ const remote = {
     return b;
   },
   async getLog(id) { return (await api(`/api/briefings/${id}/log`)).log; },
+  /** Datenabrufe über den Worker (Schlüssel bleiben dort); shareToken für Link-Nutzer. */
+  async data(kind, params = {}, shareToken, body = null) {
+    const q = new URLSearchParams(); for (const [k, v] of Object.entries(params)) if (v != null) q.set(k, String(v));
+    if (shareToken) q.set('t', shareToken);
+    return api(`/api/wx/${kind}?${q.toString()}`, body ? { method: 'POST', body } : {});
+  },
 };
 
 function summary(b) {
@@ -122,7 +130,7 @@ export const store = {
   touch() { save(LS.touch, Date.now()); },
   idleExpired(ms = 2 * 60 * 60 * 1000) { const t = load(LS.touch, 0); return t && Date.now() - t > ms; },
 };
-for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'uploadImage', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'openShared', 'saveShared', 'getLog']) {
+for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'uploadImage', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'openShared', 'saveShared', 'getLog', 'data']) {
   store[k] = (...a) => store.impl[k](...a);
 }
 export { summary };

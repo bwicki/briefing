@@ -58,8 +58,8 @@ export const DEFAULT_SETTINGS = {
     { id: 'katzenrueti', name: 'Katzenrüti (P+R)', address: 'Katzenrütistrasse 308, 8153 Rümlang', lat: 47.4474, lon: 8.5215, mapsUrl: 'https://goo.gl/maps/JfTdKeyJVWB4KfRW9', default: true },
   ],
   intentDefaults: {
-    hab: { durationMin: 120, altMinFt: 500, altMaxFt: 5000, levels: ['SFC', '500 AGL', '1000', '2000', '3000', '5000'] },
-    gas: { durationMin: 1440, altMinFt: 1000, altMaxFt: 10000, levels: ['SFC', '1000', '2000', '3000', '5000', '8000', '10000'] },
+    hab: { durationMin: 120, altMinFt: 500, altMaxFt: 5000, levels: ['SFC', '500 AGL', '1000 AGL', '3000', '5000', '8000'] },
+    gas: { durationMin: 1440, altMinFt: 1000, altMaxFt: 10000, levels: ['SFC', '1000 AGL', '3000', '5000', '8000', 'FL100'] },
   },
   scheduleDefaults: { trailerFactor: 1.15, surchargeMin: 5, bufferMin: 0, recoveryMin: 60 },
   reserve: { pct: 25, capMin: 30, minMin: 0 },
@@ -74,6 +74,17 @@ export const DEFAULT_SETTINGS = {
   ],
   transitionDefaults: { CH: ['zh', 'ch'], DE: ['de'], FR: ['fr'] },
   goNoGo: { dryWindowH: 10, noTsH: 15, meanWindKt: 10, gustKt: 12 },
+  flyLimits: { wind: [4, 6], gust: [6, 8], gustSpread: [4, 6], cape: [300, 800], precip: 0.1, visKm: 1.5, baseFt: 1000 },
+  trajDefaults: { hab: 120, gas: 1440, stepMin: 10 },
+  meteoDefaults: { topHpa: 500 },
+  metarRadiusKm: 120, metarCount: 4, notamRadiusNm: 25, aiModel: 'claude-sonnet-5-5',
+  synopticCharts: [
+    { name: 'DWD Bodenanalyse Europa/Nordatlantik', url: 'https://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_na_ana.png' },
+    { name: 'DWD Bodenanalyse Westeuropa', url: 'https://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_weu_ana.png' },
+    { name: 'ECMWF Bodendruck + Wind 850 hPa zur Startzeit', url: 'https://charts.ecmwf.int/opencharts-api/v1/products/medium-mslp-wind850/?projection=opencharts_europe&valid_time={validTime}' },
+    { name: 'ECMWF Bodendruck + Wind 850 hPa, Start +24 h', url: 'https://charts.ecmwf.int/opencharts-api/v1/products/medium-mslp-wind850/?projection=opencharts_europe&valid_time={validTime+24}' },
+  ],
+  pdiffPairs: [],
   panels: { hidden: [], mandatory: ['A.sun', 'A.massperf', 'B.fwp', 'C.dabs', 'C.notam'] },
   links: { defaultExpiryDays: 7 },
   sources: {

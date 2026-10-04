@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Fahrtbriefing">
+  <rect width="100" height="100" rx="22" fill="#f2f4f7"/><rect x=".75" y=".75" width="98.5" height="98.5" rx="21.4" fill="none" stroke="#d7dce3" stroke-width="1.5"/>
+  <text x="50" y="62" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-weight="800" font-size="54" fill="#2b3340">B</text>
+  <rect x="24" y="72" width="13" height="8" rx="2.5" fill="#1d8a56"/>
+  <rect x="37" y="72" width="13" height="8" rx="2.5" fill="#6d9418"/>
+  <rect x="50" y="72" width="13" height="8" rx="2.5" fill="#b96f14"/>
+  <rect x="63" y="72" width="13" height="8" rx="2.5" fill="#d1631a"/>
+</svg>

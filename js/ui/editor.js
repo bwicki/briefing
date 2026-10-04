@@ -8,6 +8,8 @@ import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing } from '../model.js';
 import { placeRow, placeLine } from './place.js';
+import { meteoBar, autoBlock } from './autopanels.js';
+import { refreshAll as refreshAllData } from '../auto/data.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { openAccessDialog } from './access.js';
 
@@ -90,7 +92,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const d = b.panels[p.key];
     const hasExtra = !!((d.extra?.text || '').trim() || (d.extra?.images || []).length);
     const extra = h('details.sub.extra', { open: hasExtra }, [h('summary', t('extra')), pasteArea(d.extra, (v) => { d.extra = v; touched(p.key); }, upload, { placeholder: t('extraHint'), rows: 2 })]);
-    const ai = d.ai?.text ? h('div.sub.ai', [h('span.lbl', t('ai')), h('div.note', d.ai.text)]) : null;
+    const ai = d.ai?.text ? h('div.sub.ai', [h('div.row-actions', [h('span.lbl', `${t('ai')} · ${d.ai.model || ''} · ${d.ai.ts ? fmtDateTime(z, d.ai.ts, lang) : ''}`), shared?.role === 'read' ? null : h('button.btn.icon', { type: 'button', title: t('ai_discard'), onclick: () => { d.ai = null; touched(p.key); drawPanels(); } }, '✕')]), textarea(d.ai.text, { rows: 3, readOnly: shared?.role === 'read', oninput: (e) => { d.ai.text = e.target.value; d.ai.edited = true; touched(p.key); } })]) : null;
     const cm = textarea(d.comment, { rows: 2, placeholder: t('comment'), oninput: (e) => { d.comment = e.target.value; touched(p.key); } });
     const comment = h('details.sub.cmt', { open: !!(d.comment || '').trim() }, [h('summary', t('comment')), cm]);
     return [extra, ai, comment];
@@ -124,6 +126,16 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         const drawLand = () => { clear(box); box.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, readOnly: ro, from: b.site, onPick: (pl) => { if (pl) Object.assign(b.landing, { name: pl.name, lat: pl.lat, lon: pl.lon, elev: pl.elev, icao: pl.icao, address: pl.address || '' }); else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' }); touched(p.key); drawLand(); } })); };
         drawLand();
         content = h('div', [box, field(t('landingText'), textarea(d.content.text || '', { rows: 2, readOnly: ro, oninput: (e) => { d.content.text = e.target.value; touched(p.key); } }))]);
+        break;
+      }
+      case 'auto': {
+        const link = p.link && S.sources[p.link];
+        if (!d.content) d.content = {};
+        content = h('div', [
+          h('div.row-actions', { style: { marginBottom: '6px' } }, [link ? h('a.btn', { href: link, target: '_blank', rel: 'noopener' }, t('panel_open')) : null]),
+          autoBlock(p, d, b, ctx, { onChange: () => touched(p.key), readOnly: shared?.role === 'read', upload }),
+          h('details.sub.extra', { open: !!((d.content.text || '').trim() || (d.content.images || []).length) || p.grade === 'half' }, [h('summary', t('panel_pasteSummary')), pasteArea(d.content, (v) => { Object.assign(d.content, { text: v.text, images: v.images }); touched(p.key); }, upload)]),
+        ]);
         break;
       }
       case 'paste': default: {
@@ -171,15 +183,26 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const extraGas = b.balloon.type === 'gas' ? h('div', [h('div.lbl', t('pb_gas')), h('ul', { style: { margin: '4px 0', paddingLeft: '18px' } }, GAS_BRIEFING_EXTRA[lang].map((x) => h('li', x)))]) : null;
     return h('div', [box, extraGas, h('details', [h('summary.small', 'AMC1 BOP.BAS.115'), h('pre.report', AMC1_BOP_BAS_115)])]);
   }
+  async function refreshAll(statusEl) {
+    const keys = panels.filter((p) => p.kind === 'auto' && (['meteogram', 'wind', 'temps', 'traj', 'balloon', 'pdiff', 'metar', 'sigmet'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE'))).map((p) => p.key);
+    let n = 0;
+    ctx.autoLoad = false;
+    const res = await refreshAllData(ctx, b, keys, (k, st, e) => { if (statusEl) statusEl.textContent = `${k} ${st === 'loading' ? '…' : st === 'ok' ? '✓' : '✗ ' + (e?.message || '')}`; });
+    for (const [k, snap] of Object.entries(res)) { if (!snap.error) { b.panels[k].content = { ...(b.panels[k].content || {}), auto: snap }; touched(k); n++; } }
+    b.meteo.lastRefresh = { ts: Date.now(), n, total: keys.length };
+    drawPanels(); ctx.autoLoad = true;
+  }
   function drawPanels() {
     clear(mainCol);
     for (const s of SECTIONS) {
       const ps = panels.filter((p) => p.section === s.id);
       if (!ps.length) continue;
       mainCol.appendChild(h('div.sect-title', `${s.id} · ${s[lang] || s.de}`));
+      if (s.id === 'B' && b.site.lat != null) mainCol.appendChild(meteoBar(b, ctx, { onChange: () => { dirty = true; saveSoon(); }, refreshAll, readOnly: shared?.role === 'read' }));
       for (const p of ps) mainCol.appendChild(renderPanel(p));
     }
   }
+  document.addEventListener('fb:ai', () => drawNav());
 
   // ---------------------------------------------------------------- Freigabe
   async function release() {

@@ -8,7 +8,7 @@ import { parseRacText, racValidity, linesFromPdfItems } from '../calc/rac.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
 import { placeRow, mapsUrl } from './place.js';
 
-const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'rac', 'transition', 'gonogo', 'panels', 'links', 'access', 'expert'];
+const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'rac', 'transition', 'gonogo', 'meteo', 'panels', 'links', 'access', 'expert'];
 
 export async function renderSettings(view, ctx) {
   let S = deepCopy(ctx.settings);
@@ -26,7 +26,7 @@ export async function renderSettings(view, ctx) {
     clear(nav);
     for (const s of SECTS) nav.appendChild(h('button', { type: 'button', class: cur === s ? 'on' : '', onclick: () => { cur = s; draw(); } }, t('set_' + s)));
     clear(body);
-    body.appendChild(({ general, balloons, persons, operators, sites, intent, schedule, rac, transition, gonogo, panels, links, access, expert })[cur]());
+    body.appendChild(({ general, balloons, persons, operators, sites, intent, schedule, rac, transition, gonogo, meteo, panels, links, access, expert })[cur]());
   }
   const numField = (obj, key, label, step = 1, cls) => field(label, input('number', obj[key] ?? '', { step, oninput: (e) => { obj[key] = num(e.target.value, null); } }), cls);
   const txtField = (obj, key, label, cls) => field(label, input('text', obj[key] ?? '', { oninput: (e) => { obj[key] = e.target.value; } }), cls);
@@ -171,8 +171,8 @@ export async function renderSettings(view, ctx) {
       const f = fileIn.files[0]; if (!f) return;
       status.textContent = t('set_racParse');
       try {
-        const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
-        pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+        const pdfjs = await import('../vendor/pdfjs/pdf.min.mjs');
+        pdfjs.GlobalWorkerOptions.workerSrc = new URL('../vendor/pdfjs/pdf.worker.min.mjs', import.meta.url).href;
         const doc = await pdfjs.getDocument({ data: await f.arrayBuffer() }).promise;
         let lines = [];
         for (let i = 1; i <= doc.numPages; i++) { const pg = await doc.getPage(i); const tc = await pg.getTextContent(); lines = lines.concat(linesFromPdfItems(tc.items)); }
@@ -204,6 +204,24 @@ export async function renderSettings(view, ctx) {
   function gonogo() {
     const g = S.goNoGo;
     return h('div.card', h('div.card-body', [h('div.frow.c4', [numField(g, 'dryWindowH', 'Trockenfenster ≥ h'), numField(g, 'noTsH', 'kein Gewitter innert h'), numField(g, 'meanWindKt', 'Mittelwind < kt'), numField(g, 'gustKt', 'Böen < kt')]), h('div.note', 'Ampel ab Phase 3.')]));
+  }
+
+  function meteo() {
+    const F = S.flyLimits, T = S.trajDefaults;
+    const pair = (key, label) => field(label, h('div.inline', [input('number', F[key][0], { step: 0.5, oninput: (e) => { F[key][0] = num(e.target.value); } }), input('number', F[key][1], { step: 0.5, oninput: (e) => { F[key][1] = num(e.target.value); } })]));
+    const chartsBox = h('div');
+    const drawCharts = () => {
+      clear(chartsBox);
+      (S.synopticCharts || []).forEach((c, i) => chartsBox.appendChild(h('div.frow', [txtField(c, 'name', t('name')), h('div.inline', [input('text', c.url, { oninput: (e) => { c.url = e.target.value; } }), h('button.btn.icon', { type: 'button', onclick: () => { S.synopticCharts.splice(i, 1); drawCharts(); } }, '🗑')])])));
+      chartsBox.appendChild(h('button.btn', { type: 'button', onclick: () => { (S.synopticCharts = S.synopticCharts || []).push({ name: '', url: 'https://' }); drawCharts(); } }, t('add')));
+    };
+    drawCharts();
+    return h('div', [
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_flyLimits'))), h('div.card-body', [h('div.frow.c4', [pair('wind', `${t('auto_wind')} m/s (grenzwertig / nein)`), pair('gust', `${t('auto_gust')} m/s`), pair('gustSpread', 'Böe − Wind m/s'), pair('cape', 'CAPE J/kg')]), h('div.frow.c3', [numField(F, 'precip', 'Niederschlag ≥ mm/h → nein', 0.1), numField(F, 'visKm', 'Sicht < km → nein', 0.5), numField(F, 'baseFt', 'Wolkenbasis < ft → grenzwertig', 100)])])]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_trajDefaults'))), h('div.card-body', h('div.frow.c3', [numField(T, 'hab', `${t('hab')} (min)`, 30), numField(T, 'gas', `${t('gas')} (min)`, 60), numField(T, 'stepMin', 'Zeitschritt (min)', 5)]))]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_meteo'))), h('div.card-body', [h('div.frow.c4', [numField(S.meteoDefaults, 'topHpa', 'Profil bis hPa', 50), numField(S, 'metarRadiusKm', t('set_metar') + ' km', 10), numField(S, 'metarCount', t('set_metar') + ' n'), numField(S, 'notamRadiusNm', t('set_notamNm'), 5)]), txtField(S, 'aiModel', t('set_aiModel'))])]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_synoptic'))), h('div.card-body', [chartsBox, h('div.note', 'Nur Bild-URLs von dwd.de, ecmwf.int, meteoschweiz.admin.ch, rainviewer, meteoblue, skybriefing, eumetsat (Allowlist im Worker).')])]),
+    ]);
   }
 
   function panels() {

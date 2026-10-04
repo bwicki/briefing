@@ -14,3 +14,13 @@
   a { color: inherit; text-decoration: none; }
 }
 @page land { size: A4 landscape; }
+@media print {
+  .brief .auto-wrap{gap:4px;}
+  .brief table.auto{font-size:8.5pt;white-space:normal;}
+  .brief table.auto th{position:static;}
+  .brief .sv-svg,.brief .mg-svg{max-width:170mm;}
+  .brief .traj-svg{max-width:110mm;}
+  .brief .wind-charts figure{max-width:60mm;}
+  .brief .map{display:none;}
+  .brief .stand{font-size:8pt;}
+}

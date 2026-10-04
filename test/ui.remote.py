@@ -27,7 +27,16 @@ with sync_playwright() as p:
     bid = pg.evaluate('location.hash').split('/')[-1]
     print('briefing', bid)
     # Text ins Pflicht-Panel und speichern
-    pg.fill('#panel-B\\.fwp textarea', 'Flugwetterprognose MeteoSchweiz: Hochdrucklage.'); pg.wait_for_timeout(1500)
+    pg.fill('#panel-B\\.fwp .pastewrap textarea', 'Flugwetterprognose MeteoSchweiz: Hochdrucklage.'); pg.wait_for_timeout(1500)
+    # DABS: Worker-Antwort und PDF simulieren (Netz im Test gesperrt), Seiten werden mit pdf.js gerendert und hochgeladen
+    PDF = os.environ.get('TEST_PDF', os.path.join(OUT, 'desktop_brief.pdf'))
+    pg.route('**/api/wx/dabs**', lambda r: r.fulfill(status=200, content_type='application/json', body='{"url":"/files/test/dabs.pdf","key":"test/dabs.pdf","day":"tomorrow","date":"2026-10-05","fetched":1}'))
+    pg.route('**/files/test/dabs.pdf', lambda r: r.fulfill(status=200, content_type='application/pdf', body=open(PDF, 'rb').read()))
+    pg.click('#panel-C\\.dabs button:has-text("Laden")'); pg.wait_for_timeout(6000)
+    dabs_txt = pg.inner_text('#panel-C\\.dabs')
+    assert 'Seite 1/' in dabs_txt, 'DABS-Seiten als Bilder: ' + dabs_txt[:200]
+    assert pg.query_selector('#panel-C\\.dabs img.pimg') is not None, 'DABS-Bild'
+    pg.screenshot(path=f'{OUT}/remote_dabs.png')
     # Berechtigungen
     pg.click('button:has-text("Berechtigungen")'); pg.wait_for_timeout(800)
     pg.click('button:has-text("Person hinzufügen")'); pg.wait_for_timeout(1200)

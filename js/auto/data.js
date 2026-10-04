@@ -1,0 +1,237 @@
+/* Fahrtbriefing — Beschaffung der automatischen Panel-Inhalte.
+ *
+ * Jede Funktion liefert einen Schnappschuss { kind, stand, model, source, data,
+ * text }, der im Briefing gespeichert wird (Druck, Leselink, KI). Die
+ * Modellprognose wird je Briefing/Modell nur einmal geholt (Memo im ctx).
+ */
+import * as OM from './openmeteo.js';
+import { tracks } from './traj.js';
+import { sunFor, scheduleFor } from '../model.js';
+import { isoDate, hhmm } from '../calc/time.js';
+import { distKm, bearing, icao } from '../calc/geo.js';
+import { t, getLang } from '../i18n.js';
+
+const memo = new Map();
+const shareTok = (ctx) => ctx.shared?.token;
+
+/** Prognose für das Briefing (Fenster Start−6 h … Landung+6 h). */
+export async function getForecast(ctx, b, modelOverride) {
+  const model = modelOverride ?? b.meteo?.model ?? '';
+  const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
+  const from = b.time.startMs - 6 * 3600000, to = Math.max(landing, b.time.startMs + 3 * 3600000) + 6 * 3600000;
+  const startDate = isoDate('UTC', Math.min(from, Date.now())), endDate = isoDate('UTC', to);
+  const key = `${b.site.lat?.toFixed(3)},${b.site.lon?.toFixed(3)}|${model}|${startDate}|${endDate}|${b.meteo?.topHpa || 500}`;
+  const hit = memo.get(key);
+  if (hit && Date.now() - hit.at < 15 * 60000) return hit.p;
+  const hours = (b.time.startMs - Date.now()) / 3600000;
+  if (model && OM.modelHours(model) < hours + (b.intent.durationMin || 0) / 60) throw new Error(t('auto_horizon', { m: OM.modelName(model), h: OM.modelHours(model) }));
+  const fetcher = (query) => ctx.store.data('om', { query }, shareTok(ctx));
+  const p = OM.forecast(fetcher, b.site.lat, b.site.lon, { model, topHpa: b.meteo?.topHpa || 500, startDate, endDate });
+  memo.set(key, { p, at: Date.now() });
+  p.catch(() => memo.delete(key));
+  return p;
+}
+export const clearMemo = () => memo.clear();
+
+const standOf = (j, b) => ({ stand: Date.now(), model: j._model, modelName: OM.modelName(j._model), source: 'Open-Meteo', fetched: j._fetched, elevModel: j.elevation });
+const lightFn = (b, ctx) => { const sun = sunFor(b, ctx.settings, ctx.racTable); return (ms) => (sun ? ms >= sun.official.bcmt - 1800000 && ms <= sun.official.ecet + 1800000 : true); };
+
+/** Meteogramm: Stundenwerte Start−3 h … Landung+3 h mit Ampel. */
+export async function meteogram(ctx, b) {
+  const j = await getForecast(ctx, b);
+  const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
+  const idx = OM.window(j, b.time.startMs - 3 * 3600000, Math.max(landing, b.time.startMs + 2 * 3600000) + 3 * 3600000);
+  if (!idx.length) throw new Error(t('auto_noHours'));
+  const light = lightFn(b, ctx);
+  const lim = ctx.settings.flyLimits;
+  const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, light(r.ms), lim, getLang()); return { ...r, fog: OM.fogRisk(r).level, baseFt: OM.cloudBaseFt(r), fly: fr.level, why: fr.why }; });
+  const z = b.site.tz || 'Europe/Zurich';
+  const text = recs.map((r) => `${hhmm(z, r.ms)} T ${r.temp?.toFixed(0)}°/Td ${r.dew?.toFixed(0)}° Wind ${r.d10 != null ? Math.round(r.d10).toString().padStart(3, '0') : '–'}/${Math.round((r.w10 || 0) * OM.MS_TO_KT)}G${Math.round((r.gust || 0) * OM.MS_TO_KT)} kt Wolken ${r.cloud ?? '–'}% RR ${r.precip ?? 0} mm CAPE ${r.cape ?? '–'} → ${['nein', 'grenzwertig', 'fahrbar'][r.fly] || '–'}${r.why?.length ? ' (' + r.why.join(', ') + ')' : ''}`).join('\n');
+  return { kind: 'meteogram', ...standOf(j, b), data: { recs, fromMs: b.time.startMs, toMs: landing }, text };
+}
+
+/** Windprofil zur Startzeit und stündlich bis zur Landung. */
+export async function wind(ctx, b) {
+  const j = await getForecast(ctx, b);
+  const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
+  const idx = OM.window(j, b.time.startMs, Math.max(landing, b.time.startMs + 3600000));
+  if (!idx.length) throw new Error(t('auto_noHours'));
+  const elev = b.site.elev ?? j.elevation;
+  const hours = idx.map((i) => ({ ms: j.hourly.time[i] * 1000, profile: OM.profile(j, i, elev).map((l) => ({ label: l.label, hPa: l.hPa, ft: l.ft, m: Math.round(l.m), spd: l.spd, dir: l.dir, temp: l.temp })), pbl: j.hourly.boundary_layer_height?.[i] ?? null, fzl: j.hourly.freezing_level_height?.[i] ?? null }));
+  const top = (b.intent.altMaxFt || 6000) + 3000;
+  for (const h of hours) h.profile = h.profile.filter((l) => l.ft <= Math.max(top, 8000) + 2000);
+  const z = b.site.tz || 'Europe/Zurich';
+  const text = hours.map((h) => `${hhmm(z, h.ms)} LT: ` + h.profile.slice().reverse().map((l) => `${l.ft} ft ${l.dir != null ? Math.round(l.dir).toString().padStart(3, '0') : '–'}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ')).join('\n');
+  return { kind: 'wind', ...standOf(j, b), data: { hours, elev }, text };
+}
+
+/** Stüve zur Startzeit (volles Profil bis topHpa). */
+export async function temps(ctx, b) {
+  const j = await getForecast(ctx, b);
+  const i = OM.indexAt(j, b.time.startMs);
+  if (i < 0) throw new Error(t('auto_noHours'));
+  const elev = b.site.elev ?? j.elevation;
+  const prof = OM.profile(j, i, elev).map((l) => ({ label: l.label, hPa: l.hPa, ft: l.ft, m: Math.round(l.m), spd: l.spd, dir: l.dir, temp: l.temp, dew: l.dew, rh: l.rh }));
+  const pbl = j.hourly.boundary_layer_height?.[i] ?? null, fzl = j.hourly.freezing_level_height?.[i] ?? null;
+  // Inversionen: Temperatur nimmt mit der Höhe zu
+  const inv = [];
+  const asc = prof.filter((l) => l.temp != null).sort((a, b2) => a.m - b2.m);
+  for (let k = 1; k < asc.length; k++) if (asc[k].temp > asc[k - 1].temp + 0.2) inv.push({ fromFt: asc[k - 1].ft, toFt: asc[k].ft, dT: +(asc[k].temp - asc[k - 1].temp).toFixed(1) });
+  const text = `${t('auto_profileAt')} ${hhmm(b.site.tz || 'Europe/Zurich', b.time.startMs)} LT: ` + asc.map((l) => `${l.ft} ft ${l.temp?.toFixed(1)}°/${l.dew?.toFixed(1)}° ${l.dir != null ? Math.round(l.dir).toString().padStart(3, '0') : '–'}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ') + (inv.length ? ` · Inversion: ${inv.map((x) => `${x.fromFt}–${x.toFt} ft (+${x.dT} K)`).join(', ')}` : '') + (pbl != null ? ` · Grenzschicht ${Math.round(pbl * OM.M_TO_FT)} ft AGL` : '') + (fzl != null ? ` · 0 °C ${Math.round(fzl * OM.M_TO_FT)} ft` : '');
+  return { kind: 'temps', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev }, text };
+}
+
+/** Trajektorien je Niveau. */
+export async function traj(ctx, b) {
+  const j = await getForecast(ctx, b);
+  const tr = b.traj || {};
+  const durationMin = tr.durationMin || ctx.settings.trajDefaults?.[b.balloon.type] || 120;
+  const startMs = b.time.startMs + (tr.startOffsetMin || 0) * 60000;
+  const levels = (tr.levels && tr.levels.length ? tr.levels : b.intent.levels) || ['SFC'];
+  const elev = b.site.elev ?? j.elevation ?? 0;
+  const trs = tracks(j, { lat: b.site.lat, lon: b.site.lon, elev, startMs, durationMin, levels, stepMin: ctx.settings.trajDefaults?.stepMin || 10 });
+  const z = b.site.tz || 'Europe/Zurich';
+  const text = trs.map((x) => `${x.label} (${x.altFt} ft): ` + x.hourly.map((h) => `${hhmm(z, h.ms)} ${h.km.toFixed(1)} km/${Math.round(h.brg).toString().padStart(3, '0')}° ${h.icao}`).join(' → ') + (x.ok ? '' : ` (${t('auto_trajCut')})`)).join('\n');
+  const slim = trs.map((x) => ({ label: x.label, altFt: x.altFt, altM: Math.round(x.altM), ok: x.ok, points: x.points.filter((_, k) => k % 3 === 0 || k === x.points.length - 1).map((p) => ({ ms: p.ms, lat: +p.lat.toFixed(4), lon: +p.lon.toFixed(4) })), hourly: x.hourly.map((h) => ({ ...h, lat: +h.lat.toFixed(4), lon: +h.lon.toFixed(4), km: +h.km.toFixed(1), brg: Math.round(h.brg), spdKt: Math.round(h.spdKt), dir: Math.round(h.dir) })), end: { ...x.end, lat: +x.end.lat.toFixed(4), lon: +x.end.lon.toFixed(4), km: +x.end.km.toFixed(1), brg: Math.round(x.end.brg) } }));
+  return { kind: 'traj', ...standOf(j, b), data: { tracks: slim, startMs, durationMin, levels, landing: b.landing?.lat != null ? { lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name } : null }, text };
+}
+
+/** Ballonprognose: DWD-Gebietsvorhersage (DE, nächstes Gebiet) + eigene Stundentabelle. */
+export async function balloon(ctx, b) {
+  const mg = await meteogram(ctx, b);
+  let dwd = null, note = '';
+  try {
+    const idxj = await ctx.store.data('dwd', {}, shareTok(ctx));
+    const areas = Object.values(idxj.balloon || {}).filter((a) => a.station?.lat != null);
+    if (areas.length) {
+      const near = areas.map((a) => ({ a, d: distKm(b.site.lat, b.site.lon, a.station.lat, a.station.lon) })).sort((x, y) => x.d - y.d)[0];
+      if (near.d < 40 || (b.site.country === 'DE' && near.d < 150)) {
+        const file = await fetch(`https://gafor.wicki.aero/${near.a.file}?t=${Math.floor(Date.now() / 600000)}`).then((r) => r.json());
+        dwd = { id: near.a.id, name: near.a.name, refAltFt: near.a.refAltFt, station: near.a.station, distKm: Math.round(near.d), fetched: near.a.fetched, source: near.a.source, blocks: file.blocks, text: file.text, issued: (file.text || '').match(/Vorhersage ausgegeben ([^\n]+)/)?.[1] || '' };
+      } else note = t('auto_dwdFar', { km: Math.round(near.d) });
+    }
+  } catch (e) { note = `DWD: ${e.message}`; }
+  return { kind: 'balloon', stand: mg.stand, model: mg.model, modelName: mg.modelName, source: dwd ? 'DWD Gebietsvorhersage Ballonsport + Open-Meteo' : 'Open-Meteo', data: { recs: mg.data.recs, fromMs: mg.data.fromMs, toMs: mg.data.toMs, dwd, note }, text: (dwd ? `DWD Gebiet ${dwd.id} ${dwd.name} (${dwd.issued}):\n${(dwd.text || '').slice(0, 4000)}\n\n` : '') + mg.text };
+}
+
+/** Punkt in Polygon (GeoJSON-Ring [lon, lat]). */
+function inRing(lat, lon, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if (((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / ((yj - yi) || 1e-12) + xi)) inside = !inside;
+  }
+  return inside;
+}
+let gaforAreasP = null;
+export function gaforArea(lat, lon) {
+  gaforAreasP = gaforAreasP || fetch('https://gafor.wicki.aero/data/gafor-areas.geojson').then((r) => r.json());
+  return gaforAreasP.then((g) => {
+    for (const f of g.features || []) {
+      const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];
+      for (const poly of polys) if (inRing(lat, lon, poly[0])) return f.properties;
+    }
+    return null;
+  });
+}
+
+/** Offizielle Flugwetterprognose: DE automatisch (DWD Flugwetterübersicht + GAFOR des Gebiets), sonst Einfügen. */
+export async function fwp(ctx, b) {
+  if (b.site.country !== 'DE') throw new Error(t('auto_fwpOnlyDe'));
+  const area = await gaforArea(b.site.lat, b.site.lon);
+  if (!area) throw new Error(t('auto_fwpNoArea'));
+  const idx = await ctx.store.data('dwd', {}, shareTok(ctx));
+  const office = Object.values(idx.overview || {}).find((o) => (o.areas || []).includes(area.id));
+  const gafor = Object.values(idx.gafor || {}).find((g) => g.details?.[area.id]);
+  const det = gafor?.details?.[area.id];
+  const text = `${office ? office.fullText || office.text : ''}
+
+GAFOR ${area.id} ${area.name}${gafor ? ` (${gafor.title}): ${(gafor.periods || []).map((pp, i) => `${pp} UTC ${det?.codes?.[i] || '?'}${det?.remarks?.[i] ? ' ' + det.remarks[i] : ''}`).join(' · ')}` : ''}`;
+  return { kind: 'fwp', stand: Date.now(), source: 'DWD Luftsportberichte (Kopie gafor.wicki.aero)', data: { area, office: office ? { bereich: office.bereich, office: office.office, issued: office.issued, validFrom: office.validFrom, validTo: office.validTo, source: office.source, text: office.fullText || office.text } : null, gafor: gafor ? { title: gafor.title, periods: gafor.periods, codes: det?.codes, remarks: det?.remarks, source: gafor.source, issued: gafor.issued } : null }, text };
+}
+
+/** Druckdifferenz (Bise/Föhn) aus Modell-QNH an Referenzpunkten. */
+export async function pdiff(ctx, b) {
+  const chRegion = b.site.lat > 45.3 && b.site.lat < 48.6 && b.site.lon > 5 && b.site.lon < 11.5;
+  const pairs = ctx.settings.pdiffPairs?.length ? ctx.settings.pdiffPairs : !chRegion ? [] : [
+    { name: 'Genève – Güttingen (Bise)', a: { name: 'Genève', lat: 46.25, lon: 6.13 }, b: { name: 'Güttingen', lat: 47.60, lon: 9.28 }, hint: 'ΔP > +3 hPa (GE höher) → Bise' },
+    { name: 'Zürich – Lugano (Föhn N/S)', a: { name: 'Zürich', lat: 47.38, lon: 8.57 }, b: { name: 'Lugano', lat: 46.00, lon: 8.96 }, hint: 'ΔP < −3 hPa (LUG höher) → Südföhn; > +4 → Nordföhn' },
+  ];
+  const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
+  const from = b.time.startMs - 6 * 3600000, to = Math.max(landing, b.time.startMs + 3 * 3600000) + 6 * 3600000;
+  const startDate = isoDate('UTC', Math.min(from, Date.now())), endDate = isoDate('UTC', to);
+  const model = b.meteo?.model || '';
+  const fetchP = async (pt) => {
+    const q = new URLSearchParams({ latitude: pt.lat.toFixed(3), longitude: pt.lon.toFixed(3), hourly: 'pressure_msl', timeformat: 'unixtime', timezone: 'UTC', start_date: startDate, end_date: endDate });
+    if (model) q.set('models', model);
+    return ctx.store.data('om', { query: q.toString() }, shareTok(ctx));
+  };
+  const out = [];
+  if (!pairs.length) throw new Error(t('auto_noPairs'));
+  for (const p of pairs) {
+    const [ja, jb] = await Promise.all([fetchP(p.a), fetchP(p.b)]);
+    const rows = [];
+    for (let i = 0; i < ja.hourly.time.length; i++) { const ms = ja.hourly.time[i] * 1000; if (ms < from || ms > to) continue; const pa = ja.hourly.pressure_msl[i], pb = jb.hourly.pressure_msl[i]; if (pa == null || pb == null) continue; rows.push({ ms, pa, pb, d: +(pa - pb).toFixed(1) }); }
+    out.push({ name: p.name, a: p.a.name, b: p.b.name, hint: p.hint, rows });
+  }
+  const z = b.site.tz || 'Europe/Zurich';
+  const text = out.map((p) => `${p.name}: ` + p.rows.filter((r) => r.ms >= b.time.startMs - 3600000 && r.ms <= landing + 3600000).map((r) => `${hhmm(z, r.ms)} ${r.d > 0 ? '+' : ''}${r.d} hPa`).join(', ') + ` (${p.hint})`).join('\n');
+  return { kind: 'pdiff', stand: Date.now(), model, modelName: OM.modelName(model), source: 'Open-Meteo', data: { pairs: out, fromMs: b.time.startMs, toMs: landing }, text };
+}
+
+/** METAR/TAF der nächsten Plätze. */
+export async function metar(ctx, b) {
+  const j = await ctx.store.data('metar', { lat: b.site.lat, lon: b.site.lon, km: ctx.settings.metarRadiusKm || 120, limit: ctx.settings.metarCount || 4 }, shareTok(ctx));
+  const text = (j.metar || []).map((m) => `${m.icaoId} (${Math.round(m.distKm)} km): ${m.rawOb || ''}${j.taf?.[m.icaoId] ? `\nTAF ${j.taf[m.icaoId].rawTAF || ''}` : ''}`).join('\n\n');
+  return { kind: 'metar', stand: Date.now(), source: j.source, data: { metar: j.metar || [], taf: j.taf || {}, generated: j.generated }, text };
+}
+
+/** SIGMET/AIRMET in der Umgebung. */
+export async function sigmet(ctx, b) {
+  const j = await ctx.store.data('sigmet', { lat: b.site.lat, lon: b.site.lon }, shareTok(ctx));
+  const text = (j.sigmet || []).map((s) => s.raw || `${s.fir} ${s.hazard} ${s.validFrom}–${s.validTo}`).join('\n\n') || t('auto_none');
+  return { kind: 'sigmet', stand: Date.now(), source: j.source, data: { list: j.sigmet || [] }, text };
+}
+
+/** NOTAM entlang Start → Landeraum/Trajektorien-Endpunkte (Korridor), VFR-Filter. */
+export async function notam(ctx, b, opts = {}) {
+  const pts = [{ lat: b.site.lat, lon: b.site.lon, name: b.site.name }];
+  if (b.landing?.lat != null) pts.push({ lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name });
+  const trj = b.panels['B.traj']?.content?.auto?.data?.tracks || [];
+  for (const tr of trj) if (tr.end) pts.push({ lat: tr.end.lat, lon: tr.end.lon, name: `${t('auto_trajEnd')} ${tr.label}` });
+  const nm = opts.nm || ctx.settings.notamRadiusNm || 25;
+  const all = new Map(); const errors = [];
+  for (const p of pts.slice(0, 6)) {
+    try { const j = await ctx.store.data('notam', { lat: p.lat, lon: p.lon, nm }, shareTok(ctx)); for (const it of j.items || []) if (!all.has(it.id)) all.set(it.id, it); }
+    catch (e) { errors.push(`${p.name}: ${e.message}`); if (e.status === 424) break; }
+  }
+  const maxFt = (b.intent.altMaxFt || 6000) + 2000;
+  const items = [...all.values()].map((it) => ({ ...it, vfr: vfrRelevant(it, maxFt, b.time.startMs, b.time.startMs + (b.intent.durationMin || 0) * 60000) }));
+  const rel = items.filter((x) => x.vfr.relevant).sort((x, y) => (x.start || '').localeCompare(y.start || ''));
+  const text = rel.map((x) => `${x.icao || x.location} ${x.number || ''}: ${(x.formatted || x.text || '').replace(/\s+/g, ' ').slice(0, 400)}`).join('\n\n');
+  return { kind: 'notam', stand: Date.now(), source: 'FAA NOTAM API', data: { items, relevantCount: rel.length, points: pts, nm, errors }, text };
+}
+/** VFR-Relevanz: zeitlich überlappend, untere Grenze unter maxFt, keine reinen IFR-/Infrastruktur-Themen. */
+export function vfrRelevant(it, maxFt, fromMs, toMs) {
+  const why = [];
+  const s = it.start ? Date.parse(it.start) : null, e = it.end && !/PERM/i.test(it.end) ? Date.parse(it.end) : null;
+  if (s && s > toMs + 6 * 3600000) why.push('later');
+  if (e && e < fromMs - 6 * 3600000) why.push('expired');
+  const txt = `${it.text || ''} ${it.formatted || ''}`.toUpperCase();
+  const minFL = it.minFL != null ? +it.minFL : null;
+  if (minFL != null && minFL * 100 > maxFt) why.push(`above FL${minFL}`);
+  if (/\b(ILS|VOR|DME|NDB|LOC|GP|RNAV|RNP|SID|STAR|IAP|APCH|TWY|RWY LGT|PAPI|ALS|OBST LGT U\/S)\b/.test(txt) && !/(RESTRICT|PROHIB|DANGER|TEMPO|AIRSPACE|PARACHUT|PJE|UAS|DRONE|BALLOON|GLIDER|AEROBAT|MIL|EXERCISE|FIREWORK|CRANE|OBST)/.test(txt)) why.push('ifr/infra');
+  return { relevant: !why.length, why };
+}
+
+/** Alle automatischen Panels eines Briefings nacheinander; onStep(key, status, err). */
+export const AUTO_FETCHERS = { 'B.meteogram': meteogram, 'B.wind': wind, 'B.temps': temps, 'B.traj': traj, 'B.balloon': balloon, 'B.pdiff': pdiff, 'B.metar': metar, 'B.sigwx': sigmet, 'B.fwp': fwp, 'C.notam': notam };
+export async function refreshAll(ctx, b, keys, onStep) {
+  const out = {};
+  for (const k of keys) {
+    const f = AUTO_FETCHERS[k]; if (!f) continue;
+    onStep?.(k, 'loading');
+    try { out[k] = await f(ctx, b); onStep?.(k, 'ok'); } catch (e) { out[k] = { error: e.message }; onStep?.(k, 'error', e); }
+  }
+  return out;
+}

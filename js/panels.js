@@ -24,25 +24,25 @@ export const PANELS = [
   { key: 'A.schedule', section: 'A', kind: 'schedule', de: 'Tagesplanung (LT)', en: 'Day schedule (LT)', grade: 'calc', always: true },
   { key: 'A.remarks', section: 'A', kind: 'text', de: 'Bemerkungen', en: 'Remarks', grade: 'manual' },
   // B
-  { key: 'B.synoptic', section: 'B', kind: 'paste', de: 'Allgemeine Lage mit Bodendruckkarte', en: 'General situation with surface chart', grade: 'half', link: 'meteoswiss', phase2: 'ECMWF Open Charts, DWD Bodenanalyse' },
-  { key: 'B.metar', section: 'B', kind: 'paste', de: 'METAR/TAF der nächstgelegenen Flugplätze', en: 'METAR/TAF of nearest aerodromes', grade: 'auto', link: 'skybriefing', phase2: 'aviationweather.gov, 4 nächste Plätze' },
-  { key: 'B.temps', section: 'B', kind: 'paste', de: 'Temps', en: 'Soundings', grade: 'auto', link: 'meteoblue', phase2: 'meteoblue Images API, eigenes Stüve, Payerne' },
+  { key: 'B.synoptic', section: 'B', kind: 'auto', auto: 'synoptic', de: 'Allgemeine Lage mit Bodendruckkarte', en: 'General situation with surface chart', grade: 'half', link: 'meteoswiss', phase2: 'ECMWF Open Charts, DWD Bodenanalyse' },
+  { key: 'B.metar', section: 'B', kind: 'auto', auto: 'metar', de: 'METAR/TAF der nächstgelegenen Flugplätze', en: 'METAR/TAF of nearest aerodromes', grade: 'auto', link: 'skybriefing', phase2: 'aviationweather.gov, 4 nächste Plätze' },
+  { key: 'B.temps', section: 'B', kind: 'auto', auto: 'temps', de: 'Temps', en: 'Soundings', grade: 'auto', link: 'meteoblue', phase2: 'meteoblue Images API, eigenes Stüve, Payerne' },
   { key: 'B.obs', section: 'B', kind: 'paste', de: 'Observations', en: 'Observations', grade: 'auto', link: 'meteoswiss', phase2: 'SwissMetNet, METAR, DWD-Stationen' },
-  { key: 'B.fwp', section: 'B', kind: 'paste', de: 'Flugwetterprognose (offiziell)', en: 'Official aviation forecast', grade: 'half', link: 'skybriefing', phase2: 'DE: DWD Luftsportberichte automatisch' },
-  { key: 'B.wind', section: 'B', kind: 'paste', de: 'Windprognose (Boden/Höhe)', en: 'Wind forecast (surface/altitude)', grade: 'half', link: 'pcmet', phase2: 'eigene Windfiedern-Karten' },
-  { key: 'B.balloon', section: 'B', kind: 'paste', de: 'Ballonprognose', en: 'Balloon forecast', grade: 'auto', link: 'dwdBallon', phase2: 'DWD Gebietsvorhersage Ballonsport, eigene Stundentabelle' },
-  { key: 'B.pdiff', section: 'B', kind: 'paste', de: 'Druckdifferenzprognose', en: 'Pressure difference forecast', grade: 'auto', link: 'meteoswiss', phase2: 'Bise/Föhn aus Modell und SwissMetNet' },
-  { key: 'B.traj', section: 'B', kind: 'paste', de: 'Trajektorien', en: 'Trajectories', grade: 'auto', link: 'meteoblue', phase2: 'eigene Berechnung, Szenarien, Ensemble' },
-  { key: 'B.sigwx', section: 'B', kind: 'paste', de: 'SIGWX low Alps', en: 'SIGWX low Alps', grade: 'half', link: 'skybriefing', phase2: 'SIGMET/AIRMET automatisch' },
+  { key: 'B.fwp', section: 'B', kind: 'auto', auto: 'fwp', de: 'Flugwetterprognose (offiziell)', en: 'Official aviation forecast', grade: 'half', link: 'skybriefing', phase2: 'DE: DWD Luftsportberichte automatisch' },
+  { key: 'B.wind', section: 'B', kind: 'auto', auto: 'wind', de: 'Windprognose (Boden/Höhe)', en: 'Wind forecast (surface/altitude)', grade: 'half', link: 'pcmet', phase2: 'eigene Windfiedern-Karten' },
+  { key: 'B.balloon', section: 'B', kind: 'auto', auto: 'balloon', de: 'Ballonprognose', en: 'Balloon forecast', grade: 'auto', link: 'dwdBallon', phase2: 'DWD Gebietsvorhersage Ballonsport, eigene Stundentabelle' },
+  { key: 'B.pdiff', section: 'B', kind: 'auto', auto: 'pdiff', de: 'Druckdifferenzprognose', en: 'Pressure difference forecast', grade: 'auto', link: 'meteoswiss', phase2: 'Bise/Föhn aus Modell und SwissMetNet' },
+  { key: 'B.traj', section: 'B', kind: 'auto', auto: 'traj', de: 'Trajektorien', en: 'Trajectories', grade: 'auto', link: 'meteoblue', phase2: 'eigene Berechnung, Szenarien, Ensemble' },
+  { key: 'B.sigwx', section: 'B', kind: 'auto', auto: 'sigmet', de: 'SIGWX low Alps', en: 'SIGWX low Alps', grade: 'half', link: 'skybriefing', phase2: 'SIGMET/AIRMET automatisch' },
   { key: 'B.thermal', section: 'B', kind: 'text', de: 'Thermik', en: 'Thermals', grade: 'manual' },
-  { key: 'B.meteogram', section: 'B', kind: 'paste', de: 'Meteogramm, Take-off Forecast o. ä.', en: 'Meteogram, take-off forecast', grade: 'auto', link: 'meteoblue', phase2: 'meteoblue Images API, eigenes Meteogramm' },
-  { key: 'B.radar', section: 'B', kind: 'paste', de: 'Radar / Blitz / Satellit / Webcams', en: 'Radar / lightning / satellite / webcams', grade: 'auto', link: 'windy', phase2: 'RainViewer, EUMETSAT, Windy-Webcams', optional: true },
+  { key: 'B.meteogram', section: 'B', kind: 'auto', auto: 'meteogram', de: 'Meteogramm, Take-off Forecast o. ä.', en: 'Meteogram, take-off forecast', grade: 'auto', link: 'meteoblue', phase2: 'meteoblue Images API, eigenes Meteogramm' },
+  { key: 'B.radar', section: 'B', kind: 'auto', auto: 'radar', de: 'Radar / Blitz / Satellit / Webcams', en: 'Radar / lightning / satellite / webcams', grade: 'auto', link: 'windy', phase2: 'RainViewer, EUMETSAT, Windy-Webcams', optional: true },
   { key: 'B.warnings', section: 'B', kind: 'paste', de: 'Warnungen', en: 'Warnings', grade: 'auto', link: 'meteoswiss', phase2: 'MeteoSchweiz/DWD-Warnungen', optional: true },
   { key: 'B.remarks', section: 'B', kind: 'text', de: 'Bemerkungen', en: 'Remarks', grade: 'manual' },
   // C
   { key: 'C.fpl', section: 'C', kind: 'text', de: 'Flugplan', en: 'Flight plan', grade: 'manual', defaultText: { de: 'keiner', en: 'none' } },
-  { key: 'C.dabs', section: 'C', kind: 'paste', de: 'DABS', en: 'DABS', grade: 'auto', link: 'skybriefingDabs', phase2: 'DABS-PDF automatisch (CH)', chOnly: true },
-  { key: 'C.notam', section: 'C', kind: 'paste', de: 'Strecken-NOTAM (VFR-relevant)', en: 'Route NOTAM (VFR relevant)', grade: 'auto', link: 'skybriefing', phase2: 'FAA-NOTAM-API mit Korridor und VFR-Filter' },
+  { key: 'C.dabs', section: 'C', kind: 'auto', auto: 'dabs', de: 'DABS', en: 'DABS', grade: 'auto', link: 'skybriefingDabs', phase2: 'DABS-PDF automatisch (CH)', chOnly: true },
+  { key: 'C.notam', section: 'C', kind: 'auto', auto: 'notam', de: 'Strecken-NOTAM (VFR-relevant)', en: 'Route NOTAM (VFR relevant)', grade: 'auto', link: 'skybriefing', phase2: 'FAA-NOTAM-API mit Korridor und VFR-Filter' },
   { key: 'C.agreements', section: 'C', kind: 'text', de: 'Besondere Absprachen', en: 'Special agreements', grade: 'manual', defaultText: { de: 'keine', en: 'none' } },
   { key: 'C.transition', section: 'C', kind: 'transition', de: 'Übergangshöhe', en: 'Transition altitude', grade: 'calc' },
   { key: 'C.remarks', section: 'C', kind: 'text', de: 'Bemerkungen', en: 'Remarks', grade: 'manual' },
@@ -75,6 +75,8 @@ export function panelFilled(p, briefing) {
       return !!((d.content?.text || '').trim() || extraText || briefing.landing?.lat != null);
     case 'paste':
       return !!((d.content?.text || '').trim() || (d.content?.images || []).length || extraText || extraImg);
+    case 'auto':
+      return !!(d.content?.auto || (d.content?.text || '').trim() || (d.content?.images || []).length || extraText || extraImg);
     default:
       return true;
   }

@@ -49,3 +49,25 @@ export async function route(fromLat, fromLon, toLat, toLon) {
   if (!r) throw new Error('no route');
   return { seconds: r.duration, meters: r.distance };
 }
+
+/** Datenabrufe im lokalen Modus (ohne Worker): Open-Meteo direkt, METAR/TAF und DWD aus der GaforCast-Kopie. */
+const GAFOR = 'https://gafor.wicki.aero/data/dwd';
+export async function localData(kind, p = {}) {
+  switch (kind) {
+    case 'om': return getJson(`https://api.open-meteo.com/v1/forecast?${p.query}`, 15000);
+    case 'metar': {
+      const j = await getJson(`${GAFOR}/metar.json?t=${Math.floor(Date.now() / 600000)}`, 12000);
+      const km = p.km || 120;
+      const best = new Map();
+      for (const m of j.metar || []) { if (!m.icaoId || m.lat == null) continue; const prev = best.get(m.icaoId); if (!prev || (m.obsTime || 0) > (prev.obsTime || 0)) best.set(m.icaoId, m); }
+      const R = 6371, rad = (d) => d * Math.PI / 180;
+      const dist = (a, b, c, d) => 2 * R * Math.asin(Math.sqrt(Math.sin(rad(c - a) / 2) ** 2 + Math.cos(rad(a)) * Math.cos(rad(c)) * Math.sin(rad(d - b) / 2) ** 2));
+      const list = [...best.values()].map((m) => ({ ...m, distKm: dist(+p.lat, +p.lon, m.lat, m.lon) })).filter((m) => m.distKm <= km).sort((a, b) => a.distKm - b.distKm).slice(0, p.limit || 4);
+      const ids = list.map((m) => m.icaoId);
+      const taf = {}; for (const t of j.taf || []) if (ids.includes(t.icaoId) && (!taf[t.icaoId] || t.mostRecent === 1)) taf[t.icaoId] = t;
+      return { metar: list, taf, source: 'gafor.wicki.aero (Kopie NOAA AWC)', generated: j.generated };
+    }
+    case 'dwd': return getJson(`${GAFOR}/index.json?t=${Math.floor(Date.now() / 600000)}`, 12000);
+    default: throw Object.assign(new Error('remote only'), { code: 'remote' });
+  }
+}

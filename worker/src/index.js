@@ -6,6 +6,8 @@
  * laufen über /api/shared/<token> ohne Sitzung.
  */
 
+import { handleWx } from './wx.js';
+
 const SESSION_DAYS = 30;
 const MAX_ATTEMPTS = 8;           // Fehlversuche je IP in 15 min
 const ATTEMPT_WINDOW = 15 * 60 * 1000;
@@ -131,11 +133,24 @@ async function route(req, env, url, ctx) {
   if (p === '/api/health') return json({ ok: true, version: env.APP_VERSION || '', time: Date.now() });
 
   // ---- Dateien (unerratbare Schlüssel, öffentlich lesbar; Cache 1 Jahr)
-  let mm = m(/^\/files\/([a-z0-9]+)\/([a-z0-9]+\.(?:jpg|png|webp))$/);
+  let mm = m(/^\/files\/([a-z0-9]+)\/([a-z0-9-]+\.(?:jpg|png|webp|gif|pdf))$/);
   if (mm && req.method === 'GET') {
     const obj = await env.FILES.get(`${mm[1]}/${mm[2]}`);
     if (!obj) return err('not found', 404);
-    return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'image/jpeg', 'Cache-Control': 'public, max-age=31536000, immutable' } });
+    return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream', 'Cache-Control': 'public, max-age=31536000, immutable' } });
+  }
+
+  // ---- Datenabrufe (Owner-Sitzung oder gültiger persönlicher Link)
+  mm = m(/^\/api\/wx\/([a-z]+)$/);
+  if (mm) {
+    const owner = await checkToken(env, req);
+    let link = null;
+    if (!owner && url.searchParams.get('t')) {
+      link = await env.DB.prepare('SELECT * FROM access_links WHERE token=? AND revoked=0').bind(url.searchParams.get('t')).first();
+      if (link && link.expires_at < Date.now()) link = null;
+    }
+    if (!owner && !link) return err('unauthorized', 401);
+    return handleWx(mm[1], req, env, ctx, url.searchParams, req.method === 'POST' ? await body() : {}, { owner, link }, decrypt);
   }
 
   // ---- Sitzung

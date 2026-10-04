@@ -80,8 +80,15 @@ eine andere Adresse verwendet, dort eintragen und pushen.
    «Lokaler Modus».
 2. Kennwort `1234`, dann **Einstellungen → Experte → Kennwort ändern** (längeres
    Kennwort wählen).
-3. Einstellungen → Zugänge: API-Schlüssel (Open-Meteo, meteoblue, Anthropic …) und
-   Logins eintragen; sie werden verschlüsselt im Worker gespeichert.
+3. Einstellungen → Zugänge: API-Schlüssel und Logins eintragen; sie werden
+   verschlüsselt im Worker gespeichert. Für Phase 2 relevant:
+   * `openmeteo` — Open-Meteo-Kundenschlüssel (sonst freie API, 10 000 Abrufe/Tag).
+   * `anthropic` — für KI-Hinweise (Modell in Einstellungen → Meteo, Standard
+     `claude-sonnet-5-5`).
+   * `faa_client_id` / `faa_client_secret` — FAA NOTAM API: Konto unter
+     https://api.faa.gov/ anlegen, App registrieren, «NOTAM API» abonnieren;
+     die beiden Werte aus der App-Übersicht übernehmen. Ohne Zugang bleibt das
+     NOTAM-Panel auf Einfügen (skybriefing).
 4. Einstellungen → Ballone/Personen/Startplätze prüfen (Platzhalter sind markiert),
    speichern.
 5. Daten aus dem lokalen Modus werden nicht automatisch übernommen — Briefings dort
@@ -99,6 +106,15 @@ eine andere Adresse verwendet, dort eintragen und pushen.
 * **Lokale Entwicklung:** `cd worker && npm run db:local && npm run dev` (Port 8787)
   und im Repository-Root `python3 -m http.server 8080`; `js/config.js` auf
   `http://localhost:8787` stellen oder die Tests unter `test/` verwenden.
+
+## 8a Quellen der automatischen Panels prüfen
+
+Nach dem ersten Deployment ein Test-Briefing anlegen und in Abschnitt B «Alle
+aktualisieren» drücken. Jedes Panel zeigt Stand und Quelle; Fehler stehen rot
+neben dem Knopf. Typische Ursachen: Modellhorizont zu kurz (anderes Modell),
+aviationweather.gov blockiert (automatischer Rückfall auf die GaforCast-Kopie),
+Karten-URL geändert (Einstellungen → Meteo → Karten; Allowlist der Hosts in
+`worker/src/wx.js`), DABS-Download ohne PDF (skybriefing-Wartung).
 
 ## 9 Was im Dashboard noch sinnvoll ist
 

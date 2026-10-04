@@ -77,12 +77,13 @@ Ergebnis in allen Sichten: **Name · Kurzkoordinaten · Höhe · Google Maps ↗
 ### Erarbeitungssicht
 
 Links die Navigation A–D mit Status-Punkt je Panel (grün erledigt, blau
-automatisch ab Phase 2, orange manuell offen, rot Pflicht offen), Mitte die Panels
+automatisch/noch nicht geladen, orange manuell offen, rot Pflicht offen), Mitte die Panels
 in Druckreihenfolge, rechts Planungshorizont, Panel-Zähler und Protokoll. Im Kopf
 die **Arbeitsversion** («v12 · Datum Zeit · Name»), der Status und die Phase.
 
 Jedes Panel hat unter dem Inhalt drei einklappbare Blöcke: **Zusatzinfo** (eigene
-Recherche: Text, Bilder, Links), **KI-Hinweis** (Phase 2) und **Kommentar**.
+Recherche: Text, Bilder, Links), **KI-Hinweis** (editierbar, verwerfbar) und
+**Kommentar**.
 
 Panel-Arten:
 
@@ -96,7 +97,47 @@ Panel-Arten:
   **Bilder aus der Zwischenablage** (Ctrl/Cmd-V, iPad «Einsetzen»), per Drag & Drop
   oder Datei. Bilder werden auf 1600 px verkleinert, im Server-Modus in R2
   abgelegt.
+* **Automatisch** (seit 0.3.0, Abschnitt B und C) — der Inhalt wird aus Modellen
+  und amtlichen Quellen geholt und als **Schnappschuss** mit Stand, Modell und
+  Quelle im Briefing gespeichert (Druck, Leselink, Final-Versionen). Jedes
+  dieser Panels hat *Aktualisieren*, *KI-Hinweis*, ✕ (Schnappschuss entfernen)
+  und darunter ein Einfügefeld für eigenen Text/Bilder. Details im Abschnitt
+  «Automatische Panels».
 * **Text** — Landeorte, Bemerkungen, Flugplan, Absprachen, Briefingbedürfnisse.
+
+### Automatische Panels (Phase 2)
+
+Über Abschnitt B steht die **Modell-Leiste**: Modellwahl (ICON-D2 2 km bis 48 h,
+ARPEGE, ICON-EU, ECMWF IFS, UKMO, ICON global, GFS, Auto) mit Vorschlag je
+Planungshorizont, **Alle aktualisieren** und der Stand der letzten Aktualisierung.
+Beim ersten Öffnen eines Briefings laden sich die Modell-Panels von selbst.
+
+| Panel | Inhalt | Quelle |
+|---|---|---|
+| Allgemeine Lage | Schnappschüsse amtlicher Karten (DWD-Bodenanalysen, ECMWF Bodendruck/Wind 850 hPa zur Startzeit und +24 h; Liste in Einstellungen → Meteo) | DWD, ECMWF Open Charts (CC-BY-4.0), über Worker in R2 |
+| METAR/TAF | die 4 nächsten Plätze (Umkreis einstellbar), TAF gegliedert | aviationweather.gov über Worker; Rückfall GaforCast-Kopie |
+| Temps | Stüve-Diagramm des Modellprofils zur Startzeit (T, Td, Feuchteschattierung, Windfahnen, Grenzschicht, 0 °C), Inversionen | Open-Meteo Druckflächen |
+| Flugwetterprognose | **DE:** DWD Flugwetterübersicht des Bereichs + GAFOR-Einstufung des Gebiets (Punkt-in-Polygon). **CH:** MeteoSchweiz-Prognose einfügen (Pflicht) | DWD-Luftsportberichte (Kopie gafor.wicki.aero) |
+| Windprognose | Windprofil Start–Landung stündlich (°/kt je Niveau), Profilgrafiken mit Höhenband-Marken | Open-Meteo |
+| Ballonprognose | **DE:** DWD-Gebietsvorhersage Ballonsport (Tabellen); immer: eigene Stundentabelle mit Ampel fahrbar/grenzwertig/nein und Begründung | DWD (Kopie), Open-Meteo |
+| Druckdifferenz | Genève–Güttingen (Bise), Zürich–Lugano (Föhn) aus Modell-QNH, stündlich; Paare in Einstellungen | Open-Meteo |
+| Trajektorien | Bahnen je Niveau (SFC, «1000 AGL», «3000», «FL065»; Standard aus Fahrtabsicht), Dauer (Heissluft 2 h, Gas 24 h), Startversatz ±2 h; Nord-oben-Skizze (druckbar), Karte, Tabelle mit Stundenmarken, Endpunkt als ICAO + Maps-Link | eigene Rechnung aus dem Modellwind (Punktprognose, linear zwischen Stunden und Niveaus) |
+| SIGWX | SIGMET/AIRMET im Umkreis automatisch; SIGWX-Karte einfügen | aviationweather.gov über Worker |
+| Meteogramm | Grafik (T/Td, Wind/Böen mit Fahnen, Bewölkung h/m/l, Niederschlag, CAPE, Nacht/Fahrtfenster, Ampel) und Stundentabelle mit Nebelrisiko und Wolkenbasis | Open-Meteo |
+| Radar | Live-Radar (RainViewer) auf der Karte, Links Windy/MeteoSchweiz/Blitzortung/Sat24 — nur am Bildschirm | RainViewer, OSM |
+| DABS | DABS-PDF (heute/morgen) holen, Seiten als Bilder im Briefing | skybriefing über Worker, R2 |
+| Strecken-NOTAM | FAA-NOTAM-API entlang Startort → Landeraum → Trajektorien-Endpunkte (Radius einstellbar), **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | FAA NOTAM API (Zugang in Einstellungen → Zugänge) |
+
+**KI-Hinweis:** Knopf im Panel öffnet den Prompt (Fahrtkontext + Panel-Inhalt +
+Bilder, ohne Pax-Namen) zur Kontrolle, sendet ihn über den Worker an die
+Anthropic-API (Modell in Einstellungen → Meteo) und legt 2–5 Zeilen als
+editierbaren Hinweis ab (gelb markiert, im Druck «KI-Hinweis»). Keine
+Startempfehlung.
+
+Die **Ampel** (fahrbar/grenzwertig/nein) bewertet Modellstunden gegen die Grenzen
+in Einstellungen → Meteo (Bodenwind, Böen, Böigkeit, Niederschlag, CAPE, Sicht,
+Wolkenbasis, bürgerliche Dämmerung). Sie ersetzt keine Beratung — sie zeigt,
+welche Stunden man anschauen muss.
 
 **Freigeben als Final** prüft die Pflicht-Panels (Einstellungen → Panels & Pflicht);
 fehlt etwas, kann mit Begründung trotzdem freigegeben werden (Protokoll). Jede
@@ -121,7 +162,9 @@ und E-Mail-Weitergabe. Mitarbeit-Empfänger nennen beim ersten Öffnen ihren Nam
 
 Allgemein (Sprache, Thema, Name im Protokoll, Expertenmodus), Ballone (Heissluft-
 Profile mit Tanks; Gas: Hüllen und Körbe getrennt; Standardkombination), Personen,
-Lufttransportführer, Startplätze & Treffpunkte, Fahrtabsicht-Startwerte, Zeitplan
+Lufttransportführer, Startplätze & Treffpunkte, Fahrtabsicht-Startwerte, Zeitplan,
+Meteo & Auto-Panels (Ampel-Grenzen, Trajektorien-Dauer, Profilhöhe, METAR-Umkreis,
+NOTAM-Radius, KI-Modell, Karten für «Allgemeine Lage»)
 (Anhänger-Faktor, Zuschlag, Puffer, Bergezeit), Sonne/RAC 4-4 (PDF-Upload, siehe
 unten), Übergangshöhen, Go/No-Go-Kriterien (Ampel ab Phase 3), Panels & Pflicht,
 Freigabe-Links, Zugänge (API-Schlüssel und Logins, nur Server-Modus, verschlüsselt),
@@ -155,7 +198,7 @@ Einstellungen (ohne Zugänge).
 
 ---
 
-## Woher die Daten kommen (Phase 1)
+## Woher die Daten kommen
 
 | Was | Quelle | Weg |
 |---|---|---|
@@ -167,10 +210,19 @@ Einstellungen (ohne Zugänge).
 | Briefings, Einstellungen, Links | eigener Worker (D1) | `js/config.js → apiBase` |
 | Bilder | eigener Worker (R2) | unerratbare Dateischlüssel |
 
-Phase 2 ergänzt: METAR/TAF, ECMWF-/DWD-Karten, DWD-Ballonwetterbericht und
-Flugwetterübersicht (über GaforCast-Daten), meteoblue Images API, eigene Stüve-,
-Meteogramm-, Windkarten- und Trajektorienprodukte, DABS, Strecken-NOTAM mit
-VFR-Filter, KI-Hinweise je Panel.
+| Modellprognose (Stunden, Druckflächen) | Open-Meteo Forecast API | Server-Modus über Worker `/api/wx/om` (Kundenschlüssel, 15 min Cache); lokal direkt |
+| METAR/TAF, SIGMET/AIRMET | NOAA aviationweather.gov | Worker `/api/wx/metar`, `/api/wx/sigmet` (10 min Cache); Rückfall `gafor.wicki.aero/data/dwd/metar.json` |
+| DWD Luftsportberichte, Ballon-Gebietsvorhersagen, GAFOR-Gebiete | DWD, gespiegelt von GaforCast (`gafor.wicki.aero/data/…`, stündlich) | Worker `/api/wx/dwd` oder direkt |
+| Amtliche Karten (Schnappschuss) | DWD Hobbymeteorologie, ECMWF Open Charts | Worker `/api/wx/snapshot` (Allowlist) → R2 |
+| DABS | skybriefing `o/dabs?today|tomorrow` | Worker `/api/wx/dabs` → R2, Seiten mit pdf.js (vendored) gerendert |
+| NOTAM | FAA NOTAM API (`external-api.faa.gov`) | Worker `/api/wx/notam` mit `faa_client_id/secret` aus «Zugänge» |
+| KI-Hinweis | Anthropic API | Worker `/api/wx/ai` mit `anthropic`-Schlüssel aus «Zugänge» |
+| Radar | RainViewer public API | direkt aus dem Browser (nur Bildschirm) |
+
+Alle `/api/wx/*`-Aufrufe brauchen die Owner-Sitzung oder einen gültigen
+persönlichen Link (`?t=`); DABS, Schnappschuss und KI zusätzlich Mitarbeit-Rolle.
+Nicht automatisiert (bewusst, siehe Konzept 5.7): pc_met und skybriefing-Produkte
+hinter Login — Deep-Link + Einfügen.
 
 ---
 
@@ -209,7 +261,10 @@ js/ui/*.js                 Liste, Ablauf, Erarbeitung, Briefingsicht, Einstellun
 js/vendor/                 Leaflet (BSD-2), qrcode-generator (MIT)
 data/rac/rac-ch.json       RAC 4-4 OCT 2026 – DEC 2027
 worker/                    Cloudflare Worker (src/index.js, schema.sql, wrangler.toml)
-test/                      Rechentests (node) und Oberflächen-Durchläufe (Playwright)
+test/                      Rechentests (node, inkl. Trajektorien/Ampel/NOTAM-Filter), Oberflächen-Durchläufe (Playwright, Open-Meteo synthetisch über test/om_fixture.py)
+js/auto/                   Open-Meteo, Trajektorien, Grafiken (Stüve, Wind, Meteogramm), Datenbeschaffung, KI-Prompt
+js/ui/autopanels.js, autorender.js  automatische Panels (Erarbeitung) und ihre Darstellung (beide Sichten)
+worker/src/wx.js           Datenabrufe im Worker (/api/wx/*)
 ```
 
 ## Lizenz
@@ -218,5 +273,5 @@ Alle Rechte vorbehalten; Quelltext zur Einsicht veröffentlicht. Jede Nutzung
 über das Lesen hinaus nur mit vorheriger ausdrücklicher Zustimmung von
 Balthasar Wicki / Wicki Aero GmbH und mit Quellenangabe — siehe `LICENSE`
 (DE/EN). Drittkomponenten: Leaflet (BSD-2-Clause), qrcode-generator (MIT),
-pdf.js (Apache-2.0, nur beim RAC-Upload von cdnjs geladen). Logo und Name
+pdf.js (Apache-2.0, `js/vendor/pdfjs`). Logo und Name
 «Wicki Partners Ballonteam» sind nicht Teil der Lizenz.

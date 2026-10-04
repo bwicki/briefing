@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0 — 2026-10-04 · Phase 2
+
+* Automatische Panels mit Schnappschuss (Stand/Modell/Quelle, Druck, Leselink):
+  Meteogramm, Windprofil, Temps (Stüve), Trajektorien (Niveaus, Dauer, Startversatz,
+  Skizze + Karte + Tabelle), Ballonprognose (DWD-Gebietsvorhersage DE + eigene
+  Stundentabelle mit Ampel), Druckdifferenz (Bise/Föhn), METAR/TAF der nächsten
+  Plätze, SIGMET/AIRMET, Flugwetterprognose DE (DWD Flugwetterübersicht + GAFOR),
+  Allgemeine Lage (DWD-/ECMWF-Karten als Schnappschuss), Radar live, DABS (PDF →
+  Seitenbilder), Strecken-NOTAM (FAA) mit Korridor und VFR-Filter.
+* Modell-Leiste (Modellwahl je Horizont, «Alle aktualisieren»), Ampel-Grenzen und
+  weitere Vorgaben in Einstellungen → Meteo & Auto-Panels.
+* KI-Hinweis je Panel (Prompt sichtbar, Anthropic über Worker, editierbar).
+* Worker: `/api/wx/*` (Open-Meteo mit Schlüssel, AWC, DWD-Kopie, DABS, Schnappschuss,
+  NOTAM, KI) mit Cache; Dateien auch PDF.
+* pdf.js vendored (RAC-Upload, DABS). Fix: Briefingsicht ausserhalb CH (Sonnenzeile).
+* Tests: 90 Rechenprüfungen, UI-Durchläufe CH und DE mit synthetischem Open-Meteo.
+
 ## 0.2.0 — 2026-10-04
 
 * Ortswahl-Fenster (Karte, Suche nach Ort/Adresse/Koordinaten/ICAO/Google-Maps-Link,

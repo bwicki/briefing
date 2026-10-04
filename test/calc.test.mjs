@@ -8,6 +8,9 @@ import { fromLocal, hhmm, localParts, tzOffsetMin, isoDate } from '../js/calc/ti
 import { icao, parseIcao, distKm } from '../js/calc/geo.js';
 import { buildSchedule, trailerMinutes } from '../js/calc/schedule.js';
 import { readFileSync } from 'node:fs';
+import * as OM from '../js/auto/openmeteo.js';
+import { parseLevel, tracks, levelAltM } from '../js/auto/traj.js';
+import { vfrRelevant } from '../js/auto/data.js';
 
 let fails = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('  FAIL', msg); } else console.log('  ok  ', msg); };
@@ -141,6 +144,41 @@ ok(by.start === '06:30' && by.arrive === '05:45' && by.depart === '05:10' && by.
 const gasRows = buildSchedule({ startMs: start, type: 'gas', rigMin: 30, fillMin: 150, driveMin: 30, bufferMin: 10, durationMin: 24 * 60 });
 const gby = Object.fromEntries(gasRows.map((r) => [r.key, hhmm(tz, r.ms)]));
 ok(gby.arrive === '03:30' && gby.fillStart === '04:00' && gby.fillEnd === '06:30' && gby.depart === '02:50', JSON.stringify(gby));
+
+
+console.log('Trajektorien / Open-Meteo-Helfer');
+ok(parseLevel('SFC').kind === 'sfc' && parseLevel('1000 AGL').ft === 1000 && parseLevel('FL065').ft === 6500 && parseLevel('3000').kind === 'amsl' && parseLevel('500 m AGL').ft === 1640, 'Niveau-Schreibweisen');
+near(levelAltM(parseLevel('1000 AGL'), 461), 461 + 304.8, 0.1, 'Niveau AGL → m AMSL');
+// synthetisches Modell: Wind überall 270°/10 m/s (aus West), 6 Stunden ab T0
+const T0 = Date.UTC(2026, 9, 5, 4, 0);
+const hours = Array.from({ length: 7 }, (_, i) => T0 / 1000 + i * 3600);
+const H = { time: hours };
+const fill = (k, v) => { H[k] = hours.map(() => v); };
+fill('wind_speed_10m', 10); fill('wind_direction_10m', 270); fill('wind_speed_80m', 10); fill('wind_direction_80m', 270); fill('wind_speed_180m', 10); fill('wind_direction_180m', 270);
+for (const p of [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500]) { fill(`wind_speed_${p}hPa`, 10); fill(`wind_direction_${p}hPa`, 270); fill(`temperature_${p}hPa`, 10); fill(`geopotential_height_${p}hPa`, OM.stdHeight(p)); fill(`relative_humidity_${p}hPa`, 50); }
+const J = { hourly: H, elevation: 461, _levels: [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500] };
+ok(OM.indexAt(J, T0 + 1800000) === 0 || OM.indexAt(J, T0 + 1800000) === 1, 'indexAt rundet auf die nächste Stunde');
+const prof = OM.profile(J, 0, 461);
+ok(prof.length >= 8 && prof[0].m > prof[prof.length - 1].m, 'Profil von oben nach unten');
+const w = OM.windAt(prof, 1500);
+near(w.u, 10, 0.01, 'windAt: u = +10 m/s (Wind aus West → Drift nach Ost)'); near(w.v, 0, 0.01, 'windAt: v = 0');
+const trs = tracks(J, { lat: 47.3167, lon: 8.3917, elev: 461, startMs: T0, durationMin: 60, levels: ['SFC', '3000', 'FL065'], stepMin: 10 });
+ok(trs.length === 3 && trs.every((x) => x.ok), 'drei Bahnen, vollständig');
+near(trs[1].end.km, 36, 0.3, 'nach 60 min bei 10 m/s: 36 km');
+near(trs[1].end.brg, 90, 1, 'Kurs 090° (nach Osten)');
+ok(trs[1].hourly.length === 1 && /^47\d\dN008\d\dE$/.test(trs[1].end.icao), 'Stundenmarke und ICAO-Endpunkt');
+const rec = { temp: 10, dew: 9.8, rh: 98, w10: 1, gust: 2, precip: 0, cape: 50, vis: 800, cloudLow: 10 };
+ok(OM.fogRisk(rec).level === 3, 'Nebelrisiko hoch bei Sicht < 1 km');
+ok(OM.flyRating(rec, true).level === 0, 'Ampel nein bei Sicht 0.8 km');
+ok(OM.flyRating({ temp: 15, dew: 5, w10: 5, gust: 7, precip: 0, cape: 100 }, true).level === 1, 'Ampel grenzwertig bei 5 m/s / Böen 7');
+ok(OM.flyRating({ temp: 15, dew: 5, w10: 2, gust: 3, precip: 0, cape: 100 }, true).level === 2, 'Ampel fahrbar');
+ok(OM.flyRating({ temp: 15, dew: 5, w10: 2, gust: 3, precip: 0, cape: 100 }, false).level === 0, 'Ampel nein ausserhalb der Dämmerung');
+ok(OM.suggestModel(10) === 'icon_d2' && OM.suggestModel(100) === 'icon_eu' && OM.suggestModel(200) === 'gfs_global', 'Modellvorschlag je Horizont');
+const fromMs = T0, toMs = T0 + 7200000;
+ok(vfrRelevant({ text: 'TEMPO RESTRICTED AREA ACT SFC-FL100', start: '2026-10-04T00:00:00Z', end: '2026-10-06T00:00:00Z', minFL: 0 }, 8000, fromMs, toMs).relevant, 'NOTAM Sperrgebiet relevant');
+ok(!vfrRelevant({ text: 'ILS RWY 14 U/S', start: '2026-10-04T00:00:00Z', end: '2026-10-06T00:00:00Z' }, 8000, fromMs, toMs).relevant, 'NOTAM ILS nicht VFR-relevant');
+ok(!vfrRelevant({ text: 'AIRSPACE RESTRICTION', start: '2026-10-04T00:00:00Z', end: '2026-10-06T00:00:00Z', minFL: 150 }, 8000, fromMs, toMs).relevant, 'NOTAM über FL150 nicht relevant');
+ok(!vfrRelevant({ text: 'AIRSPACE RESTRICTION', start: '2026-10-09T00:00:00Z', end: '2026-10-10T00:00:00Z' }, 8000, fromMs, toMs).relevant, 'NOTAM erst später');
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);
 process.exit(fails ? 1 : 0);
