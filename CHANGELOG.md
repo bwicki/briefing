@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.1 — 2026-10-04 · Antworten auf die offenen Fragen
+
+* Webcams europaweit automatisch: der Worker sucht Kameras im Umkreis des Startplatzes
+  (und des Landeraums, wenn er weiter weg liegt) in öffentlichen Quellen — Windy
+  Webcams API v3 (Schlüssel «Windy Webcams key» unter Zugänge, Vorschaubild im Popup)
+  und OpenStreetMap/Overpass (ohne Schlüssel, als Webcam erfasste Punkte mit Adresse);
+  Umkreis in Einstellungen → Meteo (Standard 40 km), eigene Liste bleibt zusätzlich;
+  Radar-Panel mit aufklappbarer Liste (Distanz, Ort). `GET /api/wx/webcams?lat&lon&km`.
+* Grosswetteranalyse: Österreich über die ORF/GeoSphere-Prognoseseite (geprüft);
+  MeteoSchweiz und Aeronautica Militare liefern ihren Text nur per JavaScript —
+  Einträge ohne «abrufen» erscheinen im Panel als Link; Haken «abrufen» je Eintrag.
+* Thermik-Klassen (w*-Grenzen und Einsetzen) unter Einstellungen → Experte
+  einstellbar, Standard wie bisher (0.6 / 1.2 / 2.0 / 3.0, Einsetzen 1.0 m/s).
+* SETUP: Anleitung für den Windy-Webcams-Schlüssel.
+
 ## 0.7.0 — 2026-10-04 · Zweite Rückmeldungsrunde
 
 * Tagesplanung neu: Etappen (mehrere Treffpunkte/Zwischenhalte) mit «+», Ort, Fahrzeit

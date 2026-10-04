@@ -77,7 +77,9 @@ export const DEFAULT_SETTINGS = {
   flyLimits: { wind: [4, 6], gust: [6, 8], gustSpread: [4, 6], cape: [300, 800], precip: 0.1, visKm: 1.5, baseFt: 1000 },
   trajDefaults: { hab: 120, gas: 1440, stepMin: 10 },
   meteoDefaults: { topHpa: 500 },
+  thermalLimits: { none: 0.6, weak: 1.2, moderate: 2.0, strong: 3.0, onset: 1.0 },
   docTypes: { balloon: ['Lufttüchtigkeitszeugnis (ARC)', 'Eintragungsschein', 'Lärmzeugnis', 'Versicherungsnachweis', 'Funkkonzession', 'Wägebericht'], person: ['Lizenz (BPL)', 'Medical', 'Funkzeugnis', 'Ausweis / Pass', 'Versicherung'] },
+  webcamKm: 40,
   webcams: [{ id: 'uetliberg', name: 'Uetliberg (Roundshot)', lat: 47.3496, lon: 8.4913, url: 'https://uetliberg.roundshot.com/' }, { id: 'rigi', name: 'Rigi Kulm (Roundshot)', lat: 47.0569, lon: 8.4854, url: 'https://rigi.roundshot.com/' }],
   metarRadiusKm: 150, metarCount: 0, notamRadiusNm: 25, aiModel: 'claude-sonnet-5-5',
   synopticCharts: [
@@ -91,9 +93,10 @@ export const DEFAULT_SETTINGS = {
   wxTexts: [
     { cc: 'DE', name: 'DWD Synoptische Übersicht Kurzfrist', url: 'https://opendata.dwd.de/weather/text_forecasts/txt/SXDL31_DWAV_LATEST', sel: '' },
     { cc: 'DE', name: 'DWD Synoptische Übersicht Mittelfrist', url: 'https://opendata.dwd.de/weather/text_forecasts/txt/SXDL33_DWAV_LATEST', sel: '' },
-    { cc: 'CH', name: 'MeteoSchweiz Wetterbericht', url: 'https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-von-a-bis-z/wetterbericht.html', sel: 'main' },
-    { cc: 'AT', name: 'GeoSphere Austria Wetterübersicht', url: 'https://www.geosphere.at/de/wetter/wetteruebersicht', sel: 'main' },
-    { cc: 'IT', name: 'Aeronautica Militare – Situazione e tendenza', url: 'https://www.meteoam.it/it/situazione-e-tendenza', sel: 'main' },
+    { cc: 'AT', name: 'ORF Wetter – Prognose Österreich (GeoSphere-Daten)', url: 'https://wetter.orf.at/oes/prognose', sel: 'main' },
+    // CH und IT: die amtlichen Seiten sind JavaScript-Anwendungen ohne abrufbaren Text (Stand 10/2026) – Eintrag bleibt als Link, nicht abgerufen
+    { cc: 'CH', name: 'MeteoSchweiz Wetterbericht (nur Link – Seite ohne abrufbaren Text)', url: 'https://www.meteoschweiz.admin.ch/', sel: 'main', disabled: true },
+    { cc: 'IT', name: 'Aeronautica Militare – Previsioni testuali (nur Link – Seite ohne abrufbaren Text)', url: 'https://www.meteoam.it/it/previsioni-testuali', sel: 'main', disabled: true },
   ],
   pdiffPairs: [],
   airspaceTileUrl: '',
@@ -160,6 +163,8 @@ export function mergeSettings(saved) {
   const out = merge(base, saved);
   // 0.6: alte Standardwerte (120 km / 4 Plätze) auf neue Standards heben (150 km / alle im Umkreis)
   if (out.metarRadiusKm === 120 && out.metarCount === 4) { out.metarRadiusKm = 150; out.metarCount = 0; }
+  // 0.7.1: ungeprüfte Textquellen (geosphere Wetterübersicht, meteoam Situazione, MeteoSchweiz-Seite) → geprüfte Standardliste
+  if ((out.wxTexts || []).some((x) => /geosphere\.at\/de\/wetter\/wetteruebersicht|meteoam\.it\/it\/situazione|wetterbericht\.html/.test(x.url || ''))) out.wxTexts = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.wxTexts));
   // 0.7: Beispielballone «Heissluft NNNN m³» → Muster (Beispiel) + Transponder-Hexcode
   for (const x of out.balloons?.hab || []) {
     if (x.id === 'HB-QWZ' && /^Heissluft/.test(x.model || '')) { x.model = 'BB26E'; if (!x.hex) x.hex = '4c4b4'; }

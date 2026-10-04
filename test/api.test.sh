@@ -28,6 +28,8 @@ echo "# Kennwort ändern"; j -H "$H" -X POST $A/api/password -d '{"oldPassword":
 echo "# zurück auf 1234"; TOK2=$(j -X POST $A/api/session -d '{"user":"bwicki","password":"5678"}' | tok); j -H "Authorization: Bearer $TOK2" -X POST $A/api/password -d '{"oldPassword":"5678","newPassword":"1234"}'; echo
 echo "# Dokument-Ablage (Stammdaten)"; DOC=$(j -H "$H" -X POST $A/api/docs -d "{\"dataUrl\":\"data:image/png;base64,$PNG\"}"); echo "$DOC"; DU=$(echo "$DOC" | sed -E 's/.*"url":"([^"]+)".*/\1/'); curl -s -o /dev/null -w "doc GET %{http_code}\n" "$A$DU"
 echo "# wxtext fremder Host → 400"; code -H "$H" "$A/api/wx/wxtext?url=https://example.com/x"; echo
+echo "# webcams ohne Koordinaten → 400"; code -H "$H" "$A/api/wx/webcams"; echo
+echo "# webcams Umkreis (ohne Windy-Schlüssel: OSM)"; j -H "$H" "$A/api/wx/webcams?lat=47.26&lon=8.30&km=30" | head -c 300; echo
 echo "# Export"; j -H "$H" $A/api/export | head -c 200; echo
 echo "# ohne Token → 401"; code $A/api/briefings; echo
 

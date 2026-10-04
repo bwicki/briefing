@@ -389,6 +389,9 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .doc-row input.neg{border-color:var(--temp)} .doc-row input.half{border-color:var(--gafor-d)}
 .doc-row .btn.small{min-height:30px;padding:3px 9px;font-size:12px}
 .cam-ico{font-size:18px;line-height:22px;text-align:center;filter:drop-shadow(0 0 2px #fff)}
+.cam-ico.own{filter:drop-shadow(0 0 3px var(--accent,#1d6fb8))}
+.cams{margin-top:6px;font-size:.9em}.cams summary{cursor:pointer}.cams ul.plain{margin:4px 0 0;padding-left:1em;columns:2;column-gap:1.5em}.cams li{break-inside:avoid}
+@media(max-width:700px){.cams ul.plain{columns:1}}
 .land-dot{width:16px;height:16px;border-radius:50%;background:#2f8f4e;border:2px solid #fff;box-shadow:0 0 0 2px rgba(47,143,78,.5);cursor:grab}
 .leaflet-bar.fb-ctl a{font-size:17px;line-height:30px;text-align:center;width:30px;height:30px;color:#333}
 .leaflet-bar.fb-ctl a.on{background:var(--accent,#1673a8);color:#fff}

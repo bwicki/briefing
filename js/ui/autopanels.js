@@ -10,7 +10,7 @@ import * as DATA from '../auto/data.js';
 import { MODELS, modelsFor, modelName, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDateTime } from '../calc/time.js';
 import { pointInfo } from '../net.js';
-import { icao } from '../calc/geo.js';
+import { icao, distKm } from '../calc/geo.js';
 import { applyLanding } from '../model.js';
 import { panelPrompt, aiHint } from '../auto/ai.js';
 
@@ -136,6 +136,7 @@ async function fetchSynoptic(b, ctx) {
   const ccs = [...new Set([b.site.country, b.landing?.country].filter(Boolean))];
   const texts = [];
   for (const src of (ctx.settings.wxTexts || []).filter((x) => ccs.includes(x.cc))) {
+    if (src.disabled) { texts.push({ cc: src.cc, name: src.name, url: src.url, text: '', linkOnly: true }); continue; }
     try { const j = await ctx.store.data('wxtext', { url: src.url, sel: src.sel || '' }, shareTok(ctx)); texts.push({ cc: src.cc, name: src.name, url: src.url, text: j.text, fetched: j.fetched, truncated: j.truncated }); }
     catch (e) { errs.push(`${src.name}: ${e.message}`); }
   }
@@ -143,18 +144,37 @@ async function fetchSynoptic(b, ctx) {
   return { kind: 'synoptic', stand: Date.now(), source: charts.map((c) => c.name).concat(texts.map((x) => x.name)).join(', '), data: { errors: errs, texts }, images, text: `${images.length} ${t('images')}: ${images.map((i) => i.caption).join('; ')}` + texts.map((x) => `\n\n${x.name}:\n${x.text}`).join('') };
 }
 
-/** Radar live (RainViewer-Kacheln auf OSM), nur Bildschirm. */
+/** Radar live (RainViewer-Kacheln auf OSM), nur Bildschirm; Webcams im Umkreis (Worker: Windy/OSM) plus eigene Liste. */
 function radarLive(b, ctx) {
   const el = h('div.map.radar.no-print');
   const note = h('div.note', t('auto_radarNote'));
+  const camList = h('div.cams');
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const camPopup = (w) => `<b>${esc(w.name || 'Webcam')}</b>${w.place ? `<br><small>${esc(w.place)}</small>` : ''}${w.distKm != null ? `<br><small>${w.distKm} km</small>` : ''}${w.img ? `<br><a href="${esc(w.url)}" target="_blank" rel="noopener"><img src="${esc(w.img)}" alt="" style="max-width:220px;display:block;margin-top:4px"></a>` : ''}<br><a href="${esc(w.url)}" target="_blank" rel="noopener">${esc((w.url || '').replace(/^https?:\/\/(www\.)?/, '').slice(0, 40))} ↗</a>`;
   setTimeout(async () => {
     if (typeof L === 'undefined' || b.site.lat == null) return;
     const map = L.map(el).setView([b.site.lat, b.site.lon], 7);   // weit genug für die Niederschlagsgebiete
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 12, attribution: '© OpenStreetMap' }).addTo(map);
     L.marker([b.site.lat, b.site.lon]).addTo(map).bindTooltip(`${t('site')}: ${b.site.name || ''}`);
     if (b.landing?.lat != null) L.marker([b.landing.lat, b.landing.lon], { icon: L.divIcon({ className: 'land-dot', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(map).bindTooltip(`${t('landingSite')}: ${b.landing.name || ''}`);
-    // Webcams (Einstellungen → Meteo): Kamera-Symbol mit Link
-    for (const w of ctx.settings.webcams || []) if (w.lat != null && w.lon != null) L.marker([w.lat, w.lon], { icon: L.divIcon({ className: 'cam-ico', html: '📷', iconSize: [22, 22], iconAnchor: [11, 11] }), title: w.name }).addTo(map).bindPopup(`<b>${w.name || 'Webcam'}</b><br><a href="${w.url}" target="_blank" rel="noopener">${(w.url || '').replace(/^https?:\/\/(www\.)?/, '').slice(0, 40)} ↗</a>`);
+    const camIcon = (own) => L.divIcon({ className: `cam-ico${own ? ' own' : ''}`, html: '📷', iconSize: [22, 22], iconAnchor: [11, 11] });
+    // Eigene Webcams (Einstellungen → Meteo)
+    const own = (ctx.settings.webcams || []).filter((w) => w.lat != null && w.lon != null);
+    for (const w of own) L.marker([w.lat, w.lon], { icon: camIcon(true), title: w.name }).addTo(map).bindPopup(camPopup(w));
+    // Webcams im Umkreis aus öffentlichen Quellen (Startplatz, dazu Landeraum, wenn weiter weg)
+    const km = +ctx.settings.webcamKm || 40;
+    const centers = [[b.site.lat, b.site.lon]];
+    if (b.landing?.lat != null && distKm(b.site.lat, b.site.lon, b.landing.lat, b.landing.lon) > km * 0.7) centers.push([b.landing.lat, b.landing.lon]);
+    const found = []; const errs = []; let src = ''; let hasKey = true; let localOnly = false;
+    for (const [la, lo] of centers) {
+      try { const j = await ctx.store.data('webcams', { lat: la.toFixed(4), lon: lo.toFixed(4), km }, shareTok(ctx)); for (const w of j.webcams || []) if (!found.some((f) => f.id === w.id) && !own.some((o) => distKm(o.lat, o.lon, w.lat, w.lon) < 0.15)) found.push(w); src = j.source || src; hasKey = !!j.hasKey; errs.push(...(j.errors || [])); }
+      catch (e) { if (e.code === 'remote') localOnly = true; else errs.push(e.message); }
+    }
+    if (!el.isConnected) return;
+    for (const w of found) L.marker([w.lat, w.lon], { icon: camIcon(false), title: w.name }).addTo(map).bindPopup(camPopup(w));
+    const all = own.map((w) => ({ ...w, distKm: Math.round(distKm(b.site.lat, b.site.lon, w.lat, w.lon) * 10) / 10, own: true })).concat(found).sort((x, y) => x.distKm - y.distKm);
+    const items = all.slice(0, 30).map((w) => h('li', [h('a', { href: w.url, target: '_blank', rel: 'noopener' }, w.name || 'Webcam'), ` · ${w.distKm} km`, w.place ? h('span.muted', ` · ${w.place}`) : null, w.own ? h('span.muted', ` · ${t('auto_webcamsOwn')}`) : null]));
+    camList.appendChild(h('details', [h('summary', `📷 ${t('auto_webcamsNear')} ${km} km: ${all.length}${src ? ` (${src}${own.length ? ` + ${t('auto_webcamsOwn')}` : ''})` : ''}`), items.length ? h('ul.plain', items) : h('div.note', t('auto_webcamsNone')), localOnly ? h('div.note', t('auto_webcamsLocal')) : !hasKey ? h('div.note', t('auto_webcamsKey')) : null, errs.length ? h('div.note', errs.join(' · ')) : null]));
     try {
       const j = await fetch('https://api.rainviewer.com/public/weather-maps.json').then((r) => r.json());
       const frames = j.radar?.past || [];
@@ -164,7 +184,7 @@ function radarLive(b, ctx) {
     setTimeout(() => map.invalidateSize(), 60);
   }, 0);
   const links = ctx.settings.sources || {};
-  return h('div', [el, note, h('div.row-actions', [links.windy ? h('a.btn', { href: links.windy, target: '_blank', rel: 'noopener' }, 'Windy ↗') : null, h('a.btn', { href: 'https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-aktuell/radarbild.html', target: '_blank', rel: 'noopener' }, 'MeteoSchweiz Radar ↗'), h('a.btn', { href: 'https://www.blitzortung.org/de/live_lightning_maps.php', target: '_blank', rel: 'noopener' }, 'Blitzortung ↗'), h('a.btn', { href: 'https://www.sat24.com/de/eu', target: '_blank', rel: 'noopener' }, 'Sat24 ↗')])]);
+  return h('div', [el, note, camList, h('div.row-actions', [links.windy ? h('a.btn', { href: links.windy, target: '_blank', rel: 'noopener' }, 'Windy ↗') : null, h('a.btn', { href: 'https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-aktuell/radarbild.html', target: '_blank', rel: 'noopener' }, 'MeteoSchweiz Radar ↗'), h('a.btn', { href: 'https://www.blitzortung.org/de/live_lightning_maps.php', target: '_blank', rel: 'noopener' }, 'Blitzortung ↗'), h('a.btn', { href: 'https://www.sat24.com/de/eu', target: '_blank', rel: 'noopener' }, 'Sat24 ↗')])]);
 }
 
 /** KI-Hinweis anfordern (Worker → Anthropic). */

@@ -159,6 +159,15 @@ funktioniert genauso.
         `client_id` und `client_secret` kopieren und in der App unter
         Einstellungen → Zugänge eintragen.
      Ohne Zugang bleibt das NOTAM-Panel auf Einfügen (skybriefing).
+   * `windy_webcams` — Windy Webcams API (kostenlos, europaweit ~60 000
+     Kameras mit Vorschaubild) für das Panel «Radar / Blitz / Satellit /
+     Webcams»: https://api.windy.com/keys öffnen → mit dem Windy-Konto
+     anmelden (oder registrieren) → **Webcams API** → Schlüssel erzeugen
+     (Name z. B. `Fahrtbriefing`) → Schlüssel kopieren und in der App unter
+     Einstellungen → Zugänge als «Windy Webcams key» eintragen. Ohne
+     Schlüssel sucht die App nur in OpenStreetMap (als Webcam erfasste Punkte
+     mit Adresse); der Umkreis ist unter Einstellungen → Meteo einstellbar
+     (Standard 40 km um Startplatz und Landeraum).
 4. Einstellungen → Ballone/Personen/Startplätze prüfen (Platzhalter sind markiert),
    speichern.
 5. Daten aus dem lokalen Modus werden nicht automatisch übernommen — Briefings dort

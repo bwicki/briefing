@@ -73,7 +73,8 @@ export function renderThermal(snap, b) {
     svg.appendChild(mk('rect', { x: L + i * cw + 1, y: y(x.wstar), width: Math.max(1, cw - 2), height: Math.max(0, y(0) - y(x.wstar)), fill: col, 'fill-opacity': x.night ? 0.35 : 0.9 }));
     if (i % (n > 20 ? 2 : 1) === 0) svg.appendChild(mk('text', { x: L + i * cw + cw / 2, y: H - B + 12, class: 'mg-ax', 'text-anchor': 'middle' }, hhmm(z, x.ms).slice(0, 2)));
   });
-  svg.appendChild(mk('text', { x: L + 4, y: T + 10, class: 'mg-title' }, `w* (m/s) · ${t('th_class')}: ${t('th_weak')} < 1.2 < ${t('th_moderate')} < 2.0 < ${t('th_strong')} < 3.0`));
+  const lim = d.limits || { weak: 1.2, moderate: 2.0, strong: 3.0 };
+  svg.appendChild(mk('text', { x: L + 4, y: T + 10, class: 'mg-title' }, `w* (m/s) · ${t('th_class')}: ${t('th_weak')} < ${lim.weak} < ${t('th_moderate')} < ${lim.moderate} < ${t('th_strong')} < ${lim.strong}`));
   const table = h('table.auto', [
     h('thead', h('tr', ['LT', `${t('th_rad')} W/m²`, `${t('th_zi')} ft AGL`, `${t('th_wstar')} m/s`, `${t('th_climb')} m/s`, `${t('th_gusty')} kt`, 'CAPE', t('th_class')].map((x) => h('th', x)))),
     h('tbody', hs.map((x) => h('tr', { class: x.ms >= d.fromMs - 1800000 && x.ms <= d.toMs ? 'win' : '' }, [h('td.mono', hhmm(z, x.ms)), h('td', x.rad), h('td', x.pbl != null ? Math.round(x.pbl * M_TO_FT) : '–'), h('td.mono', x.wstar.toFixed(1)), h('td.mono', x.climb.toFixed(1)), h('td.mono', x.gusty != null ? Math.round(x.gusty * MS_TO_KT) : '–'), h('td', x.cape != null ? Math.round(x.cape) : '–'), h('td', h('span.tag.' + (cls[x.klass] || ''), t('th_' + x.klass)))]))),
@@ -254,7 +255,7 @@ export function renderFwp(snap) {
  * (Bildschirm); im Druck erscheinen alle Seiten (bzw. die Beilagen der Briefingsicht). */
 export function renderImages(snap, b, ctx, opts = {}) {
   const imgs = snap.images || [];
-  const texts = (snap.data?.texts || []).map((x) => h('details.wxtext', { open: true }, [h('summary.small', [h('b', x.name), x.fetched ? h('span.muted', ` · ${new Date(x.fetched).toISOString().slice(0, 16).replace('T', ' ')} UTC`) : null, x.url ? [' · ', h('a', { href: x.url, target: '_blank', rel: 'noopener' }, '↗')] : null]), h('pre.report.wx', x.text + (x.truncated ? ' […]' : ''))]));
+  const texts = (snap.data?.texts || []).map((x) => x.linkOnly ? h('div.wxtext.small', [h('b', x.name), ' · ', h('a', { href: x.url, target: '_blank', rel: 'noopener' }, x.url.replace(/^https?:\/\/(www\.)?/, '') + ' ↗')]) : h('details.wxtext', { open: true }, [h('summary.small', [h('b', x.name), x.fetched ? h('span.muted', ` · ${new Date(x.fetched).toISOString().slice(0, 16).replace('T', ' ')} UTC`) : null, x.url ? [' · ', h('a', { href: x.url, target: '_blank', rel: 'noopener' }, '↗')] : null]), h('pre.report.wx', x.text + (x.truncated ? ' […]' : ''))]));
   const errs = snap.data?.errors?.length ? h('div.warn.small', snap.data.errors.join(' · ')) : null;
   if (!imgs.length) return h('div', [errs, ...texts, !texts.length ? h('div.note', '–') : null]);
   if (texts.length || errs) { const inner = renderImagesOnly(snap); return h('div', [inner, errs, ...texts]); }

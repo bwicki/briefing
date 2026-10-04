@@ -7,7 +7,7 @@
 import * as OM from './openmeteo.js';
 import { tracks } from './traj.js';
 import { sunFor, scheduleFor } from '../model.js';
-import { thermalHours, thermalSummary, classOf } from '../calc/thermal.js';
+import { thermalHours, thermalSummary, classOf, THERMAL_DEFAULTS } from '../calc/thermal.js';
 import { isoDate, hhmm } from '../calc/time.js';
 import { distKm, bearing, icao } from '../calc/geo.js';
 import { t, getLang } from '../i18n.js';
@@ -61,14 +61,15 @@ export async function thermal(ctx, b) {
   if (!idx.length) throw new Error(t('auto_noHours'));
   const light = lightFn(b, ctx);
   const recs = idx.map((i) => ({ ...OM.rec(j, i) })).map((r) => ({ ...r, night: !light(r.ms) }));
-  const hours = thermalHours(recs);
+  const th = { ...THERMAL_DEFAULTS, ...(ctx.settings.thermalLimits || {}) };
+  const hours = thermalHours(recs, th);
   const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
-  const sum = thermalSummary(hours);
+  const sum = thermalSummary(hours, th);
   const z = b.site.tz || 'Europe/Zurich';
   const inWin = hours.filter((x) => x.ms >= b.time.startMs - 1800000 && x.ms <= landing);
   const winMax = inWin.reduce((a, x) => Math.max(a, x.wstar), 0);
-  const text = `${t('th_onset')}: ${sum.onsetMs ? hhmm(z, sum.onsetMs) : '–'} · ${t('th_peak')}: ${sum.peak ? `${hhmm(z, sum.peak.ms)} w* ${sum.peak.wstar} m/s (${t('th_' + sum.peak.klass)})` : '–'} · ${t('th_end')}: ${sum.endMs ? hhmm(z, sum.endMs) : '–'} · ${t('th_window')}: ${t('th_' + classOf(winMax))} (max w* ${winMax} m/s)\n` + hours.map((x) => `${hhmm(z, x.ms)} ${x.rad} W/m² zi ${x.pbl != null ? Math.round(x.pbl) : '–'} m w* ${x.wstar} ${t('th_' + x.klass)}`).join('\n');
-  return { kind: 'thermal', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { hours, fromMs: b.time.startMs, toMs: landing, onsetMs: sum.onsetMs, endMs: sum.endMs, peak: sum.peak, winMax, winClass: classOf(winMax) }, text };
+  const text = `${t('th_onset')}: ${sum.onsetMs ? hhmm(z, sum.onsetMs) : '–'} · ${t('th_peak')}: ${sum.peak ? `${hhmm(z, sum.peak.ms)} w* ${sum.peak.wstar} m/s (${t('th_' + sum.peak.klass)})` : '–'} · ${t('th_end')}: ${sum.endMs ? hhmm(z, sum.endMs) : '–'} · ${t('th_window')}: ${t('th_' + classOf(winMax, th))} (max w* ${winMax} m/s)\n` + hours.map((x) => `${hhmm(z, x.ms)} ${x.rad} W/m² zi ${x.pbl != null ? Math.round(x.pbl) : '–'} m w* ${x.wstar} ${t('th_' + x.klass)}`).join('\n');
+  return { kind: 'thermal', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { hours, fromMs: b.time.startMs, toMs: landing, onsetMs: sum.onsetMs, endMs: sum.endMs, peak: sum.peak, winMax, winClass: classOf(winMax, th), limits: th }, text };
 }
 
 /** Start-Ampel für den Ablauf: schlechteste Stundenampel im Fahrtfenster (Start … Landung). */

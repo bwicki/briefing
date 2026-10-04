@@ -3,7 +3,8 @@
  * Der Browser darf viele Quellen nicht direkt lesen (CORS) oder soll den
  * Schlüssel nicht sehen. Hier laufen deshalb: Open-Meteo (mit Kundenschlüssel),
  * METAR/TAF/SIGMET (aviationweather.gov, Rückfall GaforCast-Kopie), DABS-PDF
- * (skybriefing), Bild-Schnappschüsse amtlicher Karten (R2), FAA-NOTAM und die
+ * (skybriefing), Bild-Schnappschüsse amtlicher Karten (R2), Wettertexte der
+ * nationalen Dienste, Webcams im Umkreis (Windy/OSM), FAA-NOTAM und die
  * Anthropic-API für KI-Hinweise. Antworten werden über die Cache-API kurz
  * zwischengespeichert, damit mehrere Nutzer eines Briefings die Quellen nicht
  * mehrfach belasten.
@@ -162,7 +163,7 @@ async function snapshot(env, body, briefingId, q) {
 }
 
 // ------------------------------------------------------------ Wettertexte nationaler Dienste (Grosswetteranalyse)
-const WXTEXT_HOSTS = ['opendata.dwd.de', 'www.dwd.de', 'www.meteoschweiz.admin.ch', 'www.meteoswiss.admin.ch', 'www.geosphere.at', 'www.zamg.ac.at', 'warnungen.zamg.at', 'www.meteoam.it', 'meteofrance.com', 'www.meteofrance.com', 'www.wetter.de'];
+const WXTEXT_HOSTS = ['opendata.dwd.de', 'www.dwd.de', 'www.meteoschweiz.admin.ch', 'www.meteoswiss.admin.ch', 'www.geosphere.at', 'www.zamg.ac.at', 'warnungen.zamg.at', 'wetter.orf.at', 'www.meteoam.it', 'meteofrance.com', 'www.meteofrance.com'];
 /** Text (Roh-Textdatei oder HTML-Ausschnitt per CSS-Selektor über HTMLRewriter), 30 min Cache. */
 async function wxText(ctx, q) {
   const u = (() => { try { return new URL(q.get('url') || ''); } catch { return null; } })();
@@ -195,6 +196,47 @@ async function wxText(ctx, q) {
     text = text.replace(/&nbsp;/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/[ \t]{2,}/g, ' ').trim();
     if (!text) throw new Error('empty');
     return { text: text.slice(0, 8000), truncated: text.length > 8000, fetched: Date.now(), url: u.toString() };
+  });
+  return json(data);
+}
+
+// ------------------------------------------------------------ Webcams im Umkreis (Windy Webcams API v3 + OpenStreetMap)
+/** Öffentliche Webcams rund um einen Punkt, europaweit: Windy (Schlüssel `windy_webcams`, Bildlinks 10 min gültig)
+ *  und OpenStreetMap-Punkte mit Webcam-Tag und Adresse (Overpass, ohne Schlüssel). Sortiert nach Distanz. */
+async function webcams(env, decrypt, ctx, q) {
+  const lat = q.get('lat') == null ? NaN : +q.get('lat'), lon = q.get('lon') == null ? NaN : +q.get('lon'), km = Math.min(100, Math.max(5, Math.round(+q.get('km') || 40)));
+  if (!isFinite(lat) || !isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return err('lat/lon');
+  const key = await getSecret(env, decrypt, 'windy_webcams');
+  const cell = `${lat.toFixed(2)},${lon.toFixed(2)},${km}`;
+  const data = await cached(ctx, `webcams/${key ? 'w' : 'o'}/${cell}`, key ? 540 : 21600, async () => {
+    const out = []; const errs = []; const sources = [];
+    if (key) {
+      try {
+        const u = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat.toFixed(4)},${lon.toFixed(4)},${km}&include=location,images,urls&limit=50&sortKey=popularity&sortDirection=desc`;
+        const j = await (await get(u, { headers: { 'x-windy-api-key': key } }, 15000)).json();
+        for (const w of j.webcams || []) {
+          if ((w.status && w.status !== 'active') || w.location?.latitude == null) continue;
+          out.push({ id: `windy:${w.webcamId}`, name: w.title || 'Webcam', lat: w.location.latitude, lon: w.location.longitude, place: [w.location.city, w.location.country_code].filter(Boolean).join(', '), url: w.urls?.detail || `https://www.windy.com/webcams/${w.webcamId}`, img: w.images?.current?.preview || w.images?.current?.thumbnail || null, icon: w.images?.current?.icon || null, updated: w.lastUpdatedOn || null, src: 'Windy' });
+        }
+        sources.push('Windy Webcams');
+      } catch (e) { errs.push(`Windy: ${e.message}`); }
+    }
+    try {
+      const r = km * 1000;
+      const ql = `[out:json][timeout:20];(node["man_made"="surveillance"]["surveillance:type"="webcam"](around:${r},${lat.toFixed(4)},${lon.toFixed(4)});nwr["contact:webcam"](around:${r},${lat.toFixed(4)},${lon.toFixed(4)});nwr["webcam"~"^https?://"](around:${r},${lat.toFixed(4)},${lon.toFixed(4)}););out center 120;`;
+      const j = await (await get('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(ql), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, 25000)).json();
+      for (const el of j.elements || []) {
+        const tg = el.tags || {}; const la = el.lat ?? el.center?.lat, lo = el.lon ?? el.center?.lon;
+        const url = [tg['contact:webcam'], tg.webcam, tg.website, tg['contact:website'], tg.url, tg.image].find((x) => /^https?:\/\//.test(x || ''));
+        if (la == null || !url) continue;
+        if (out.some((o) => distKm(o.lat, o.lon, la, lo) < 0.15)) continue;   // schon über Windy bekannt
+        out.push({ id: `osm:${el.type}${el.id}`, name: tg.name || tg.description || tg.operator || 'Webcam', lat: la, lon: lo, place: [tg['addr:city'], tg['addr:country']].filter(Boolean).join(', '), url, img: null, icon: null, updated: null, src: 'OSM' });
+      }
+      sources.push('OpenStreetMap');
+    } catch (e) { errs.push(`OSM: ${e.message}`); }
+    for (const o of out) o.distKm = Math.round(distKm(lat, lon, o.lat, o.lon) * 10) / 10;
+    out.sort((a, b) => a.distKm - b.distKm);
+    return { webcams: out.slice(0, 80), total: out.length, hasKey: !!key, source: sources.join(' + '), errors: errs, generated: new Date().toISOString() };
   });
   return json(data);
 }
@@ -286,6 +328,7 @@ export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
     case 'dabs': if (!canWrite) return err('forbidden', 403); return dabs(env, ctx, q, briefingId);
     case 'snapshot': if (!canWrite) return err('forbidden', 403); return snapshot(env, body, briefingId, q);
     case 'wxtext': return wxText(ctx, q);
+    case 'webcams': return webcams(env, decrypt, ctx, q);
     case 'notam': return notam(env, decrypt, ctx, q);
     case 'ai': if (!canWrite) return err('forbidden', 403); return ai(env, decrypt, body);
     case 'pdf': if (!auth.owner) return err('forbidden', 403); return pdfRender(env, decrypt, ctx, body, auth);
