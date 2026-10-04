@@ -55,7 +55,7 @@ wiederholbar: Vorhandenes wird erkannt und übersprungen.
 
 ## 3b Alternative: Setup-Skript auf dem eigenen Rechner
 
-Auf einem Rechner mit Node 20+ im Ordner `worker\`:
+Auf einem Rechner mit Node 22+ im Ordner `worker\`:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\setup.ps1      # Windows
@@ -72,7 +72,7 @@ Bildschirm. Wiederholbar: Vorhandenes wird übersprungen.
 
 ## 3a Von Hand: Datenbank und Bucket anlegen
 
-Auf einem Rechner mit Node 20+:
+Auf einem Rechner mit Node 22+:
 
 ```bash
 cd worker

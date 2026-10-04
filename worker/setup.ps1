@@ -1,6 +1,6 @@
 # Fahrtbriefing — Worker einrichten (Windows PowerShell)
 #
-# Voraussetzung: Node 20+ (https://nodejs.org). Aufruf im Ordner worker\:
+# Voraussetzung: Node 22+ (https://nodejs.org). Aufruf im Ordner worker\:
 #   powershell -ExecutionPolicy Bypass -File .\setup.ps1
 # Das Skript ist wiederholbar: Vorhandenes wird erkannt und übersprungen.
 # Es öffnet einmal den Browser für «wrangler login» (Cloudflare-Konto).
