@@ -4,35 +4,35 @@ GAFOR-Einstufung LBZ Hamburg
 
 GAFOR Bereich LBZ Hamburg 04.10.2026
 
-Gebiet  Name  09-11 UTC  11-13 UTC  13-15 UTC
+Gebiet  Name  12-14 UTC  14-16 UTC  16-18 UTC
 
 00  Deutsche Bucht  O  O  O
 
-01  Ostfriesland  C  O  O
+01  Ostfriesland  O  O  C
 
 02  Nordfriesland-Dithmarschen  O  O  O
 
-03  Schleswig-Holsteinische Geest  C  O  O
+03  Schleswig-Holsteinische Geest  O  O  O
 
-04  Schleswig-Holsteinisches Hügelland  C  O  O
+04  Schleswig-Holsteinisches Hügelland  O  O  O
 
-05  Nordwestliches Niedersachsen  D1 ISOL FG  O  O
+05  Nordwestliches Niedersachsen  O  O  C
 
-06  Lüneburger Heide  O ISOL FG  O  O
+06  Lüneburger Heide  O  O  C
 
-07  Westliches Niedersachsen  M8 ISOL FG  O  O
+07  Westliches Niedersachsen  O  O  C
 
-08  Hannover und Braunschweig  C  O  O
+08  Hannover und Braunschweig  O  O  C
 
-09  Teutoburger Wald  C ISOL FG  C  O
+09  Teutoburger Wald  C  O  C
 
-10  Weser-Leine-Bergland  D1 ISOL FG  C  O
+10  Weser-Leine-Bergland  C  O  C
 
 GAFOR-Einstufung LBZ Berlin
 
 GAFOR Bereich LBZ Berlin 04.10.2026
 
-Gebiet  Name  09-11 UTC  11-13 UTC  13-15 UTC
+Gebiet  Name  12-14 UTC  14-16 UTC  16-18 UTC
 
 11  Mecklenburgisches Tiefland  O  O  O
 
@@ -44,127 +44,127 @@ Gebiet  Name  09-11 UTC  11-13 UTC  13-15 UTC
 
 15  Altmark  O  O  O
 
-16  Fläming  D4 ISOL FG  O  O
+16  Fläming  O  O  O
 
-17  Havelland  D4 ISOL FG  O  O
+17  Havelland  O  O  O
 
-18  Barnim und Oderbruch  M7 ISOL FG  O  O
+18  Barnim und Oderbruch  O  O  O
 
-19  Dahme-Spree-Gebiet und Gubener Waldland  M7 ISOL FG  O  O
+19  Dahme-Spree-Gebiet und Gubener Waldland  O  O  O
 
-20  Magdeburger Börde und Nördliches Harzvorland  C  O  O
+20  Magdeburger Börde und Nördliches Harzvorland  O  O  O
 
-21  Harz  C ISOL FG  O  O
+21  Harz  O  O  O
 
-22  Leipziger Tieflandsbucht und Elbe-Elster-Niederung  M8 ISOL FG  D1  O
+22  Leipziger Tieflandsbucht und Elbe-Elster-Niederung  M5 ISOL FG  O  O
 
-23  Niederlausitzer Heiden  O ISOL FG  O  O
+23  Niederlausitzer Heiden  O  O  O
 
-24  Thüringer Becken  M5 ISOL FG  D1  O
+24  Thüringer Becken  D1 ISOL FG  O  O
 
-25  Mittelsächsisches Hügelland  M8 ISOL FG  D1  O
+25  Mittelsächsisches Hügelland  D4 ISOL FG  O  O
 
-26  Oberlausitz und Lausitzer Gebirge  M8 ISOL FG  D1  O
+26  Oberlausitz und Lausitzer Gebirge  M2  O  O
 
-27  Thüringer Wald  O ISOL FG  O  O
+27  Thüringer Wald  O  O  O
 
-28  Erzgebirge  M8 ISOL FG  D1  O
+28  Erzgebirge  D1  O  O
 
 GAFOR-Einstufung RWZ Essen
 
 GAFOR Bereich RWZ Essen 04.10.2026
 
-Gebiet  Name  09-11 UTC  11-13 UTC  13-15 UTC
+Gebiet  Name  12-14 UTC  14-16 UTC  16-18 UTC
 
-31  Niederrheinisches Tiefland  O ISOL FG  C  O
+31  Niederrheinisches Tiefland  C  O  C
 
-32  Münsterland  O ISOL FG  O  O
+32  Münsterland  O  O  C
 
-33  Ruhrgebiet und Ostwestfalen  O  C  C
+33  Ruhrgebiet und Ostwestfalen  C  C  C
 
-34  Niederrheinische Bucht  O  C  C
+34  Niederrheinische Bucht  C  C  C
 
-35  Bergisches Land  O ISOL FG  C  C
+35  Bergisches Land  C  C  C
 
-36  Sauerland  O ISOL FG  C  C
+36  Sauerland  C  C  C
 
-37  Eifel  O ISOL FG  C  C
+37  Eifel  C  C  C
 
-38  Neuwieder Becken  M8 ISOL FG  O ISOL FG  C
+38  Neuwieder Becken  C  C  C
 
-39  Westerwald  O ISOL FG  C  C
+39  Westerwald  C  C  C
 
 GAFOR-Einstufung FWZ Frankfurt
 
 GAFOR Bereich FWZ Frankfurt 04.10.2026
 
-Gebiet  Name  06-08 UTC  08-10 UTC  10-12 UTC
+Gebiet  Name  12-14 UTC  14-16 UTC  16-18 UTC
 
-41  Hunsrück  C ISOL FG  C  C
+41  Hunsrück  O ISOL SHRA  O ISOL SHRA  O
 
-42  Taunus  C ISOL FG  C  C
+42  Taunus  C  C  C
 
-43  Nordhessisches Bergland und Vogelsberg  M6 OCNL FG  X  O
+43  Nordhessisches Bergland und Vogelsberg  C  O  C
 
-44  Rheinpfalz und Saarland  C ISOL FG  C  C
+44  Rheinpfalz und Saarland  O ISOL SHRA  O ISOL SHRA  O
 
-45  Rhein-Main-Gebiet und Wetterau  C ISOL FG  C  C
+45  Rhein-Main-Gebiet und Wetterau  C  C  C
 
-46  Odenwald und Spessart  C ISOL FG  C  O
+46  Odenwald und Spessart  C  C  O
 
-47  Rhön  C ISOL FG  C  O
+47  Rhön  C  C  O
 
-50  Südlicher Oberrheingraben  C ISOL FG  C  O
+50  Südlicher Oberrheingraben  C  C ISOL SHRA  O ISOL SHRA
 
-51  Mittlerer Oberrheingraben  C ISOL FG  C  C
+51  Mittlerer Oberrheingraben  C  C  C
 
-52  Kraichgau  C ISOL FG  C  O
+52  Kraichgau  C  O  O
 
-53  Oberer und mittlerer Neckarraum  M6 ISOL FG  C  O
+53  Oberer und mittlerer Neckarraum  C  O ISOL SHRA  O ISOL SHRA
 
-61  Schwarzwald  O ISOL FG  O  O
+61  Schwarzwald  O  O ISOL SHRA  O ISOL SHRA
 
 GAFOR-Einstufung LBZ Muenchen
 
 GAFOR Bereich LBZ Muenchen 04.10.2026
 
-Gebiet  Name  09-11 UTC  11-13 UTC  13-15 UTC
+Gebiet  Name  12-14 UTC  14-16 UTC  16-18 UTC
 
-54  Mainfranken und Nördliches Unterfranken  O ISOL FG  C  C
+54  Mainfranken und Nördliches Unterfranken  O  C  C
 
-55  Kocher-Jagst-Gebiet und Frankenhöhe  C ISOL FG  C  C
+55  Kocher-Jagst-Gebiet und Frankenhöhe  C  C  O ISOL RA
 
-56  Mittelfranken  M5 OCNL FG  O  C
+56  Mittelfranken  C  C  C
 
-57  Oberfranken  M8 OCNL FG  O  O
+57  Oberfranken  C  C  C
 
-58  Frankenwald und Fichtelgebirge  M8 ISOL FG  O  O
+58  Frankenwald und Fichtelgebirge  O  O  C
 
-62  Schwäbische Alb  O ISOL FG  O  O
+62  Schwäbische Alb  O  O ISOL RA  O ISOL SHRA
 
-63  Fränkische Alb  O ISOL FG  C  C
+63  Fränkische Alb  O  O  C
 
-64  Oberpfälzer Wald  M8 ISOL FG  O  O
+64  Oberpfälzer Wald  O  O  O
 
-71  Bodenseeraum  C  C  C
+71  Bodenseeraum  C  C ISOL RA  O ISOL SHRA
 
-72  Schwäbische Hochebene  M8 ISOL FG  C  C
+72  Schwäbische Hochebene  C  C  O ISOL SHRA
 
-73  Westliche Donauniederung  O ISOL FG  C  C
+73  Westliche Donauniederung  C  C  C
 
-74  Südbayerisches Hügelland  O ISOL FG  C  C
+74  Südbayerisches Hügelland  C  C  C
 
-75  Östliche Donau- und Naabniederung  M8 OCNL FG  O  C
+75  Östliche Donau- und Naabniederung  C  C  C
 
-76  Bayerischer Wald  O ISOL FG  O  O
+76  Bayerischer Wald  O  O  O
 
-81  Westliches Alpenvorland  C  C  C
+81  Westliches Alpenvorland  C  C  O
 
-82  Östliches Alpenvorland  O ISOL FG  O  O
+82  Östliches Alpenvorland  O  O  O
 
 83  Allgäuer Alpen  O  O  O
 
-84  Östliche Bayerische Alpen  O ISOL FG  O  O
+84  Östliche Bayerische Alpen  O  O  O
 
 GAFOR Legende
 
