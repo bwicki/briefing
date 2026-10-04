@@ -26,6 +26,8 @@ echo "# Bild hochladen"; PNG="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADU
 echo "# Link widerrufen"; code -H "$H" -X DELETE $A/api/briefings/test00000001/access/$T; echo; j "$A/api/shared/$T"; echo
 echo "# Kennwort ändern"; j -H "$H" -X POST $A/api/password -d '{"oldPassword":"1234","newPassword":"5678"}'; code -X POST $A/api/session -H 'Content-Type: application/json' -d '{"user":"bwicki","password":"1234"}'; echo
 echo "# zurück auf 1234"; TOK2=$(j -X POST $A/api/session -d '{"user":"bwicki","password":"5678"}' | tok); j -H "Authorization: Bearer $TOK2" -X POST $A/api/password -d '{"oldPassword":"5678","newPassword":"1234"}'; echo
+echo "# Dokument-Ablage (Stammdaten)"; DOC=$(j -H "$H" -X POST $A/api/docs -d "{\"dataUrl\":\"data:image/png;base64,$PNG\"}"); echo "$DOC"; DU=$(echo "$DOC" | sed -E 's/.*"url":"([^"]+)".*/\1/'); curl -s -o /dev/null -w "doc GET %{http_code}\n" "$A$DU"
+echo "# wxtext fremder Host → 400"; code -H "$H" "$A/api/wx/wxtext?url=https://example.com/x"; echo
 echo "# Export"; j -H "$H" $A/api/export | head -c 200; echo
 echo "# ohne Token → 401"; code $A/api/briefings; echo
 

@@ -83,6 +83,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
             attachments.push({ title: tt(p), images: snap.images, stand: standLine(snap, b) });
             const viewer = renderSnapshot(snap, b, ctx, { interactive: false }); viewer.classList.add('no-print');
             cell.appendChild(h('div', [h('div.mini.attref', t('att_ref', { n: attachments.length, p: snap.images.length })), viewer]));
+            for (const x of snap.data?.texts || []) cell.appendChild(h('div.print-only', [h('div.mini', [h('b', x.name), x.fetched ? ` · ${new Date(x.fetched).toISOString().slice(0, 16).replace('T', ' ')} UTC` : '']), h('pre.report.wx', { style: { whiteSpace: 'pre-wrap', fontSize: '10px', fontFamily: 'inherit' } }, x.text)]));
           } else if (snap) cell.appendChild(renderSnapshot(snap, b, ctx, { interactive: false }));
           if (d.content?.text) cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap', marginTop: '4px' } }, textToNodes(d.content.text)));
           for (const im of d.content?.images || []) cell.appendChild(h('figure', { style: { margin: '4px 0' } }, [h('img.pimg', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]));

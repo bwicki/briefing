@@ -161,6 +161,44 @@ async function snapshot(env, body, briefingId, q) {
   return json({ url: `/files/${key}`, key, contentType: ct, fetched: Date.now() });
 }
 
+// ------------------------------------------------------------ Wettertexte nationaler Dienste (Grosswetteranalyse)
+const WXTEXT_HOSTS = ['opendata.dwd.de', 'www.dwd.de', 'www.meteoschweiz.admin.ch', 'www.meteoswiss.admin.ch', 'www.geosphere.at', 'www.zamg.ac.at', 'warnungen.zamg.at', 'www.meteoam.it', 'meteofrance.com', 'www.meteofrance.com', 'www.wetter.de'];
+/** Text (Roh-Textdatei oder HTML-Ausschnitt per CSS-Selektor über HTMLRewriter), 30 min Cache. */
+async function wxText(ctx, q) {
+  const u = (() => { try { return new URL(q.get('url') || ''); } catch { return null; } })();
+  if (!u || u.protocol !== 'https:' || !WXTEXT_HOSTS.some((h) => u.hostname === h || u.hostname.endsWith('.' + h))) return err('host not allowed');
+  const sel = (q.get('sel') || '').slice(0, 120);
+  const data = await cached(ctx, `wxtext/${await sha(u.toString() + '|' + sel)}`, 1800, async () => {
+    const r = await get(u.toString(), { accept: 'text/html,text/plain;q=0.9,*/*;q=0.5' }, 20000);
+    const ct = (r.headers.get('Content-Type') || '').toLowerCase();
+    let text = '';
+    if (ct.includes('text/html')) {
+      // Skripte/Styles vorab entfernen, dann Text des Selektors sammeln; Blockelemente als Zeilenumbruch
+      const html = (await r.text()).replace(/<(script|style|noscript|svg)\b[\s\S]*?<\/\1>/gi, ' ');
+      const root = sel || 'main';
+      const parts = [];
+      const rw = new HTMLRewriter()
+        .on(root, { text(tx) { parts.push(tx.text); } })
+        .on(`${root} p, ${root} div, ${root} li, ${root} h1, ${root} h2, ${root} h3, ${root} h4, ${root} br, ${root} tr, ${root} section, ${root} article`, { element() { parts.push('\n'); } });
+      await rw.transform(new Response(html, { headers: { 'Content-Type': 'text/html' } })).text();
+      text = parts.join('').replace(/<[^>]+>/g, '');
+      if (!text.trim() && root === 'main') {   // kein <main>: ganzer Body
+        const p2 = [];
+        await new HTMLRewriter().on('body', { text(tx) { p2.push(tx.text); } }).on('body p, body div, body li, body h1, body h2, body h3, body br', { element() { p2.push('\n'); } }).transform(new Response(html, { headers: { 'Content-Type': 'text/html' } })).text();
+        text = p2.join('');
+      }
+    } else {
+      const buf = await r.arrayBuffer();
+      text = new TextDecoder('utf-8', { fatal: false }).decode(buf);
+      if (/\uFFFD/.test(text)) text = new TextDecoder('iso-8859-1').decode(buf);
+    }
+    text = text.replace(/&nbsp;/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/[ \t]{2,}/g, ' ').trim();
+    if (!text) throw new Error('empty');
+    return { text: text.slice(0, 8000), truncated: text.length > 8000, fetched: Date.now(), url: u.toString() };
+  });
+  return json(data);
+}
+
 // ------------------------------------------------------------ FAA NOTAM
 async function notam(env, decrypt, ctx, q) {
   const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
@@ -247,6 +285,7 @@ export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
     case 'dwd': return dwd(env, ctx);
     case 'dabs': if (!canWrite) return err('forbidden', 403); return dabs(env, ctx, q, briefingId);
     case 'snapshot': if (!canWrite) return err('forbidden', 403); return snapshot(env, body, briefingId, q);
+    case 'wxtext': return wxText(ctx, q);
     case 'notam': return notam(env, decrypt, ctx, q);
     case 'ai': if (!canWrite) return err('forbidden', 403); return ai(env, decrypt, body);
     case 'pdf': if (!auth.owner) return err('forbidden', 403); return pdfRender(env, decrypt, ctx, body, auth);

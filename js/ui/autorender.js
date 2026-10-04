@@ -254,7 +254,14 @@ export function renderFwp(snap) {
  * (Bildschirm); im Druck erscheinen alle Seiten (bzw. die Beilagen der Briefingsicht). */
 export function renderImages(snap, b, ctx, opts = {}) {
   const imgs = snap.images || [];
-  if (!imgs.length) return h('div.note', '–');
+  const texts = (snap.data?.texts || []).map((x) => h('details.wxtext', { open: true }, [h('summary.small', [h('b', x.name), x.fetched ? h('span.muted', ` · ${new Date(x.fetched).toISOString().slice(0, 16).replace('T', ' ')} UTC`) : null, x.url ? [' · ', h('a', { href: x.url, target: '_blank', rel: 'noopener' }, '↗')] : null]), h('pre.report.wx', x.text + (x.truncated ? ' […]' : ''))]));
+  const errs = snap.data?.errors?.length ? h('div.warn.small', snap.data.errors.join(' · ')) : null;
+  if (!imgs.length) return h('div', [errs, ...texts, !texts.length ? h('div.note', '–') : null]);
+  if (texts.length || errs) { const inner = renderImagesOnly(snap); return h('div', [inner, errs, ...texts]); }
+  return renderImagesOnly(snap);
+}
+function renderImagesOnly(snap) {
+  const imgs = snap.images || [];
   const figs = imgs.map((im, i) => h('figure', { class: i === 0 ? 'cur' : '' }, [h('img.pimg', { src: im.url, alt: im.caption || '', loading: i === 0 ? 'eager' : 'lazy' }), im.caption ? h('figcaption.mini', im.caption) : null]));
   if (imgs.length < 2 && !snap.data?.pdfUrl) return h('div.imgs.auto-imgs', figs);
   let cur = 0;

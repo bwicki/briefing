@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.7.0 — 2026-10-04 · Zweite Rückmeldungsrunde
+
+* Tagesplanung neu: Etappen (mehrere Treffpunkte/Zwischenhalte) mit «+», Ort, Fahrzeit
+  je Etappe (Routing), Umsortieren per Ziehen oder ▲▼; Zeiten rückwärts vom Start,
+  jede Zeile pinbar (Ankunft ändern → Treffpunkte rückgerechnet, ↺ hebt Pin auf);
+  Ablauf und Erarbeitung teilen denselben Editor.
+* Einheitliches «+»-Kästchen hinter der Beschriftung für neue Einträge (Nachfahrer, Pax,
+  Etappen, Dokumente, alle Stammlisten in den Einstellungen).
+* Ablauf: «Wer ist dabei?», «Pflicht-Inhalt», Vorschau Tragkraft zweizeilig mit 2×4
+  Werten (Propan-Bedarf, Fahrdauer m/Reserve, Treibstoffreserve), Schritt 6 Karten
+  direkt untereinander in zwei Spalten, Sonnen-Label «amtlich (LSAS, RAC 4-4)».
+* Tragkraft-Panel: Resultat Höhe/Hüllentemperatur als 2×3 Felder links, Kurve rechts
+  klein; «Propan-Zylinder».
+* Ballone: Feld «Muster» (z. B. BB26E) und Transponder-Hexcode, im Briefingkopf als
+  «HB-QWZ · BB26E (4c4b4)»; Dokumente je Ballon und Person (Typ aus Standardliste,
+  Bezeichnung, gültig bis, Datei PDF/Bild in der Worker-Ablage R2, `POST /api/docs`);
+  Standardlisten unter Einstellungen → Experte; abgelaufene Dokumente ⚠ im Stammdaten-
+  Panel.
+* Panels: Werkzeugleiste einzeilig und klein; Quelle als kleiner Link rechts im
+  Titelbalken (gekürzt).
+* METAR/TAF: Umkreis direkt im Panel (lädt neu), Richtungspfeil zum Platz,
+  Schlechtwetter rot (Wind/Böen ≥ 14 kt, Sicht < 5 km, Niederschlag/Nebel/Gewitter,
+  Basis BKN/OVC ≤ 1500 ft, CB/TCU) in RAW und Klartext.
+* Temps und Windprognose: Zahlen links, Grafik rechts.
+* Trajektorien: Landeraum als grüner Punkt verschiebbar (oder Klick), setzt Landeraum
+  und Zielrichtung; Stammdaten-Panel folgt.
+* Neues Panel «Thermik»: eigene Abschätzung aus Modellwerten (Globalstrahlung,
+  Grenzschicht → w*): Einsetzen, Maximum, Abschwächen, Klasse je Stunde, Fahrtfenster.
+* Radar: weiter herausgezoomt, Start und Landeraum markiert, Webcams als Kamera-Symbol
+  mit Link (Liste in Einstellungen → Meteo).
+* Allgemeine Lage: zusätzlich Grosswetteranalyse des nationalen Dienstes als Text
+  (DWD Synoptische Übersicht geprüft; MeteoSchweiz/GeoSphere/Aeronautica Militare als
+  Seite + Selektor konfigurierbar, Worker `GET /api/wx/wxtext`).
+* Pax-Karte: QR-Code des Google-Maps-Links zum Treffpunkt; Druck A4 quer mit zwei
+  A5-Karten nebeneinander (Schnittlinie).
+* Fix: ein noch laufender Abruf mit altem Sitzungs-Token beendete eine frische Anmeldung;
+  Auto-Laden stoppt beim Verlassen der Sicht.
+
 ## 0.6.0 — 2026-10-04 · Rückmeldungen aus dem ersten Einsatz
 
 * Ablauf: ein «Neues Briefing»-Knopf (gefüllt, in der Hauptnavigation); tippen

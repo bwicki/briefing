@@ -5,6 +5,10 @@ import { field, input, select } from './widgets.js';
 import { fmtDate, fmtDateTime } from '../calc/time.js';
 
 /** QR lokal erzeugt (js/vendor/qrcode.js, MIT) – der Link verlässt das Gerät nicht. */
+/** QR-Code als SVG-Element (lokal erzeugt) oder null. */
+export function qrSvg(url, cellSize = 4, margin = 4) {
+  try { const qr = window.qrcode(0, 'M'); qr.addData(url); qr.make(); const box = document.createElement('div'); box.innerHTML = qr.createSvgTag({ cellSize, margin }); const svg = box.firstChild; svg.style.background = '#fff'; return svg; } catch { return null; }
+}
 export function showQr(url) {
   const box = h('div', { style: { textAlign: 'center' } });
   try {

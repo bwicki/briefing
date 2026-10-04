@@ -74,12 +74,15 @@ const local = {
 // ---------------------------------------------------------------- remote
 function authHeaders() { const t = load(LS.token, null); return t ? { Authorization: `Bearer ${t}` } : {}; }
 async function api(path, opts = {}) {
+  const usedToken = load(LS.token, null);
   const r = await fetch(API + path, {
     method: opts.method || 'GET',
     headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(opts.headers || {}) },
     body: opts.body != null ? JSON.stringify(opts.body) : undefined,
   });
-  if (r.status === 401) { del(LS.token); throw Object.assign(new Error('unauthorized'), { status: 401 }); }
+  // 401 nur dann als «Sitzung weg» werten, wenn die Anfrage mit der aktuellen Sitzung lief
+  // (ein noch laufender Abruf mit altem Token darf eine frische Anmeldung nicht beenden)
+  if (r.status === 401) { if (usedToken && usedToken === load(LS.token, null)) del(LS.token); throw Object.assign(new Error('unauthorized'), { status: 401 }); }
   if (!r.ok) { let m = `HTTP ${r.status}`; try { m = (await r.json()).error || m; } catch { /* egal */ } throw Object.assign(new Error(m), { status: r.status }); }
   if (r.status === 204) return null;
   return r.json();

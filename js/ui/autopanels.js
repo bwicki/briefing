@@ -41,13 +41,15 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   const body = h('div');
   const status = h('span.note');
   const setSnap = (snap) => { d.content.auto = snap; onChange(); draw(); };
-  async function run() {
+  async function run(auto = false) {
+    if (auto && !wrap.isConnected) return;   // Sicht inzwischen verlassen (Timer) → nichts laden
     status.textContent = t('loading'); toolbar.querySelectorAll('button').forEach((x) => { x.disabled = true; });
     try {
       let snap;
       if (p.auto === 'dabs') snap = await fetchDabs(b, ctx, upload);
       else if (p.auto === 'synoptic') snap = await fetchSynoptic(b, ctx);
       else snap = await DATA.AUTO_FETCHERS[p.key](ctx, b);
+      if (!wrap.isConnected) return;         // Sicht während des Ladens verlassen → nicht mehr speichern
       setSnap(snap); status.textContent = '';
     } catch (e) { status.textContent = e.code === 'remote' || e.message === 'remote only' ? t('ac_localOnly') : `${t('error')}: ${e.message}`; console.warn(p.key, e); }
     toolbar.querySelectorAll('button').forEach((x) => { x.disabled = false; });
@@ -55,7 +57,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   function draw() {
     clear(toolbar); clear(body);
     if (!readOnly) {
-      toolbar.appendChild(h('button.btn.small', { type: 'button', onclick: run }, d.content.auto ? t('auto_refresh') : t('auto_load')));
+      toolbar.appendChild(h('button.btn.small', { type: 'button', onclick: () => run() }, d.content.auto ? t('auto_refresh') : t('auto_load')));
       if (p.auto === 'traj') toolbar.appendChild(trajControls(b, ctx, () => { onChange(); run(); }));
       if (p.auto === 'dabs') toolbar.appendChild(select([{ value: 'today', label: t('auto_today') }, { value: 'tomorrow', label: t('auto_tomorrow') }], b.dabsDay || dabsDayFor(b), { onchange: (e) => { b.dabsDay = e.target.value; onChange(); } }));
       if (p.auto === 'metar') toolbar.appendChild(h('span.inline', [h('span.note', t('auto_metarKm')), input('number', b.metarKm || ctx.settings.metarRadiusKm || 150, { step: 10, min: 20, max: 400, style: { width: '74px' }, onchange: (e) => { b.metarKm = Math.min(400, Math.max(20, num(e.target.value, 150))); onChange(); run(); } })]));
@@ -83,7 +85,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   const remote = ctx.store.mode === 'remote';
   const auto = ['meteogram', 'wind', 'temps', 'traj', 'metar', 'sigmet', 'balloon', 'pdiff', 'thermal'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE');
   const later = remote && (p.auto === 'dabs' || (p.auto === 'synoptic' && (ctx.settings.synopticCharts || []).length) || (p.auto === 'notam' && ctx.can('notam')));
-  if (!readOnly && !d.content.auto && (auto || later) && b.site.lat != null && ctx.autoLoad !== false) setTimeout(run, (later ? 1500 : 50) + Math.random() * 400);
+  if (!readOnly && !d.content.auto && (auto || later) && b.site.lat != null && ctx.autoLoad !== false) setTimeout(() => run(true), (later ? 1500 : 50) + Math.random() * 400);
   return wrap;
 }
 
@@ -130,8 +132,15 @@ async function fetchSynoptic(b, ctx) {
     try { const j = await ctx.store.data('snapshot', { b: b.id }, shareTok(ctx), { url }); images.push({ url: ctx.store.apiBase + j.url, caption: `${c.name} · ${fmtDateTime(b.site.tz || 'Europe/Zurich', j.fetched, getLang())}${/ecmwf/.test(url) ? ' · © ECMWF, CC-BY-4.0' : /dwd\.de/.test(url) ? ' · © DWD' : ''}`, src: url }); }
     catch (e) { errs.push(`${c.name}: ${e.message}`); }
   }
-  if (!images.length) throw new Error(errs.join(' · ') || t('auto_none'));
-  return { kind: 'synoptic', stand: Date.now(), source: charts.map((c) => c.name).join(', '), data: { errors: errs }, images, text: `${images.length} ${t('images')}: ${images.map((i) => i.caption).join('; ')}` };
+  // Grosswetteranalyse der nationalen Dienste: Land des Startorts und des Landeraums
+  const ccs = [...new Set([b.site.country, b.landing?.country].filter(Boolean))];
+  const texts = [];
+  for (const src of (ctx.settings.wxTexts || []).filter((x) => ccs.includes(x.cc))) {
+    try { const j = await ctx.store.data('wxtext', { url: src.url, sel: src.sel || '' }, shareTok(ctx)); texts.push({ cc: src.cc, name: src.name, url: src.url, text: j.text, fetched: j.fetched, truncated: j.truncated }); }
+    catch (e) { errs.push(`${src.name}: ${e.message}`); }
+  }
+  if (!images.length && !texts.length) throw new Error(errs.join(' · ') || t('auto_none'));
+  return { kind: 'synoptic', stand: Date.now(), source: charts.map((c) => c.name).concat(texts.map((x) => x.name)).join(', '), data: { errors: errs, texts }, images, text: `${images.length} ${t('images')}: ${images.map((i) => i.caption).join('; ')}` + texts.map((x) => `\n\n${x.name}:\n${x.text}`).join('') };
 }
 
 /** Radar live (RainViewer-Kacheln auf OSM), nur Bildschirm. */

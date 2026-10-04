@@ -14,7 +14,7 @@
   a { color: inherit; text-decoration: none; }
 }
 @page land { size: A4 landscape; }
-@page pax { size: A5 portrait; margin: 8mm 9mm; }
+@page pax { size: A4 landscape; margin: 8mm 9mm; }
 @media print {
   .brief .auto-wrap{gap:4px;}
   .brief table.auto{font-size:8.5pt;white-space:normal;}
@@ -25,8 +25,19 @@
   .brief .wind-charts figure{max-width:60mm;}
   .brief .map{display:none;}
   .brief .stand{font-size:8pt;}
-  .brief.paxcard{font-size:11pt;page:pax;}
+  .paxsheet{page:pax;display:grid;grid-template-columns:1fr 1fr;column-gap:0;align-items:start;width:100%}
+  .paxsheet .copy{display:block}
+  .paxsheet .paxcard{font-size:9pt;line-height:1.25;padding:0 5mm !important;box-sizing:border-box;max-width:none !important}
+  .paxsheet .paxcard .bs{margin:3px 0 2px;padding:2px 6px;font-size:8.5pt}
+  .paxsheet .paxcard .pax-list{margin:2px 0 4px;padding-left:14px;font-size:9pt;line-height:1.25}
+  .paxsheet .paxcard .pax-kv{font-size:9pt;margin:3px 0 4px;gap:1px 8px} .paxsheet .paxcard .pax-kv .v{font-size:9pt}
+  .paxsheet .paxcard .bh{margin-bottom:3px} .paxsheet .paxcard .bh h1{font-size:12pt;margin:0}
+  .paxsheet .paxcard .bf{margin-top:3px;font-size:7.5pt}
+  .paxsheet .paxcard ul.trackers li{font-size:8pt}
+  .paxsheet .paxcard:first-child{border-right:1px dashed #999 !important;border-radius:0 !important}
+  .paxsheet .pax-qr svg{width:24mm;height:24mm}
   .brief .appendix{display:block;}
+  .print-only{display:block !important;}
   .brief .appendix .att{page-break-before:always;}
   .pager .pages figure{display:block;page-break-inside:avoid}
   .pager .pages img.pimg{max-height:240mm}

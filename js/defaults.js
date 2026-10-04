@@ -86,6 +86,15 @@ export const DEFAULT_SETTINGS = {
     { name: 'ECMWF Bodendruck + Wind 850 hPa zur Startzeit', url: 'https://charts.ecmwf.int/opencharts-api/v1/products/medium-mslp-wind850/?projection=opencharts_europe&valid_time={validTime}' },
     { name: 'ECMWF Bodendruck + Wind 850 hPa, Start +24 h', url: 'https://charts.ecmwf.int/opencharts-api/v1/products/medium-mslp-wind850/?projection=opencharts_europe&valid_time={validTime+24}' },
   ],
+  // Grosswetteranalyse nationaler Wetterdienste (Text); Land = Startort (und Landeraum). DE geprüft (DWD Opendata);
+  // CH/AT/IT: Seite + CSS-Selektor, bei Änderung der Website hier anpassen.
+  wxTexts: [
+    { cc: 'DE', name: 'DWD Synoptische Übersicht Kurzfrist', url: 'https://opendata.dwd.de/weather/text_forecasts/txt/SXDL31_DWAV_LATEST', sel: '' },
+    { cc: 'DE', name: 'DWD Synoptische Übersicht Mittelfrist', url: 'https://opendata.dwd.de/weather/text_forecasts/txt/SXDL33_DWAV_LATEST', sel: '' },
+    { cc: 'CH', name: 'MeteoSchweiz Wetterbericht', url: 'https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-von-a-bis-z/wetterbericht.html', sel: 'main' },
+    { cc: 'AT', name: 'GeoSphere Austria Wetterübersicht', url: 'https://www.geosphere.at/de/wetter/wetteruebersicht', sel: 'main' },
+    { cc: 'IT', name: 'Aeronautica Militare – Situazione e tendenza', url: 'https://www.meteoam.it/it/situazione-e-tendenza', sel: 'main' },
+  ],
   pdiffPairs: [],
   airspaceTileUrl: '',
   paxCardItems: {

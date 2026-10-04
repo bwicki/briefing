@@ -244,10 +244,18 @@ export async function renderSettings(view, ctx) {
       camBox.addFn = () => { (S.webcams = S.webcams || []).push({ id: uid(5), name: '', lat: null, lon: null, url: 'https://' }); drawCams(); };
     };
     drawCams();
+    const txtBox = h('div');
+    const drawTxt = () => {
+      clear(txtBox);
+      (S.wxTexts || []).forEach((x, i) => txtBox.appendChild(h('div.frow.c4', [field(t('s_country'), input('text', x.cc, { maxlength: 2, oninput: (e) => { x.cc = e.target.value.toUpperCase(); } })), txtField(x, 'name', t('name')), field('URL', input('text', x.url, { oninput: (e) => { x.url = e.target.value; } })), h('div.f', [h('label', t('set_wxSel')), h('div.inline', [input('text', x.sel || '', { placeholder: 'main', oninput: (e) => { x.sel = e.target.value; } }), h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { S.wxTexts.splice(i, 1); drawTxt(); } }, '🗑')])])])));
+      txtBox.addFn = () => { (S.wxTexts = S.wxTexts || []).push({ cc: 'CH', name: '', url: 'https://', sel: 'main' }); drawTxt(); };
+    };
+    drawTxt();
     return h('div', [
       h('div.card', [h('div.card-head', h('div.section-title', t('set_flyLimits'))), h('div.card-body', [h('div.frow.c4', [pair('wind', `${t('auto_wind')} m/s (grenzwertig / nein)`), pair('gust', `${t('auto_gust')} m/s`), pair('gustSpread', 'Böe − Wind m/s'), pair('cape', 'CAPE J/kg')]), h('div.frow.c3', [numField(F, 'precip', 'Niederschlag ≥ mm/h → nein', 0.1), numField(F, 'visKm', 'Sicht < km → nein', 0.5), numField(F, 'baseFt', 'Wolkenbasis < ft → grenzwertig', 100)])])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_trajDefaults'))), h('div.card-body', h('div.frow.c3', [numField(T, 'hab', `${t('hab')} (min)`, 30), numField(T, 'gas', `${t('gas')} (min)`, 60), numField(T, 'stepMin', 'Zeitschritt (min)', 5)]))]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_meteo'))), h('div.card-body', [h('div.frow.c4', [numField(S.meteoDefaults, 'topHpa', 'Profil bis hPa', 50), numField(S, 'metarRadiusKm', t('set_metar'), 10), numField(S, 'metarCount', t('set_metarN')), numField(S, 'notamRadiusNm', t('set_notamNm'), 5)]), txtField(S, 'aiModel', t('set_aiModel'))])]),
+      h('div.card', [listHead(t('set_wxTexts'), txtBox), h('div.card-body', [txtBox, h('div.note', t('set_wxTextsHint'))])]),
       h('div.card', [listHead(t('set_webcams'), camBox), h('div.card-body', [camBox, h('div.note', t('set_webcamsHint'))])]),
       h('div.card', [listHead(t('set_synoptic'), chartsBox), h('div.card-body', [chartsBox, h('div.note', 'Nur Bild-URLs von dwd.de, ecmwf.int, meteoschweiz.admin.ch, rainviewer, meteoblue, skybriefing, eumetsat (Allowlist im Worker).')])]),
     ]);

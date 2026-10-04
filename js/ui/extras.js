@@ -6,6 +6,7 @@ import { setHeader } from '../app.js';
 import { textarea, field, check } from './widgets.js';
 import { placeLine, mapsUrl } from './place.js';
 import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel } from '../model.js';
+import { qrSvg } from './access.js';
 import { hhmm, fmtDate, fmtDateTime, fmtDur } from '../calc/time.js';
 import { goNoGo } from '../calc/gonogo.js';
 import { flightContext, aiHint } from '../auto/ai.js';
@@ -138,7 +139,9 @@ export async function renderPaxCard(view, ctx, id, opts = {}) {
   const S = ctx.settings, zz = z(b), lang = getLang();
   const sun = sunFor(b, S, ctx.racTable);
   const { rows } = scheduleFor(b, sun);
-  const depart = rows.find((r) => r.key === 'depart'), landing = rows.find((r) => r.key === 'landing');
+  const depart = rows.find((r) => r.kind === 'depart'), landing = rows.find((r) => r.key === 'landing');
+  const meet = (b.schedule.stops || []).find((st) => st.lat != null) || null;
+  const qr = meet ? qrSvg(mapsUrl(meet.lat, meet.lon), 3, 2) : null;
   const pic = S.persons.find((p) => p.id === b.persons.picId);
   const back = ctx.shared?.material ? `#/m/${ctx.shared.token}/${b.id}` : ctx.shared ? `#/s/${ctx.shared.token}/v` : `#/b/${b.id}`;
   setHeader({ title: t('pax_title'), sub: `${fmtDate(zz, b.time.startMs, lang)} · ${b.site.name}`, tools: [h('button.btn', { type: 'button', onclick: () => ctx.navigate(back) }, '← ' + t('view_brief')), h('button.btn.primary', { type: 'button', onclick: () => window.print() }, t('print'))] });
@@ -146,18 +149,20 @@ export async function renderPaxCard(view, ctx, id, opts = {}) {
   const card = h('div.brief.paxcard', [
     h('div.bh', [h('div', [h('h1', `${t('pax_title')} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)]), h('div.r', h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }))]),
     h('div.bs', t('pax_meet')),
-    h('div.kv.pax-kv', [
-      [t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }, { noElev: true }) : (b.schedule.meetingName || '–')],
+    h('div.pax-meet', [h('div.kv.pax-kv', [
+      [t('meeting'), meet ? placeLine({ name: meet.name, lat: meet.lat, lon: meet.lon }, { noElev: true }) : (b.schedule.meetingName || '–')],
       [t('pax_time'), depart ? `${hhmm(zz, depart.ms)} LT` : '–'], [t('sch_start'), `${hhmm(zz, b.time.startMs)} LT · ${b.site.name}`],
       [t('duration'), `${fmtDur(b.intent.durationMin)} (${t('pax_approx')})`], [t('sch_landing'), landing ? `${hhmm(zz, landing.ms)} LT · ${t('pax_landingNote')}` : '–'],
-    ].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
+    ].map(([k, v]) => [h('div.k', k), h('div.v', v)])), qr ? h('figure.pax-qr', [qr, h('figcaption.mini', t('pax_qr'))]) : null]),
     h('div.bs', t('pax_bring')), h('ul.pax-list', items.map((x) => h('li', x))),
     h('div.bs', t('pax_safety')), h('ul.pax-list', (lang === 'en' ? PAX_SAFETY.en : PAX_SAFETY.de).concat(b.balloon.type === 'gas' ? GAS_BRIEFING_EXTRA[lang] || GAS_BRIEFING_EXTRA.de : []).map((x) => h('li', x))),
     h('div.bs', t('pax_contact')), h('div.kv.pax-kv', [[t('pic'), `${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`], b.persons.retrieve ? [t('retrieve'), b.persons.retrieve] : null, [t('operator'), b.flight.operatorName]].filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', v)])),
     (pic?.trackers || []).length ? h('div', [h('div.bs', t('pax_track')), h('ul.pax-list.trackers', pic.trackers.map((u) => h('li', h('a', { href: u, target: '_blank', rel: 'noopener' }, u.replace(/^https?:\/\/(www\.)?/, ''))))), h('div.mini', t('pax_trackHint'))]) : null,
     h('div.bf', [h('span', t('pax_weather')), h('span', `${t('appName')} · ${b.flight.operatorName}`)]),
   ]);
-  view.appendChild(card);
+  // Druck: A4 quer, zwei A5-Karten nebeneinander (Schnittlinie in der Mitte); am Bildschirm eine Karte
+  const copy = card.cloneNode(true); copy.classList.add('copy');
+  view.appendChild(h('div.paxsheet', [card, copy]));
   if (/print=1/.test(location.hash)) setTimeout(() => window.print(), 400);
 }
 const PAX_SAFETY = {

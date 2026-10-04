@@ -114,7 +114,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.emulate_media(media='screen')
         # Pax-Karte
         pg.goto(BASE + f'#/pax/{bid}'); pg.wait_for_timeout(900)
-        assert 'Sicherheit' in pg.inner_text('.paxcard') and 'Treffpunkt' in pg.inner_text('.paxcard'), 'Pax-Karte'
+        assert 'Sicherheit' in pg.inner_text('.paxsheet .paxcard:first-child') and 'Treffpunkt' in pg.inner_text('.paxsheet .paxcard:first-child'), 'Pax-Karte'
         pg.screenshot(path=f'{OUT}/{name}_12_pax.png', full_page=True)
         assert pg.is_visible('#mainnav a.on'), 'Hauptnavigation sichtbar'
         # Settings

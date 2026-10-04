@@ -11,7 +11,7 @@ import { sunTimes, moonTimes, moonIllumination } from './calc/sun.js';
 import { racLookup } from './calc/rac.js';
 import { hotAir, gasBalloon } from './calc/aero.js';
 import { buildSchedule, scheduleWarnings } from './calc/schedule.js';
-import { icao, bearing, distKm, compass } from './calc/geo.js';
+import { icao, bearing, distKm, compass, countryGuess } from './calc/geo.js';
 import { PANELS } from './panels.js';
 
 export function newBriefing(settings, now = Date.now()) {
@@ -168,7 +168,7 @@ export function syncMeeting(s) {
 /** Landeraum setzen (oder löschen) und die Zielrichtung daraus ableiten (Himmelsrichtung · Kurs · Distanz · Ort). */
 export function applyLanding(b, p, lang = 'de') {
   if (p) {
-    Object.assign(b.landing, { name: p.name || '', lat: p.lat, lon: p.lon, elev: p.elev ?? null, icao: icao(p.lat, p.lon), address: p.address || '' });
+    Object.assign(b.landing, { name: p.name || '', lat: p.lat, lon: p.lon, elev: p.elev ?? null, icao: icao(p.lat, p.lon), address: p.address || '', country: p.country || countryGuess(p.lat, p.lon) || '' });
     if (b.site.lat != null) {
       const brg = Math.round(bearing(b.site.lat, b.site.lon, p.lat, p.lon)), km = distKm(b.site.lat, b.site.lon, p.lat, p.lon);
       b.intent.direction = `${compass(brg, lang)} ${String(brg).padStart(3, '0')}° · ${km.toFixed(0)} km · ${p.name || b.landing.icao}`;
