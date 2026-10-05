@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-037
-FBEU40 EDZM 051200
+546
+FBEU40 EDZM 051800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 05.10.2026, 12.00 UTC bis 06.10.2026, 09.00 UTC
+gültig vom 05.10.2026, 18.00 UTC bis 06.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
@@ -13,66 +13,87 @@ Süddeutschland liegt unter Hochdruckeinfluss in einer trockenen und
 milden Luftmasse. Lediglich im Alpenraum ist die Luftmasse ausgehend
 von einem Höhentief noch feuchter und labiler, trocknet aber auch
 dort am Abend ab. In der Nacht zum Dienstag bildet sich verbreitet
-eine feucht-kalte Grundschicht aus.
+eine feucht-kalte Grundschicht aus. Am Dienstagnachmittag verlagert
+sich das Höhentief etwas weiter nach Nordosten, wodurch erneut
+feuchtere und labilere Luft in den Alpenraum sowie allmählich das
+Alpenvorland geführt wird.
 
 Wettergeschehen:
-Nordöstlich des Streifens Unterfranken - Niederbayern zeigt sich FEW
-CU, südwestlich des Streifens SCT/BKN CU/SC. Basis verbreitet
-zwischen 4000 und 5000 FT AMSL, im südlichen Alpenvorland örtlich um
-3000 FT AMSL. Darüber ziehen in der Südhälfte einzelne AC-Felder
-zwischen FL100 und FL140 sowie CI-Felder oberhalb FL180 durch. An den
-Alpen sind am Nachmittag noch einzelne TCU/CB mit Tops zwischen FL200
-und FL240 möglich, welche mit Schauern einhergehen. Gewitter sind nur
-noch gering wahrscheinlich.
+Lokal, besonders entlang der Schwäbisch-Fränkischen Alb und südlich
+sind noch SC-Schollen zwischen 4500 FT AMSL und FL060 vorhanden.
+Ansonsten ist es vielerorts wolkenlos. Im Alpenraum ist noch vermehrt
+SCT, lokal auch BKN SC mit Untergrenze meist in FL055 bis FL070
+vorhanden, darüber teils AC, lokal auch AC/CI-Bewölkung oberhalb von
+FL120 bis FL140 und Obergrenzen oberhalb FL245. Dabei sind anfangs
+noch vereinzelte Schauer aus TCU/CB nicht ganz ausgeschlossen. Im
+Verlauf der ersten Nachthälfte schichtet die mittelhohe und hohe
+Bewölkung zügig aus, die SC-Felder können sich besonders nach Osten
+hin länger halten vorzugsweise von Berchtesgaden bis ungefähr zum
+Karwendel-Gebirge.
+Gleichzeitig bilden sich in der ersten Nachthälfte verbreitete flache
+Nebelfelder aus, welche sich in der zweiten Nachthälfte vielerorts
+verdichten. Der Schwerpunkt für dichten Nebel liegt entlang der Donau
+und südlich dieser. Obergrenzen bei 2000 bis 2500 FT AMSL.
 
-Ab dem späten Nachmittag beginnt der CU abzutrocknen. Zurück bleiben
-in der Nacht zum Dienstag nur vereinzelte SC-Schollen zwischen FL050
-und FL070 sowie einzelne AC-Schollen zwischen FL100 und FL140. Zudem
-bilden sich in der ersten Nachthälfte zunächst flache Nebelfelder
-aus, in der zweiten Nachthälfte zunehmend dichter und höherreichender
-Nebel. Schwerpunkt wird an der Donau und südlich davon sein, nördlich
-der Donau bleibt der Nebel voraussichtlich überwiegend flach.
+Am Dienstagvormittag löst sich der Nebel auf. Nördlich der Donau
+geschieht dies recht zügig nach Sonnenaufgang, südlich der Donau geht
+der Nebel besonders zwischen Donau und Bodenseebecken zunächst in
+SCT/BKN ST in wenigen hundert FT über und löst sich von den Rändern
+allmählich auf. Bis zum Mittag hat sich der Nebel meist aufgelöst und
+der ST aufgelockert.
 
-Am Dienstagvormittag löst sich der flache Nebel nördlich der Donau
-rasch auf. Dort ist dann wolkenfrei. Lediglich am Main kann sich
-Nebel oder ST länger halten. Südlich der Donau geht der Nebel, mit
-Schwerpunkt von der Donau bis zum Bodenseebecken, in SCT/BKN ST in
-wenigen hundert Fuß AGL über und beginnt anschließend sich von den
-Rändern her aufzulösen.
+Anschließend können sich anfänglich über den Mittelgebirgen FEW,
+lokal SCT CU ausbilden zunächst in 3500 bis 4500 FT AMSL, am
+Nachmittag zügig ansteigend auf 5000 FT AMSL bis FL060. Im Alpenraum
+mit Untergrenze in FL060 bis FL080.
+Gleichzeitig zieht, teils über die sich bildende CU-Bewölkung ab dem
+späten Vormittag SCT/BKN AC/CI-Bewölkung oberhalb von FL140 bis FL160
+aus dem Alpenraum nach Süddeutschland. Dabei bilden sich zunächst
+zwischen den Allgäuer Alpen und dem Karwendelgebirge gegen Mittag
+erste TCU/CB mit Basis in FL060 bis FL070 und TOPs bis FL250 daraus
+Schauer, auch einzelne Gewitter sind nicht ausgeschlossen.
+Der AC/CI verlagert sich bis zum späten Nachmittag bis circa an die
+Donau, wobei der Bereich zwischen Memmingen - München - Berchtesgaden
+zwischenzeitlich auflockert. Gleichzeitig ziehen einzelne TCU/CB am
+späteren Nachmittag aus den Alpen ins Allgäu und den Süden von
+Oberschwaben und Oberbayern. Im Umfeld der Schauer und Gewitter
+breitet sich AC-Bewölkung mit Untergrenze meist um FL100 aus.
 
 Sichtweite:
 Verbreitet 30 bis 50 km, an den Alpen 20 bis 40 km, in Schauern lokal
 2 bis 6 km. In der Nacht zum Dienstag Rückgang auf 15 bis 25 km, im
 Nebel wenige hundert Meter, im Dunst oder unter tiefem ST 1 bis 5 km.
 Am Dienstagvormittag abseits des ST Sichtbesserung auf 30 bis 50 km.
+In Schauern oder einzelnen Gewittern erneut Rückgang auf lokal 2 bis
+6 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  15 UTC  |  06 UTC  |
-1500FT | 020/05KT  19C | 130/05KT  14C |
-2000FT | 020/05KT  18C | 170/05KT  15C |
-3000FT | 300/05KT  13C | 220/05KT  13C |
-5000FT | 250/10KT  10C | 230/05KT  09C |
-FL100  | 340/05KT  03C | 090/05KT  03C |
+AMSL  |  21 UTC  |  09 UTC  |
+1500FT | 120/05KT  17C | 140/05KT  14C |
+2000FT | 140/05KT  17C | 150/05KT  15C |
+3000FT | 220/05KT  14C | 190/05KT  13C |
+5000FT | 230/05KT  10C | 230/05KT  09C |
+FL100  | 340/05KT  03C | 130/05KT  03C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  15 UTC  |  06 UTC  |
-2000FT | 230/05KT  18C | 130/05KT  13C |
-3000FT | 250/05KT  15C | 120/10KT  13C |
-5000FT | 020/05KT  10C | 130/05KT  10C |
-FL100  | 260/05KT  01C | 150/05KT  03C |
+AMSL  |  21 UTC  |  09 UTC  |
+2000FT | 170/05KT  17C | 090/05KT  12C |
+3000FT | 160/05KT  14C | 120/10KT  14C |
+5000FT | 140/05KT  10C | 130/10KT  10C |
+FL100  | 180/05KT  02C | 150/10KT  02C |
 
 Turbulenz:
 In Verbindung mit TCU/CB mäßig bis stark.
 
 Vereisung:
-In Verbindung mit TCU/CB mäßig bis stark. Zudem an den Alpen noch
-örtlich mäßig zwischen FL100 und FL150, im Nachmittagsverlauf
-abschwächend.
+In Verbindung mit TCU/CB mäßig bis stark. Dienstagnachmittag am
+Alpenrand lokal mäßig in der AC/CI-Bewölkung zwischen FL100 und
+FL180.
 
 Nullgradgrenze:
-Zunächst zwischen FL100 und FL110, ab dem späten Nachmittag auf FL105
-bis FL120 ansteigend.
+Zwischen FL105 und FL120, Dienstagnachmittag etwas absinkend auf
+FL100 bis FL115.
 
 Inversionen:
 Örtliche Absinkinversion zwischen FL050 und FL070. In der Nacht zum
@@ -80,13 +101,13 @@ Dienstag verbreitete Bodeninversion mit Obergrenze zwischen 2000 und
 3000 FT AMSL, die am Dienstagvormittag wieder abgebaut wird und teils
 vorübergehend in eine bodennahe Inversion übergeht.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Nürnberg  16.46 | 17.17 | 04.49 | 05.23
-München  16.44 | 17.15 | 04.47 | 05.19
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Nürnberg  04.49 | 05.23 | 16.44 | 17.17
+München  04.47 | 05.19 | 16.42 | 17.12
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 06.10.2026 um 02.00
+UTC
 
-Luftfahrtberatungszentrale München/ip
+Luftfahrtberatungszentrale München/ma

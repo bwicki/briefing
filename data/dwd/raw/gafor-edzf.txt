@@ -1,73 +1,81 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-039
-FBEU40 EDZF 051200
+547
+FBEU40 EDZF 051800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 05.10.2026, 12.00 UTC bis 06.10.2026, 09.00 UTC
+gültig vom 05.10.2026, 18.00 UTC bis 06.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Hochdruckeinfluss mit einer sehr milden und meist trockenen Luftmasse
-bestimmt das Wettergeschehen.
+Hochdruckeinfluss ist mit einer sehr milden und tagsüber weitgehend
+trockenen Luftmasse wetterbestimmend. Am Dienstagnachmittag lenkt ein
+Tief über dem Alpenbereich labilere Luft Richtung Schwarzwald und
+Breisgau.
 
 Wettergeschehen:
-Am Nachmittag zeigen sich vor allem über Baden-Württemberg meist
-flache FEW/SCT CU zwischen 3500-5000 FT AMSL, abseits davon ist es
-oft wolkenfrei. Es ist und bleibt trocken.
+Es ist weitgehend wolkenfrei. Gegen Ende der ersten und zu Beginn der
+zweiten Nachthälfte zum Dienstag bilden sich in Tallagen und
+Flussniederungen gebietsweise flache Nebelfelder aus. Bevorzugt
+entlang des Rheins, des südlichen Neckars sowie im Nordhessischen
+Bergland ist der Nebel örtlich dichter und kann in BKN/OVC ST bis
+2000 FT AMSL übergehen.
 
-Am Abend trocknet die Quellbewölkung wieder ab, lokal verbleibt FEW
-dünner SC um 5000 FT AMSL.
-
-In der zweiten Nachthälfte bilden sich dann vor allem in
-Flussniederungen und Tallagen erneut Dunst- und Nebelfelder aus,
-lokal mit ST in wenigen hundert Fuß AGL. Diese lösen sich vor allem
-im südlichen Rheintal, im Neckarraum sowie in Teilen Nordhessens am
-Vormittag oft nur zögerlich auf.
+Vormittags lösen sich die flachen Nebelfelder auf. Der dichtere Nebel
+hält sich örtlich noch bis zu den Mittagsstunden.
+Anschließend bildet sich vor allem über dem Bergland flacher FEW/SCT
+CU mit Basen in 3500-4500 FT AMSL, Obergrenzen um 5000 FT AMSL.
+Nachmittags ist die Quellbewölkung über dem südlichen Schwarzwald
+etwas höher reichend. Dabei sind einzelne CBs mit Tops um FL200 nicht
+gänzlich ausgeschlossen. Es bleibt bis zum Berichtsende
+niederschlagsfrei.
 
 Sichtweite:
-30-50 km. Im Dunst 1-5 km, im Nebel unter 1 km.
+40-70 km. Im Dunst 1-5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 210/05KT  20C | 040/05KT  05C |
-1500FT | 210/10KT  17C | 210/05KT  14C |
-2000FT | 210/10KT  17C | 240/05KT  14C |
-3000FT | 260/10KT  13C | 270/05KT  12C |
-5000FT | 280/10KT  10C | 290/05KT  10C |
-FL100  | 310/05KT  05C | 250/05KT  05C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 230/05KT  14C | 360/05KT  09C |
+1500FT | 220/05KT  16C | 220/05KT  13C |
+2000FT | 230/05KT  16C | 230/05KT  14C |
+3000FT | 260/10KT  13C | 260/05KT  12C |
+5000FT | 290/15KT  10C | 240/05KT  10C |
+FL100  | 310/05KT  05C | 240/05KT  04C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 040/05KT  20C | 050/05KT  14C |
-1500FT | 040/05KT  18C | 070/05KT  15C |
-2000FT | 040/05KT  17C | 080/05KT  15C |
-3000FT | 260/05KT  14C | 130/05KT  13C |
-5000FT | 210/05KT  10C | 180/05KT  10C |
-FL100  | 030/05KT  03C | 040/10KT  03C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 050/10KT  18C | 020/05KT  13C |
+1500FT | 060/05KT  17C | 060/05KT  15C |
+2000FT | 080/05KT  17C | 080/05KT  15C |
+3000FT | 150/05KT  14C | 110/05KT  14C |
+5000FT | 220/05KT  11C | 150/05KT  10C |
+FL100  | 030/05KT  03C | 060/10KT  02C |
 
 Turbulenz:
-Nicht signifikant.
+Im eventuellen CB am Dienstagnachmittag über dem Südschwarzwald mäßig
+bis stark. Sonst nicht signifikant.
 
 Vereisung:
-Keine.
+Im eventuellen CB am Dienstagnachmittag über dem Südschwarzwald mäßig
+bis stark, sonst keine.
 
 Nullgradgrenze:
 Zwischen FL110-120.
 
 Inversionen:
 In der Nacht auf Dienstag Ausbildung einer flachen Bodeninversion
-unterhalb 1500 FT AMSL, nach Sonnenaufgang rasch auflösend.
+unterhalb 1500 FT AMSL, die lokal etwas stärker ausfallen kann.
+Vormittags auflösend.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Gießen  16.55 | 17.28 | 05.00 | 05.33
-Karlsruhe  16.57 | 17.28 | 05.00 | 05.33
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Gießen  05.00 | 05.33 | 16.53 | 17.25
+Karlsruhe  05.00 | 05.33 | 16.55 | 17.27
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 06.10.2026 um 02.00
+UTC
 
-Flugwetterzentrale Frankfurt/CH
+Flugwetterzentrale Frankfurt/St
