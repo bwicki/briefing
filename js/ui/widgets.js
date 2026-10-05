@@ -1,6 +1,7 @@
 /* Fahrtbriefing — wiederverwendbare Oberflächenbausteine. */
 import { h, clear, uid, shrinkImage, toast, fmt } from '../util.js';
 import { t } from '../i18n.js';
+import { icon, iconSvg } from './icons.js';
 
 export const field = (label, input, cls = '') => h('div.f' + (cls ? '.' + cls : ''), [h('label', label), input]);
 
@@ -97,7 +98,7 @@ export function pasteArea(value, onChange, upload, opts = {}) {
       cap.addEventListener('input', () => { im.caption = cap.value; onChange(v); });
       imgs.appendChild(h('figure', [
         h('img', { src: im.url, alt: im.caption || '' }),
-        h('button.btn.icon.rm.no-print', { type: 'button', title: t('removeImage'), onclick: () => { v.images = v.images.filter((x) => x !== im); renderImgs(); onChange(v); } }, '✕'),
+        h('button.btn.icon.rm.no-print', { type: 'button', title: t('removeImage'), onclick: () => { v.images = v.images.filter((x) => x !== im); renderImgs(); onChange(v); } }, icon('close', 14)),
         cap,
       ]));
     }
@@ -128,26 +129,34 @@ export function mapPicker(container, lat, lon, onMove, zoom = 11) {
 }
 
 /** Kleine Kurve Tragkraft vs. Höhe (SVG). rows: [{h, climb}] */
-export function liftCurve(rows, takeoff, maxAlt) {
-  const W = 320, H = 150, pl = 36, pr = 10, pt = 10, pb = 24;
+export function liftCurve(rows, takeoff, maxAlt, opts = {}) {
+  const W = 340, H = 170, pl = 38, pr = 12, pt = 14, pb = 26;
   const hs = rows.map((r) => r.h), cs = rows.map((r) => r.capacity);
   const hMax = Math.max(...hs), cMin = Math.min(...cs, takeoff), cMax = Math.max(...cs, takeoff);
   const x = (c) => pl + (c - cMin) / (cMax - cMin || 1) * (W - pl - pr);
   const y = (hh) => pt + (1 - hh / hMax) * (H - pt - pb);
   const pts = rows.map((r) => `${x(r.capacity).toFixed(1)},${y(r.h).toFixed(1)}`).join(' ');
-  const span = cMax - cMin || 1, step = span > 600 ? 200 : span > 300 ? 100 : 50;
+  const span = cMax - cMin || 1, step = span > 600 ? 200 : span > 300 ? 100 : 50, minor = step / 4;
   const xt = []; for (let c = Math.ceil(cMin / step) * step; c <= cMax; c += step) xt.push(c);
+  const xm = []; for (let c = Math.ceil(cMin / minor) * minor; c <= cMax; c += minor) if (Math.abs(c / step - Math.round(c / step)) > 1e-6) xm.push(c);
+  const ym = []; for (let hh = 0; hh <= hMax; hh += 500) if (hh % 2000) ym.push(hh);
+  const ceil = maxAlt != null ? Math.max(0, Math.min(hMax, maxAlt)) : null;
   // SVG-Namensraum nötig: mit document.createElement entstünde ein HTML-Element «svg», dessen Inhalt als Text erschiene
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('class', 'curve');
   svg.innerHTML = `
+    <defs><pattern id="lc-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--temp)" stroke-width="1.2" opacity=".45"/></pattern></defs>
+    ${ceil != null ? `<rect x="${pl}" y="${pt}" width="${W - pl - pr}" height="${Math.max(0, y(ceil) - pt)}" fill="url(#lc-hatch)"/>` : ''}
+    ${ym.map((hh) => `<line x1="${pl}" y1="${y(hh)}" x2="${W - pr}" y2="${y(hh)}" stroke="var(--line-soft)" stroke-width="0.4" stroke-dasharray="2 3"/>`).join('')}
+    ${[0, 2000, 4000, 6000, 8000, 10000].filter((hh) => hh <= hMax).map((hh) => `<line x1="${pl}" y1="${y(hh)}" x2="${W - pr}" y2="${y(hh)}" stroke="var(--line-soft)" stroke-width="0.7"/><text x="4" y="${y(hh) + 3}" font-size="8" fill="var(--text-dim)" font-family="monospace">${hh}</text>`).join('')}
+    ${xm.map((c) => `<line x1="${x(c)}" y1="${H - pb}" x2="${x(c)}" y2="${H - pb + 2}" stroke="var(--text-dim)" stroke-width="0.6"/><line x1="${x(c)}" y1="${pt}" x2="${x(c)}" y2="${H - pb}" stroke="var(--line-soft)" stroke-width="0.3" stroke-dasharray="2 3"/>`).join('')}
     <polyline fill="none" stroke="var(--dew)" stroke-width="2" points="${pts}"/>
     <line x1="${x(takeoff)}" y1="${pt}" x2="${x(takeoff)}" y2="${H - pb}" stroke="var(--temp)" stroke-dasharray="4 3"/>
-    ${maxAlt != null ? `<line x1="${pl}" y1="${y(maxAlt)}" x2="${W - pr}" y2="${y(maxAlt)}" stroke="var(--amber)" stroke-dasharray="3 3"/>` : ''}
-    ${[0, 2000, 4000, 6000, 8000, 10000].filter((hh) => hh <= hMax).map((hh) => `<line x1="${pl}" y1="${y(hh)}" x2="${W - pr}" y2="${y(hh)}" stroke="var(--line-soft)" stroke-width="0.6"/><text x="4" y="${y(hh) + 3}" font-size="8" fill="var(--text-dim)" font-family="monospace">${hh}</text>`).join('')}
-    ${xt.map((c) => `<line x1="${x(c)}" y1="${H - pb}" x2="${x(c)}" y2="${H - pb + 3}" stroke="var(--text-dim)"/><text x="${x(c)}" y="${H - pb + 11}" font-size="7.5" fill="var(--text-dim)" font-family="monospace" text-anchor="middle">${c}</text>`).join('')}
+    ${ceil != null ? `<line x1="${pl}" y1="${y(ceil)}" x2="${W - pr}" y2="${y(ceil)}" stroke="var(--temp)" stroke-width="1.6"/><text x="${W - pr - 2}" y="${y(ceil) - 3}" font-size="8" fill="var(--temp)" font-family="monospace" text-anchor="end" font-weight="700">${opts.ceilingLabel || 'max'}: ${fmt(maxAlt)} m</text>` : ''}
+    ${opts.siteAlt ? `<line x1="${pl}" y1="${y(opts.siteAlt)}" x2="${W - pr}" y2="${y(opts.siteAlt)}" stroke="var(--green)" stroke-dasharray="2 2"/><text x="${pl + 2}" y="${y(opts.siteAlt) - 2}" font-size="7.5" fill="var(--green)" font-family="monospace">Start ${fmt(opts.siteAlt)} m</text>` : ''}
+    ${xt.map((c) => `<line x1="${x(c)}" y1="${H - pb}" x2="${x(c)}" y2="${H - pb + 4}" stroke="var(--text-dim)"/><text x="${x(c)}" y="${H - pb + 12}" font-size="7.5" fill="var(--text-dim)" font-family="monospace" text-anchor="middle">${c}</text>`).join('')}
     <line x1="${pl}" y1="${H - pb}" x2="${W - pr}" y2="${H - pb}" stroke="var(--text-dim)" stroke-width="0.8"/>
-    <text x="${x(takeoff) + 3}" y="${pt + 9}" font-size="8" fill="var(--temp)" font-family="monospace">${fmt(takeoff)} kg</text>
+    <text x="${x(takeoff) + 3}" y="${H - pb - 4}" font-size="8" fill="var(--temp)" font-family="monospace">${fmt(takeoff)} kg</text>
     <text x="${W - pr}" y="${H - 2}" font-size="7.5" fill="var(--text-dim)" font-family="monospace" text-anchor="end">kg Tragfähigkeit → · m AMSL ↑</text>`;
   return svg;
 }
@@ -186,7 +195,7 @@ export function docsEditor(owner, types, ctx, opts = {}) {
         input('date', doc.validTo || '', { title: t('doc_validTo'), class: exp ? 'neg' : soon ? 'half' : '', onchange: (e) => { doc.validTo = e.target.value; opts.onChange?.(); draw(); } }),
         doc.url ? h('a.btn.small', { href: doc.url, target: '_blank', rel: 'noopener', title: doc.key || '' }, t('doc_open')) : null,
         h('button.btn.small', { type: 'button', onclick: () => pick(doc) }, doc.url ? t('doc_replace') : t('doc_upload')),
-        h('button.btn.icon.small', { type: 'button', title: t('remove'), onclick: () => { if (confirm(t('remove') + '?')) { owner.docs.splice(i, 1); draw(); opts.onChange?.(); } } }, '✕'),
+        h('button.btn.icon.small', { type: 'button', title: t('remove'), onclick: () => { if (confirm(t('remove') + '?')) { owner.docs.splice(i, 1); draw(); opts.onChange?.(); } } }, icon('close', 14)),
         exp ? h('span.tag.neg', t('doc_expired')) : soon ? h('span.tag.half', t('doc_soon')) : null,
       ]));
     });

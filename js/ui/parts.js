@@ -12,6 +12,7 @@ import { racValidity } from '../calc/rac.js';
 import { siteWeatherAt, route } from '../net.js';
 import { trailerMinutes, ACT_TYPES, ACT_DEFAULT_MIN, ACT_PLACE, planOrderWarnings } from '../calc/schedule.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
+import { icon, iconSvg } from './icons.js';
 
 const tzOf = (b) => b.site.tz || 'Europe/Zurich';
 
@@ -57,7 +58,7 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
   function redrawInputs() {
     clear(inputsBox);
     inputsBox.append(mk('tempC', `${t('mp_temp')} (°C)`, 0.5), mk('qnh', `${t('mp_qnh')} (hPa)`), mk('rh', `${t('mp_rh')} (%)`));
-    if (bal.type === 'hab') inputsBox.append(mk('envTempC', `${t('mp_envTemp')} (°C)`, 5));
+    if (bal.type === 'hab') { const f = mk('envTempC', `${t('mp_envTemp')} (°C)`, 5); f.appendChild(h('div.note.small', t('mp_envDefault', { r: bal.reg || bal.id || '', t: bal.envTempC ?? '–' }))); inputsBox.append(f); }
     else if (ctx.settings.expert) inputsBox.append(mk('gasDeltaT', `${t('gb_gasDeltaT')} (K)`));
   }
   const section = (title, cls, children) => h('div.mp-sec.' + cls, [h('div.lbl', title), ...children]);
@@ -74,7 +75,7 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
         // Resultate Masse
         section(t('mp_resMass'), 'res', [stats([[t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_allowed'), `${fmt(r.allowed)} kg`, null, t(r.limitBy === 'mtom' ? 'mp_limitMtom' : 'mp_limitLift', { l: fmt(r.liftAtSite), m: fmt(r.mtom) })], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'], [t('mp_required'), `${r.required.toFixed(3)} kg/m³`]])]),
         // Resultate Höhe / Hüllentemperatur
-        section(t('mp_resAlt'), 'res', [h('div.alt-grid', [stats([[t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m AMSL` : '> 10 000 m'], [t('mp_maxAltExact'), r.maxAltExact != null ? `${fmt(r.maxAltExact)} m` : '–'], [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (w.envTempC ?? bal.envTempC) ? 'neg' : 'pos'], [t('mp_envMargin', { t: w.envTempC ?? bal.envTempC }), r.envMargin != null ? `${fmtSigned(r.envMargin)} K` : '–', r.envMargin < 0 ? 'neg' : ''], [t('mp_maxAgl'), r.maxAltExcel != null ? `${fmt(Math.max(0, r.maxAltExcel - (b.site.elev || 0)))} m AGL` : '–'], [t('mp_envTemp'), `${w.envTempC ?? bal.envTempC} °C`]]), h('figure.curve-fig', [liftCurve(r.rows, r.takeoff, r.maxAltExcel), h('figcaption.mini', t('mp_curve'))])])]),
+        section(t('mp_resAlt'), 'res', [h('div.alt-grid', [stats([[t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m AMSL` : '> 10 000 m'], [t('mp_maxAltExact'), r.maxAltExact != null ? `${fmt(r.maxAltExact)} m` : '–'], [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (w.envTempC ?? bal.envTempC) ? 'neg' : 'pos'], [t('mp_envMargin', { t: w.envTempC ?? bal.envTempC }), r.envMargin != null ? `${fmtSigned(r.envMargin)} K` : '–', r.envMargin < 0 ? 'neg' : ''], [t('mp_maxAgl'), r.maxAltExcel != null ? `${fmt(Math.max(0, r.maxAltExcel - (b.site.elev || 0)))} m AGL` : '–'], [t('mp_envTemp'), `${w.envTempC ?? bal.envTempC} °C`]]), h('figure.curve-fig', [liftCurve(r.rows, r.takeoff, r.maxAltExcel, { envTempC: w.envTempC ?? bal.envTempC, siteAlt: b.site.elev || 0, ceilingLabel: t('mp_ceiling', { t: w.envTempC ?? bal.envTempC }) }), h('figcaption.mini', t('mp_curve'))])])]),
         // Gasplanung (Vorgabe: Flaschen; Resultat: Vorrat, Dauer, Bedarf)
         section(t('mp_gasPlan'), 'gas', [
           h('table.cyl', [h('thead', h('tr', [h('th', t('mp_cyl')), h('th', t('mp_count')), h('th', 'l (80 %)'), h('th', 'kg Gas'), h('th', 'kg'), h('th', 'kg total')])), h('tbody', cylRows)]),
@@ -190,23 +191,23 @@ export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
           if (m) { it.meetingId = m.id; it.name = m.name; it.place = { name: m.name, lat: m.lat, lon: m.lon }; } else { it.meetingId = ''; it.name = ''; it.place = null; }
           routeAll();
         } });
-        placeCell = h('span.pcell', [mSel, it.place?.lat != null ? h('button.btn.icon.small.ghost', { type: 'button', title: t('pick_change'), onclick: pick }, '✎') : null]);
+        placeCell = h('span.pcell', [mSel, it.place?.lat != null ? h('button.btn.icon.small.ghost', { type: 'button', title: t('pick_change'), onclick: pick }, icon('edit', 14)) : null]);
       } else if (pk && !readOnly) {
         placeCell = h('span.pcell', [
           it.place?.lat != null ? pname(it.place) : h('span.muted', '–'),
-          h('button.btn.icon.small', { type: 'button', title: it.place?.lat != null ? t('pick_change') : t('pick_choose'), onclick: pick }, it.place?.lat != null ? '✎' : '📍'),
-          it.place?.lat != null ? h('button.btn.icon.small.ghost', { type: 'button', title: t('remove'), onclick: () => { it.place = null; routeAll(); } }, '✕') : null,
+          h('button.btn.icon.small', { type: 'button', title: it.place?.lat != null ? t('pick_change') : t('pick_choose'), onclick: pick }, icon(it.place?.lat != null ? 'edit' : 'place', 16)),
+          it.place?.lat != null ? h('button.btn.icon.small.ghost', { type: 'button', title: t('remove'), onclick: () => { it.place = null; routeAll(); } }, icon('close', 14)) : null,
         ]);
       } else if (pk && it.place?.lat != null) placeCell = placeLine(it.place, { noElev: true });
       else placeCell = h('span.muted', '–');
       const row = h('tr', { draggable: !readOnly, class: [isStart ? 'anchor' : '', twilight(r.ms)].filter(Boolean).join(' ') }, [
-        readOnly ? null : h('td.handle', [h('span.handle', { title: t('sch_drag') }, '≡'), h('span.updown', [h('button.tiny', { type: 'button', title: t('sch_moveUp'), disabled: k === 0, onclick: () => move(k, k - 1) }, '▲'), h('button.tiny', { type: 'button', title: t('sch_moveDown'), disabled: k === rows.length - 1, onclick: () => move(k, k + 1) }, '▼')])]),
+        readOnly ? null : h('td.handle', [h('span.handle', { title: t('sch_drag') }, icon('grip', 16)), h('span.updown', [h('button.tiny', { type: 'button', title: t('sch_moveUp'), disabled: k === 0, onclick: () => move(k, k - 1) }, '▲'), h('button.tiny', { type: 'button', title: t('sch_moveDown'), disabled: k === rows.length - 1, onclick: () => move(k, k + 1) }, '▼')])]),
         h('td.tm', [tIn, r.overridden && !readOnly ? h('button.btn.icon.small', { type: 'button', title: t('recompute'), onclick: () => { delete it.pin; redraw(); onChange(); } }, '↺') : null]),
         h('td.act', typeSel),
         h('td.info', infoIn),
         h('td.min', minIn),
         h('td.place', { class: pk ? '' : 'none' }, placeCell),
-        readOnly ? null : h('td.ops', [h('button.btn.icon.small', { type: 'button', title: t('remove'), disabled: isStart, onclick: () => { sc.plan.splice(k, 1); routeAll(); } }, '✕')]),
+        readOnly ? null : h('td.ops', [h('button.btn.icon.small', { type: 'button', title: t('remove'), disabled: isStart, onclick: () => { sc.plan.splice(k, 1); routeAll(); } }, icon('close', 14))]),
       ]);
       if (!readOnly) {
         row.addEventListener('dragstart', (e) => { dragFrom = k; e.dataTransfer.effectAllowed = 'move'; row.classList.add('dragging'); });

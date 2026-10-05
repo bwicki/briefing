@@ -98,7 +98,7 @@ with sync_playwright() as p:
     p2.screenshot(path=f'{OUT}/remote_link_brief.png', full_page=True)
     # Liste zeigt Link-Zähler
     pg.goto(BASE + '#/list'); pg.wait_for_timeout(900)
-    assert '🔗 1' in pg.inner_text('table'), 'Link-Zähler in Liste'
+    assert pg.evaluate("[...document.querySelectorAll('table .l2')].some(e => e.querySelector('svg.ico-link') && /\\b1\\b/.test(e.textContent))"), 'Link-Zähler in Liste'
     pg.screenshot(path=f'{OUT}/remote_list.png')
     # Settings: Zugänge
     pg.goto(BASE + '#/settings?access'); pg.wait_for_timeout(900)

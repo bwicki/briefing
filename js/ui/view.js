@@ -16,6 +16,7 @@ import { changesSinceFinal } from '../calc/diff.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { printDialog, paxSheet, paxCardTitle } from './extras.js';
 import { distKm, bearing } from '../calc/geo.js';
+import { icon, iconSvg } from './icons.js';
 
 export async function renderBrief(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
@@ -29,7 +30,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   /** Fahrt vorbei: Hinweis mit «Kopieren und neu anlegen» (nur Eigner); das Briefing selbst bleibt unverändert. */
   const lockDialog = async () => {
     const copyBtn = !shared && !foreign;
-    const r = await dialog(`🔒 ${t('locked_title')}`, h('p', t('locked_text', { d: fmtDate(z, b.time.startMs, lang) })), [{ label: t('close'), value: false }, copyBtn ? { label: t('locked_copy'), value: true, primary: true } : null].filter(Boolean));
+    const r = await dialog(t('locked_title'), h('p', t('locked_text', { d: fmtDate(z, b.time.startMs, lang) })), [{ label: t('close'), value: false }, copyBtn ? { label: t('locked_copy'), value: true, primary: true } : null].filter(Boolean));
     if (r === true) { const c = duplicateBriefing(b, S); await ctx.store.saveBriefing(c, ctx.who); toast(`${c.no || ''} ✓`); ctx.navigate(`#/new/${c.id}`); }
   };
   const tools = [];
@@ -52,7 +53,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const menu = [{ label: t('more'), items: [{ label: paxCardTitle(S), fn: () => ctx.navigate(paxHash) }] }];
   const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
   setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${locked ? ' · 🔒 ' + t('locked') : ''}${ownerNote}`, tools, menu });
-  if (locked) view.appendChild(h('div.card.lockbar.no-print', h('div.card-body.row-actions', [h('span', `🔒 ${t('locked_title')}`), h('span.note.small', t('locked_text', { d: fmtDate(z, b.time.startMs, lang) })), !shared && !foreign ? h('button.btn.small.primary', { type: 'button', onclick: lockDialog }, t('locked_copy')) : null])));
+  if (locked) view.appendChild(h('div.card.lockbar.no-print', h('div.card-body.row-actions', [h('span', [icon('lock', 16), ` ${t('locked_title')}`]), h('span.note.small', t('locked_text', { d: fmtDate(z, b.time.startMs, lang) })), !shared && !foreign ? h('button.btn.small.primary', { type: 'button', onclick: lockDialog }, t('locked_copy')) : null])));
   view.appendChild(brief);
   const attachments = [];   // [{ title, images }] → Beilagen am Schluss
   const sun = sunFor(b, S, ctx.racTable);
@@ -100,7 +101,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       const d = b.panels[p.key] || { content: {}, extra: {}, comment: '' };
       const cell = h('td');
       switch (p.kind) {
-        case 'core': cell.appendChild(coreRows()); break;
+        case 'core': cell.appendChild(h('div.core-grid', [coreRows(), balloonImage(b, S) ? h('img.bimg.core-img', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null])); break;
         case 'sun': cell.appendChild(h('div', [h('div.kv', sunR.filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', v)])), sun?.nightStart ? h('div.ns', `⚠ ${t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })}`) : null, sun?.nightLanding ? h('div.ns', `⚠ ${t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })}`) : null])); break;
         case 'massperf': cell.appendChild(massBlock()); break;
         case 'schedule': {
@@ -144,7 +145,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       }
       if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b', t('ai') + ': '), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
-      tbl.appendChild(h('tr', { class: 'row-' + p.key.replace('.', '-') }, [h('th', [h('span.pno', panelNo(p, panels)), ' ', tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, p.key === 'A.core' && balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null]), cell]));
+      tbl.appendChild(h('tr', { class: 'row-' + p.key.replace('.', '-') }, [h('th', [h('span.pno', panelNo(p, panels)), ' ', tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]));
     }
     brief.appendChild(tbl);
   }

@@ -76,11 +76,14 @@ und Startzeit, Startort (ICAO-Kurzkoordinaten, Höhe), Ballon, Fahrttyp, **Statu
 NN %» oder «Final vN», darunter die Phase Vorplanung > 72 h / Planung 24–72 h / Final < 24 h) und
 **Letzte Änderung** (Bearbeitungsstand vN · Datum · Bearbeiter, dazu 🔗 n aktive Freigabelinks).
 Aktionen als Symbole: ✎ Bearbeiten (gesperrt: 👁 Briefingsicht), ⧉ Duplizieren, 🗑 Löschen.
-Filter *Geplant / Alle / Archiv*, Suche; Sichten *Meine Briefings*,
+Sortierung über die Spaltenköpfe (Standard: Nummer absteigend, jüngste zuoberst); Doppelklick auf
+eine Zeile öffnet die Briefingsicht. Filter *Geplant / Alle / Archiv*, Suche; Sichten *Meine Briefings*,
 *Alle Benutzer* (Supermaster) und *Fahrten mit meinem Material* (wenn Ballone
 freigegeben sind; fremde Briefings öffnen sich nur in der Briefingsicht). Rechts
-die nächste Fahrt mit Sonnenzeiten. **⧉** dupliziert ein Briefing als Vorlage (gleicher Startort, Ballon,
-Crew; Datum + 7 Tage; Meteo-Panels leer) und öffnet den Ablauf bei Schritt 6.
+die nächste Fahrt mit Sonnenzeiten. **⧉** dupliziert ein Briefing als Vorlage (Ballon, Startort, PIC,
+Pax, Nachfahrer, Absicht, Ausrüstung, Absprachen bleiben; Datum morgen 06:30, Anlass, Startplatzwerte,
+Tagesplanung und Meteo-Panels neu) und öffnet den Ablauf bei Schritt 1 – ebenso «Kopieren und neu
+anlegen» bei gesperrten Briefings.
 
 ### Neues Briefing — geführter Ablauf
 
@@ -94,7 +97,8 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
    Kennzeichnung Heissluft/Gas in den Einstellungen) und **Ortswahl**: ins Ortsfeld
    tippen öffnet die Suche direkt. Kurzkoordinaten, Höhe, Land und Zeitzone werden
    ermittelt (Open-Meteo, Nominatim); Datum, Startzeit, LT/UTC; Sonne/Dämmerung
-   sofort, Warnung bei Nachtfahrt (bzw. Hinweis «NVFR geplant»); Planungshorizont mit
+   sofort, Warnung bei Nachtfahrt mit dem Schalter **«NVFR zulassen»** (macht den Flugplan C
+   verbindlich und setzt die Nachtausrüstung; Hinweis «NVFR geplant»); Planungshorizont mit
    verfügbaren Modellen. «Als Favorit speichern» nur, wenn kein Favorit gewählt ist.
    Sobald Ort und Zeit stehen, erscheint die **Start-Ampel** (denkbar / marginal /
    eher ausgeschlossen) aus Modellwerten und Ampel-Grenzen — grobe Einschätzung,
@@ -153,10 +157,11 @@ Daten aktualisieren»** (lädt alle automatischen Panels neu, ohne KI-Kommentare
 **Bearbeitungsstand** («v12 · Datum Zeit · Name»; +1 je Bearbeitungssitzung: Öffnen der Erarbeitung,
 Weiterarbeit nach Freigabe oder Final-PDF), der Status und die Phase.
 
-Jedes Panel kann unter dem Inhalt drei Boxen haben: **Eigener Text / Bilder / Daten** (blau; Text,
+Alle Bedienelemente verwenden den Symbolsatz «Linie» (`js/ui/icons.js`, SVG 24 × 24, Strich 2 px) –
+keine Emoji, daher auf allen Geräten und im Druck gleich. Jedes Panel kann unter dem Inhalt drei Boxen haben: **Eigener Text / Bilder / Daten** (blau; Text,
 Bilder, Links, Daten aus eigener Recherche), **KI-Kommentar** (violett; editierbar, verwerfbar) und
 **Kommentar PIC** (gelb). Die blaue und die gelbe Box erscheinen nur mit Inhalt oder nach Klick auf
-die Symbolknöpfe **📝 / 💬** im Panelkopf (rechts, unter KI-Kommentar und Quelle). Panels mit
+die Symbolknöpfe (Dokument mit Plus, Sprechblase) im Panelkopf (rechts, unter KI-Kommentar und Quelle). Panels mit
 Einfügepflicht (LINK + EINFÜGEN) zeigen zusätzlich immer das Feld «Bericht / Daten einfügen».
 
 Panel-Arten:
@@ -175,7 +180,7 @@ Panel-Arten:
   und amtlichen Quellen geholt und als **Schnappschuss** mit Stand, Modell und
   Quelle im Briefing gespeichert (Druck, Leselink, Final-Versionen). Jedes
   dieser Panels hat *Aktualisieren*, *KI-Hinweis*, ✕ (Schnappschuss entfernen);
-  eigener Text/Bilder gehören in die blaue Zusatzbox (📝). Details im Abschnitt
+  eigener Text/Bilder gehören in die blaue Zusatzbox. Details im Abschnitt
   «Automatische Panels».
 * **Text** — Landeorte, Bemerkungen, Flugplan, Absprachen, Briefingbedürfnisse.
 
@@ -293,8 +298,8 @@ nebeneinander zum Trennen. Auf dem Handy werden die Tabellen gestapelt.
 
 ### Flugplan (ICAO FPL)
 
-Panel C «Flugplan»: Schalter «Flugplan erstellen?» (Vorschlag ja bei NVFR, Grenzüberschreitung
-oder Gasfahrt), dann «Aus Briefing erzeugen». Der Datensatz folgt dem ICAO-Flugplanblatt
+Panel C «Flugplan»: Schalter «Flugplan erstellen?» (Vorschlag ja bei Grenzüberschreitung oder
+Gasfahrt; bei NVFR fest ein und Pflicht), dann «Aus Briefing erzeugen». Der Datensatz folgt dem ICAO-Flugplanblatt
 (Doc 4444): Kennung, Flugregeln V, Art des Flugs, ZZZZ/L, Ausrüstung, EOBT UTC, Geschwindigkeit,
 Flugfläche aus der Maximalhöhe, Route `DRIFTING … FROM … TO … VIA …`, Gesamt-EET, ALTN ZZZZ,
 Feld 18 (DEP/ DEST/ mit Kurzkoordinaten, DOF/, **EET/ je FIR aus der Luftraumanalyse**, TYP/,
@@ -348,6 +353,11 @@ die Einstellungen (ohne Zugänge).
 
 ## Rechenmodelle
 
+* **Aerostatik des Gasballons (0.12, Vorbereitung)** — `docs/Aerostatik_Gasballon.md` hält die
+  Gesetze fest, nach denen das Höhenprofil-Werkzeug den Ballast rechnet (Emden/DFSV-Handbuch
+  2.10, «Gone with the Wind» Kap. 4): Zustandsklassen prall/unprall, Fundamentalsatz 1 % je
+  80 m, Prallhöhe aus dem Füllungsgrad, Gesetz der Ballastwirkung, die vier Temperaturgesetze
+  (≈ 5 kg je K je 1000 m³), Widerstandszahl für Steigen/Abfangen, Tag-Nacht-Übergang.
 * **Sonne/Dämmerung** — Schweiz: RAC 4-4 (VFR Manual, skyguide): BCMT, SR, SS, ECET
   in Lokalzeit, Referenz Sternwarte Bern, gültig für die FIR. Die mitgelieferte
   Tabelle (`data/rac/rac-ch.json`) deckt OCT 2026 – DEC 2027 ab; ein neues PDF wird

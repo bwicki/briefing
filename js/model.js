@@ -73,19 +73,23 @@ export function upgradeBriefing(b) {
   return b;
 }
 
-/** Duplikat als Vorlage: Stammdaten übernommen, Meteo-Panels leer, neues Datum (+7 Tage). */
+/** Duplikat als Vorlage: alles Nicht-Zeitabhängige bleibt (Ballon, Startort, PIC, Pax, Nachfahrer, Absicht, Ausrüstung, Absprachen);
+ * zeitabhängige Angaben auf Vorgabe (Datum morgen 06:30, Anlass, Startplatzwerte, Tagesplanung, Meteo-Panels); der Ablauf beginnt bei Schritt 1. */
 export function duplicateBriefing(src, settings) {
   const b = deepCopy(src);
   b.id = uid(12); b.createdAt = Date.now(); b.updatedAt = Date.now(); b.revision = 0; b.edition = 0; b.status = 'draft'; b.finalNo = 0; b.versions = []; b.log = []; b.accessCount = 0;
   b.no = null; b.pdfs = []; b.assessment = null;   // neue Ordnungsnummer beim Speichern
+  b.wizardStep = 1;
   const tz = b.site.tz || 'Europe/Zurich';
-  const next = addMin(b.time.startMs, 7 * 24 * 60);
-  b.time.date = isoDate(tz, next); b.time.startMs = fromLocal(tz, b.time.date, b.time.time);
+  const p = localParts(tz, Date.now() + 86400000);
+  b.time.date = `${p.y}-${String(p.m).padStart(2, '0')}-${String(p.d).padStart(2, '0')}`; b.time.time = '06:30'; b.time.startMs = fromLocal(tz, b.time.date, b.time.time);
+  b.flight.occasion = '';
+  b.weather = { ...b.weather, tempC: 15, qnh: 1013, rh: null, source: 'manual', stand: null, gasDeltaT: 0 };
+  if (b.meteo) delete b.meteo.lastRefresh;
   for (const p of PANELS) {
     const keep = ['A.landing', 'A.equipment', 'C.fpl', 'C.agreements', 'C.transition', 'D.pax', 'D.crew', 'D.standard'].includes(p.key);
     if (!keep) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
   }
-  b.weather = { ...b.weather, source: 'manual', stand: null };
   b.schedule.rows = []; b.schedule.overrides = {};
   for (const it of b.schedule.plan || []) delete it.pin;
   return b;

@@ -7,6 +7,7 @@ import { phaseOf, duplicateBriefing, sunFor, isLocked } from '../model.js';
 import { racValidity, racFmt, racLookup } from '../calc/rac.js';
 import { isoDate } from '../calc/time.js';
 import { tag } from './widgets.js';
+import { icon, iconSvg } from './icons.js';
 
 export async function renderList(view, ctx) {
   setHeader({ title: t('briefings'), tools: [] });   // «+ Neues Briefing» steht als gefüllter Knopf in der Hauptnavigation
@@ -22,19 +23,25 @@ export async function renderList(view, ctx) {
   const openHash = (b) => (foreign(b) ? `#/v/${b.id}` : `#/b/${b.id}`);
   let filter = 'planned', q = '';
   const now = Date.now();
+  // Sortierung: Standard Ordnungsnummer absteigend (jüngste zuoberst); Klick auf die Spaltenköpfe wechselt
+  let sortKey = 'no', sortDir = -1;
+  const sortVal = (b, k) => k === 'no' ? (b.no || '') : k === 'date' ? (b.startMs || 0) : k === 'site' ? (b.site || '').toLowerCase() : k === 'reg' ? (b.reg || b.balloon || '') : k === 'kind' ? t('kind_' + (b.kind || 'commercial')) : k === 'status' ? (b.status === 'final' ? 100 + (b.finalNo || 0) : (b.progress ?? -1)) : k === 'change' ? (b.updatedAt || 0) : k === 'owner' ? (b.ownerName || b.owner || '') : '';
+  const sorted = (list) => [...list].sort((a, c) => { const x = sortVal(a, sortKey), y = sortVal(c, sortKey); const r = typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'de', { numeric: true }); return (r || (a.startMs || 0) - (c.startMs || 0)) * sortDir; });
+  const setSort = (k) => { if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = k === 'no' || k === 'date' || k === 'change' ? -1 : 1; } drawTable(); };
+  const th = (k, label) => h('th.sortable', { onclick: () => setSort(k), title: label }, [label, sortKey === k ? h('span.sarrow', icon(sortDir > 0 ? 'up' : 'down', 12)) : null]);
 
   const body = h('div');
   const side = h('div');
   view.appendChild(h('div.layout-2', [body, side]));
 
   function rows() {
-    return all.filter((b) => {
+    return sorted(all.filter((b) => {
       const ph = phaseOf(b.startMs || 0, now);
       if (filter === 'planned' && ph === 'past') return false;
       if (filter === 'archive' && ph !== 'past') return false;
       if (q) { const s = `${b.no || ''} ${b.site || ''} ${b.reg || ''} ${b.balloon || ''} ${b.ownerName || ''} ${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)}`.toLowerCase(); if (!s.includes(q.toLowerCase())) return false; }
       return true;
-    });
+    }));
   }
   function draw() {
     clear(body);
@@ -56,26 +63,26 @@ export async function renderList(view, ctx) {
       tableWrap.appendChild(h('div.cards-list', rs.map((b) => h('div.bcard', { onclick: () => ctx.navigate(openHash(b)) }, [
         h('div.t', `${b.no ? b.no + ' · ' : ''}${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)} · ${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)} LT · ${b.reg || ''}`),
         h('div', `${b.site || '–'}${scope !== 'own' ? ` · ${b.ownerName || b.owner || ''}` : ''}`),
-        h('div.m', [locked(b) ? '🔒 ' : '', phaseTag(b), ' ', statusText(b)]),
+        h('div.m', [locked(b) ? icon('lock', 13) : null, ' ', phaseTag(b), ' ', statusText(b)]),
       ]))));
       return;
     }
     const showOwner = scope !== 'own';
     const tz = (b) => b.tz || 'Europe/Zurich';
-    const tbl = h('table.tbl.list', [h('thead', h('tr', [h('th', '#'), h('th', t('colDate')), h('th', t('colSite')), showOwner ? h('th', t('colOwner')) : null, h('th', t('colBalloon')), h('th', t('colType')), h('th', t('colStatus')), h('th', t('colChange')), h('th', '')].filter(Boolean))),
-      h('tbody', rs.map((b) => h('tr', { class: locked(b) ? 'locked' : '' }, [
-        h('td.mono.no', [b.no || '–', locked(b) ? h('span.lock', { title: t('locked') }, ' 🔒') : null]),
+    const tbl = h('table.tbl.list', [h('thead', h('tr', [th('no', '#'), th('date', t('colDate')), th('site', t('colSite')), showOwner ? th('owner', t('colOwner')) : null, th('reg', t('colBalloon')), th('kind', t('colType')), th('status', t('colStatus')), th('change', t('colChange')), h('th', '')].filter(Boolean))),
+      h('tbody', rs.map((b) => h('tr', { class: locked(b) ? 'locked' : '', title: t('view_brief'), ondblclick: (e) => { if (!e.target.closest('button')) ctx.navigate(`#/v/${b.id}`); } }, [
+        h('td.mono.no', [b.no || '–', locked(b) ? h('span.lock', { title: t('locked') }, [' ', icon('lock', 14)]) : null]),
         h('td', [h('div.l1', fmtDate(tz(b), b.startMs || 0)), h('div.l2', `${hhmm(tz(b), b.startMs || 0)} LT`)]),
         h('td', [h('div.l1', b.site || '–'), h('div.l2', `${b.icao || ''}${b.elev != null ? ' · ' + Math.round(b.elev) + '\u00a0m' : ''}`)]),
         showOwner ? h('td', [h('div.l1', b.ownerName || b.owner || '–'), b.materialOwner && b.materialOwner !== b.owner ? h('div.l2', `${t('colMaterial')}: ${b.materialOwner}`) : null]) : null,
         h('td.nowrap', b.reg || b.balloon || '–'),
         h('td.nowrap', t('kind_' + (b.kind || 'commercial'))),
         h('td', [h('div.l1', statusTag(b)), h('div.l2', phaseTag(b))]),
-        h('td', [h('div.l1', `v${b.edition ?? b.revision ?? 0} · ${b.updatedAt ? fmtDateTime(tz(b), b.updatedAt) : '–'}`), h('div.l2', [b.updatedBy || '', b.links ? h('span', { title: t('colLinks') }, ` · 🔗 ${b.links}`) : null])]),
-        h('td.row-actions.acts', foreign(b) ? [h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(openHash(b)) }, '👁')] : [
-          locked(b) ? h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(`#/v/${b.id}`) }, '👁') : h('button.btn.icon.small.edit', { type: 'button', title: t('edit'), onclick: () => ctx.navigate(`#/b/${b.id}`) }, '✎'),
-          h('button.btn.icon.small', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, '⧉'),
-          h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, '🗑'),
+        h('td', [h('div.l1', `v${b.edition ?? b.revision ?? 0} · ${b.updatedAt ? fmtDateTime(tz(b), b.updatedAt) : '–'}`), h('div.l2', [b.updatedBy || '', b.links ? h('span', { title: t('colLinks') }, [' · ', icon('link', 13), ` ${b.links}`]) : null])]),
+        h('td.row-actions.acts', foreign(b) ? [h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(openHash(b)) }, icon('view'))] : [
+          locked(b) ? h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(`#/v/${b.id}`) }, icon('view')) : h('button.btn.icon.small.edit', { type: 'button', title: t('edit'), onclick: () => ctx.navigate(`#/b/${b.id}`) }, icon('edit')),
+          h('button.btn.icon.small', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, icon('dup')),
+          h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, icon('del')),
         ]),
       ].filter(Boolean))))]);
     tableWrap.appendChild(tbl);

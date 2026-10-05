@@ -90,7 +90,7 @@ export function panelFilled(p, briefing) {
     case 'text':
       return !!((d.content?.text || '').trim() || extraText);
     case 'fpl':
-      return true;
+      return !briefing.flight?.nvfr || !!briefing.fpl?.enabled;   // NVFR: Flugplan muss erstellt sein
     case 'landing':
       return !!((d.content?.text || '').trim() || extraText || briefing.landing?.lat != null);
     case 'paste':
@@ -105,6 +105,7 @@ export function panelFilled(p, briefing) {
 /** Pflicht-Panels gemäss Einstellungen (sichtbar, nicht «always»). */
 export function mandatoryPanels(settings, briefing) {
   const m = new Set(settings?.panels?.mandatory || []);
+  if (briefing?.flight?.nvfr) m.add('C.fpl');   // Nachtfahrt (NVFR): Flugplan verbindlich
   return visiblePanels(settings, briefing).filter((p) => m.has(p.key) && !p.always);
 }
 

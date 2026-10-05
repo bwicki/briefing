@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.11.3 — 2026-10-05 · Kopie ab Schritt 1 · NVFR-Schalter · Niveauliste · Sortierung · Tragkraft-Grafik
+
+* **Kopie eines (gesperrten) Briefings** beginnt den Ablauf wieder bei Schritt 1; Nicht-Zeitabhängiges
+  bleibt (Ballon, Startort, PIC, Pax, Nachfahrer, Fahrtabsicht, Ausrüstung, Absprachen, Flugplan-
+  Einstellungen), Zeitabhängiges steht auf Vorgabe (Datum morgen 06:30, Anlass leer, Startplatzwerte
+  15 °C/1013 hPa manuell, Tagesplanung neu, Meteo-Panels leer).
+* **«Wo und wann»:** liegt die Startzeit vor BCMT oder die Landung nach ECET, erscheint der Schalter
+  **«NVFR zulassen»**; eingeschaltet macht er den **Flugplan (C) verbindlich** (Pflicht-Markierung,
+  Schalter «Flugplan erstellen» fest ein, Panel gilt erst mit erstelltem Flugplan als erledigt) und setzt
+  die Nachtausrüstung. Derselbe Schalter wie «NVFR» in Schritt 1.
+* **Trajektorien:** Klick ins Niveaufeld öffnet eine senkrechte Liste der verfügbaren Niveaus (SFC,
+  500–3000 ft AGL, 2000–10000 ft, FL100–FL150) zum An-/Abwählen; eigene Werte weiterhin tippbar.
+* **Liste:** Sortierung über die Spaltenköpfe (▲/▼), Standard Ordnungsnummer absteigend (jüngste
+  zuoberst); **Doppelklick** auf eine Zeile öffnet die Briefingsicht.
+* **A3 Tragkraft:** Eingabe heisst **«Max. Hüllentemperatur»** mit der Vorgabe des Ballons
+  («Vorgabe HB-QWZ: 110 °C»); der Wert ist je Ballon in den Stammdaten einstellbar (ohne
+  Expertenmodus, neben MTOM). Grafik Tragkraft/Höhe: **Obergrenze** als rote Linie mit Beschriftung
+  «Obergrenze (Hülle 110 °C): 3 450 m», Bereich darüber schraffiert, Startplatzhöhe grün, Zwischen-
+  einheiten auf beiden Achsen (500 m, ¼-Schritte der kg-Skala).
+* **Konzept 0.12:** `docs/Aerostatik_Gasballon.md` – Grundlagen der Gasballon-Aerostatik aus
+  Emden (DFSV-Handbuch 2.10) und «Gone with the Wind» Kap. 4 als Basis des Ballastmodells;
+  Skizze des Höhenprofil-Werkzeugs überarbeitet (gefahrene Distanz, Steig-/Sinkraten mit
+  Farben, Menüs für Punkte und Etappen, Schichtmächtigkeiten, aerostatisches Ballastmodell).
+* **Symbolsatz «Linie»** (Option A der Vorlage `00_Konzept/Icon-Set_Vorschlaege.html`): alle
+  Bedienelemente mit einheitlichen SVG-Symbolen (24 × 24, Strich 2 px) statt Emoji – Menü, Drucken,
+  Bearbeiten, Briefingsicht, Duplizieren, Löschen, Eigener Text (blau), Kommentar PIC (gelb), KI
+  (violett), Aktualisieren, Schliessen, Ort wählen, Sperre, Freigabelink, Sortierpfeile, Griff.
+  Gleich auf Windows, iPad und im Druck (`js/ui/icons.js`).
+* **A1 Stammdaten:** Hüllenbild rechts im Datenfenster statt im Panelkopf (Erarbeitung und
+  Briefingsicht).
+* Mobil: Niveaufeld und Titelzeile der Briefingsicht umbrechen, Seite nie breiter als der Bildschirm.
+
 ## 0.11.2 — 2026-10-05 · Liste · Editor-Struktur · METAR/TAF · Lightbox · Kopfzeile · NOTAM-Quelle
 
 * **Liste** kompakt: kleinere Schrift, je Zelle höchstens zwei Zeilen (Höhe «467 m» und Kennung

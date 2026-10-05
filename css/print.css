@@ -64,7 +64,7 @@ table.inner.sched-view tr.dusk td{background:#f1f3f9 !important;-webkit-print-co
 
 /* 0.10.1: Hüllenbild 2 × 2 cm auch im Druck */
 img.bimg{width:2cm;height:2cm;object-fit:cover;border:1px solid #ccc;border-radius:4px;background:#fff}
-.brief table.bp th img.bimg{display:block;margin-top:3px}
+.brief .core-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:start}
 .brief .bh .l{display:flex;flex-direction:column;gap:2px}
 
 /* 0.11: Titelzeile rechtsbündig, Logo oben rechts */

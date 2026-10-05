@@ -11,6 +11,7 @@ import { mapsLink } from './place.js';
 import { decodeMetar, decodeTaf, badToken, MARK0, MARK1 } from '../calc/metar.js';
 import { bearing, compass } from '../calc/geo.js';
 import { placeName } from '../net.js';
+import { icon, iconSvg } from './icons.js';
 
 const kt = (ms) => (ms == null ? '–' : Math.round(ms * MS_TO_KT));
 const deg = (d) => (d == null ? '–' : Math.round(d).toString().padStart(3, '0'));
@@ -258,7 +259,7 @@ export function baseLayers() {
   return { osm, sat, base, over };
 }
 function iconButton(map, title, icon, onClick, pos = 'topright') {
-  const C = L.Control.extend({ onAdd() { const el = L.DomUtil.create('div', 'leaflet-bar leaflet-control fb-ctl'); const a = L.DomUtil.create('a', '', el); a.href = '#'; a.title = title; a.setAttribute('aria-label', title); a.textContent = icon; L.DomEvent.on(a, 'click', (e) => { L.DomEvent.stop(e); a.classList.toggle('on'); onClick(a.classList.contains('on')); }); return el; } });
+  const C = L.Control.extend({ onAdd() { const el = L.DomUtil.create('div', 'leaflet-bar leaflet-control fb-ctl'); const a = L.DomUtil.create('a', '', el); a.href = '#'; a.title = title; a.setAttribute('aria-label', title); a.innerHTML = icon; L.DomEvent.on(a, 'click', (e) => { L.DomEvent.stop(e); a.classList.toggle('on'); onClick(a.classList.contains('on')); }); return el; } });
   return new C({ position: pos }).addTo(map);
 }
 function drawTrajMap(el, d, b, o = {}) {
@@ -267,7 +268,7 @@ function drawTrajMap(el, d, b, o = {}) {
   const bl = baseLayers();
   bl.osm.addTo(map); for (const k in bl.over) bl.over[k].addTo(map);
   L.control.layers(bl.base, bl.over, { position: 'topleft', collapsed: true }).addTo(map);
-  if (o.onGrid) iconButton(map, t('auto_grid'), '▦', o.onGrid);
+  if (o.onGrid) iconButton(map, t('auto_grid'), iconSvg('grid', 16), o.onGrid);
   const colors = TRAJ_COLORS;
   const bounds = [[b.site.lat, b.site.lon]];
   d.tracks.forEach((tr, k) => {

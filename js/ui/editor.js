@@ -17,6 +17,7 @@ import { panelByKey } from '../panels.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { openAccessDialog } from './access.js';
 import { fplPanel } from './fplpanel.js';
+import { icon, iconSvg } from './icons.js';
 
 export async function renderEditor(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
@@ -153,7 +154,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       a?.text ? h('div.note.small', `${a.model || ''} · ${fmtDateTime(z, a.ts, lang)}`) : null,
       canAi ? h('span.aibtns', { style: { marginTop: '6px', display: 'inline-flex' } }, [
         h('button.btn.small.ai' + (a?.text ? '.renew' : ''), { type: 'button', title: t('ai_direct'), onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }, { edit: false }) }, a?.text ? t('summary_renew') : t('summary_make')),
-        h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }, { edit: true }) }, '…'),
+        h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }, { edit: true }) }, icon('more', 14)),
       ]) : null,
     ])]);
   }
@@ -180,7 +181,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       const ro = shared?.role === 'read';
       const txt = h('div.ai-text', d.ai.text);
       const ed = textarea(d.ai.text, { rows: 4, oninput: (e) => { d.ai.text = e.target.value; d.ai.edited = true; txt.textContent = e.target.value; touched(p.key); } }); ed.hidden = true;
-      ai = h('div.sub.ai', [h('div.row-actions', [h('span.lbl', `🤖 ${t('ai')} · ${d.ai.model || ''} · ${d.ai.ts ? fmtDateTime(z, d.ai.ts, lang) : ''}${d.ai.edited ? ' · ' + t('ai_edited') : ''}`), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_edit'), onclick: () => { ed.hidden = !ed.hidden; txt.hidden = !ed.hidden; if (!ed.hidden) ed.focus(); } }, '✎'), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_discard'), onclick: () => { d.ai = null; touched(p.key); drawPanels(); } }, '✕')]), txt, ed]);
+      ai = h('div.sub.ai', [h('div.row-actions', [h('span.lbl', [icon('ai', 14), ` ${t('ai')} · ${d.ai.model || ''} · ${d.ai.ts ? fmtDateTime(z, d.ai.ts, lang) : ''}${d.ai.edited ? ' · ' + t('ai_edited') : ''}`]), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_edit'), onclick: () => { ed.hidden = !ed.hidden; txt.hidden = !ed.hidden; if (!ed.hidden) ed.focus(); } }, icon('edit')), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_discard'), onclick: () => { d.ai = null; touched(p.key); drawPanels(); } }, icon('close'))]), txt, ed]);
     }
     const comment = (d.comment || '').trim() || openBoxes.has(p.key + ':cmt') ? commentBox(p, d) : null;
     return [extra, ai, comment];
@@ -199,8 +200,8 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       box.querySelector('textarea')?.focus();
     };
     return h('div.addrow', [
-      h('button.btn.icon.small.add.extra', { type: 'button', title: t('extra_add'), 'aria-label': t('extra_add'), onclick: () => open('extra') }, '📝'),
-      h('button.btn.icon.small.add.cmt', { type: 'button', title: t('comment_add'), 'aria-label': t('comment_add'), onclick: () => open('cmt') }, '💬'),
+      h('button.btn.icon.small.add.extra', { type: 'button', title: t('extra_add'), 'aria-label': t('extra_add'), onclick: () => open('extra') }, icon('text')),
+      h('button.btn.icon.small.add.cmt', { type: 'button', title: t('comment_add'), 'aria-label': t('comment_add'), onclick: () => open('cmt') }, icon('comment')),
     ]);
   }
   /** Quelle eines Panels: Link aus den Einstellungen (p.link) oder aus dem Schnappschuss (PDF, Bild-URL, Quelle). */
@@ -217,7 +218,6 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         h('div.ttl', [h('span.pno', panelNo(p, panels)), ' ', tt(p)]),
         h('div.src', `${t('stand')}: ${d.updatedAt ? `${fmtDateTime(z, d.updatedAt, lang)} · ${d.updatedBy || ''}` : t('stand_none')}`),
       ]),
-      p.key === 'A.core' && balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '', title: b.balloon.label || '' }) : null,
       h('div.rgt', [
         h('div.rrow', [
           mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
@@ -282,7 +282,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const run = async (edit) => { const btn = wrap.querySelector('button'); btn.disabled = true; btn.textContent = t('ai_working'); await askAi(p, d, b, ctx, () => touched(p.key), drawPanels, { edit }); btn.disabled = false; btn.textContent = d.ai?.text ? t('ai_again') : t('ai_ask'); btn.classList.toggle('renew', !!d.ai?.text); };
     const wrap = h('span.aibtns', [
       h('button.btn.small.ai' + (d.ai?.text ? '.renew' : ''), { type: 'button', title: t('ai_direct'), onclick: () => run(false) }, d.ai?.text ? t('ai_again') : t('ai_ask')),
-      h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => run(true) }, '…'),
+      h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => run(true) }, icon('more', 14)),
     ]);
     return wrap;
   }
@@ -298,7 +298,9 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       ...(docsLine(ctx.stamm?.persons?.find((x) => x.id === b.persons.picId)?.docs) ? [[`${t('docs')} PIC`, docsLine(ctx.stamm.persons.find((x) => x.id === b.persons.picId).docs)]] : []),
     ];
     const canEdit = canOwn || shared?.role === 'edit';
-    return h('div', [kv(rows), canEdit ? h('div.row-actions', { style: { marginTop: '8px' } }, [h('button.btn', { type: 'button', onclick: async () => { b.wizardStep = 1; await saveNow(); ctx.navigate(shared ? `#/s/${shared.token}/w` : `#/new/${b.id}`); } }, `✎ ${t('masterData')}`)]) : null]);
+    // Hüllenbild rechts im Datenfenster (nicht im Panelkopf)
+    const img = balloonImage(b, S) ? h('img.bimg.core-img', { src: balloonImage(b, S), alt: b.balloon.reg || '', title: b.balloon.label || '' }) : null;
+    return h('div', [h('div.core-grid', [kv(rows), img]), canEdit ? h('div.row-actions', { style: { marginTop: '8px' } }, [h('button.btn', { type: 'button', onclick: async () => { b.wizardStep = 1; await saveNow(); ctx.navigate(shared ? `#/s/${shared.token}/w` : `#/new/${b.id}`); } }, [icon('edit', 16), ` ${t('masterData')}`])]) : null]);
   }
   function equipmentBlock(p, d) {
     const sun = sunFor(b, S, ctx.racTable);
@@ -330,7 +332,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     ctx.autoLoad = false;
     const res = await refreshAllData(ctx, b, keys, (k, st, e) => { if (statusEl) statusEl.textContent = `${k} ${st === 'loading' ? '…' : st === 'ok' ? '✓' : '✗ ' + (e?.message || '')}`; });
     for (const [k, snap] of Object.entries(res)) { if (!snap.error) { b.panels[k].content = { ...(b.panels[k].content || {}), auto: snap }; touched(k); n++; } }
-    b.meteo.lastRefresh = { ts: Date.now(), n, total: keys.length };
+    (b.meteo = b.meteo || {}).lastRefresh = { ts: Date.now(), n, total: keys.length };
     drawPanels(); ctx.autoLoad = true;
   }
   /** Über dem ersten Abschnitt: alle automatischen Panels neu laden (ohne KI-Kommentare); Status daneben. */
@@ -338,7 +340,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const canEdit = canOwn || shared?.role === 'edit';
     if (!canEdit || b.site.lat == null) return null;
     const st = h('span.note.small');
-    return h('div.row-actions.refresh-all', [h('button.btn.primary.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, `⟳ ${t('refreshAllData')}`), st]);
+    return h('div.row-actions.refresh-all', [h('button.btn.primary.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, [icon('refresh', 16), ` ${t('refreshAllData')}`]), st]);
   }
   function drawPanels() {
     clear(mainCol);

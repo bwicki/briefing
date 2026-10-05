@@ -22,6 +22,7 @@ import { renderPaxCard } from './ui/extras.js';
 import { renderShared } from './ui/shared.js';
 import { renderMaterial } from './ui/material.js';
 import { mergedStamm } from './stamm.js';
+import { icon, iconSvg } from './ui/icons.js';
 
 const GATE_IDLE_MS = 2 * 60 * 60 * 1000;
 
@@ -54,7 +55,7 @@ export function setHeader({ title, sub, tools = [], eyebrow, menu = [] } = {}) {
   buildMenu();
 }
 /** Druck-Symbolknopf für die Kopfzeile (rechts von «Freigeben», links vom Hamburger). */
-export const printButton = (onclick) => h('button.btn.icon.print', { type: 'button', title: t('print'), 'aria-label': t('print'), onclick }, '🖨');
+export const printButton = (onclick) => h('button.btn.icon.print', { type: 'button', title: t('print'), 'aria-label': t('print'), onclick }, icon('print', 20));
 
 /** Hauptnavigation: Briefings · Neu · Einstellungen — immer sichtbar (nicht für Link-Nutzer). */
 function buildNav() {

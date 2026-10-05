@@ -49,7 +49,9 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.screenshot(path=f'{OUT}/{name}_03_wiz2.png')
         if site_chip:
             pg.click(f'button.chip:has-text("{site_chip}")'); pg.wait_for_timeout(600)
-        pg.fill('input[type=time]', '06:30')
+        pg.fill('input[type=time]', '06:30'); pg.dispatch_event('input[type=time]', 'change'); pg.wait_for_timeout(600)
+        # 0.11.3: Start vor BCMT → Schalter «NVFR zulassen» im Schritt «Wo und wann»
+        assert pg.query_selector('.nvfr-row button.chip.nvfr') is not None, 'Schalter «NVFR zulassen» bei Start vor BCMT'
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(500)
         # Ortswahl: geplanter Landeraum per ICAO-Kurzkoordinaten
         pg.click('button:has-text("Ort wählen")'); pg.wait_for_timeout(900)
@@ -191,7 +193,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.goto(BASE + f'#/v/{bid}'); pg.wait_for_timeout(900)
         assert pg.query_selector('.brief tr.row-A-core img.bimg') is not None, 'Hüllenbild in der Briefingsicht'
         pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1500)
-        assert pg.query_selector('#panel-A\\.core .panel-head img.bimg') is not None, 'Hüllenbild im Stammdaten-Titel'
+        assert pg.query_selector('#panel-A\\.core .panel-body .core-grid img.core-img') is not None and pg.query_selector('#panel-A\\.core .panel-head img.bimg') is None, 'Hüllenbild im Datenfenster von A1 (nicht im Titel)'
         pg.screenshot(path=f'{OUT}/{name}_14_core_img.png')
         assert 'XML' not in pg.inner_text('#panel-C\\.fpl .row-actions'), 'kein XML-Export mehr'
         pg.goto(BASE + '#/new'); pg.wait_for_timeout(900)
@@ -224,7 +226,16 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
             assert pg.query_selector('#panel-B\\.metar .panel-body > .sub.extra') is None, 'Zusatzbox ohne Inhalt nicht sichtbar'
             pg.click('#panel-B\\.metar .panel-head .addrow .add.extra'); pg.wait_for_timeout(300)
             assert pg.query_selector('#panel-B\\.metar .panel-body > .sub.extra textarea') is not None, 'Zusatzbox nach Klick'
+            assert pg.query_selector('#menuBtn svg.ico-menu') is not None and pg.query_selector('#tools button.print svg.ico-print') is not None and pg.query_selector('#panel-C\\.fpl .panel-head .addrow .add.extra svg.ico-text') is not None, 'SVG-Symbole (Menü, Drucken, Zusatzbox)'
             pg.screenshot(path=f'{OUT}/{name}_18_boxes.png')
+            # 0.11.3: Tragkraft-Grafik mit Obergrenze, Max. Hüllentemperatur mit Vorgabe, Niveauliste der Trajektorien
+            assert 'obergrenze' in (pg.text_content('#panel-A\\.massperf svg.curve') or '').lower(), 'Obergrenze in der Tragkraft-Grafik'
+            assert 'max. hüllen' in pg.inner_text('#panel-A\\.massperf').lower().replace('\xad', '') and 'vorgabe' in pg.inner_text('#panel-A\\.massperf').lower(), 'Max. Hüllentemperatur mit Vorgabe des Ballons'
+            lvin = pg.query_selector('#panel-B\\.traj .lvl-wrap input')
+            if lvin:
+                lvin.focus(); pg.wait_for_timeout(200)
+                assert pg.is_visible('#panel-B\\.traj .lvl-pick') and len(pg.query_selector_all('#panel-B\\.traj .lvl-pick .lvl-it')) > 10, 'Niveauliste öffnet sich beim Klick ins Feld'
+                pg.screenshot(path=f'{OUT}/{name}_19_levels.png')
         # Sperre: Fahrt in die Vergangenheit legen → Erarbeitung leitet auf die Briefingsicht mit Hinweis um
         pg.evaluate("""(id) => { const all = JSON.parse(localStorage.getItem('fb.briefings') || '{}'); const b = all[id]; b.time.startMs = Date.now() - 48 * 3600000; localStorage.setItem('fb.briefings', JSON.stringify(all)); }""", bid)
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(500)
@@ -232,11 +243,21 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         assert pg.query_selector('.lockbar') is not None and '#/v/' in pg.evaluate('location.hash'), 'gesperrtes Briefing → Briefingsicht mit Hinweis'
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
         pg.click('.list-head button.chip:has-text("Archiv")'); pg.wait_for_timeout(400)
-        assert '🔒' in pg.inner_text('#view'), 'Schloss in der Liste (Archiv)'
+        assert pg.query_selector('#view svg.ico-lock') is not None, 'Schloss in der Liste (Archiv)'
         if not mobile:
             assert pg.query_selector('table.tbl.list td.no .lock') is not None and pg.query_selector('table.tbl.list tr.locked .acts .edit') is None, 'Schloss hinter der Nummer, kein Stift bei Sperre'
             hdrs = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list th', 'els => els.map(e => e.textContent)')]
-            assert hdrs[0] == '#' and 'Status' in hdrs and 'Phase' not in hdrs and 'Links' not in hdrs, 'Spalten der Liste: ' + str(hdrs)
+            assert hdrs[0].startswith('#') and any(x.startswith('Status') for x in hdrs) and 'Phase' not in hdrs and 'Links' not in hdrs, 'Spalten der Liste: ' + str(hdrs)
+            # 0.11.3: Sortierung (Standard Nummer absteigend) und Doppelklick → Briefingsicht
+            pg.click('.list-head button.chip:has-text("Alle")'); pg.wait_for_timeout(400)
+            nos = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list td.no', 'els => els.map(e => e.textContent)')]
+            assert nos == sorted(nos, reverse=True), 'Liste absteigend nach Nummer: ' + str(nos)
+            pg.click('table.tbl.list th.sortable >> nth=0'); pg.wait_for_timeout(300)
+            nos2 = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list td.no', 'els => els.map(e => e.textContent)')]
+            assert nos2 == sorted(nos2), 'Klick auf # → aufsteigend: ' + str(nos2)
+            pg.dblclick('table.tbl.list tbody tr >> nth=0 >> td >> nth=1'); pg.wait_for_timeout(800)
+            assert pg.evaluate('location.hash').startswith('#/v/'), 'Doppelklick öffnet die Briefingsicht: ' + pg.evaluate('location.hash')
+            pg.goto(BASE + '#/list'); pg.wait_for_timeout(400)
         pg.screenshot(path=f'{OUT}/{name}_17_locked.png')
         b.close()
 

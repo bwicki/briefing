@@ -320,7 +320,8 @@ details.exp summary{cursor:pointer;font-weight:600;padding:8px 0;}
 .brief .bh .l .bline{font-size:12px;color:#444;line-height:1.35;}
 .brief .bh .r{justify-self:end;}
 .brief .bh .r img{height:28px;display:block;}
-.brief .bh .tline{grid-column:1 / -1;text-align:right;font-size:12.5px;font-weight:700;color:#111;white-space:nowrap;margin-top:6px;}
+.brief .bh .tline{grid-column:1 / -1;text-align:right;font-size:12.5px;font-weight:700;color:#111;margin-top:6px;}
+@media (min-width:700px){ .brief .bh .tline{white-space:nowrap;} }   /* schmal: umbrechen, sonst wächst das Layout über die Bildschirmbreite */
 .brief .bh .meta{grid-column:1 / -1;text-align:right;font-size:11px;color:#555;line-height:1.35;}
 .brief .bh img.bimg{height:2cm;width:2cm;margin:0;}
 .brief .bh .l.row{flex-direction:row;align-items:flex-start;gap:10px;}
@@ -352,7 +353,6 @@ details.exp summary{cursor:pointer;font-weight:600;padding:8px 0;}
   .brief table.bp th{border-bottom:0;background:#e8edf5;}
   .brief table.bp td{border-top:0;margin-bottom:4px;}
   .brief .cols{grid-template-columns:1fr;}
-  .brief .bh .tline{white-space:normal;}
 }
 .phone-hint{font-size:11.5px;color:var(--text-dim);margin:6px 0;}
 
@@ -641,10 +641,13 @@ table.auto.obs-tbl td.bad{color:var(--red,#c0392b);font-weight:600}
 /* 0.10.1: Bild der Hülle (2 × 2 cm) — Stammdaten-Titel (Erarbeitung + Ansicht), Pax-Blatt, Einstellungen */
 img.bimg,.bimg.empty{width:2cm;height:2cm;object-fit:cover;border-radius:6px;border:1px solid var(--line-soft);background:#fff;flex:0 0 auto}
 .bimg.empty{display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:11px}
-.panel-head img.bimg{margin-left:4px;width:64px;height:64px}
+.core-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:start}
+.core-grid img.core-img{width:2.4cm;height:2.4cm;justify-self:end}
+.brief .core-grid img.core-img{width:2cm;height:2cm}
+@media (max-width:599px){ .core-grid{grid-template-columns:1fr} .core-grid img.core-img{justify-self:start} }
 .wiz .bimg-f{flex:0 0 auto}
 .wiz .bimg-f img.bimg{width:64px;height:64px}
-.brief table.bp th img.bimg{display:block;margin-top:4px}
+
 .imgfield{display:flex;align-items:flex-start;gap:10px}
 .imgfield .col{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 /* 0.10.1: Panels & Pflicht als kompakte Tabelle */
@@ -713,3 +716,33 @@ table.tbl.list .tag{font-size:9.5px;padding:1px 6px}
 .dialog.lb .lb-body table td,.dialog.lb .lb-body table th{padding:5px 9px}
 .dialog.lb .lb-body img{max-width:92vw;max-height:84vh;width:auto;height:auto}
 .dialog.lb .lb-body svg{display:block;min-width:min(900px,90vw)}
+
+/* 0.11.3: Niveauliste der Trajektorien (Klick ins Feld) */
+.lvl-wrap{position:relative;display:inline-flex;min-width:0;max-width:100%;flex:1 1 160px}
+.lvl-wrap>input{min-width:0;max-width:100%;flex:1 1 auto}
+.lvl-pick{position:absolute;left:0;top:calc(100% + 4px);z-index:50;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 4px;display:flex;flex-direction:column;gap:2px;max-height:280px;overflow:auto;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.lvl-pick .lvl-it{display:flex;align-items:center;gap:6px;padding:3px 8px;font-size:12.5px;font-family:var(--mono);cursor:pointer;border-radius:5px;white-space:nowrap}
+.lvl-pick .lvl-it:hover{background:var(--panel-2)}
+.nvfr-row{margin-top:6px}
+table.tbl.list th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+table.tbl.list th.sortable:hover{color:var(--text)}
+table.tbl.list th .sarrow{color:var(--amber)}
+table.tbl.list tbody tr{cursor:default}
+/* 0.11.3: schmale Bildschirme – die Seite darf nie breiter als der Bildschirm werden (breite Tabellen scrollen in ihren Rahmen) */
+@media (max-width:599px){ html,body{overflow-x:hidden;max-width:100vw} }
+
+/* 0.11.3: Symbolsatz «Linie» (SVG) */
+.ico{display:inline-block;vertical-align:-0.2em;flex:0 0 auto}
+.btn .ico{vertical-align:-0.22em}
+.btn.icon .ico{vertical-align:middle}
+.btn.icon{display:inline-flex;align-items:center;justify-content:center}
+.btn.icon.small .ico{width:16px;height:16px}
+.btn.icon.print .ico{width:20px;height:20px}
+#menuBtn .ico{width:22px;height:22px}
+.btn.icon.small.add.extra{color:var(--dew)} .btn.icon.small.add.cmt{color:var(--amber)}
+.btn.icon.small.add .ico{width:17px;height:17px;stroke-width:2.2}
+.sub.ai .lbl .ico{color:var(--violet)}
+table.tbl.list td.acts .btn.icon.small .ico{width:15px;height:15px}
+.leaflet-bar.fb-ctl a .ico{vertical-align:middle;margin-top:6px}
+.sarrow .ico{vertical-align:-1px;margin-left:2px}
+.handle .ico{color:var(--text-dim)}

@@ -17,6 +17,7 @@ import { TRAJ_COLORS, targetEstimate } from '../auto/traj.js';
 import { trailerMinutes } from '../calc/schedule.js';
 import { mandatoryPanels } from '../panels.js';
 import { tt } from '../i18n.js';
+import { icon, iconSvg } from './icons.js';
 
 const STEPS = ['wiz_s1', 'wiz_s2', 'wiz_s3', 'wiz_s4', 'wiz_s5', 'wiz_s6'];
 const QS = ['wiz_q1', 'wiz_q2', 'wiz_q3', 'wiz_q4', 'wiz_q5', 'wiz_q6'];
@@ -260,6 +261,19 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       if (sun.racMissing) sunBox.appendChild(h('div.warn', t('sun_racMissing', { v: ctx.racTable?.validTo || '–' })));
       if (sun.nightStart) sunBox.appendChild(h('div.warn', '⚠ ' + t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })));
       if (sun.nightLanding) sunBox.appendChild(h('div.warn', '⚠ ' + t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })));
+      // Start vor BCMT oder Landung nach ECET: Schalter «NVFR zulassen» → Flugplan verbindlich, Nachtausrüstung gesetzt
+      if (sun.startBeforeBcmt || sun.landingAfterEcet) {
+        const setNvfr = (on) => {
+          b.flight.nvfr = on;
+          const eq = b.panels?.['A.equipment']?.content;
+          if (eq?.items) { const set = new Set(eq.items); if (on) { set.add('nvr'); set.delete('none'); } eq.items = [...set]; }
+          persistSoon(); refreshSun();
+        };
+        sunBox.appendChild(h('div.row-actions.nvfr-row', [
+          h('button.chip.lg.nvfr', { type: 'button', 'aria-pressed': !!b.flight.nvfr, onclick: () => setNvfr(!b.flight.nvfr) }, `🌙 ${b.flight.nvfr ? t('nvfr_allowed') : t('nvfr_allow')}`),
+          h('span.note.small', t('nvfr_allowHint')),
+        ]));
+      }
       if (sun.nvfr) sunBox.appendChild(h('div.note', `${t('nvfr')}: ${t('nvfr_planned')}${sun.startBeforeBcmt ? ` · ${t('nvfr_start')}` : ''}${sun.landingAfterEcet ? ` · ${t('nvfr_landing')}` : ''}`));
       const ph = phaseOf(b.time.startMs);
       const hrs = Math.round((b.time.startMs - Date.now()) / 3600000);
@@ -365,7 +379,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       b.persons.retrievers.forEach((r, i) => {
         const custom = input('text', r.id === 'custom' ? r.name : '', { placeholder: t('name'), oninput: (e) => { r.name = e.target.value; syncRetrieve(); persistSoon(); } }); custom.hidden = r.id !== 'custom';
         const sel = select(retOpts, r.id || 'custom', { onchange: (e) => { r.id = e.target.value; custom.hidden = r.id !== 'custom'; r.name = r.id === 'custom' ? custom.value : P.find((p) => p.id === r.id)?.name || ''; syncRetrieve(); persistSoon(); } });
-        retBox.appendChild(h('div.pax-row.ret-row', [h('div', { style: { display: 'flex', gap: '6px', flex: 1, minWidth: 0 } }, [sel, custom]), h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { b.persons.retrievers.splice(i, 1); syncRetrieve(); drawRet(); persistSoon(); } }, '✕')]));
+        retBox.appendChild(h('div.pax-row.ret-row', [h('div', { style: { display: 'flex', gap: '6px', flex: 1, minWidth: 0 } }, [sel, custom]), h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { b.persons.retrievers.splice(i, 1); syncRetrieve(); drawRet(); persistSoon(); } }, icon('close', 14))]));
       });
     }
     const retAdd = () => { const free = retOpts.find((o) => o.value !== 'custom' && !b.persons.retrievers.some((r) => r.id === o.value)); b.persons.retrievers.push(free ? { id: free.value, name: free.label.replace(/ \(.*\)$/, '') } : { id: 'custom', name: '' }); syncRetrieve(); drawRet(); persistSoon(); };
@@ -378,7 +392,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
         const nameIn = input('text', p.name, { placeholder: t('paxPlaceholder', { n: i + 1 }), oninput: (e) => { p.name = e.target.value; persistSoon(); } });
         if (p.name === t('paxPlaceholder', { n: i + 1 })) { p.name = ''; nameIn.value = ''; }   // alter Platzhalter als Wert → leeren
         const wIn = input('number', p.weight ?? '', { placeholder: `${bal.personWeight} ${t('normWeight')}`, step: 1, oninput: (e) => { p.weight = num(e.target.value, null); drawPreview(); persistSoon(); } });
-        paxBox.appendChild(h('div.pax-row', [nameIn, wIn, h('button.btn.icon', { type: 'button', onclick: () => { b.persons.pax.splice(i, 1); drawPax(); drawPreview(); persistSoon(); } }, '✕')]));
+        paxBox.appendChild(h('div.pax-row', [nameIn, wIn, h('button.btn.icon', { type: 'button', onclick: () => { b.persons.pax.splice(i, 1); drawPax(); drawPreview(); persistSoon(); } }, icon('close', 14))]));
       });
     }
     const paxAdd = () => { b.persons.pax.push({ name: '', weight: null }); drawPax(); drawPreview(); persistSoon(); setTimeout(() => paxBox.querySelectorAll('.pax-row input[type=text]')[b.persons.pax.length - 1]?.focus(), 30); };

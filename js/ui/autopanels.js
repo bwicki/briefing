@@ -12,8 +12,10 @@ import { hhmm, fmtDateTime } from '../calc/time.js';
 import { pointInfo } from '../net.js';
 import { placeRow } from './place.js';
 import { icao, distKm } from '../calc/geo.js';
+import { parseLevel } from '../auto/traj.js';
 import { applyLanding } from '../model.js';
 import { panelPrompt, aiHint } from '../auto/ai.js';
+import { icon, iconSvg } from './icons.js';
 
 const shareTok = (ctx) => ctx.shared?.token;
 
@@ -68,7 +70,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
         else toolbar.appendChild(select([{ value: 'route', label: `${t('notam_route')} · ${ctx.settings.notamRadiusNm || 25} NM` }, { value: 'places', label: t('notam_placesMode') }], b.notamMode === 'places' ? 'places' : 'route', { title: t('notam_mode'), onchange: (e) => { b.notamMode = e.target.value; if (b.notamMode === 'places' && !(b.notamPlaces || []).length) b.notamPlaces = [{ name: b.site.name, lat: b.site.lat, lon: b.site.lon, km: 200 }]; onChange(); draw(); } }));
       }
       if (p.auto === 'airspace') toolbar.appendChild(h('span.note', `${t('as_corridor')} ${ctx.settings.airspaceCorridorKm || 5} km · ${b.intent.altMinFt || 0}–${b.intent.altMaxFt || 6000} ft`));
-      if (d.content.auto) toolbar.appendChild(h('button.btn.icon.small', { type: 'button', title: t('auto_clear'), onclick: () => { if (confirm(t('auto_clear') + '?')) { d.content.auto = null; onChange(); draw(); } } }, '✕'));
+      if (d.content.auto) toolbar.appendChild(h('button.btn.icon.small', { type: 'button', title: t('auto_clear'), onclick: () => { if (confirm(t('auto_clear') + '?')) { d.content.auto = null; onChange(); draw(); } } }, icon('close', 14)));
       toolbar.appendChild(status);
     }
     if (p.auto === 'radar') body.appendChild(radarLive(b, ctx));
@@ -100,7 +102,27 @@ function trajControls(b, ctx, onApply) {
   const dur = input('number', b.traj.durationMin, { step: 30, min: 30, style: { width: '90px' }, title: t('duration') + ' (min)', onchange: (e) => { b.traj.durationMin = num(e.target.value, 120); onApply(); } });
   const off = select([-120, -60, -30, 0, 30, 60, 120].map((v) => ({ value: v, label: `${v > 0 ? '+' : ''}${v} min` })), b.traj.startOffsetMin || 0, { title: t('auto_trajOffset'), style: { width: '120px' }, onchange: (e) => { b.traj.startOffsetMin = +e.target.value; onApply(); } });
   const lv = input('text', (b.traj.levels || []).join(', '), { placeholder: 'SFC, 1000 AGL, 3000, FL065', style: { width: '280px' }, title: t('levels'), onchange: (e) => { b.traj.levels = e.target.value.split(/[,;]+/).map((x) => x.trim()).filter(Boolean); onApply(); } });
-  return h('span.inline', [dur, off, lv]);
+  // Klick ins Niveaufeld: senkrechte Liste der verfügbaren Niveaus zum An-/Abwählen (eigene Werte weiterhin tippbar)
+  const AVAIL = ['SFC', '500 AGL', '1000 AGL', '1500 AGL', '2000 AGL', '3000 AGL', '2000', '3000', '4000', '5000', '6000', '7000', '8000', '10000', 'FL100', 'FL120', 'FL150'];
+  const norm = (x) => String(x).toUpperCase().replace(/\s+/g, ' ').trim();
+  const pick = h('div.lvl-pick', { hidden: true });
+  const drawPick = () => {
+    clear(pick);
+    const cur = new Set((b.traj.levels || []).map(norm));
+    for (const L of AVAIL) {
+      const on = cur.has(norm(L));
+      pick.appendChild(h('label.lvl-it', [h('input', { type: 'checkbox', checked: on, onchange: (e) => {
+        const set = (b.traj.levels || []).filter((x) => norm(x) !== norm(L));
+        if (e.target.checked) set.push(L);
+        b.traj.levels = set.sort((a, c) => (levelOrder(a) - levelOrder(c)));
+        lv.value = b.traj.levels.join(', '); onApply(); drawPick();
+      } }), ' ', L]));
+    }
+  };
+  const levelOrder = (x) => { const p = parseLevel(x); return p ? (p.kind === 'sfc' ? -1 : p.kind === 'agl' ? p.ft : p.ft + 0.5) : 1e9; };
+  lv.addEventListener('focus', () => { drawPick(); pick.hidden = false; });
+  document.addEventListener('click', (e) => { if (!pick.isConnected) return; if (!e.target.closest('.lvl-wrap')) pick.hidden = true; });
+  return h('span.inline', [dur, off, h('span.lvl-wrap', [lv, pick])]);
 }
 
 /** Orte für die NOTAM-Umkreisabfrage: Ort (Ortswahl, Standard Startort), Radius km (Standard 200), «+»/✕, «Abrufen». */
@@ -110,7 +132,7 @@ function notamPlacesEditor(b, ctx, onChange, onRun) {
     clear(box);
     (b.notamPlaces || []).forEach((pl, i) => box.appendChild(h('div.np-row', [
       placeRow(pl, { label: t('notam_place'), title: t('notam_place'), onPick: (q) => { Object.assign(pl, { name: q.name, lat: q.lat, lon: q.lon }); onChange(); draw(); } }),
-      h('span.inline', [h('span.note', t('notam_radiusKm')), input('number', pl.km ?? 200, { step: 10, min: 10, max: 400, style: { width: '80px' }, onchange: (e) => { pl.km = Math.min(400, Math.max(10, num(e.target.value, 200))); onChange(); } }), h('button.btn.icon.small', { type: 'button', title: t('remove'), onclick: () => { b.notamPlaces.splice(i, 1); onChange(); draw(); } }, '✕')]),
+      h('span.inline', [h('span.note', t('notam_radiusKm')), input('number', pl.km ?? 200, { step: 10, min: 10, max: 400, style: { width: '80px' }, onchange: (e) => { pl.km = Math.min(400, Math.max(10, num(e.target.value, 200))); onChange(); } }), h('button.btn.icon.small', { type: 'button', title: t('remove'), onclick: () => { b.notamPlaces.splice(i, 1); onChange(); draw(); } }, icon('close', 14))]),
     ])));
     box.appendChild(h('div.row-actions', [h('button.btn.small', { type: 'button', onclick: () => { (b.notamPlaces = b.notamPlaces || []).push({ name: b.site.name, lat: b.site.lat, lon: b.site.lon, km: 200 }); onChange(); draw(); } }, `+ ${t('notam_addPlace')}`), h('button.btn.small.primary', { type: 'button', onclick: onRun }, t('auto_load'))]));
   };
@@ -202,7 +224,7 @@ function radarLive(b, ctx) {
     // Klick auf eine Sonde: Karte verkleinert links (Ausschnitt um die Sonde), rechts Emagramm + Daten
     async function openSonde(sd) {
       grid.classList.add('with-sonde'); sondeBox.hidden = false; clear(sondeBox);
-      sondeBox.appendChild(h('div.sonde-head', [h('b', `🎈 ${sd.serial}`), h('span.muted.small', ` ${sd.type || ''} · ${Math.round(distKm(b.site.lat, b.site.lon, sd.lat, sd.lon))} km`), h('button.btn.icon.small', { type: 'button', title: t('close'), style: { marginLeft: 'auto' }, onclick: () => { grid.classList.remove('with-sonde'); sondeBox.hidden = true; setTimeout(() => map.invalidateSize(), 60); } }, '✕')]));
+      sondeBox.appendChild(h('div.sonde-head', [h('b', `🎈 ${sd.serial}`), h('span.muted.small', ` ${sd.type || ''} · ${Math.round(distKm(b.site.lat, b.site.lon, sd.lat, sd.lon))} km`), h('button.btn.icon.small', { type: 'button', title: t('close'), style: { marginLeft: 'auto' }, onclick: () => { grid.classList.remove('with-sonde'); sondeBox.hidden = true; setTimeout(() => map.invalidateSize(), 60); } }, icon('close', 14))]));
       sondeBox.appendChild(h('div.note', t('loading')));
       setTimeout(() => { map.invalidateSize(); map.setView([sd.lat, sd.lon], Math.max(map.getZoom(), 9)); }, 60);
       try {

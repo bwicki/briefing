@@ -11,6 +11,7 @@ import { placeRow, mapsUrl } from './place.js';
 import { exportAll } from './extras.js';
 import { COUNTRY_MATRIX, ROLES } from '../countries.js';
 import { usersSection, statsSection } from './users.js';
+import { icon, iconSvg } from './icons.js';
 
 const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'fpl', 'rac', 'transition', 'gonogo', 'meteo', 'panels', 'links', 'users', 'stats', 'access', 'expert'];
 
@@ -80,15 +81,15 @@ export async function renderSettings(view, ctx) {
       B.hab.forEach((x, i) => {
         const cylRows = CYLINDER_CATALOG.map((c) => { const cur = x.cylinders.find((y) => y.id === c.id); return h('tr', [h('td', c.name), h('td', input('number', cur?.count ?? 0, { min: 0, step: 1, oninput: (e) => { const n = num(e.target.value); const idx = x.cylinders.findIndex((y) => y.id === c.id); if (idx >= 0) x.cylinders[idx].count = n; else x.cylinders.push({ ...c, count: n }); } })), h('td', c.litres), h('td', c.gasKg), h('td', c.totalKg)]); });
         habBox.appendChild(h('div.item-box', [
-          h('div.head', [h('b', `${x.id}${x.model ? ' · ' + x.model : ''}`), h('label.check', [h('input', { type: 'radio', name: 'defHab', checked: B.defaultHab === x.id, onchange: () => { B.defaultHab = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.hab.splice(i, 1); drawHab(); } }, '🗑')]),
+          h('div.head', [h('b', `${x.id}${x.model ? ' · ' + x.model : ''}`), h('label.check', [h('input', { type: 'radio', name: 'defHab', checked: B.defaultHab === x.id, onchange: () => { B.defaultHab = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.hab.splice(i, 1); drawHab(); } }, icon('del'))]),
           h('div.frow.c4', [txtField(x, 'id', t('registration')), txtField(x, 'model', t('b_model')), txtField(x, 'hex', t('b_hex')), numField(x, 'volume', t('b_volume'))]),
           regLine(x),
-          h('div.frow.c4', [numField(x, 'mtom', t('b_mtom'))]),
+          h('div.frow.c4', [numField(x, 'mtom', t('b_mtom')), numField(x, 'envTempC', t('b_envTemp'))]),
           h('div.frow.c4', [numField(x.masses, 'envelope', `${t('b_envelope')} kg`), numField(x.masses, 'burner', `${t('b_burner')} kg`), numField(x.masses, 'basket', `${t('b_basket')} kg`), numField(x.masses, 'equipment', `${t('b_equipment')} kg`)]),
           h('div.frow.c4', [numField(x, 'personWeight', `${t('b_personWeight')} kg`), numField(x, 'maxPersons', t('b_maxPersons')), numField(x, 'burnRate', t('b_burn')), numField(x, 'rigMin', t('b_rig'))]),
           h('div.frow.c2', [txtField(x, 'colour', t('b_colour')), field(t('b_trackers'), textarea((x.trackers || []).join('\n'), { rows: 2, placeholder: 'https://live.garmin.com/… · https://aprs.fi/… · https://www.flightradar24.com/…', oninput: (e) => { x.trackers = e.target.value.split(/[\n,;\s]+/).map((x2) => x2.trim()).filter((x2) => /^https?:\/\//i.test(x2)); } })),]),
           imageField(x),
-          S.expert ? h('div.frow.c3', [numField(x, 'envTempC', t('b_envTemp')), numField(x, 'envMaxC', t('b_envMax')), field(`${t('b_usable')} (0–1)`, input('number', x.usableFraction, { step: 0.05, min: 0, max: 1, oninput: (e) => { x.usableFraction = num(e.target.value, 1); } }))]) : null,
+          S.expert ? h('div.frow.c3', [numField(x, 'envMaxC', t('b_envMax')), field(`${t('b_usable')} (0–1)`, input('number', x.usableFraction, { step: 0.05, min: 0, max: 1, oninput: (e) => { x.usableFraction = num(e.target.value, 1); } }))]) : null,
           h('details', [h('summary.small', t('b_cyl')), h('table.cyl', [h('thead', h('tr', [h('th', t('b_cyl')), h('th', t('mp_count')), h('th', 'l'), h('th', 'kg Gas'), h('th', 'kg')])), h('tbody', cylRows)])]),
           (() => { const de = docsEditor(x, S.docTypes?.balloon, ctx); return fieldAdd(t('docs'), de, () => de.addFn(), t('doc_add')); })(),
         ]));
@@ -100,7 +101,7 @@ export async function renderSettings(view, ctx) {
     const drawEnv = () => {
       clear(envBox);
       B.envelopes.forEach((x, i) => envBox.appendChild(h('div.item-box', [
-        h('div.head', [h('b', `${x.id}${x.model ? ' · ' + x.model : ''}`), x.placeholder ? h('span.tag.half', t('placeholderMark')) : null, h('label.check', [h('input', { type: 'radio', name: 'defEnv', checked: B.defaultEnvelope === x.id, onchange: () => { B.defaultEnvelope = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.envelopes.splice(i, 1); drawEnv(); } }, '🗑')]),
+        h('div.head', [h('b', `${x.id}${x.model ? ' · ' + x.model : ''}`), x.placeholder ? h('span.tag.half', t('placeholderMark')) : null, h('label.check', [h('input', { type: 'radio', name: 'defEnv', checked: B.defaultEnvelope === x.id, onchange: () => { B.defaultEnvelope = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.envelopes.splice(i, 1); drawEnv(); } }, icon('del'))]),
         h('div.frow.c4', [txtField(x, 'id', t('registration')), txtField(x, 'model', t('b_model')), txtField(x, 'hex', t('b_hex')), numField(x, 'volume', t('b_volume'))]),
         regLine(x),
         h('div.frow.c4', [numField(x, 'mass', `${t('b_envelope')} kg`)]),
@@ -117,7 +118,7 @@ export async function renderSettings(view, ctx) {
     const drawBas = () => {
       clear(basBox);
       B.baskets.forEach((x, i) => basBox.appendChild(h('div.item-box', [
-        h('div.head', [h('b', x.name), x.placeholder ? h('span.tag.half', t('placeholderMark')) : null, h('label.check', [h('input', { type: 'radio', name: 'defBas', checked: B.defaultBasket === x.id, onchange: () => { B.defaultBasket = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.baskets.splice(i, 1); drawBas(); } }, '🗑')]),
+        h('div.head', [h('b', x.name), x.placeholder ? h('span.tag.half', t('placeholderMark')) : null, h('label.check', [h('input', { type: 'radio', name: 'defBas', checked: B.defaultBasket === x.id, onchange: () => { B.defaultBasket = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.baskets.splice(i, 1); drawBas(); } }, icon('del'))]),
         h('div.frow.c4', [txtField(x, 'name', t('name')), numField(x, 'mass', `${t('b_basket')} kg`), numField(x, 'equipment', `${t('b_equipment')} kg`), numField(x, 'instruments', `${t('b_instruments')} kg`)]),
         h('div.frow.c3', [numField(x, 'maxPersons', t('b_maxPersons')), numField(x, 'ballastUnitKg', t('b_ballastUnit')), numField(x, 'reserveUnits', t('b_reserveUnits'))]),
         check(t('placeholderMark'), x.placeholder, (v) => { x.placeholder = v; }),
@@ -140,7 +141,7 @@ export async function renderSettings(view, ctx) {
     const drawP = () => {
       clear(box);
       S.persons.forEach((p, i) => box.appendChild(h('div.item-box', [
-        h('div.head', [h('b', p.name), h('button.btn.icon', { type: 'button', onclick: () => { S.persons.splice(i, 1); drawP(); } }, '🗑')]),
+        h('div.head', [h('b', p.name), h('button.btn.icon', { type: 'button', onclick: () => { S.persons.splice(i, 1); drawP(); } }, icon('del'))]),
         h('div.frow.c4', [txtField(p, 'name', t('name')), txtField(p, 'phone', t('phone')), txtField(p, 'email', t('email')), numField(p, 'weight', `${t('weight')} kg`)]),
         h('div.chips', ROLES.map((r) => h('button.chip', { type: 'button', 'aria-pressed': (p.roles || []).includes(r), onclick: (e) => { p.roles = p.roles || []; const i2 = p.roles.indexOf(r); if (i2 >= 0) p.roles.splice(i2, 1); else p.roles.push(r); e.currentTarget.setAttribute('aria-pressed', p.roles.includes(r)); } }, r.toUpperCase()))),
         (() => { const de = docsEditor(p, S.docTypes?.person, ctx); return fieldAdd(t('docs'), de, () => de.addFn(), t('doc_add')); })(),
@@ -167,7 +168,7 @@ export async function renderSettings(view, ctx) {
     const drawS = () => {
       clear(sBox);
       S.sites.forEach((s, i) => sBox.appendChild(h('div.item-box', [
-        h('div.head', [h('b', s.name), h('button.btn.icon', { type: 'button', onclick: () => { S.sites.splice(i, 1); drawS(); } }, '🗑')]),
+        h('div.head', [h('b', s.name), h('button.btn.icon', { type: 'button', onclick: () => { S.sites.splice(i, 1); drawS(); } }, icon('del'))]),
         h('div.frow', [txtField(s, 'name', t('name')), placeRow(s, { label: t('coords'), title: t('site'), noName: true, onPick: (p) => { Object.assign(s, { lat: p.lat, lon: p.lon, elev: p.elev ?? s.elev, tz: p.tz || s.tz, country: p.country || s.country }); if (!s.name) s.name = p.name; drawS(); } })]),
         h('div.frow.c4', [numField(s, 'elev', t('s_elev')), txtField(s, 'country', t('s_country')), txtField(s, 'tz', t('s_tz')), field(t('s_meeting'), select([{ value: '', label: '–' }].concat(S.meetings.map((m) => ({ value: m.id, label: m.name }))), s.meetingId, { onchange: (e) => { s.meetingId = e.target.value; } }))]),
         h('div.frow', [field(t('s_fav'), check('', s.favorite, (v) => { s.favorite = v; })), field(t('s_types'), h('div.chips', ['hab', 'gas'].map((ty) => h('button.chip', { type: 'button', 'aria-pressed': !s.types?.length || s.types.includes(ty), title: t('s_typesHint'), onclick: (e) => {
@@ -185,7 +186,7 @@ export async function renderSettings(view, ctx) {
     const drawM = () => {
       clear(mBox);
       S.meetings.forEach((m, i) => mBox.appendChild(h('div.item-box', [
-        h('div.head', [h('b', m.name), h('label.check', [h('input', { type: 'radio', name: 'defM', checked: !!m.default, onchange: () => { S.meetings.forEach((x) => { x.default = false; }); m.default = true; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { S.meetings.splice(i, 1); drawM(); } }, '🗑')]),
+        h('div.head', [h('b', m.name), h('label.check', [h('input', { type: 'radio', name: 'defM', checked: !!m.default, onchange: () => { S.meetings.forEach((x) => { x.default = false; }); m.default = true; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { S.meetings.splice(i, 1); drawM(); } }, icon('del'))]),
         h('div.frow', [txtField(m, 'name', t('name')), txtField(m, 'address', t('m_address'))]),
         placeRow(m, { label: t('coords'), title: t('meeting'), noName: true, onPick: (p) => { Object.assign(m, { lat: p.lat, lon: p.lon, mapsUrl: mapsUrl(p.lat, p.lon) }); if (!m.address && p.address) m.address = p.address; if (!m.name) m.name = p.name; drawM(); } }),
       ])));
@@ -284,7 +285,7 @@ export async function renderSettings(view, ctx) {
     const chartsBox = h('div');
     const drawCharts = () => {
       clear(chartsBox);
-      (S.synopticCharts || []).forEach((c, i) => chartsBox.appendChild(h('div.frow', [txtField(c, 'name', t('name')), h('div.inline', [input('text', c.url, { oninput: (e) => { c.url = e.target.value; } }), h('button.btn.icon', { type: 'button', onclick: () => { S.synopticCharts.splice(i, 1); drawCharts(); } }, '🗑')])])));
+      (S.synopticCharts || []).forEach((c, i) => chartsBox.appendChild(h('div.frow', [txtField(c, 'name', t('name')), h('div.inline', [input('text', c.url, { oninput: (e) => { c.url = e.target.value; } }), h('button.btn.icon', { type: 'button', onclick: () => { S.synopticCharts.splice(i, 1); drawCharts(); } }, icon('del'))])])));
       chartsBox.addFn = () => { (S.synopticCharts = S.synopticCharts || []).push({ name: '', url: 'https://' }); drawCharts(); };
     };
     drawCharts();
@@ -292,7 +293,7 @@ export async function renderSettings(view, ctx) {
     const drawCams = () => {
       clear(camBox);
       (S.webcams || []).forEach((w, i) => camBox.appendChild(h('div.item-box', [
-        h('div.frow', [txtField(w, 'name', t('name')), h('div.inline', [input('text', w.url, { placeholder: 'https://', oninput: (e) => { w.url = e.target.value; } }), h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { S.webcams.splice(i, 1); drawCams(); } }, '🗑')])]),
+        h('div.frow', [txtField(w, 'name', t('name')), h('div.inline', [input('text', w.url, { placeholder: 'https://', oninput: (e) => { w.url = e.target.value; } }), h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { S.webcams.splice(i, 1); drawCams(); } }, icon('del'))])]),
         placeRow(w, { label: t('coords'), title: t('set_webcams'), noName: true, onPick: (p) => { w.lat = p.lat; w.lon = p.lon; if (!w.name) w.name = p.name; drawCams(); } }),
       ])));
       camBox.addFn = () => { (S.webcams = S.webcams || []).push({ id: uid(5), name: '', lat: null, lon: null, url: 'https://' }); drawCams(); };
@@ -301,7 +302,7 @@ export async function renderSettings(view, ctx) {
     const txtBox = h('div');
     const drawTxt = () => {
       clear(txtBox);
-      (S.wxTexts || []).forEach((x, i) => txtBox.appendChild(h('div.frow.c4', [field(t('s_country'), h('div.inline', [input('text', x.cc, { maxlength: 2, style: { width: '64px' }, oninput: (e) => { x.cc = e.target.value.toUpperCase(); } }), check(t('set_wxFetch'), !x.disabled, (v) => { x.disabled = !v; })])), txtField(x, 'name', t('name')), field('URL', input('text', x.url, { oninput: (e) => { x.url = e.target.value; } })), h('div.f', [h('label', t('set_wxSel')), h('div.inline', [input('text', x.sel || '', { placeholder: 'main', oninput: (e) => { x.sel = e.target.value; } }), h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { S.wxTexts.splice(i, 1); drawTxt(); } }, '🗑')])])])));
+      (S.wxTexts || []).forEach((x, i) => txtBox.appendChild(h('div.frow.c4', [field(t('s_country'), h('div.inline', [input('text', x.cc, { maxlength: 2, style: { width: '64px' }, oninput: (e) => { x.cc = e.target.value.toUpperCase(); } }), check(t('set_wxFetch'), !x.disabled, (v) => { x.disabled = !v; })])), txtField(x, 'name', t('name')), field('URL', input('text', x.url, { oninput: (e) => { x.url = e.target.value; } })), h('div.f', [h('label', t('set_wxSel')), h('div.inline', [input('text', x.sel || '', { placeholder: 'main', oninput: (e) => { x.sel = e.target.value; } }), h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { S.wxTexts.splice(i, 1); drawTxt(); } }, icon('del'))])])])));
       txtBox.addFn = () => { (S.wxTexts = S.wxTexts || []).push({ cc: 'CH', name: '', url: 'https://', sel: 'main' }); drawTxt(); };
     };
     drawTxt();
@@ -363,13 +364,13 @@ export async function renderSettings(view, ctx) {
         const inp = input('password', '', { placeholder: have[k] ? '••••••••' : '', autocomplete: 'off', spellcheck: 'false' });
         // Auge: Eingabe im Klartext zeigen; bei leerem Feld den gespeicherten Wert nachladen (Supermaster, protokolliert)
         let shown = false, loaded = '';
-        const eye = h('button.btn.icon.eye', { type: 'button', title: t('set_secretShow'), 'aria-label': t('set_secretShow') }, '👁');
+        const eye = h('button.btn.icon.eye', { type: 'button', title: t('set_secretShow'), 'aria-label': t('set_secretShow') }, icon('view'));
         eye.onclick = async () => {
           if (!shown) {
             if (!inp.value && have[k]) { try { loaded = (await ctx.store.getSecret(k)).value || ''; inp.value = loaded; } catch (e) { toast(e.status === 403 ? t('set_secretsReadOnly') : `${t('error')}: ${e.message}`); return; } }
             inp.type = 'text'; shown = true; eye.textContent = '🙈'; eye.title = t('set_secretHide');
           } else {
-            inp.type = 'password'; shown = false; eye.textContent = '👁'; eye.title = t('set_secretShow');
+            inp.type = 'password'; shown = false; eye.replaceChildren(icon('view')); eye.title = t('set_secretShow');
             if (loaded && inp.value === loaded) { inp.value = ''; loaded = ''; }   // unverändert nachgeladen → wieder leeren (kein versehentliches Neu-Speichern)
           }
         };
@@ -387,7 +388,7 @@ export async function renderSettings(view, ctx) {
     const fixed = new Set(['start', 'flight', 'landing']);
     const builtin = h('table.auto.acts', [h('thead', h('tr', [t('sch_colAct'), t('sch_colMin'), t('act_visible')].map((x) => h('th', x)))), h('tbody', ACT_TYPES.map((k) => h('tr', [h('td', t('act_' + k)), h('td', k === 'flight' ? h('span.muted', t('sch_flightFromIntent')) : input('number', A.minutes[k] ?? ACT_DEFAULT_MIN[k], { step: 5, min: 0, oninput: (e) => { const v = num(e.target.value, null); if (v == null || v === ACT_DEFAULT_MIN[k]) delete A.minutes[k]; else A.minutes[k] = v; } })), h('td', fixed.has(k) ? '✓' : h('input', { type: 'checkbox', checked: !A.hidden.includes(k), onchange: (e) => { const i = A.hidden.indexOf(k); if (e.target.checked && i >= 0) A.hidden.splice(i, 1); if (!e.target.checked && i < 0) A.hidden.push(k); } }))])))]);
     const box = h('div');
-    const drawC = () => { clear(box); A.custom.forEach((a, i) => box.appendChild(h('div.frow.c4', [txtField(a, 'de', 'DE'), txtField(a, 'en', 'EN'), numField(a, 'min', t('sch_colMin'), 5), h('div.f', [h('label', t('sch_colPlace')), h('div.row-actions', [check(t('act_withPlace'), a.place !== false, (v) => { a.place = v; }), h('button.btn.icon', { type: 'button', onclick: () => { A.custom.splice(i, 1); drawC(); } }, '🗑')])])]))); };
+    const drawC = () => { clear(box); A.custom.forEach((a, i) => box.appendChild(h('div.frow.c4', [txtField(a, 'de', 'DE'), txtField(a, 'en', 'EN'), numField(a, 'min', t('sch_colMin'), 5), h('div.f', [h('label', t('sch_colPlace')), h('div.row-actions', [check(t('act_withPlace'), a.place !== false, (v) => { a.place = v; }), h('button.btn.icon', { type: 'button', onclick: () => { A.custom.splice(i, 1); drawC(); } }, icon('del'))])])]))); };
     drawC();
     box.addFn = () => { A.custom.push({ id: uid(5), de: '', en: '', min: 15, place: true }); drawC(); };
     return h('div.card', [listHead(t('set_activities'), box, t('act_add')), h('div.card-body', [h('div.note', t('set_activitiesHint')), h('div.tbl-scroll', builtin), h('div.lbl', { style: { marginTop: '10px' } }, t('act_own')), box])]);

@@ -6,7 +6,7 @@ import { sunTimes, moonTimes, moonIllumination, moonPhaseName } from '../js/calc
 import { parseRacText, racLookup } from '../js/calc/rac.js';
 import { fromLocal, hhmm, localParts, tzOffsetMin, isoDate } from '../js/calc/time.js';
 import { icao, parseIcao, distKm } from '../js/calc/geo.js';
-import { touchesCH, panelNo, visiblePanels } from '../js/panels.js';
+import { touchesCH, panelNo, visiblePanels, mandatoryPanels, panelFilled, panelByKey } from '../js/panels.js';
 import { targetEstimate } from '../js/auto/traj.js';
 import { buildFpl, fplMessage, fplCheck, firCode, fplName, fplPlace, fplPerson, fplPhone, fplLevel, driftWords, eetFromFirs } from '../js/calc/fpl.js';
 import { buildSchedule, trailerMinutes, buildPlan, planTemplate, planToStops, scheduleWarnings, planOrderWarnings, ACT_DEFAULT_MIN } from '../js/calc/schedule.js';
@@ -416,6 +416,25 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(ml[0].startsWith('LSZH') && ml.some((x) => x.startsWith('→')), 'METAR-Klartext: Kopfzeile ohne Präfix (Präfix setzt die Anzeige), Änderungsgruppe mit →');
   const tl = dTaf('TAF LSZH 051025Z 0512/0618 24008KT 9999 SCT040 BECMG 0518/0521 VRB02KT=', 'de');
   ok(tl.length === 3 && tl[2].startsWith('→'), 'TAF-Klartext: Basis + Änderungsgruppe mit →');
+}
+
+// ---------------------------------------------------------------- 0.11.3: Kopie eines Briefings, NVFR → Flugplan Pflicht
+{
+  const S = mergeSettings(null);
+  const src = newBriefing(S);
+  src.persons.pax = [{ name: 'Viviane Graf', weight: 70 }]; src.persons.retrieve = 'Martin Baumann'; src.flight.occasion = 'Firmenanlass'; src.weather.tempC = 22; src.weather.source = 'model';
+  src.time.date = '2026-09-01'; src.time.time = '17:30'; src.time.startMs = fromLocal('Europe/Zurich', '2026-09-01', '17:30');
+  const d = duplicateBriefing(src, S);
+  ok(d.wizardStep === 1, 'Kopie: Ablauf beginnt bei Schritt 1');
+  ok(d.persons.pax[0].name === 'Viviane Graf' && d.persons.retrieve === 'Martin Baumann' && d.site.name === src.site.name && d.balloon.reg === src.balloon.reg, 'Kopie: Pax, Nachfahrer, Startort, Ballon bleiben');
+  ok(d.time.time === '06:30' && d.time.date !== '2026-09-01' && d.flight.occasion === '' && d.weather.source === 'manual' && d.weather.tempC === 15, 'Kopie: Datum/Zeit, Anlass, Startplatzwerte auf Vorgabe');
+  const b = newBriefing(S); b.flight.nvfr = false;
+  ok(!mandatoryPanels(S, b).some((p) => p.key === 'C.fpl'), 'ohne NVFR: Flugplan nicht Pflicht (Standard)');
+  b.flight.nvfr = true;
+  ok(mandatoryPanels(S, b).some((p) => p.key === 'C.fpl'), 'NVFR: Flugplan (C) Pflicht');
+  ok(!panelFilled(panelByKey('C.fpl'), b), 'NVFR ohne erstellten Flugplan: Panel offen');
+  b.fpl = { enabled: true };
+  ok(panelFilled(panelByKey('C.fpl'), b), 'NVFR mit Flugplan: Panel erledigt');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

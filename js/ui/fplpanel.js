@@ -5,6 +5,7 @@ import { t, getLang } from '../i18n.js';
 import { field, input, select, check, textarea } from './widgets.js';
 import { buildFpl, fplMessage, fplCheck, routeText, otherInfo, supplementary, hhmm4 } from '../calc/fpl.js';
 import { fplSuggested, crossesBorder, massPerf, fileBase } from '../model.js';
+import { icon, iconSvg } from './icons.js';
 
 const FLAGS = { r19: ['uhf', 'vhf', 'elba'], s19: ['polar', 'desert', 'maritime', 'jungle'], j19: ['light', 'fluores', 'uhf', 'vhf'] };
 
@@ -25,8 +26,9 @@ export function fplPanel(b, ctx, d, onChange, readOnly) {
   const wrap = h('div.fplpanel');
   const why = [b.flight?.nvfr ? t('nvfr') : null, b.balloon?.type === 'gas' ? t('gas') : null, crossesBorder(b) ? t('fpl_border') : null].filter(Boolean);
   const body = h('div');
-  const sw = check(t('fpl_create'), !!b.fpl.enabled, (v) => { b.fpl.enabled = v; draw(); onChange(); }, { disabled: readOnly });
-  wrap.append(h('div.row-actions', [sw, why.length ? h('span.note.small', `${t('fpl_why')}: ${why.join(', ')}`) : null]), body);
+  if (b.flight?.nvfr && !b.fpl.enabled) b.fpl.enabled = true;   // NVFR: Flugplan verbindlich
+  const sw = check(t('fpl_create'), !!b.fpl.enabled, (v) => { b.fpl.enabled = v; draw(); onChange(); }, { disabled: readOnly || !!b.flight?.nvfr });
+  wrap.append(h('div.row-actions', [sw, b.flight?.nvfr ? h('span.tag.must', t('fpl_mandatoryNvfr')) : null, why.length ? h('span.note.small', `${t('fpl_why')}: ${why.join(', ')}`) : null]), body);
   function draw() {
     clear(body);
     if (!b.fpl.enabled) { body.appendChild(h('div.note', t('fpl_none'))); return; }
@@ -58,7 +60,7 @@ function fplForm(d, ro, onChange) {
   const flags = (key, labels) => h('div.f', [h('label', t('fpl_f_' + key)), h('div.chips', FLAGS[key].map((k) => h('button.chip', { type: 'button', 'aria-pressed': !!d[key][k], disabled: ro, onclick: (e) => { d[key][k] = !d[key][k]; e.currentTarget.setAttribute('aria-pressed', d[key][k]); onChange(); } }, labels[k])))]);
   const item = (no, title, ...els) => h('div.fpl-item', [h('div.fpl-no', [h('b', no), ' ', title]), h('div.frow.c4', els)]);
   const eetRows = h('div');
-  const drawEet = () => { clear(eetRows); (d.eet18 || []).forEach((e, i) => eetRows.appendChild(h('div.fpl-eet', [input('text', e.code, { readOnly: ro, style: { width: '70px' }, oninput: (ev) => { e.code = ev.target.value.toUpperCase(); e.text = `${e.code}${hhmm4(e.min)}`; } }), input('text', hhmm4(e.min), { readOnly: ro, style: { width: '70px' }, placeholder: 'HHMM', oninput: (ev) => { const m = /^(\d{2})(\d{2})$/.exec(ev.target.value); if (m) { e.min = +m[1] * 60 + +m[2]; e.text = `${e.code}${hhmm4(e.min)}`; } } }), h('span.muted.small', e.name || ''), ro ? null : h('button.btn.icon.small', { type: 'button', onclick: () => { d.eet18.splice(i, 1); drawEet(); onChange(); } }, '✕')]))); if (!ro) eetRows.appendChild(h('button.btn.small', { type: 'button', onclick: () => { (d.eet18 = d.eet18 || []).push({ code: '', min: 0, text: '', name: '' }); drawEet(); } }, '+ FIR')); };
+  const drawEet = () => { clear(eetRows); (d.eet18 || []).forEach((e, i) => eetRows.appendChild(h('div.fpl-eet', [input('text', e.code, { readOnly: ro, style: { width: '70px' }, oninput: (ev) => { e.code = ev.target.value.toUpperCase(); e.text = `${e.code}${hhmm4(e.min)}`; } }), input('text', hhmm4(e.min), { readOnly: ro, style: { width: '70px' }, placeholder: 'HHMM', oninput: (ev) => { const m = /^(\d{2})(\d{2})$/.exec(ev.target.value); if (m) { e.min = +m[1] * 60 + +m[2]; e.text = `${e.code}${hhmm4(e.min)}`; } } }), h('span.muted.small', e.name || ''), ro ? null : h('button.btn.icon.small', { type: 'button', onclick: () => { d.eet18.splice(i, 1); drawEet(); onChange(); } }, icon('close', 14))]))); if (!ro) eetRows.appendChild(h('button.btn.small', { type: 'button', onclick: () => { (d.eet18 = d.eet18 || []).push({ code: '', min: 0, text: '', name: '' }); drawEet(); } }, '+ FIR')); };
   drawEet();
   const form = h('div.fpl-form', [
     item('7–10', t('fpl_i7'), txt(d, 'id7', t('fpl_f_id7'), { w: '140px' }), field(t('fpl_f_typeOfFlight8'), select([['G', 'G – General aviation'], ['N', 'N – Non-scheduled'], ['S', 'S – Scheduled'], ['M', 'M – Military'], ['X', 'X – Other']].map(([v, l]) => ({ value: v, label: l })), d.typeOfFlight8, { disabled: ro, onchange: (e) => { d.typeOfFlight8 = e.target.value; onChange(); } })), txt(d, 'equip10a', t('fpl_f_equip10a'), { w: '120px' }), txt(d, 'equip10b', t('fpl_f_equip10b'), { w: '120px' })),

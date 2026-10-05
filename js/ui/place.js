@@ -10,6 +10,7 @@ import { t, getLang } from '../i18n.js';
 import { icao, parseIcao, countryGuess, distKm, bearing } from '../calc/geo.js';
 import { geocode, pointInfo } from '../net.js';
 import { mapPicker, input, field } from './widgets.js';
+import { icon, iconSvg } from './icons.js';
 
 /** Google-Maps-Link auf einen Punkt (öffnet in neuem Fenster/Tab). */
 export const mapsUrl = (lat, lon) => `https://www.google.com/maps/search/?api=1&query=${(+lat).toFixed(5)}%2C${(+lon).toFixed(5)}`;
@@ -51,7 +52,7 @@ export function placeRow(value, opts = {}) {
   const btns = [];
   if (!opts.readOnly) {
     btns.push(h('button.btn', { type: 'button', onclick: async () => { const p = await pickPlace(value, { title: opts.title || opts.label, from: opts.from }); if (p) { if (opts.onPick) opts.onPick(p); else Object.assign(value, p); draw(); } } }, value?.lat != null ? t('pick_change') : t('pick_choose')));
-    if (opts.allowClear && value?.lat != null) btns.push(h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { if (opts.onPick) opts.onPick(null); else for (const k of ['name', 'lat', 'lon', 'elev', 'icao', 'address']) value[k] = k === 'name' || k === 'icao' || k === 'address' ? '' : null; draw(); } }, '✕'));
+    if (opts.allowClear && value?.lat != null) btns.push(h('button.btn.icon', { type: 'button', title: t('remove'), onclick: () => { if (opts.onPick) opts.onPick(null); else for (const k of ['name', 'lat', 'lon', 'elev', 'icao', 'address']) value[k] = k === 'name' || k === 'icao' || k === 'address' ? '' : null; draw(); } }, icon('close', 14)));
   }
   const row = h('div.prow', [line, btns.length ? h('div.row-actions', btns) : null]);
   return opts.label ? field(opts.label, row) : row;
@@ -163,7 +164,7 @@ export function pickPlace(initial, opts = {}) {
   const geoBtn = navigator.geolocation ? h('button.btn', { type: 'button', title: t('pick_myPos'), onclick: () => {
     status.textContent = t('loading');
     navigator.geolocation.getCurrentPosition((pos) => setPos(pos.coords.latitude, pos.coords.longitude, false, { name: cur.name }), (err) => { status.textContent = `${t('error')}: ${err.message}`; }, { enableHighAccuracy: true, timeout: 10000 });
-  } }, '📍') : null;
+  } }, icon('place', 16)) : null;
   const content = h('div.pick-body', [
     h('div.inline', [q, h('button.btn', { type: 'button', onclick: doSearch }, t('siteSearchBtn')), geoBtn]),
     results,
