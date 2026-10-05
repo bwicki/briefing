@@ -20,7 +20,9 @@ import { changesSinceFinal } from '../js/calc/diff.js';
 import { resolveBalloon, mergeSettings } from '../js/defaults.js';
 import { routeMatrix, countryInfo } from '../js/countries.js';
 import { parseDwdAstro } from '../js/calc/sun.js';
-import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing } from '../js/model.js';
+import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing } from '../js/model.js';
+import { carCode } from '../js/net.js';
+import { decodeMetar as dMetar, decodeTaf as dTaf } from '../js/calc/metar.js';
 
 let fails = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('  FAIL', msg); } else console.log('  ok  ', msg); };
@@ -395,6 +397,25 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   bDE.panels['B.balloon'].content.auto.data.dwd.text = 'Vorhersagen für Sonntag, 04.10.2026\nSonnenaufgang  05:37  Sonnenuntergang  16:56\nBeginn bürgerl. Dämmerung  05:01  Ende bürgerl. Dämmerung  17:30\n';
   ok(sunFor(bDE, S, null).source === 'astro', 'DWD-Bericht eines anderen Tages → berechnet');
   ok(mergeSettings({ balloons: { hab: [{ id: 'HB-QWP', mtom: 883 }] } }).balloons.hab[0].mtom === 950, 'HB-QWP MTOM 883 → 950 (BAZL)');
+}
+
+// ---------------------------------------------------------------- 0.11.2: Bearbeitungsstand, Zusatzbox-Migration, Länderkennzeichen, Klartext-Zeilen
+{
+  const S = mergeSettings(null);
+  const b = newBriefing(S); b.revision = 7; delete b.edition;
+  b.panels['B.metar'].content = { auto: { kind: 'metar' }, text: 'eigener Hinweis', images: [{ url: 'x' }] };
+  b.panels['B.fwp'].content = { text: 'Bericht (Pflicht)', images: [] };
+  upgradeBriefing(b);
+  ok(b.edition === 7, 'Bestand: Bearbeitungsstand übernimmt den Speicherzähler');
+  ok(b.panels['B.metar'].extra.text === 'eigener Hinweis' && b.panels['B.metar'].extra.images.length === 1 && b.panels['B.metar'].content.text == null && b.panels['B.metar'].content.auto, 'Auto-Panel: eigener Text/Bilder → Zusatzbox, Schnappschuss bleibt');
+  ok(b.panels['B.fwp'].content.text === 'Bericht (Pflicht)', 'Einfügepflicht-Panel (half): Bericht bleibt im Inhalt');
+  const d = duplicateBriefing(b, S);
+  ok(d.edition === 0 && newBriefing(S).edition === 0, 'neu/dupliziert: Bearbeitungsstand 0');
+  ok(carCode('DE') === 'D' && carCode('AT') === 'A' && carCode('FR') === 'F' && carCode('LI') === 'FL' && carCode('xx') === 'XX', 'Kfz-Kennzeichen für Ortsangaben im Ausland');
+  const ml = dMetar('METAR LSZH 051120Z 24008KT 9999 FEW040 BKN100 14/08 Q1018 TEMPO 4000 RA=', 'de');
+  ok(ml[0].startsWith('LSZH') && ml.some((x) => x.startsWith('→')), 'METAR-Klartext: Kopfzeile ohne Präfix (Präfix setzt die Anzeige), Änderungsgruppe mit →');
+  const tl = dTaf('TAF LSZH 051025Z 0512/0618 24008KT 9999 SCT040 BECMG 0518/0521 VRB02KT=', 'de');
+  ok(tl.length === 3 && tl[2].startsWith('→'), 'TAF-Klartext: Basis + Änderungsgruppe mit →');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

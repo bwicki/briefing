@@ -146,6 +146,21 @@ funktioniert genauso.
      Run»), Account Resources = dein Konto → Create Token. Account-ID = dieselbe
      wie bei GitHub. Ohne diese Werte bleibt der Weg «PDF / Drucken → als PDF
      speichern → hochladen».
+   * `autorouter_user` / `autorouter_pass` — **autorouter NOTAM API** (ab 0.11.2
+     bevorzugte NOTAM-Quelle, europaweit, antwortet zuverlässig; FAA bleibt
+     Rückfall). Schritte im Browser:
+     1. https://www.autorouter.aero öffnen → **Register** (kostenloses Konto:
+        E-Mail, Kennwort, Bestätigungsmail) → anmelden.
+     2. Im Konto **Support** → neues Ticket: «Please enable API access for my
+        account (client_credentials) – private use, balloon flight briefing
+        tool.» Die Freischaltung kommt per E-Mail (meist innert Tagen).
+     3. Nach der Freischaltung in der App unter Einstellungen → Zugänge
+        «autorouter Benutzer» = E-Mail des Kontos, «autorouter Kennwort» =
+        Kennwort des Kontos eintragen (die App holt damit ein einstündiges
+        Token über `api.autorouter.aero/v1.0/oauth2/token`).
+     Das NOTAM-Panel fragt dann je FIR der Fahrt (Startort, Landeraum,
+     Lufträume der Analyse; CH LSAS, DE EDMM/EDGG/EDWW, AT LOVV, FR LFMM/LFFF/
+     LFEE/LFBB/LFRR, IT LIMM/LIRR/LIBB …) ab und filtert auf den Umkreis.
    * `faa_client_id` / `faa_client_secret` — FAA NOTAM API (offizielles
      FAA-Portal, kostenlos; **nicht** über Drittanbieter wie apis.io):
      1. https://api.faa.gov öffnen → rechts oben **Login** → als externer

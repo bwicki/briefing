@@ -72,7 +72,7 @@ async function setKv(env, k, v) { await env.DB.prepare('INSERT INTO kv (k,v,upda
 let schemaReady = false;
 async function ensureSchema(env) {
   if (schemaReady) return;
-  for (const col of ['no TEXT', 'progress INTEGER', 'end_ms INTEGER']) {
+  for (const col of ['no TEXT', 'progress INTEGER', 'end_ms INTEGER', 'edition INTEGER']) {
     try { await env.DB.prepare(`ALTER TABLE briefings ADD COLUMN ${col}`).run(); } catch { /* Spalte besteht */ }
   }
   // Bestand ohne Nummer: je Jahr des Fahrtdatums fortlaufend nach Startzeit vergeben (einmalig)
@@ -201,9 +201,9 @@ async function hasShare(env, from, to, category) {
 
 // ------------------------------------------------------------ Briefings
 function summaryOf(b) {
-  return { id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: endMsOf(b), tz: b.site?.tz, site: b.site?.name, icao: b.site?.icao, elev: b.site?.elev, balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo, progress: Number.isFinite(+b.progress) ? Math.round(+b.progress) : null, revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy };
+  return { id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: endMsOf(b), tz: b.site?.tz, site: b.site?.name, icao: b.site?.icao, elev: b.site?.elev, balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo, progress: Number.isFinite(+b.progress) ? Math.round(+b.progress) : null, edition: Number.isFinite(+b.edition) ? Math.round(+b.edition) : null, revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy };
 }
-const rowOut = (r) => ({ id: r.id, no: r.no || null, startMs: r.start_ms, endMs: r.end_ms ?? null, tz: r.tz, site: r.site, icao: r.icao, elev: r.elev, reg: r.reg, balloon: r.balloon, kind: r.kind, status: r.status, finalNo: r.final_no, progress: r.progress ?? null, revision: r.revision, updatedAt: r.updated_at, updatedBy: r.updated_by, links: r.links ?? 0, owner: r.owner_id, ownerName: r.owner_name || r.owner_id, materialOwner: r.material_owner || null });
+const rowOut = (r) => ({ id: r.id, no: r.no || null, startMs: r.start_ms, endMs: r.end_ms ?? null, tz: r.tz, site: r.site, icao: r.icao, elev: r.elev, reg: r.reg, balloon: r.balloon, kind: r.kind, status: r.status, finalNo: r.final_no, progress: r.progress ?? null, edition: r.edition ?? null, revision: r.revision, updatedAt: r.updated_at, updatedBy: r.updated_by, links: r.links ?? 0, owner: r.owner_id, ownerName: r.owner_name || r.owner_id, materialOwner: r.material_owner || null });
 /** Speichern; ownerId nur beim Anlegen gesetzt; materialOwner = Eigner des Ballons (Freigabe nötig). */
 async function saveBriefing(env, ctx, b, who, ownerId, logUid) {
   await ensureSchema(env);
@@ -222,10 +222,10 @@ async function saveBriefing(env, ctx, b, who, ownerId, logUid) {
   let material = b.balloon?.ownerId && b.balloon.ownerId !== owner ? String(b.balloon.ownerId) : null;
   if (material && !(await hasShare(env, material, owner, 'balloons'))) material = null;
   const s = summaryOf(b);
-  await env.DB.prepare(`INSERT INTO briefings (id,json,revision,status,final_no,start_ms,tz,site,icao,elev,reg,balloon,kind,created_at,updated_at,updated_by,owner_id,material_owner,no,progress,end_ms)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    ON CONFLICT(id) DO UPDATE SET json=excluded.json, revision=excluded.revision, status=excluded.status, final_no=excluded.final_no, start_ms=excluded.start_ms, tz=excluded.tz, site=excluded.site, icao=excluded.icao, elev=excluded.elev, reg=excluded.reg, balloon=excluded.balloon, kind=excluded.kind, updated_at=excluded.updated_at, updated_by=excluded.updated_by, material_owner=excluded.material_owner, no=excluded.no, progress=excluded.progress, end_ms=excluded.end_ms`)
-    .bind(b.id, JSON.stringify(b), b.revision, b.status || 'draft', b.finalNo || 0, s.startMs || null, s.tz || null, s.site || null, s.icao || null, s.elev ?? null, s.reg || null, s.balloon || null, s.kind || null, b.createdAt, b.updatedAt, b.updatedBy, owner, material, b.no, s.progress, s.endMs).run();
+  await env.DB.prepare(`INSERT INTO briefings (id,json,revision,status,final_no,start_ms,tz,site,icao,elev,reg,balloon,kind,created_at,updated_at,updated_by,owner_id,material_owner,no,progress,end_ms,edition)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    ON CONFLICT(id) DO UPDATE SET json=excluded.json, revision=excluded.revision, status=excluded.status, final_no=excluded.final_no, start_ms=excluded.start_ms, tz=excluded.tz, site=excluded.site, icao=excluded.icao, elev=excluded.elev, reg=excluded.reg, balloon=excluded.balloon, kind=excluded.kind, updated_at=excluded.updated_at, updated_by=excluded.updated_by, material_owner=excluded.material_owner, no=excluded.no, progress=excluded.progress, end_ms=excluded.end_ms, edition=excluded.edition`)
+    .bind(b.id, JSON.stringify(b), b.revision, b.status || 'draft', b.finalNo || 0, s.startMs || null, s.tz || null, s.site || null, s.icao || null, s.elev ?? null, s.reg || null, s.balloon || null, s.kind || null, b.createdAt, b.updatedAt, b.updatedBy, owner, material, b.no, s.progress, s.endMs, s.edition).run();
   if (logUid) {
     logUsage(env, ctx, logUid, isNew ? 'briefing_create' : 'briefing_save', b.id);
     if ((b.finalNo || 0) > (row?.final_no || 0)) logUsage(env, ctx, logUid, 'release', `${b.id} v${b.finalNo}`);
@@ -382,7 +382,7 @@ async function route(req, env, url, ctx) {
     const marks = regs.map(() => '?').join(',');
     ctx.waitUntil(env.DB.prepare('UPDATE material_links SET last_opened_at=? WHERE token=?').bind(Date.now(), ml.token).run());
     if (!mm[2]) {
-      const rows = await env.DB.prepare(`SELECT b.id,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name
+      const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.edition,b.end_ms,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name
         FROM briefings b LEFT JOIN users u ON u.id=b.owner_id WHERE (b.owner_id=? OR b.material_owner=?) AND b.reg IN (${marks}) ORDER BY b.start_ms DESC`).bind(ml.user_id, ml.user_id, ...regs).all();
       logUsage(env, ctx, ml.user_id, 'link_open', `material ${ml.person}`);
       return json({ person: ml.person, regs, owner: owner.name, expiresAt: ml.expires_at, briefings: (rows.results || []).map(rowOut) });
@@ -508,7 +508,7 @@ async function route(req, env, url, ctx) {
     if (scope === 'all') { if (!isSuper) return err('forbidden', 403); where = '1=1'; args = []; }
     else if (scope === 'material') { where = 'b.material_owner=? AND b.owner_id<>?'; args = [user.id, user.id]; }
     await ensureSchema(env);
-    const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.end_ms,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name,
+    const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.edition,b.end_ms,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name,
       (SELECT COUNT(*) FROM access_links a WHERE a.briefing_id=b.id AND a.revoked=0 AND a.expires_at>?) AS links FROM briefings b LEFT JOIN users u ON u.id=b.owner_id WHERE ${where} ORDER BY b.start_ms`).bind(Date.now(), ...args).all();
     return json({ briefings: (rows.results || []).map(rowOut), scope });
   }

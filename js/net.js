@@ -34,6 +34,21 @@ export async function pointInfo(lat, lon) {
   return { elev: j.elevation, tz: j.timezone, name, country, current: j.current };
 }
 
+/** Internationale Kfz-Kennzeichen (Ortsangaben im Ausland: «D-Stuttgart»). */
+const CAR_CODES = { CH: 'CH', LI: 'FL', DE: 'D', AT: 'A', FR: 'F', IT: 'I', SI: 'SLO', HR: 'HR', HU: 'H', CZ: 'CZ', SK: 'SK', PL: 'PL', BE: 'B', NL: 'NL', LU: 'L', DK: 'DK', ES: 'E', PT: 'P', GB: 'GB', IE: 'IRL', SE: 'S', NO: 'N', FI: 'FIN', MC: 'MC', SM: 'RSM' };
+export const carCode = (iso) => CAR_CODES[String(iso || '').toUpperCase()] || String(iso || '').toUpperCase();
+/** Ortsname (Nominatim) mit Länderkennzeichen voran, wenn nicht im Heimatland: «D-Stuttgart»; leer, wenn nichts gefunden. */
+export async function placeName(lat, lon, homeCountry = 'CH', lang = 'de') {
+  try {
+    const n = await getJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${(+lat).toFixed(4)}&lon=${(+lon).toFixed(4)}&zoom=10&accept-language=${lang}`, 6000);
+    const a = n.address || {};
+    const name = a.town || a.city || a.village || a.municipality || a.county || n.name || '';
+    const cc = (a.country_code || '').toUpperCase();
+    if (!name) return '';
+    return cc && cc !== String(homeCountry || '').toUpperCase() ? `${carCode(cc)}-${name}` : name;
+  } catch { return ''; }
+}
+
 /** Modellwerte (T, RH, QNH) zur Startstunde, bis 16 Tage voraus. */
 export async function siteWeatherAt(lat, lon, isoDate, hour) {
   const j = await getJson(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,pressure_msl&start_date=${isoDate}&end_date=${isoDate}&timezone=auto`);

@@ -30,10 +30,13 @@ export async function renderEditor(view, ctx, id, opts = {}) {
 
   // ---------------------------------------------------------------- Speichern
   let dirty = false;
+  // Bearbeitungsstand «vN»: jede Bearbeitungssitzung (Öffnen der Erarbeitung, Weiterarbeit nach Freigabe/PDF) zählt beim ersten Speichern +1
+  let editionPending = true;
   async function saveNow(logEntry) {
     if (logEntry) b.log.push({ ts: Date.now(), who: ctx.who, ...logEntry });
     if (b.log.length > 300) b.log.splice(0, b.log.length - 300);
     b.progress = completion(b, S);
+    if (editionPending) { b.edition = (b.edition || 0) + 1; editionPending = false; }
     try {
       if (shared) await ctx.store.saveShared(shared.token, b, ctx.who); else await ctx.store.saveBriefing(b, ctx.who);
       dirty = false; drawHeader();
@@ -58,11 +61,11 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         { label: paxCardTitle(S), fn: () => ctx.navigate(shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`) },
         { label: t('crew_title'), fn: () => crewDialog(b, ctx) },
         canOwn && ctx.store.mode === 'remote' && ctx.can('ai') ? { label: t('ass_title'), fn: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }) } : null,
-        canOwn && ctx.store.mode === 'remote' && ctx.can('pdf') ? { label: t('pdf_title'), fn: () => finalPdfDialog(b, ctx, () => { touched(); drawHeader(); }) } : null,
+        canOwn && ctx.store.mode === 'remote' && ctx.can('pdf') ? { label: t('pdf_title'), fn: () => finalPdfDialog(b, ctx, () => { editionPending = true; touched(); drawHeader(); }) } : null,
         canOwn ? { label: t('export_one'), fn: () => exportOne(b) } : null,
       ].filter(Boolean) },
     ].filter(Boolean);
-    const sub = h('span', [h('span.rev', t('rev', { n: b.revision || 0, t: b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–', who: b.updatedBy || '–' })), ' · ', b.status === 'final' ? tag('final', t('released', { n: b.finalNo })) : tag('', t('status_progress', { p: completion(b, S) })), ' · ', tag(phaseOf(b.time.startMs) === 'final' ? 'final-phase' : phaseOf(b.time.startMs) === 'plan' ? 'plan' : 'pre', t('phase_' + phaseOf(b.time.startMs))), shared ? ` · ${shared.role === 'edit' ? t('ac_editlink') : t('ac_readonly')} · ${shared.person}` : '']);
+    const sub = h('span', [h('span.rev', t('rev', { n: b.edition ?? b.revision ?? 0, t: b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–', who: b.updatedBy || '–' })), ' · ', b.status === 'final' ? tag('final', t('released', { n: b.finalNo })) : tag('', t('status_progress', { p: completion(b, S) })), ' · ', tag(phaseOf(b.time.startMs) === 'final' ? 'final-phase' : phaseOf(b.time.startMs) === 'plan' ? 'plan' : 'pre', t('phase_' + phaseOf(b.time.startMs))), shared ? ` · ${shared.role === 'edit' ? t('ac_editlink') : t('ac_readonly')} · ${shared.person}` : '']);
     setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub, tools, menu });
   }
 
@@ -81,18 +84,51 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     if (p.grade === 'auto') return 'auto';
     return 'man';
   }
+  // Navigation als Akkordeon: nur der Abschnitt der gerade bearbeiteten Stelle ist offen; selbst geöffnete bleiben offen
+  const navOpen = new Set(); let activeSect = null, activeKey = null, closedActive = null;
+  function applyNavOpen() {
+    for (const det of nav.querySelectorAll('details')) {
+      const id = det.dataset.sect;
+      const want = (id === activeSect && closedActive !== id) || navOpen.has(id);
+      if (det.open !== want) { det.dataset.auto = '1'; det.open = want; }
+    }
+    for (const it of nav.querySelectorAll('.it')) it.classList.toggle('sel', it.dataset.key === activeKey);
+  }
   function drawNav() {
     const e = nav.firstChild; clear(e);
+    if (!activeSect) activeSect = SECTIONS.find((s) => panels.some((p) => p.section === s.id))?.id || 'A';
     for (const s of SECTIONS) {
       const ps = panels.filter((p) => p.section === s.id);
       if (!ps.length) continue;
-      const det = h('details', { open: window.innerWidth >= 900 || s.id === 'A' }, [h('summary', `${s.id} · ${s[lang] || s.de}`)]);
-      for (const p of ps) det.appendChild(h('div.it', { onclick: () => document.getElementById('panel-' + p.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [h('span.dot.' + panelStatus(p)), h('span.pno', panelNo(p, panels)), ' ', tt(p), mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null]));
+      const det = h('details', { 'data-sect': s.id }, [h('summary', `${s.id} · ${s[lang] || s.de}`)]);
+      det.addEventListener('toggle', () => { if (det.dataset.auto) { delete det.dataset.auto; return; } if (det.open) { navOpen.add(s.id); if (closedActive === s.id) closedActive = null; } else { navOpen.delete(s.id); if (s.id === activeSect) closedActive = s.id; } });
+      for (const p of ps) det.appendChild(h('div.it', { 'data-key': p.key, onclick: () => { setActive(p.key); document.getElementById('panel-' + p.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p)), h('span.pno', panelNo(p, panels)), ' ', tt(p), mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null]));
       e.appendChild(det);
     }
     e.appendChild(h('div.note', { style: { marginTop: '8px' } }, t('navLegend')));
+    applyNavOpen();
     drawSide();
   }
+  function setActive(key) {
+    const p = panels.find((x) => x.key === key); if (!p) return;
+    if (p.section !== activeSect) { activeSect = p.section; closedActive = null; }
+    activeKey = key; applyNavOpen();
+  }
+  // aktiver Abschnitt aus der Scroll-Position (erstes Panel, dessen Oberkante die Lesemarke erreicht hat)
+  let scrollTick = false;
+  const onScroll = () => {
+    if (!mainCol.isConnected) { window.removeEventListener('scroll', onScroll); return; }
+    if (scrollTick) return; scrollTick = true;
+    requestAnimationFrame(() => {
+      scrollTick = false;
+      const mark = 140; let cur = null;
+      for (const el of mainCol.querySelectorAll('.panel')) { const r = el.getBoundingClientRect(); if (r.top <= mark) cur = el; else break; }
+      const key = (cur || mainCol.querySelector('.panel'))?.id?.replace(/^panel-/, '');
+      if (key && key !== activeKey) setActive(key);
+    });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  mainCol.addEventListener('focusin', (e) => { const el = e.target.closest('.panel'); if (el) setActive(el.id.replace(/^panel-/, '')); });
   function drawSide() {
     clear(side);
     const hrs = Math.round((b.time.startMs - Date.now()) / 3600000);
@@ -115,16 +151,29 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     return h('div.card.summary', [h('div.card-head', h('div.section-title', t('summary_title'))), h('div.card-body', [
       a?.text ? h('div.note', { style: { whiteSpace: 'pre-wrap' } }, a.text) : h('div.note.small', t('summary_hint')),
       a?.text ? h('div.note.small', `${a.model || ''} · ${fmtDateTime(z, a.ts, lang)}`) : null,
-      canAi ? h('button.btn.small' + (a?.text ? '.ai.renew' : '.primary'), { type: 'button', style: { marginTop: '6px' }, onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }) }, a?.text ? t('summary_renew') : t('summary_make')) : null,
+      canAi ? h('span.aibtns', { style: { marginTop: '6px', display: 'inline-flex' } }, [
+        h('button.btn.small.ai' + (a?.text ? '.renew' : ''), { type: 'button', title: t('ai_direct'), onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }, { edit: false }) }, a?.text ? t('summary_renew') : t('summary_make')),
+        h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }, { edit: true }) }, '…'),
+      ]) : null,
     ])]);
   }
 
   // ---------------------------------------------------------------- Panels
   const upload = (dataUrl) => ctx.store.uploadImage(b.id, dataUrl, shared?.token);
+  // Zusatzboxen unter dem Panelinhalt: «Eigener Text / Bilder / Daten» (blau) und «Kommentar PIC» (gelb) – erscheinen nur mit Inhalt
+  // oder nach Klick auf den Symbolknopf im Panelkopf; KI-Kommentar dazwischen (violett)
+  const openBoxes = new Set();
+  function extraBox(p, d) {
+    return h('div.sub.extra', [h('div.lbl', t('extra')), pasteArea(d.extra, (v) => { d.extra = v; touched(p.key); }, upload, { placeholder: t('extraHint'), rows: 2 })]);
+  }
+  function commentBox(p, d) {
+    const ro = shared?.role === 'read';
+    return h('div.sub.cmt', [h('div.lbl', t('comment')), textarea(d.comment, { rows: 2, readOnly: ro, placeholder: t('comment'), oninput: (e) => { d.comment = e.target.value; touched(p.key); } })]);
+  }
   function subBlocks(p) {
     const d = b.panels[p.key];
     const hasExtra = !!((d.extra?.text || '').trim() || (d.extra?.images || []).length);
-    const extra = h('details.sub.extra', { open: hasExtra }, [h('summary', t('extra')), pasteArea(d.extra, (v) => { d.extra = v; touched(p.key); }, upload, { placeholder: t('extraHint'), rows: 2 })]);
+    const extra = hasExtra || openBoxes.has(p.key + ':extra') ? extraBox(p, d) : null;
     // KI-Kommentar direkt unter dem Panelinhalt: Text (Klick auf ✎ zum Bearbeiten), ✕ verwirft
     let ai = null;
     if (d.ai?.text) {
@@ -133,9 +182,26 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       const ed = textarea(d.ai.text, { rows: 4, oninput: (e) => { d.ai.text = e.target.value; d.ai.edited = true; txt.textContent = e.target.value; touched(p.key); } }); ed.hidden = true;
       ai = h('div.sub.ai', [h('div.row-actions', [h('span.lbl', `🤖 ${t('ai')} · ${d.ai.model || ''} · ${d.ai.ts ? fmtDateTime(z, d.ai.ts, lang) : ''}${d.ai.edited ? ' · ' + t('ai_edited') : ''}`), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_edit'), onclick: () => { ed.hidden = !ed.hidden; txt.hidden = !ed.hidden; if (!ed.hidden) ed.focus(); } }, '✎'), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_discard'), onclick: () => { d.ai = null; touched(p.key); drawPanels(); } }, '✕')]), txt, ed]);
     }
-    const cm = textarea(d.comment, { rows: 2, placeholder: t('comment'), oninput: (e) => { d.comment = e.target.value; touched(p.key); } });
-    const comment = h('details.sub.cmt', { open: !!(d.comment || '').trim() }, [h('summary', t('comment')), cm]);
+    const comment = (d.comment || '').trim() || openBoxes.has(p.key + ':cmt') ? commentBox(p, d) : null;
     return [extra, ai, comment];
+  }
+  /** Symbolknöpfe im Panelkopf: 📝 Eigener Text/Bilder/Daten · 💬 Kommentar PIC – fügen die Box unter dem Inhalt an und setzen den Fokus. */
+  function addButtons(p, d) {
+    if (shared?.role === 'read') return null;
+    const open = (kind) => {
+      const body = document.getElementById('panel-' + p.key)?.querySelector('.panel-body'); if (!body) return;
+      let box = body.querySelector(kind === 'extra' ? ':scope > .sub.extra' : ':scope > .sub.cmt');
+      if (!box) {
+        openBoxes.add(`${p.key}:${kind}`);
+        box = kind === 'extra' ? extraBox(p, d) : commentBox(p, d);
+        if (kind === 'extra') { const before = body.querySelector(':scope > .sub.ai') || body.querySelector(':scope > .sub.cmt'); before ? body.insertBefore(box, before) : body.appendChild(box); } else body.appendChild(box);
+      }
+      box.querySelector('textarea')?.focus();
+    };
+    return h('div.addrow', [
+      h('button.btn.icon.small.add.extra', { type: 'button', title: t('extra_add'), 'aria-label': t('extra_add'), onclick: () => open('extra') }, '📝'),
+      h('button.btn.icon.small.add.cmt', { type: 'button', title: t('comment_add'), 'aria-label': t('comment_add'), onclick: () => open('cmt') }, '💬'),
+    ]);
   }
   /** Quelle eines Panels: Link aus den Einstellungen (p.link) oder aus dem Schnappschuss (PDF, Bild-URL, Quelle). */
   function sourceUrlOf(p, d) {
@@ -159,6 +225,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
           p.noAi ? null : aiButtons(p, d),
         ]),
         srcUrl ? h('a.srclink', { href: srcUrl, target: '_blank', rel: 'noopener', title: srcUrl }, shortUrl(srcUrl)) : null,
+        addButtons(p, d),
       ]),
     ]);
     const body = h('div.panel-body');
@@ -191,7 +258,8 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         if (!d.content) d.content = {};
         content = h('div', [
           autoBlock(p, d, b, ctx, { onChange: () => touched(p.key), readOnly: shared?.role === 'read', upload }),
-          h('details.sub.extra', { open: !!((d.content.text || '').trim() || (d.content.images || []).length) || p.grade === 'half' }, [h('summary', t('panel_pasteSummary')), pasteArea(d.content, (v) => { Object.assign(d.content, { text: v.text, images: v.images }); touched(p.key); }, upload)]),
+          // Einfügepflicht (LINK + EINFÜGEN): Feld für den offiziellen Bericht bleibt immer sichtbar; sonst dient die Zusatzbox
+          p.grade === 'half' ? h('div.sub.half', [h('div.lbl', t('panel_pasteSummary')), pasteArea(d.content, (v) => { Object.assign(d.content, { text: v.text, images: v.images }); touched(p.key); }, upload)]) : null,
         ]);
         break;
       }
@@ -230,10 +298,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       ...(docsLine(ctx.stamm?.persons?.find((x) => x.id === b.persons.picId)?.docs) ? [[`${t('docs')} PIC`, docsLine(ctx.stamm.persons.find((x) => x.id === b.persons.picId).docs)]] : []),
     ];
     const canEdit = canOwn || shared?.role === 'edit';
-    // Oben: alle automatischen Panels neu laden (ohne KI-Kommentare); Status daneben
-    const st = h('span.note.small');
-    const refreshRow = canEdit && b.site.lat != null ? h('div.row-actions.refresh-all', [h('button.btn.primary.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, `⟳ ${t('refreshAllData')}`), st]) : null;
-    return h('div', [refreshRow, kv(rows), canEdit ? h('div.row-actions', { style: { marginTop: '8px' } }, [h('button.btn', { type: 'button', onclick: async () => { b.wizardStep = 1; await saveNow(); ctx.navigate(shared ? `#/s/${shared.token}/w` : `#/new/${b.id}`); } }, `✎ ${t('masterData')}`)]) : null]);
+    return h('div', [kv(rows), canEdit ? h('div.row-actions', { style: { marginTop: '8px' } }, [h('button.btn', { type: 'button', onclick: async () => { b.wizardStep = 1; await saveNow(); ctx.navigate(shared ? `#/s/${shared.token}/w` : `#/new/${b.id}`); } }, `✎ ${t('masterData')}`)]) : null]);
   }
   function equipmentBlock(p, d) {
     const sun = sunFor(b, S, ctx.racTable);
@@ -268,12 +333,20 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     b.meteo.lastRefresh = { ts: Date.now(), n, total: keys.length };
     drawPanels(); ctx.autoLoad = true;
   }
+  /** Über dem ersten Abschnitt: alle automatischen Panels neu laden (ohne KI-Kommentare); Status daneben. */
+  function refreshRow() {
+    const canEdit = canOwn || shared?.role === 'edit';
+    if (!canEdit || b.site.lat == null) return null;
+    const st = h('span.note.small');
+    return h('div.row-actions.refresh-all', [h('button.btn.primary.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, `⟳ ${t('refreshAllData')}`), st]);
+  }
   function drawPanels() {
     clear(mainCol);
+    const rr = refreshRow(); if (rr) mainCol.appendChild(rr);
     for (const s of SECTIONS) {
       const ps = panels.filter((p) => p.section === s.id);
       if (!ps.length) continue;
-      mainCol.appendChild(h('div.sect-title', `${s.id} · ${s[lang] || s.de}`));
+      mainCol.appendChild(h('div.sect-title', [h('span.id', s.id), h('span.nm', s[lang] || s.de)]));
       if (s.id === 'B' && b.site.lat != null) mainCol.appendChild(meteoBar(b, ctx, { onChange: () => { dirty = true; saveSoon(); }, refreshAll, readOnly: shared?.role === 'read' }));
       for (const p of ps) mainCol.appendChild(renderPanel(p));
     }
@@ -297,6 +370,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const snap = JSON.parse(JSON.stringify({ ...b, versions: undefined, log: undefined }));
     b.versions.push({ no: b.finalNo, ts: Date.now(), who: ctx.who, reason: reason.value.trim() || null, snapshot: snap });
     await saveNow({ action: `Final v${b.finalNo}`, note: reason.value.trim() || null });
+    editionPending = true;   // Weiterarbeit nach der Freigabe = neuer Bearbeitungsstand
     toast(t('rel_done', { n: b.finalNo }));
     drawHeader();
   }

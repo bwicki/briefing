@@ -11,7 +11,7 @@ export const SECTIONS = [
   { id: 'A', de: 'Operationelle Vorbereitung', en: 'Operational preparation' },
   { id: 'B', de: 'Meteorologische Vorbereitung', en: 'Meteorological preparation' },
   { id: 'C', de: 'Navigatorische Vorbereitung', en: 'Navigational preparation' },
-  { id: 'D', de: 'Briefings', en: 'Briefings' },
+  { id: 'D', de: 'Crew-/Pax-Briefing', en: 'Crew/pax briefing' },
 ];
 
 export const PANELS = [

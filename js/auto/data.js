@@ -12,7 +12,7 @@ import { normalizeAirspace, analyzeAirspaces, thinRing, siteWarnings } from '../
 import { isoDate, hhmm, fmtDur } from '../calc/time.js';
 import { distKm, bearing, icao } from '../calc/geo.js';
 import { t, getLang } from '../i18n.js';
-import { dataFile } from '../net.js';
+import { dataFile, placeName } from '../net.js';
 
 const memo = new Map();
 const shareTok = (ctx) => ctx.shared?.token;
@@ -49,7 +49,7 @@ export async function meteogram(ctx, b) {
   const lim = ctx.settings.flyLimits;
   const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, light(r.ms), lim, getLang()); return { ...r, night: !light(r.ms), fog: OM.fogRisk(r).level, baseFt: OM.cloudBaseFt(r), fly: fr.level, why: fr.why }; });
   const z = b.site.tz || 'Europe/Zurich';
-  const text = recs.map((r) => `${hhmm(z, r.ms)} T ${r.temp?.toFixed(0)}°/Td ${r.dew?.toFixed(0)}° Wind ${r.d10 != null ? Math.round(r.d10).toString().padStart(3, '0') : '–'}/${Math.round((r.w10 || 0) * OM.MS_TO_KT)}G${Math.round((r.gust || 0) * OM.MS_TO_KT)} kt Wolken ${r.cloud ?? '–'}% RR ${r.precip ?? 0} mm CAPE ${r.cape ?? '–'} → ${['nein', 'grenzwertig', 'fahrbar'][r.fly] || '–'}${r.why?.length ? ' (' + r.why.join(', ') + ')' : ''}`).join('\n');
+  const text = recs.map((r) => `${hhmm(z, r.ms)} T ${r.temp?.toFixed(0)}°/Td ${r.dew?.toFixed(0)}° Wind ${r.d10 != null ? Math.round(r.d10).toString().padStart(3, '0') : '–'}/${Math.round((r.w10 || 0) * OM.MS_TO_KT)}G${Math.round((r.gust || 0) * OM.MS_TO_KT)} kt Wolken ${r.cloud ?? '–'}% RR ${r.precip ?? 0} mm CAPE ${r.cape ?? '–'} → ${['nein', 'marginal', 'fahrbar'][r.fly] || '–'}${r.why?.length ? ' (' + r.why.join(', ') + ')' : ''}`).join('\n');
   return { kind: 'meteogram', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { recs, fromMs: b.time.startMs, toMs: landing }, text };
 }
 
@@ -141,10 +141,10 @@ export async function temps(ctx, b) {
     try {
       const sj = await ctx.store.data('sondes', { lat: b.site.lat.toFixed(3), lon: b.site.lon.toFixed(3), km: ctx.settings.sondeKm || 150, h: 12 }, shareTok(ctx));
       const cand = (sj.sondes || []).filter((x) => x.alt > 3000)[0] || (sj.sondes || [])[0];
-      if (cand) { const so = await ctx.store.data('sonde', { serial: cand.serial }, shareTok(ctx)); if (so.levels?.length >= 5) sonde = { ...so, km: cand.km, brg: bearing(b.site.lat, b.site.lon, so.lat, so.lon), levels: so.levels.map((l) => ({ label: `${l.hPa} hPa`, hPa: l.hPa, ft: l.ft, m: l.m, temp: l.temp, dew: l.dew, rh: l.rh, dir: l.dir, spd: l.kt != null ? l.kt / OM.MS_TO_KT : null })) }; }
+      if (cand) { const so = await ctx.store.data('sonde', { serial: cand.serial }, shareTok(ctx)); if (so.levels?.length >= 5) sonde = { ...so, km: cand.km, brg: bearing(b.site.lat, b.site.lon, so.lat, so.lon), place: so.lat != null ? await placeName(so.lat, so.lon, b.site.country, getLang()) : '', levels: so.levels.map((l) => ({ label: `${l.hPa} hPa`, hPa: l.hPa, ft: l.ft, m: l.m, temp: l.temp, dew: l.dew, rh: l.rh, dir: l.dir, spd: l.kt != null ? l.kt / OM.MS_TO_KT : null })) }; }
     } catch { /* ohne Sonde */ }
   }
-  const sondeText = sonde ? `\n${t('auto_sondehub')} ${sonde.serial} (${Math.round(sonde.km)} km, ${(sonde.launch || '').slice(0, 16).replace('T', ' ')}Z): ` + sonde.levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 8)) === 0).map((l) => `${l.ft} ft ${l.temp ?? '–'}°/${l.dew ?? '–'}° ${l.dir != null ? String(l.dir).padStart(3, '0') : '–'}/${l.spd != null ? Math.round(l.spd * OM.MS_TO_KT) : '–'} kt`).join(' · ') : '';
+  const sondeText = sonde ? `\n${t('auto_sondehub')} ${sonde.serial}${sonde.place ? ' ' + sonde.place : ''} (${Math.round(sonde.km)} km, ${(sonde.launch || '').slice(0, 16).replace('T', ' ')}Z): ` + sonde.levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 8)) === 0).map((l) => `${l.ft} ft ${l.temp ?? '–'}°/${l.dew ?? '–'}° ${l.dir != null ? String(l.dir).padStart(3, '0') : '–'}/${l.spd != null ? Math.round(l.spd * OM.MS_TO_KT) : '–'} kt`).join(' · ') : '';
   return { kind: 'temps', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev, obs, obsErr, sonde }, text: text + obsText + sondeText };
 }
 /** Radiosondenstationen (WMO) – die nächste zum Startort. */
@@ -304,10 +304,12 @@ export async function notam(ctx, b, opts = {}) {
     for (const tr of trj) if (tr.end) pts.push({ lat: tr.end.lat, lon: tr.end.lon, name: `${t('auto_trajEnd')} ${tr.label}`, nm });
   }
   const nm = pts[0].nm;
-  const all = new Map(); const errors = [];
+  // Länder der Fahrt (FIR-Auswahl für autorouter): Startort, Landeraum, Lufträume der Analyse
+  const cc = [...new Set([b.site.country, b.landing?.country, ...((b.panels['C.airspace']?.content?.auto?.data?.crossed || []).map((x) => x.as?.country))].filter(Boolean).map((x) => String(x).toUpperCase()))].join(',');
+  const all = new Map(); const errors = []; let source = 'FAA NOTAM API';
   outer: for (const p of pts.slice(0, 6)) {
     for (const c of hexCover(p.lat, p.lon, p.nm)) {
-      try { const j = await ctx.store.data('notam', { lat: c.lat, lon: c.lon, nm: c.nm }, shareTok(ctx)); for (const it of j.items || []) if (!all.has(it.id)) all.set(it.id, it); }
+      try { const j = await ctx.store.data('notam', { lat: c.lat, lon: c.lon, nm: c.nm, cc }, shareTok(ctx)); if (j.source) source = j.source; for (const it of j.items || []) if (!all.has(it.id)) all.set(it.id, it); }
       catch (e) { errors.push(`${p.name}: ${e.message}`); if (e.status === 424) break outer; break; }
     }
   }
@@ -315,7 +317,7 @@ export async function notam(ctx, b, opts = {}) {
   const items = [...all.values()].map((it) => ({ ...it, vfr: vfrRelevant(it, maxFt, b.time.startMs, b.time.startMs + (b.intent.durationMin || 0) * 60000) }));
   const rel = items.filter((x) => x.vfr.relevant).sort((x, y) => (x.start || '').localeCompare(y.start || ''));
   const text = rel.map((x) => `${x.icao || x.location} ${x.number || ''}: ${(x.formatted || x.text || '').replace(/\s+/g, ' ').slice(0, 400)}`).join('\n\n');
-  return { kind: 'notam', sourceUrl: 'https://notams.aim.faa.gov/', stand: Date.now(), source: 'FAA NOTAM API', data: { items, relevantCount: rel.length, points: pts, nm, mode, errors }, text };
+  return { kind: 'notam', sourceUrl: /autorouter/.test(source) ? 'https://www.autorouter.aero/' : 'https://notams.aim.faa.gov/', stand: Date.now(), source, data: { items, relevantCount: rel.length, points: pts, nm, mode, errors }, text };
 }
 /** VFR-Relevanz: zeitlich überlappend, untere Grenze unter maxFt, keine reinen IFR-/Infrastruktur-Themen. */
 export function vfrRelevant(it, maxFt, fromMs, toMs) {

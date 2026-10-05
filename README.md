@@ -71,9 +71,12 @@ das mit «Lokaler Modus» an.
 
 ### Übersicht «Briefings»
 
-Alle Briefings mit Datum, Startort (ICAO-Kurzkoordinaten, Höhe), Ballon, Fahrttyp,
-Phase (Vorplanung > 72 h, Planung 24–72 h, Final < 24 h), Status, Arbeitsversion und
-Anzahl Links. Filter *Geplant / Alle / Archiv*, Suche; Sichten *Meine Briefings*,
+Alle Briefings kompakt (zwei Zeilen je Zelle): **#** (Ordnungsnummer, 🔒 bei Sperre), Datum
+und Startzeit, Startort (ICAO-Kurzkoordinaten, Höhe), Ballon, Fahrttyp, **Status** («in Arbeit
+NN %» oder «Final vN», darunter die Phase Vorplanung > 72 h / Planung 24–72 h / Final < 24 h) und
+**Letzte Änderung** (Bearbeitungsstand vN · Datum · Bearbeiter, dazu 🔗 n aktive Freigabelinks).
+Aktionen als Symbole: ✎ Bearbeiten (gesperrt: 👁 Briefingsicht), ⧉ Duplizieren, 🗑 Löschen.
+Filter *Geplant / Alle / Archiv*, Suche; Sichten *Meine Briefings*,
 *Alle Benutzer* (Supermaster) und *Fahrten mit meinem Material* (wenn Ballone
 freigegeben sind; fremde Briefings öffnen sich nur in der Briefingsicht). Rechts
 die nächste Fahrt mit Sonnenzeiten. **⧉** dupliziert ein Briefing als Vorlage (gleicher Startort, Ballon,
@@ -141,13 +144,20 @@ Oben in jeder Sicht die Hauptnavigation **Briefings · + Neues Briefing**; Einst
 JSON (Import/Export der Einstellungen), Berechtigungen und «Mehr» im Hamburger-Menü.
 Links die Navigation A–D mit Status-Punkt je Panel (grün erledigt, blau
 automatisch/noch nicht geladen, orange manuell offen, rot Pflicht offen), Mitte die Panels
-in Druckreihenfolge, **nummeriert A1–An, B1–Bn, C1–Cn, D1–Dn**, rechts Planungshorizont,
-Panel-Zähler und Protokoll. Im Kopf
-die **Arbeitsversion** («v12 · Datum Zeit · Name»), der Status und die Phase.
+in Druckreihenfolge, **nummeriert A1–An, B1–Bn, C1–Cn, D1–Dn** unter markanten Abschnittstiteln
+(A Operationelle, B Meteorologische, C Navigatorische Vorbereitung, D Crew-/Pax-Briefing), rechts
+Planungshorizont, Panel-Zähler, Protokoll und die KI-Zusammenfassung. Die Navigation links ist ein
+**Akkordeon**: offen ist nur der Abschnitt der gerade bearbeiteten Stelle (folgt dem Scrollen und dem
+Fokus); selbst geöffnete Abschnitte bleiben offen. Über dem Abschnitt A steht **«Alle verfügbaren
+Daten aktualisieren»** (lädt alle automatischen Panels neu, ohne KI-Kommentare). Im Kopf der
+**Bearbeitungsstand** («v12 · Datum Zeit · Name»; +1 je Bearbeitungssitzung: Öffnen der Erarbeitung,
+Weiterarbeit nach Freigabe oder Final-PDF), der Status und die Phase.
 
-Jedes Panel hat unter dem Inhalt drei einklappbare Blöcke: **Zusatzinfo** (eigene
-Recherche: Text, Bilder, Links), **KI-Hinweis** (editierbar, verwerfbar) und
-**Kommentar**.
+Jedes Panel kann unter dem Inhalt drei Boxen haben: **Eigener Text / Bilder / Daten** (blau; Text,
+Bilder, Links, Daten aus eigener Recherche), **KI-Kommentar** (violett; editierbar, verwerfbar) und
+**Kommentar PIC** (gelb). Die blaue und die gelbe Box erscheinen nur mit Inhalt oder nach Klick auf
+die Symbolknöpfe **📝 / 💬** im Panelkopf (rechts, unter KI-Kommentar und Quelle). Panels mit
+Einfügepflicht (LINK + EINFÜGEN) zeigen zusätzlich immer das Feld «Bericht / Daten einfügen».
 
 Panel-Arten:
 
@@ -164,8 +174,8 @@ Panel-Arten:
 * **Automatisch** (seit 0.3.0, Abschnitt B und C) — der Inhalt wird aus Modellen
   und amtlichen Quellen geholt und als **Schnappschuss** mit Stand, Modell und
   Quelle im Briefing gespeichert (Druck, Leselink, Final-Versionen). Jedes
-  dieser Panels hat *Aktualisieren*, *KI-Hinweis*, ✕ (Schnappschuss entfernen)
-  und darunter ein Einfügefeld für eigenen Text/Bilder. Details im Abschnitt
+  dieser Panels hat *Aktualisieren*, *KI-Hinweis*, ✕ (Schnappschuss entfernen);
+  eigener Text/Bilder gehören in die blaue Zusatzbox (📝). Details im Abschnitt
   «Automatische Panels».
 * **Text** — Landeorte, Bemerkungen, Flugplan, Absprachen, Briefingbedürfnisse.
 
@@ -195,7 +205,7 @@ kurz danach).
 | Radar | Live-Radar (RainViewer) auf der Karte (weit genug für die Niederschlagsgebiete), Startort und Landeraum markiert, **Webcams im Umkreis automatisch aus öffentlichen Quellen** (europaweit: Windy Webcams API mit Schlüssel, OpenStreetMap ohne; Umkreis in Einstellungen → Meteo, Standard 40 km um Start und Landeraum) plus eigene Liste, als Kamera-Symbol mit Popup (Vorschaubild, Link) und aufklappbarer Liste; Klickboxen Regen/Webcams/Sonden; **Klick auf eine Sonde** verkleinert die Karte und öffnet daneben Emagramm + Daten der Sonde; Links Windy/MeteoSchweiz/Blitzortung/Sat24 — nur am Bildschirm | RainViewer, Windy, OSM/Overpass; über Worker (`/api/wx/webcams`) |
 | Luftraum entlang des Fahrtwegs | **Luftraumanalyse** aus openAIP für die berechneten Trajektorien: je Luftraum *durchfahren* (Bahn innerhalb, Untergrenze unter der geplanten Maximalhöhe; km ab Start, ETA je Bahn), *nahe* (im Korridor, Standard 5 km, Einstellungen → Meteo) oder *oberhalb der Maximalhöhe* (eingeklappt); Typ (CTR, TMA, TMZ, RMZ, R/D/P, TRA/TSA, ATZ …), ICAO-Klasse, Unter-/Obergrenze, Zusatzcodes (NOTAM/REQ/AGRMT, Squawk, Frequenz); reine Klasse-E/G-Lufträume werden nicht gelistet; **Warnungen** Startort in CTR/ATZ und TMA/CTA tiefer als 900 ft über dem Startort (Experte); **FIR-Folge** je Bahn mit Wechselpunkt (km, LT, +h:mm ab Start); Karte mit Polygonen und Bahnen (Bildschirm), Nord-oben-Skizze (Druck). Braucht die Trajektorien (werden sonst mitberechnet) und den openAIP-Schlüssel («Zugänge: openaip» oder der Kachel-Schlüssel der Overlay-URL) | openAIP Core API über Worker `/api/wx/airspace` (6 h Cache je Ausschnitt) |
 | DABS | DABS-PDF (heute/morgen) automatisch holen; Seiten im kleinen Viewer mit Blättern (‹ ›, Pfeiltasten, Link zum PDF), im Druck alle Seiten bzw. als Beilage | skybriefing über Worker, R2 |
-| NOTAM | FAA-NOTAM-API wahlweise **Strecke** (Startort → Landeraum → Trajektorien-Endpunkte, Radius einstellbar) oder **Umkreis um Orte** (Ortswahl, Standard Startort, Radius 200 km); **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | FAA NOTAM API (Zugang in Einstellungen → Zugänge) |
+| NOTAM | **autorouter** (wenn «autorouter Benutzer/Kennwort» hinterlegt; NOTAM je FIR der Fahrt – Startort, Landeraum, Lufträume – auf den Umkreis gefiltert) oder FAA-NOTAM-API (Rückfall, ein Wiederholungsversuch), wahlweise **Strecke** (Startort → Landeraum → Trajektorien-Endpunkte, Radius einstellbar) oder **Umkreis um Orte** (Ortswahl, Standard Startort, Radius 200 km); **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | autorouter NOTAM API (`api.autorouter.aero`, OAuth2 mit E-Mail/Kennwort, API-Freischaltung per Support-Ticket) · FAA NOTAM API (Zugänge in Einstellungen → Zugänge) |
 
 **KI-Hinweis:** Knopf im Panel öffnet den Prompt (Fahrtkontext + Panel-Inhalt +
 Bilder, ohne Pax-Namen) zur Kontrolle, sendet ihn über den Worker an die
@@ -271,9 +281,10 @@ Freigabe wird als Final v1, v2 … mit Schnappschuss abgelegt.
 
 ### Briefingsicht und Druck
 
-Das fertige Briefing wie im gedruckten Muster: Kopf mit Logo, Abschnitte A–D als
-zweispaltige Tabellen, Zusatzinfo/KI-Hinweis/Kommentar unter dem Inhalt, Fuss mit
-Version und Hinweis. **PDF / Drucken** nutzt den Browserdruck (A4 hoch; «Als PDF
+Das fertige Briefing wie im gedruckten Muster: Kopf (links Datum · Ort und Ballonzeile, rechts
+Logo, Titelzeile, letzte Änderung, Status), Abschnitte A–D als zweispaltige Tabellen, eigener
+Text/KI-Kommentar/Kommentar PIC unter dem Inhalt, Fuss mit Version und Hinweis. Am Bildschirm öffnet
+ein Klick auf Grafiken, Bilder und Tabellen eine **vergrösserte Ansicht** (✕ oder Escape schliesst). **PDF / Drucken** nutzt den Browserdruck (A4 hoch; «Als PDF
 sichern»). Bild-Schnappschüsse (DABS, Karten) stehen als **Beilagen** auf eigenen
 Seiten nach dem Briefing; die Klickbox «Beilagen mitdrucken» in der Werkzeugleiste
 schaltet sie für den Druck ab (am Bildschirm zeigt das Panel den Viewer). Die
@@ -382,7 +393,7 @@ die Einstellungen (ohne Zugänge).
 | DABS | skybriefing `o/dabs?today|tomorrow` | Worker `/api/wx/dabs` → R2, Seiten mit pdf.js (vendored) gerendert |
 | Lufträume | openAIP Core API (`api.core.openaip.net/api/airspaces?bbox=…`) | Worker `/api/wx/airspace` mit `openaip`-Schlüssel aus «Zugänge» (Rückfall: Kachel-Schlüssel aus der Overlay-URL), Analyse im Browser (`js/calc/airspace.js`) |
 | Webcams | Windy Webcams API v3, OpenStreetMap/Overpass | Worker `/api/wx/webcams` (Schlüssel `windy_webcams` optional) |
-| NOTAM | FAA NOTAM API (`external-api.faa.gov`) | Worker `/api/wx/notam` mit `faa_client_id/secret` aus «Zugänge» |
+| NOTAM | autorouter NOTAM API (`api.autorouter.aero`, FIR-Kennungen je Land im Worker) · FAA NOTAM API (`external-api.faa.gov`) als Rückfall | Worker `/api/wx/notam` mit `autorouter_user/pass` bzw. `faa_client_id/secret` aus «Zugänge» |
 | KI-Hinweis | Anthropic API | Worker `/api/wx/ai` mit `anthropic`-Schlüssel aus «Zugänge» |
 | Radar | RainViewer public API | direkt aus dem Browser (nur Bildschirm) |
 

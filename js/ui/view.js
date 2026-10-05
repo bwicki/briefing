@@ -1,5 +1,5 @@
 /* Fahrtbriefing — Briefingsicht: das fertige Briefing, Grundlage für Druck und Leselink. */
-import { h, clear, fmt, fmtSigned, textToNodes, dialog, toast } from '../util.js';
+import { h, clear, fmt, fmtSigned, textToNodes, dialog, toast, lightbox } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
@@ -62,14 +62,25 @@ export async function renderBrief(view, ctx, id, opts = {}) {
 
   // Kopf: links Datum/Ort und Ballon; rechts Logo, darunter Titelzeile «Fahrtbriefing · Nr · Kennzeichen · Start: …», letzte Änderung, Status
   brief.appendChild(h('div.bh', [
-    h('div.l', [h('h1', `${fmtDate(z, b.time.startMs, lang)} · ${b.site.name}`), h('div', `${b.balloon.label} · ${t('kind_' + b.flight.kind)} · LTF ${b.flight.operatorName}`)]),
+    h('div.l', [
+      h('h1', `${fmtDate(z, b.time.startMs, lang)} · ${b.site.name}`),
+      h('div.bline', `${b.balloon.label} · ${t('kind_' + b.flight.kind)} · LTF ${b.flight.operatorName}`),
+    ]),
     h('div.r', [
       h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }),
-      h('div.tl', titleLine(b, lang, t('appName'))),
-      h('div', lastChangeLine(b, lang, t('lastChange'))),
-      h('div', `${b.status === 'final' ? t('released', { n: b.finalNo }) : b.progress == null ? t('status_inwork') : t('status_progress', { p: b.progress })} · v${b.revision || 0} · PIC ${b.persons.pic}${locked ? ' · 🔒' : ''}`),
+      h('div.tline', titleLine(b, lang, t('appName'))),
+      h('div.meta', lastChangeLine(b, lang, t('lastChange'))),
+      h('div.meta', `${b.status === 'final' ? t('released', { n: b.finalNo }) : b.progress == null ? t('status_inwork') : t('status_progress', { p: b.progress })} · v${b.edition ?? b.revision ?? 0} · PIC ${b.persons.pic}${locked ? ' · 🔒' : ''}`),
     ]),
   ]));
+  // Grafiken, Bilder und Tabellen: Klick öffnet eine vergrösserte Ansicht (nur am Bildschirm)
+  brief.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, input, .leaflet-container, .bh, .no-lb')) return;
+    const el = e.target.closest('svg, img.pimg, table.auto, table.inner, table.dwd');
+    if (!el || !brief.contains(el)) return;
+    const row = el.closest('tr'); const th = row?.querySelector(':scope > th');
+    lightbox(el, th ? th.textContent.replace(/\s+/g, ' ').trim() : '');
+  });
 
   const gn = goNoGo(b, S);
   const ch = b.status !== 'final' ? changesSinceFinal(b) : null;

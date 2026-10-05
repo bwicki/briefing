@@ -88,7 +88,7 @@ export function assessmentPrompt(b, ctx) {
   const lang = getLang();
   const gn = goNoGo(b, ctx.settings);
   const parts = [lang === 'en' ? 'OVERALL ASSESSMENT REQUESTED.' : 'GESAMTEINSCHÄTZUNG ERBETEN.', '', 'FAHRTKONTEXT:', flightContext(b, ctx), ''];
-  if (gn.level != null) parts.push(`AMPEL (Modell ${gn.model || ''}, ${gn.hours} h im Fenster): ${['nein', 'grenzwertig', 'fahrbar'][gn.level]}${gn.reasons.length ? ' – ' + gn.reasons.join('; ') : ''}`, '');
+  if (gn.level != null) parts.push(`AMPEL (Modell ${gn.model || ''}, ${gn.hours} h im Fenster): ${['nein', 'marginal', 'fahrbar'][gn.level]}${gn.reasons.length ? ' – ' + gn.reasons.join('; ') : ''}`, '');
   for (const p of visiblePanels(ctx.settings, b)) {
     const d = b.panels[p.key]; if (!d) continue;
     const bits = [];
@@ -101,21 +101,25 @@ export function assessmentPrompt(b, ctx) {
   }
   parts.push(lang === 'en'
     ? 'Write 6–10 terse lines: overall picture, the two or three decisive factors with numbers and times (LT), open points to check before launch, and a tendency (flyable / marginal / no) with reasoning – explicitly not a launch decision.'
-    : 'Schreib 6–10 knappe Zeilen: Gesamtbild, die zwei bis drei entscheidenden Faktoren mit Zahlen und Zeiten (LT), offene Punkte vor dem Start, und eine Tendenz (fahrbar / grenzwertig / nein) mit Begründung – ausdrücklich kein Startentscheid.');
+    : 'Schreib 6–10 knappe Zeilen: Gesamtbild, die zwei bis drei entscheidenden Faktoren mit Zahlen und Zeiten (LT), offene Punkte vor dem Start, und eine Tendenz (fahrbar / marginal / nein) mit Begründung – ausdrücklich kein Startentscheid.');
   const system = lang === 'en'
     ? 'You are a meteorologist and balloon flight instructor. You receive a complete flight briefing (context, model data, official products, pilot notes). Answer in English, terse, numbers with units and LT times, as a short list with "–". No filler. The pilot decides.'
     : 'Du bist Meteorologe und Ballonfahrt-Ausbilder. Du bekommst ein vollständiges Fahrtbriefing (Kontext, Modelldaten, amtliche Produkte, Pilotennotizen). Antworte auf Deutsch (Schweiz, kein ß), knapp, Zahlen mit Einheit und LT-Zeiten, als kurze Liste mit «–». Keine Floskeln. Der Pilot entscheidet.';
   return { system, user: parts.join('\n') };
 }
-export async function assessmentDialog(b, ctx, onChange) {
+export async function assessmentDialog(b, ctx, onChange, opts = {}) {
   if (ctx.store.mode !== 'remote') { toast(t('ac_localOnly')); return; }
   const pr = assessmentPrompt(b, ctx);
-  const edit = textarea(pr.user, { rows: 10 });
-  const ok = await dialog(t('ass_title'), h('div', [h('div.note', t('ai_hint')), edit]), [{ label: t('cancel'), value: false }, { label: t('ai_send'), value: true, primary: true }], { cls: 'wide' });
-  if (!ok) return;
-  toast(t('loading'));
+  let user = pr.user;
+  if (opts.edit !== false) {   // wie bei den Panels: direkt erzeugen oder Prompt zuerst anpassen
+    const edit = textarea(pr.user, { rows: 10 });
+    const ok = await dialog(t('ass_title'), h('div', [h('div.note', t('ai_hint')), edit]), [{ label: t('cancel'), value: false }, { label: t('ai_send'), value: true, primary: true }], { cls: 'wide' });
+    if (!ok) return;
+    user = edit.value;
+  }
+  toast(t('ai_working'));
   try {
-    const res = await aiHint(ctx, b, { system: pr.system, prompt: edit.value, images: [], model: ctx.settings.aiModel });
+    const res = await aiHint(ctx, b, { system: pr.system, prompt: user, images: [], model: ctx.settings.aiModel });
     b.assessment = { text: res.text, model: res.model, ts: Date.now(), who: ctx.who };
     onChange(); toast(t('ok'));
   } catch (e) { toast(`${t('error')}: ${e.message}`); }
@@ -168,7 +172,7 @@ export function paxSheet(b, ctx) {
   const pic = S.persons.find((p) => p.id === b.persons.picId);
   const items = (S.paxCardItems?.[lang] || S.paxCardItems?.de || []);
   const card = h('div.brief.paxcard', [
-    h('div.bh', [h('div.l', [balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null, h('div', [h('h1', `${paxCardTitle(S)} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)])]), h('div.r', [h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }), h('div.tl', titleLine(b, lang, t('appName'))), h('div', lastChangeLine(b, lang, t('lastChange')))])]),
+    h('div.bh.pax', [h('div.l.row', [balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null, h('div', [h('h1', `${paxCardTitle(S)} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div.bline', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)])]), h('div.r', [h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }), h('div.tline', titleLine(b, lang, t('appName'))), h('div.meta', lastChangeLine(b, lang, t('lastChange')))])]),
     h('div.bs', t('pax_meet')),
     h('div.pax-meet', [h('div.kv.pax-kv', [
       [t('meeting'), meet ? placeLine({ name: meet.name, lat: meet.lat, lon: meet.lon }, { noElev: true }) : (b.schedule.meetingName || '–')],

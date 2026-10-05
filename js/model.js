@@ -28,7 +28,7 @@ export function newBriefing(settings, now = Date.now()) {
   const meeting = settings.meetings.find((m) => (site?.meetingId ? m.id === site.meetingId : m.default)) || settings.meetings[0] || null;
   const intent = settings.intentDefaults[bal?.type || 'hab'];
   const b = {
-    id: uid(12), createdAt: now, updatedAt: now, revision: 0, status: 'draft', finalNo: 0,
+    id: uid(12), createdAt: now, updatedAt: now, revision: 0, edition: 0, status: 'draft', finalNo: 0,
     lang: settings.lang || 'de', timeBase: settings.timeBase || 'LT',
     balloon: bal, balloonSel: sel,
     flight: { kind: 'commercial', operatorId: op?.id || 'custom', operatorName: op?.name || '', occasion: '', nvfr: false },
@@ -58,13 +58,25 @@ export function upgradeBriefing(b) {
   for (const p of b.persons.pax || []) if (/^(Pax|Passenger) \d+$/.test(p.name || '')) p.name = '';   // alte Platzhalter-Namen
   if (b.flight && b.flight.nvfr == null) b.flight.nvfr = b.intent?.dayNight === 'night' || b.intent?.dayNight === 'both';   // 0.8.1: NVFR-Schalter statt Tag/Nacht in der Absicht
   for (const p of PANELS) if (!b.panels[p.key]) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
+  // 0.11.2: Bearbeitungsstand «vN» (Sitzungen) – Bestand übernimmt den bisherigen Speicherzähler
+  if (b.edition == null) b.edition = b.revision || 0;
+  // 0.11.2: bei Auto-Panels ohne Einfügepflicht wandert «eigener Text/Bilder» (content) in die Zusatzbox (extra)
+  for (const p of PANELS) {
+    if (p.kind !== 'auto' || p.grade === 'half') continue;
+    const d = b.panels[p.key]; const c = d?.content;
+    if (!c || (!(c.text || '').trim() && !(c.images || []).length)) continue;
+    d.extra = d.extra || { text: '', images: [] };
+    d.extra.text = [d.extra.text || '', c.text || ''].filter((x) => x.trim()).join('\n');
+    d.extra.images = [...(d.extra.images || []), ...(c.images || [])];
+    delete c.text; delete c.images;
+  }
   return b;
 }
 
 /** Duplikat als Vorlage: Stammdaten übernommen, Meteo-Panels leer, neues Datum (+7 Tage). */
 export function duplicateBriefing(src, settings) {
   const b = deepCopy(src);
-  b.id = uid(12); b.createdAt = Date.now(); b.updatedAt = Date.now(); b.revision = 0; b.status = 'draft'; b.finalNo = 0; b.versions = []; b.log = []; b.accessCount = 0;
+  b.id = uid(12); b.createdAt = Date.now(); b.updatedAt = Date.now(); b.revision = 0; b.edition = 0; b.status = 'draft'; b.finalNo = 0; b.versions = []; b.log = []; b.accessCount = 0;
   b.no = null; b.pdfs = []; b.assessment = null;   // neue Ordnungsnummer beim Speichern
   const tz = b.site.tz || 'Europe/Zurich';
   const next = addMin(b.time.startMs, 7 * 24 * 60);

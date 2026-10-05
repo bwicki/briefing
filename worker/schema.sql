@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS briefings (
   material_owner TEXT,
   no TEXT,                -- 0.11: Ordnungsnummer JJJJ-NNN (bestehende DB: Worker ergänzt die Spalte per ALTER TABLE)
   progress INTEGER,       -- 0.11: Fortschritt in % (gefüllte Panels)
-  end_ms INTEGER          -- 0.11: Fahrtende für die Sperre
+  end_ms INTEGER,         -- 0.11: Fahrtende für die Sperre
+  edition INTEGER         -- 0.11.2: Bearbeitungsstand «vN» (zählt Bearbeitungssitzungen, nicht Speichervorgänge)
 );
 CREATE INDEX IF NOT EXISTS briefings_start ON briefings(start_ms);
 CREATE INDEX IF NOT EXISTS briefings_owner ON briefings(owner_id, start_ms);

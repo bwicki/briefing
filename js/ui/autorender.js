@@ -10,6 +10,7 @@ import { directionText } from '../model.js';
 import { mapsLink } from './place.js';
 import { decodeMetar, decodeTaf, badToken, MARK0, MARK1 } from '../calc/metar.js';
 import { bearing, compass } from '../calc/geo.js';
+import { placeName } from '../net.js';
 
 const kt = (ms) => (ms == null ? '–' : Math.round(ms * MS_TO_KT));
 const deg = (d) => (d == null ? '–' : Math.round(d).toString().padStart(3, '0'));
@@ -223,7 +224,7 @@ export function renderTemps(snap, b, ctx) {
     const sSvg = lv.length >= 4 ? stueveChart(lv.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 40)) === 0 || i === a.length - 1), { w: 560, h: 360, lang: getLang() }) : null;
     const sel = lv.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 12)) === 0 || i === a.length - 1);
     const sRows = [...sel].reverse().map((l) => h('tr', [h('td', l.label), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)]));
-    parts.push(h('div.side-grid', { style: { marginTop: '10px' } }, [h('div.num', [h('div.lbl', [`${t('auto_sondehub')} ${sN.serial} · `, dirArrow(b, sN.lat, sN.lon), ` ${Math.round(sN.km)} km · ${(sN.launch || '').slice(0, 16).replace('T', ' ')} UTC`]), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', sRows)])), h('div.note', [t('auto_sondehubNote'), ' ', h('a', { href: `https://sondehub.org/${encodeURIComponent(sN.serial)}`, target: '_blank', rel: 'noopener' }, 'sondehub.org ↗')])]), h('div.gfx', sSvg || h('div.note', t('auto_noProfile')))]));
+    parts.push(h('div.side-grid', { style: { marginTop: '10px' } }, [h('div.num', [h('div.lbl', [`${t('auto_sondehub')} ${sN.serial}${sN.place ? ' · ' + sN.place : ''} · `, dirArrow(b, sN.lat, sN.lon), ` ${Math.round(sN.km)} km · ${(sN.launch || '').slice(0, 16).replace('T', ' ')} UTC`]), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', sRows)])), h('div.note', [t('auto_sondehubNote'), ' ', h('a', { href: `https://sondehub.org/${encodeURIComponent(sN.serial)}`, target: '_blank', rel: 'noopener' }, 'sondehub.org ↗')])]), h('div.gfx', sSvg || h('div.note', t('auto_noProfile')))]));
   }
   return h('div.auto-wrap', parts);
 }
@@ -328,10 +329,14 @@ export function renderMetar(snap, b) {
   const rawNodes = (raw) => raw.split(/(\s+)/).map((tk) => (/^\s+$/.test(tk) || !badToken(tk) ? tk : h('span.bad', tk)));
   // Klartext: Markierungen aus dem Decoder → rot
   const marked = (line) => line.split(new RegExp(`(${MARK0}[^${MARK1}]*${MARK1})`)).filter(Boolean).map((x) => (x.startsWith(MARK0) ? h('span.bad', x.slice(1, -1)) : x));
-  // kompakt: ohne Zeilen «METAR»/«TAF»/«Klartext» — Rohtext links, Klartext rechts
-  const pair = (label, raw, lines) => h('div.metar-cols.compact', [
+  // Alter des Bulletins «(vor 0:30 h)» – bezogen auf jetzt
+  const age = (ms) => { if (!ms) return ''; const dm = Math.max(0, Math.round((Date.now() - ms) / 60000)); return ` (${t('age_ago', { t: dm >= 2880 ? `${Math.floor(dm / 1440)} d` : `${Math.floor(dm / 60)}:${String(dm % 60).padStart(2, '0')} h` })})`; };
+  // Ausgabezeit aus «ddhhmmZ» (Monat/Jahr aus dem Schnappschuss)
+  const zMs = (raw) => { const m = /\b(\d{2})(\d{2})(\d{2})Z\b/.exec(raw || ''); if (!m) return null; const ref = new Date(snap.stand || Date.now()); let dt = Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth(), +m[1], +m[2], +m[3]); if (dt - ref.getTime() > 2 * 86400000) dt = Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth() - 1, +m[1], +m[2], +m[3]); return dt; };
+  // kompakt: Rohtext links, Klartext rechts; erste Klartextzeile «METAR LSZH · … (vor 0:30 h)»; Änderungsgruppen («→») ohne Aufzählungspunkt
+  const pair = (label, raw, lines, issuedMs) => h('div.metar-cols.compact', [
     h('div.raw', h('pre.report', rawNodes(raw))),
-    h('div.dec', h('ul.decoded', lines.map((x) => h('li', marked(x))))),
+    h('div.dec', h('ul.decoded', lines.map((x, i) => (i === 0 ? h('li.head', [h('b', label + ' '), ...marked(x), age(issuedMs)]) : h('li' + (x.startsWith('→') ? '.chg' : ''), marked(x)))))),
   ]);
   // Stationsnamen mit ICAO-Abkürzungen (AP = Airport, INTL, AB = Air Base, AFLD = Airfield)
   const stName = (n) => String(n || '').replace(/\b(Arpt|Airport|Aprt|Apt)\b\.?/gi, 'AP').replace(/\bIntl\b\.?/gi, 'INTL').replace(/\b(Air Base|Airbase|AFB|AB)\b/g, 'AB').replace(/\b(Airfield|Aerodrome)\b/gi, 'AFLD').replace(/\s+/g, ' ').trim();
@@ -340,10 +345,11 @@ export function renderMetar(snap, b) {
     h('div.note', `${d.metar.length} ${t('auto_metarWithin')} ${d.radiusKm || ''} km · ${t('auto_badLegend')}`),
     ...d.metar.map((m) => {
       const taf = d.taf?.[m.icaoId];
+      const obsMs = m.obsTime ? m.obsTime * 1000 : zMs(m.rawOb);
       return h('div.metar', [
-        h('div.mhead', [h('b', m.icaoId), ` ${stName(m.name)} · `, arrow(m), ` ${Math.round(m.distKm)} km`, m.obsTime ? h('span.muted.small', ` · ${new Date(m.obsTime * 1000).toISOString().slice(11, 16)} UTC`) : null]),
-        pair('METAR', m.rawOb || '', decodeMetar(m.rawOb || '', lang)),
-        taf ? pair('TAF', tafFmt(taf.rawTAF), decodeTaf(taf.rawTAF || '', lang)) : h('div.note', `${t('auto_noTaf')}`),
+        h('div.mhead', [h('b', m.icaoId), ` ${stName(m.name)} · `, arrow(m), ` ${Math.round(m.distKm)} km`, obsMs ? h('span.muted.small', ` · ${new Date(obsMs).toISOString().slice(11, 16)} UTC${age(obsMs)}`) : null]),
+        pair('METAR', m.rawOb || '', decodeMetar(m.rawOb || '', lang), obsMs),
+        taf ? pair('TAF', tafFmt(taf.rawTAF), decodeTaf(taf.rawTAF || '', lang), zMs(taf.rawTAF)) : h('div.note', `${t('auto_noTaf')}`),
       ]);
     }),
   ]);
@@ -439,7 +445,9 @@ export function renderSondeWindow(box, so, b) {
   const levels = (so.levels || []).map((l) => ({ label: `${l.hPa} hPa`, hPa: l.hPa, ft: l.ft, m: l.m, temp: l.temp, dew: l.dew, rh: l.rh, dir: l.dir, spd: l.kt != null ? l.kt / MS_TO_KT : null })).filter((l) => l.temp != null);
   const svg = levels.length >= 4 ? stueveChart(levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 40)) === 0 || i === a.length - 1), { w: 520, h: 340, lang: getLang() }) : null;
   const sel = levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 14)) === 0 || i === a.length - 1);
-  box.appendChild(h('div.note.small', `${t('auto_sondeLaunch')} ${(so.launch || '').slice(0, 16).replace('T', ' ')} UTC · ${t('auto_sondeTop')} ${so.topM ?? '–'} m · ${so.points} ${t('auto_sondePoints')}${so.levels?.some((l) => !l.pressureMeasured) ? ` · ${t('auto_sondePressNote')}` : ''}`));
+  const placeEl = h('span.place');
+  if (so.lat != null) placeName(so.lat, so.lon, b.site?.country, getLang()).then((n) => { if (n) placeEl.textContent = `${n} · `; });   // Startort der Sonde (Ausland mit Länderkennzeichen)
+  box.appendChild(h('div.note.small', [placeEl, `${t('auto_sondeLaunch')} ${(so.launch || '').slice(0, 16).replace('T', ' ')} UTC · ${t('auto_sondeTop')} ${so.topM ?? '–'} m · ${so.points} ${t('auto_sondePoints')}${so.levels?.some((l) => !l.pressureMeasured) ? ` · ${t('auto_sondePressNote')}` : ''}`]));
   box.appendChild(h('div.gfx', svg || h('div.note', t('auto_noProfile'))));
   box.appendChild(h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', ['hPa', 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', [...sel].reverse().map((l) => h('tr', [h('td.mono', l.hPa), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)])))])));
   box.appendChild(h('div.note.small', [h('a', { href: `https://sondehub.org/${encodeURIComponent(so.serial)}`, target: '_blank', rel: 'noopener' }, 'sondehub.org ↗')]));

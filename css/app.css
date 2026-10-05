@@ -164,8 +164,9 @@ table.tbl td .sm,.item-box .sm{font-size:11.5px;color:var(--text-dim);font-famil
 .dot.ok{background:var(--green);} .dot.auto{background:var(--dew);} .dot.man{background:var(--gafor-d);} .dot.must{background:var(--temp);} .dot.na{background:var(--gafor-none);}
 .enav-wrap{position:sticky;top:70px;max-height:calc(100vh - 80px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:4px}
 @media (max-width:899px){ .enav-wrap{position:static;} .enav{display:flex;flex-wrap:wrap;gap:4px 12px;} .enav details{margin:0;} .enav .note{flex-basis:100%;} }
-.sect-title{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin:14px 0 8px;}
-.sect-title:first-child{margin-top:0;}
+.sect-title{display:flex;align-items:baseline;gap:10px;font-family:var(--sans);font-size:15px;font-weight:700;color:var(--text-strong);margin:24px 0 10px;padding:7px 12px;border-left:4px solid var(--amber);background:var(--panel-2);border-radius:0 8px 8px 0;}
+.sect-title .id{font-family:var(--mono);font-size:13px;color:var(--amber);letter-spacing:.06em;}
+.sect-title:first-child,.refresh-all + .sect-title{margin-top:0;}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;scroll-margin-top:80px;}
 .panel.must-open{border-color:var(--temp);}
 /* Panel-Kopf (0.11): links Nummer + Titel, darunter Stand; rechts Kennzeichen + KI-Knöpfe, darunter der Quell-Link — alle Köpfe gleich strukturiert */
@@ -312,12 +313,17 @@ details.exp summary{cursor:pointer;font-weight:600;padding:8px 0;}
 /* ---------- Briefingsicht (Bildschirm) ---------- */
 .brief{max-width:900px;margin:0 auto;background:#fff;color:#111;border:1px solid var(--line);padding:22px 26px;border-radius:6px;font-size:12.5px;line-height:1.4;}
 :root[data-theme="dark"] .brief{box-shadow:0 0 0 1px #333;}
-.brief .bh{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid #1f2937;padding-bottom:6px;margin-bottom:10px;align-items:flex-start;}
-.brief .bh h1{margin:0;font-size:17px;color:#111;}
-.brief .bh .r{text-align:right;font-size:11.5px;color:#444;}
-.brief .bh img{height:30px;margin-left:8px;}
-.brief .bh .l{display:flex;align-items:flex-start;gap:10px;}
+/* Kopf der Briefingsicht: links Datum · Ort und Ballonzeile, rechts Logo, Titelzeile, letzte Änderung, Status – eine Schriftfamilie */
+.brief .bh{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 24px;align-items:end;border-bottom:2px solid #1f2937;padding-bottom:8px;margin-bottom:12px;font-family:var(--sans);}
+.brief .bh .l{display:flex;flex-direction:column;gap:3px;min-width:0;max-width:34ch;}
+.brief .bh h1{margin:0;font-family:var(--sans);font-size:18px;font-weight:700;line-height:1.25;color:#111;letter-spacing:-.01em;white-space:nowrap;}
+.brief .bh .l .bline{font-size:12px;color:#444;line-height:1.35;}
+.brief .bh .r{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;font-size:11px;color:#555;line-height:1.35;}
+.brief .bh .r img{height:28px;margin:0 0 6px;}
+.brief .bh .r .tline{font-size:12.5px;font-weight:700;color:#111;}
+.brief .bh .r .meta{font-size:11px;color:#555;}
 .brief .bh img.bimg{height:2cm;width:2cm;margin:0;}
+.brief .bh .l.row{flex-direction:row;align-items:flex-start;gap:10px;}
 .brief .bs{background:#1f2937;color:#fff;padding:3px 8px;font-weight:600;font-size:12px;margin:12px 0 6px;break-after:avoid;}
 .brief table.bp{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:4px;}
 .brief table.bp td{min-width:0;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto;}
@@ -346,7 +352,7 @@ details.exp summary{cursor:pointer;font-weight:600;padding:8px 0;}
   .brief table.bp th{border-bottom:0;background:#e8edf5;}
   .brief table.bp td{border-top:0;margin-bottom:4px;}
   .brief .cols{grid-template-columns:1fr;}
-  .brief .bh{flex-direction:column;} .brief .bh .r{text-align:left;}
+  .brief .bh{grid-template-columns:1fr;} .brief .bh .r{align-items:flex-start;text-align:left;} .brief .bh h1{white-space:normal;}
 }
 .phone-hint{font-size:11.5px;color:var(--text-dim);margin:6px 0;}
 
@@ -438,7 +444,8 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .metar-cols.compact ul.decoded{margin:0}
 .metar .mhead{font-size:12.5px}
 .metar-cols ul.decoded{margin:4px 0 0;padding-left:16px;font-size:12.5px;line-height:1.4}
-.metar-cols ul.decoded li:first-child{list-style:none;margin-left:-16px;font-weight:600}
+.metar-cols ul.decoded li:first-child,.metar-cols ul.decoded li.head{list-style:none;margin-left:-16px;font-weight:600}
+.metar-cols ul.decoded li.chg{list-style:none;margin-left:-16px;padding-left:16px;text-indent:-10px;color:var(--text)}   /* Änderungsgruppe bezieht sich auf die Punkte davor */
 .metar .bad{color:var(--temp);font-weight:600}
 .th-sum{margin-bottom:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .side-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;align-items:start}
@@ -653,19 +660,15 @@ table.panels-tbl input[type=checkbox]{width:16px;height:16px;margin:0;vertical-a
 /* 0.11: KI-Knopf «erneuern» violett schraffiert (anders als «erzeugen») */
 .btn.ai.renew,.aibtns .btn.ai.renew{background:repeating-linear-gradient(135deg,var(--violet,#6b4fb5) 0 6px,#8f78d1 6px 12px);color:#fff;border-color:transparent}
 /* 0.11: Kopf der Briefingsicht — rechts Logo oben, darunter Titelzeile rechtsbündig, letzte Änderung, Status */
-.brief .bh .r{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
-.brief .bh .r img{margin:0 0 4px 0}
-.brief .bh .r .tl{font-weight:700;color:#111;font-size:12.5px;white-space:nowrap}
-.brief .bh .l h1{margin:0}
 /* 0.11: Sperre (Fahrt vorbei) */
 .lockbar{margin:0 0 10px;border-color:#d9a400;background:#fff8e1}
 .lockbar .card-body{align-items:center;flex-wrap:wrap}
 .lock{font-size:12px}
 .card.summary .btn{margin-top:6px}
-/* 0.11: «Alle verfügbaren Daten aktualisieren» oben in den Stammdaten */
-.refresh-all{margin:0 0 10px;align-items:center}
+/* 0.11.2: «Alle verfügbaren Daten aktualisieren» über dem Abschnitt A */
+.refresh-all{margin:0 0 12px;align-items:center}
 .tbl td.mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
-@media (max-width:680px){ .panel-head{flex-wrap:wrap} .panel-head .rgt{max-width:100%;align-items:flex-start;width:100%} .panel-head .rrow{justify-content:flex-start} .brief .bh .r .tl{white-space:normal} }
+@media (max-width:680px){ .panel-head{flex-wrap:wrap} .panel-head .rgt{max-width:100%;align-items:flex-start;width:100%} .panel-head .rrow{justify-content:flex-start} }
 
 /* 0.11.1: Länder-Matrix */
 .tbl-wrap{overflow:auto}
@@ -674,3 +677,39 @@ table.cm-tbl th{text-align:left;font-size:11px;color:var(--text-dim);padding:4px
 table.cm-tbl td{padding:5px 6px;border-bottom:1px solid var(--line-soft);vertical-align:top}
 table.cm-tbl td.cc{white-space:nowrap}
 table.cm-tbl textarea{width:100%;min-width:160px;font-size:11.5px}
+
+/* 0.11.2: Übersicht kompakt – je Zelle höchstens zwei Zeilen, Aktionen als Symbole in einer Zeile */
+table.tbl.list{font-size:12px}
+table.tbl.list th{padding:6px 8px;font-size:9.5px}
+table.tbl.list td{padding:6px 8px;line-height:1.3;vertical-align:middle}
+table.tbl.list td.nowrap,table.tbl.list td.no{white-space:nowrap}
+table.tbl.list .l1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+table.tbl.list .l2{white-space:nowrap;font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:2px;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+table.tbl.list td.acts{white-space:nowrap;flex-wrap:nowrap;display:table-cell}
+table.tbl.list td.acts .btn.icon.small{width:26px;height:26px;min-height:26px;font-size:12px;margin-right:3px;border-radius:6px}
+table.tbl.list td.acts .btn.icon.small.edit{color:var(--amber);border-color:var(--amber-dim)}
+table.tbl.list tr.locked td.no{color:var(--text-dim)}
+table.tbl.list .tag{font-size:9.5px;padding:1px 6px}
+
+/* 0.11.2: Zusatzboxen (📝 blau · 💬 gelb) und Symbolknöpfe im Panelkopf */
+.panel-head .addrow{display:flex;gap:4px;justify-content:flex-end;margin-top:4px}
+.btn.icon.small.add{width:26px;height:26px;min-height:26px;font-size:13px;border-radius:6px;padding:0}
+.btn.icon.small.add.extra{border-color:var(--dew);background:color-mix(in srgb,var(--dew) 14%,transparent)}
+.btn.icon.small.add.cmt{border-color:var(--amber);background:color-mix(in srgb,var(--amber) 14%,transparent)}
+.sub.extra{border-left:3px solid var(--dew);padding-left:10px}
+.sub.cmt{border-left:3px solid var(--amber);padding-left:10px}
+.sub.half{border-top:none;margin-top:6px;padding-top:0}
+.sub.half .lbl{color:var(--gafor-d)}
+.sub .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.card.summary .aibtns .btn.ai{height:28px;min-height:28px}
+@media (max-width:680px){ .panel-head .addrow{justify-content:flex-start} }
+
+/* 0.11.2: vergrösserte Ansicht (Lightbox) in der Briefingsicht */
+.brief svg,.brief img.pimg,.brief table.auto,.brief table.inner,.brief table.dwd{cursor:zoom-in}
+.backdrop.lightbox{z-index:1200}
+.dialog.lb{max-width:min(96vw,1400px);width:auto;max-height:94vh}
+.dialog.lb .lb-body{padding:14px;overflow:auto;font-size:14px}
+.dialog.lb .lb-body table{font-size:13.5px}
+.dialog.lb .lb-body table td,.dialog.lb .lb-body table th{padding:5px 9px}
+.dialog.lb .lb-body img{max-width:92vw;max-height:84vh;width:auto;height:auto}
+.dialog.lb .lb-body svg{display:block;min-width:min(900px,90vw)}

@@ -417,15 +417,64 @@ async function sonde(ctx, q) {
   return json(data);
 }
 
-// ------------------------------------------------------------ FAA NOTAM
+// ------------------------------------------------------------ NOTAM (autorouter · FAA)
+/** FIR-Kennungen je Land (Item A für autorouter); Rückfall LSAS. */
+const FIRS = { CH: ['LSAS'], LI: ['LSAS'], DE: ['EDMM', 'EDGG', 'EDWW'], AT: ['LOVV'], FR: ['LFMM', 'LFFF', 'LFEE', 'LFBB', 'LFRR'], IT: ['LIMM', 'LIRR', 'LIBB'], SI: ['LJLA'], HR: ['LDZO'], HU: ['LHCC'], CZ: ['LKAA'], SK: ['LZBB'], PL: ['EPWW'], BE: ['EBBU'], NL: ['EHAA'], LU: ['ELLX'], DK: ['EKDK'], ES: ['LECM', 'LECB'], PT: ['LPPC'], GB: ['EGTT', 'EGPX'], IE: ['EISN'] };
+/** autorouter: OAuth2 client_credentials (E-Mail/Kennwort), Token 1 h – im Cache. */
+async function autorouterToken(env, decrypt, ctx) {
+  const user = await getSecret(env, decrypt, 'autorouter_user'), pass = await getSecret(env, decrypt, 'autorouter_pass');
+  if (!user || !pass) return null;
+  const j = await cached(ctx, `autorouter/token/${user.length}`, 3000, async () => {
+    const body = new URLSearchParams({ grant_type: 'client_credentials', client_id: user, client_secret: pass });
+    const r = await get('https://api.autorouter.aero/v1.0/oauth2/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() }, 15000);
+    return r.json();
+  });
+  return j?.access_token || null;
+}
+/** NOTAM über autorouter nach FIR-Kennungen (Item A), gefiltert auf den Umkreis (NOTAM mit Koordinaten) – FIR-weite bleiben. */
+async function notamAutorouter(env, decrypt, ctx, lat, lon, radiusNm, cc) {
+  const token = await autorouterToken(env, decrypt, ctx);
+  if (!token) return null;
+  const codes = [...new Set((cc || ['CH']).flatMap((c) => FIRS[String(c).toUpperCase()] || []))];
+  if (!codes.length) codes.push('LSAS');
+  const now = Math.floor(Date.now() / 1000);
+  const rows = await cached(ctx, `notam/ar/${codes.join('-')}`, 900, async () => {
+    const out = []; let offset = 0;
+    for (let k = 0; k < 20; k++) {
+      const url = `https://api.autorouter.aero/v1.0/notam?itemas=${encodeURIComponent(JSON.stringify(codes))}&offset=${offset}&limit=100&startvalidity=${now - 86400}&endvalidity=${now + 7 * 86400}`;
+      const j = await (await get(url, { headers: { Authorization: `Bearer ${token}` } }, 20000)).json();
+      out.push(...(j.rows || [])); offset += (j.rows || []).length;
+      if (!(j.rows || []).length || offset >= (j.total || 0)) break;
+    }
+    return out;
+  });
+  const items = rows.map((r) => {
+    const num = `${r.series || ''}${String(r.number ?? '').padStart(4, '0')}/${String(r.year ?? '').slice(-2)}`;
+    const plat = r.lat != null ? +r.lat : null, plon = r.lon != null ? +r.lon : null;
+    const iso = (v) => (v ? new Date(+v * 1000).toISOString() : null);
+    const formatted = `Q) ${r.fir || ''}/Q${r.code23 || ''}${r.code45 || ''}/${r.traffic || ''}/${r.purpose || ''}/${r.scope || ''}/${String(r.lower ?? '000').padStart(3, '0')}/${String(r.upper ?? '999').padStart(3, '0')}/\nA) ${r.itema || ''} B) ${iso(r.startvalidity) || ''} C) ${r.endvalidity ? iso(r.endvalidity) : 'PERM'}${r.estimation ? ' EST' : ''}\n${r.itemd ? 'D) ' + r.itemd + '\n' : ''}E) ${r.iteme || ''}${r.itemf ? '\nF) ' + r.itemf : ''}${r.itemg ? ' G) ' + r.itemg : ''}`;
+    return { id: `${r.itema}-${num}`, number: num, type: r.type, location: r.itema, icao: r.itema, start: iso(r.startvalidity), end: r.endvalidity ? iso(r.endvalidity) : 'PERM', text: r.iteme || '', formatted, minFL: r.lower ?? null, maxFL: r.upper ?? null, radius: r.radius ?? null, lat: plat, lon: plon, scope: r.scope, code: `${r.code23 || ''}${r.code45 || ''}` };
+  }).filter((it) => {
+    if (it.lat == null || it.lon == null) return true;                      // ohne Koordinaten: FIR-weit → behalten
+    const d = distKm(lat, lon, it.lat, it.lon) / 1.852;                    // NM
+    return d <= radiusNm + (it.radius || 0);
+  });
+  return { items, total: items.length, source: 'autorouter NOTAM API', generated: new Date().toISOString() };
+}
 async function notam(env, decrypt, ctx, q) {
-  const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
-  if (!id || !secret) return err('FAA-Zugang fehlt (Einstellungen → Zugänge)', 424);
   const lat = +q.get('lat'), lon = +q.get('lon'), radius = Math.min(100, +q.get('nm') || 25);
   if (!isFinite(lat) || !isFinite(lon)) return err('lat/lon');
+  const cc = String(q.get('cc') || '').split(',').map((x) => x.trim()).filter(Boolean);
+  // 1) autorouter, wenn Zugang hinterlegt (Einstellungen → Zugänge)
+  try { const ar = await notamAutorouter(env, decrypt, ctx, lat, lon, radius, cc); if (ar) return json(ar); }
+  catch (e) { console.warn('autorouter', e.message); if (!(await getSecret(env, decrypt, 'faa_client_id'))) return err(`autorouter: ${e.message}`, 502); }
+  // 2) FAA NOTAM API (ein Wiederholungsversuch, da der Dienst oft nicht antwortet)
+  const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
+  if (!id || !secret) return err('NOTAM-Zugang fehlt (Einstellungen → Zugänge: autorouter oder FAA)', 424);
   const data = await cached(ctx, `notam/${lat.toFixed(2)},${lon.toFixed(2)},${radius}`, 900, async () => {
     const url = `https://external-api.faa.gov/notamapi/v1/notams?locationLatitude=${lat.toFixed(4)}&locationLongitude=${lon.toFixed(4)}&locationRadius=${radius}&pageSize=1000&sortBy=effectiveStartDate&sortOrder=Asc`;
-    const j = await (await get(url, { headers: { client_id: id, client_secret: secret } }, 25000)).json();
+    let j;
+    for (let k = 0; k < 2; k++) { try { j = await (await get(url, { headers: { client_id: id, client_secret: secret } }, 20000)).json(); break; } catch (e) { if (k) throw e; } }
     const items = (j.items || []).map((it) => {
       const core = it.properties?.coreNOTAMData?.notam || {}; const tr = it.properties?.coreNOTAMData?.notamTranslation?.[0] || {};
       return { id: core.id, number: core.number, type: core.type, location: core.location, icao: core.icaoLocation, start: core.effectiveStart, end: core.effectiveEnd, classification: core.classification, text: core.text, minFL: core.minimumFL, maxFL: core.maximumFL, radius: core.radius, coordinates: core.coordinates, lat: core.lat, lon: core.lon, formatted: tr.formattedText || tr.simpleText || '', geometry: it.geometry };

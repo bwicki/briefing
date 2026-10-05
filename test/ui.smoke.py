@@ -208,10 +208,22 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         assert hdr.startswith('Fahrtbriefing · 20') and 'Start:' in hdr and 'Letzte Änderung' in hdr, 'Titelzeile und letzte Änderung: ' + hdr[:80]
         assert 'Ordnungsnummer' in pg.inner_text('.brief tr.row-A-core') and 'Pax:' in pg.inner_text('.brief tr.row-A-core'), 'Nummer und Pax-Zeile in den Stammdaten'
         pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1200)
-        assert pg.query_selector('#panel-A\\.core .refresh-all button') is not None, 'Knopf «Alle verfügbaren Daten aktualisieren»'
+        assert pg.query_selector('.editor .refresh-all button') is not None and pg.query_selector('#panel-A\\.core .refresh-all') is None, 'Knopf «Alle verfügbaren Daten aktualisieren» über Abschnitt A'
         assert all(pg.query_selector(f'#panel-{k} .panel-head .lft .src') is not None for k in ['A\\.core', 'B\\.metar', 'C\\.fpl']), 'Stand-Zeile in jedem Panel-Kopf'
         assert 'modellsicht' in pg.inner_text('.side').lower() and 'zusammenfassung' in pg.inner_text('.side').lower(), 'rechte Spalte: Einschätzung/Modellsicht + Zusammenfassung'
         pg.screenshot(path=f'{OUT}/{name}_16_editor_head.png')
+        # 0.11.2: Abschnittstitel mit Kennbuchstabe, D = Crew-/Pax-Briefing, Akkordeon-Navigation, Zusatzboxen per Symbolknopf
+        titles = [x.strip() for x in pg.eval_on_selector_all('.editor .sect-title', 'els => els.map(e => e.textContent)')]
+        assert titles and titles[-1].lower().startswith('d') and 'crew-/pax-briefing' in titles[-1].lower(), 'Abschnittstitel D = Crew-/Pax-Briefing: ' + str(titles)
+        if not mobile:
+            opened = pg.eval_on_selector_all('.enav details', 'els => els.map(e => e.open)')
+            assert opened.count(True) == 1, 'Akkordeon: genau ein Abschnitt offen: ' + str(opened)
+            pg.click('#panel-C\\.fpl .panel-head .addrow .add.cmt'); pg.wait_for_timeout(300)
+            assert pg.query_selector('#panel-C\\.fpl .panel-body > .sub.cmt textarea') is not None, 'Kommentar-PIC-Box nach Klick'
+            assert pg.query_selector('#panel-B\\.metar .panel-body > .sub.extra') is None, 'Zusatzbox ohne Inhalt nicht sichtbar'
+            pg.click('#panel-B\\.metar .panel-head .addrow .add.extra'); pg.wait_for_timeout(300)
+            assert pg.query_selector('#panel-B\\.metar .panel-body > .sub.extra textarea') is not None, 'Zusatzbox nach Klick'
+            pg.screenshot(path=f'{OUT}/{name}_18_boxes.png')
         # Sperre: Fahrt in die Vergangenheit legen → Erarbeitung leitet auf die Briefingsicht mit Hinweis um
         pg.evaluate("""(id) => { const all = JSON.parse(localStorage.getItem('fb.briefings') || '{}'); const b = all[id]; b.time.startMs = Date.now() - 48 * 3600000; localStorage.setItem('fb.briefings', JSON.stringify(all)); }""", bid)
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(500)
@@ -220,6 +232,10 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
         pg.click('.list-head button.chip:has-text("Archiv")'); pg.wait_for_timeout(400)
         assert '🔒' in pg.inner_text('#view'), 'Schloss in der Liste (Archiv)'
+        if not mobile:
+            assert pg.query_selector('table.tbl.list td.no .lock') is not None and pg.query_selector('table.tbl.list tr.locked .acts .edit') is None, 'Schloss hinter der Nummer, kein Stift bei Sperre'
+            hdrs = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list th', 'els => els.map(e => e.textContent)')]
+            assert hdrs[0] == '#' and 'Status' in hdrs and 'Phase' not in hdrs and 'Links' not in hdrs, 'Spalten der Liste: ' + str(hdrs)
         pg.screenshot(path=f'{OUT}/{name}_17_locked.png')
         b.close()
 

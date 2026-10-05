@@ -66,6 +66,21 @@ export function dialog(title, content, buttons = [], opts = {}) {
   });
 }
 
+/** Vergrösserte Ansicht (Grafik, Bild oder Tabelle) als Popup mit Schliessknopf; Escape/Klick daneben schliesst. */
+export function lightbox(node, title = '') {
+  const back = h('div.backdrop.lightbox');
+  const clone = node.cloneNode(true);
+  clone.querySelectorAll('[id]').forEach((x) => x.removeAttribute('id'));
+  if (clone.tagName === 'svg' || clone.tagName === 'SVG') { clone.removeAttribute('width'); clone.removeAttribute('height'); clone.style.width = '100%'; clone.style.height = 'auto'; clone.style.maxHeight = '86vh'; }
+  const box = h('div.dialog.lb', [h('div.dialog-head', [h('div.section-title', title), h('button.btn.icon', { onclick: close, 'aria-label': 'close', title: 'Schliessen' }, '✕')]), h('div.dialog-body.lb-body', clone)]);
+  back.appendChild(box); document.body.appendChild(back);
+  back.addEventListener('click', (e) => { if (e.target === back) close(); });
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  function close() { back.remove(); document.removeEventListener('keydown', onKey); }
+  return close;
+}
+
 export const debounce = (fn, ms = 400) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
 /** Bild (File/Blob) auf max. `max` px verkleinern, JPEG als dataURL. */

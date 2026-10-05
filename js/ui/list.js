@@ -56,40 +56,44 @@ export async function renderList(view, ctx) {
       tableWrap.appendChild(h('div.cards-list', rs.map((b) => h('div.bcard', { onclick: () => ctx.navigate(openHash(b)) }, [
         h('div.t', `${b.no ? b.no + ' · ' : ''}${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)} · ${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)} LT · ${b.reg || ''}`),
         h('div', `${b.site || '–'}${scope !== 'own' ? ` · ${b.ownerName || b.owner || ''}` : ''}`),
-        h('div.m', [phaseTag(b), ' ', statusText(b)]),
+        h('div.m', [locked(b) ? '🔒 ' : '', phaseTag(b), ' ', statusText(b)]),
       ]))));
       return;
     }
     const showOwner = scope !== 'own';
-    const tbl = h('table.tbl', [h('thead', h('tr', [h('th', t('core_no')), h('th', t('colDate')), h('th', t('colSite')), showOwner ? h('th', t('colOwner')) : null, h('th', t('colBalloon')), h('th', t('colType')), h('th', t('colPhase')), h('th', t('colStatus')), h('th', t('colShared')), h('th', '')].filter(Boolean))),
-      h('tbody', rs.map((b) => h('tr', [
-        h('td.mono', b.no || '–'),
-        h('td', [fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0), h('br'), h('span.sm', `${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)} LT`)]),
-        h('td', [b.site || '–', h('br'), h('span.sm', `${b.icao || ''}${b.elev != null ? ' · ' + Math.round(b.elev) + ' m' : ''}`)]),
-        showOwner ? h('td', [b.ownerName || b.owner || '–', b.materialOwner && b.materialOwner !== b.owner ? h('div.sm', `${t('colMaterial')}: ${b.materialOwner}`) : null]) : null,
-        h('td', b.reg || b.balloon || '–'),
-        h('td', t('kind_' + (b.kind || 'commercial'))),
-        h('td', phaseTag(b)),
-        h('td', statusText(b)),
-        h('td', b.links ? `🔗 ${b.links}` : '–'),
-        h('td.row-actions', foreign(b) ? [h('button.btn', { type: 'button', onclick: () => ctx.navigate(openHash(b)) }, t('view_brief'))] : [
-          h('button.btn', { type: 'button', onclick: () => ctx.navigate(`#/b/${b.id}`) }, t('open')),
-          h('button.btn.icon', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, '⧉'),
-          h('button.btn.icon', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, '🗑'),
+    const tz = (b) => b.tz || 'Europe/Zurich';
+    const tbl = h('table.tbl.list', [h('thead', h('tr', [h('th', '#'), h('th', t('colDate')), h('th', t('colSite')), showOwner ? h('th', t('colOwner')) : null, h('th', t('colBalloon')), h('th', t('colType')), h('th', t('colStatus')), h('th', t('colChange')), h('th', '')].filter(Boolean))),
+      h('tbody', rs.map((b) => h('tr', { class: locked(b) ? 'locked' : '' }, [
+        h('td.mono.no', [b.no || '–', locked(b) ? h('span.lock', { title: t('locked') }, ' 🔒') : null]),
+        h('td', [h('div.l1', fmtDate(tz(b), b.startMs || 0)), h('div.l2', `${hhmm(tz(b), b.startMs || 0)} LT`)]),
+        h('td', [h('div.l1', b.site || '–'), h('div.l2', `${b.icao || ''}${b.elev != null ? ' · ' + Math.round(b.elev) + '\u00a0m' : ''}`)]),
+        showOwner ? h('td', [h('div.l1', b.ownerName || b.owner || '–'), b.materialOwner && b.materialOwner !== b.owner ? h('div.l2', `${t('colMaterial')}: ${b.materialOwner}`) : null]) : null,
+        h('td.nowrap', b.reg || b.balloon || '–'),
+        h('td.nowrap', t('kind_' + (b.kind || 'commercial'))),
+        h('td', [h('div.l1', statusTag(b)), h('div.l2', phaseTag(b))]),
+        h('td', [h('div.l1', `v${b.edition ?? b.revision ?? 0} · ${b.updatedAt ? fmtDateTime(tz(b), b.updatedAt) : '–'}`), h('div.l2', [b.updatedBy || '', b.links ? h('span', { title: t('colLinks') }, ` · 🔗 ${b.links}`) : null])]),
+        h('td.row-actions.acts', foreign(b) ? [h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(openHash(b)) }, '👁')] : [
+          locked(b) ? h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(`#/v/${b.id}`) }, '👁') : h('button.btn.icon.small.edit', { type: 'button', title: t('edit'), onclick: () => ctx.navigate(`#/b/${b.id}`) }, '✎'),
+          h('button.btn.icon.small', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, '⧉'),
+          h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, '🗑'),
         ]),
       ].filter(Boolean))))]);
     tableWrap.appendChild(tbl);
   }
   const locked = (b) => (b.endMs ? now > b.endMs : isLocked({ time: { startMs: b.startMs || 0 }, intent: {} }, now));
+  /** Phase der Fahrt (Vorplanung/Planung/Final/vergangen) als kleines Etikett. */
   function phaseTag(b) {
     const ph = phaseOf(b.startMs || 0, now);
     const cls = ph === 'plan' ? 'plan' : ph === 'final' ? 'final-phase' : 'pre';
-    return h('span', [locked(b) ? h('span.lock', { title: t('locked') }, '🔒 ') : null, tag(cls, t('phase_' + ph))]);
+    return tag(cls, t('phase_' + ph));
   }
-  /** Status: «Final v2» oder «in Arbeit 75 %» (Fortschritt = gefüllte Panels), dazu Revision und letzte Änderung. */
+  /** Status: «Final v2» oder «in Arbeit 75 %» (Fortschritt = gefüllte Panels). */
+  function statusTag(b) {
+    return b.status === 'final' ? tag('final', t('released', { n: b.finalNo })) : tag('', b.progress == null ? t('status_inwork') : t('status_progress', { p: b.progress }));
+  }
   function statusText(b) {
     const st = b.status === 'final' ? t('released', { n: b.finalNo }) : b.progress == null ? t('status_inwork') : t('status_progress', { p: b.progress });
-    return `${st} · v${b.revision || 0} · ${b.updatedAt ? fmtDateTime(b.tz || 'Europe/Zurich', b.updatedAt) : ''}${b.updatedBy ? ' · ' + b.updatedBy : ''}`;
+    return `${st} · v${b.edition ?? b.revision ?? 0} · ${b.updatedAt ? fmtDateTime(b.tz || 'Europe/Zurich', b.updatedAt) : ''}${b.updatedBy ? ' · ' + b.updatedBy : ''}`;
   }
   async function dup(id) {
     const src = await ctx.store.getBriefing(id);

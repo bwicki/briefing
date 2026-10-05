@@ -17,7 +17,7 @@ export function flightContext(b, ctx) {
     `Startort: ${b.site.name} ${b.site.icao} ${b.site.elev ?? '?'} m AMSL, Land ${b.site.country || '?'}`,
     `Start: ${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC), Dauer ${fmtDur(b.intent.durationMin)}, Höhenband ${b.intent.altMinFt}–${b.intent.altMaxFt} ft, Richtung ${b.intent.direction || '–'}${b.landing?.lat != null ? `, geplanter Landeraum ${b.landing.name} ${b.landing.icao}` : ''}`,
     sun ? `Sonne: BCMT ${hhmm(z, sun.official.bcmt)} SR ${hhmm(z, sun.official.sr)} SS ${hhmm(z, sun.official.ss)} ECET ${hhmm(z, sun.official.ecet)} LT` : '',
-    `Kriterien: Bodenwind grenzwertig ab ${L.wind?.[0] ?? 4} m/s, nein ab ${L.wind?.[1] ?? 6} m/s; Böen ${L.gust?.[0] ?? 6}/${L.gust?.[1] ?? 8} m/s; CAPE ${L.cape?.[0] ?? 300}/${L.cape?.[1] ?? 800} J/kg; Trockenfenster ≥ ${g.dryWindowH ?? 3} h; kein Gewitter innert ${g.noTsH ?? 3} h`,
+    `Kriterien: Bodenwind marginal ab ${L.wind?.[0] ?? 4} m/s, nein ab ${L.wind?.[1] ?? 6} m/s; Böen ${L.gust?.[0] ?? 6}/${L.gust?.[1] ?? 8} m/s; CAPE ${L.cape?.[0] ?? 300}/${L.cape?.[1] ?? 800} J/kg; Trockenfenster ≥ ${g.dryWindowH ?? 3} h; kein Gewitter innert ${g.noTsH ?? 3} h`,
     `Fahrtart: ${b.flight.kind}, Pax: ${b.persons.pax.length}`,
   ].filter(Boolean).join('\n');
 }

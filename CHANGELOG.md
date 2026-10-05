@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.11.2 — 2026-10-05 · Liste · Editor-Struktur · METAR/TAF · Lightbox · Kopfzeile · NOTAM-Quelle
+
+* **Liste** kompakt: kleinere Schrift, je Zelle höchstens zwei Zeilen (Höhe «467 m» und Kennung
+  ohne Umbruch), Spalte **«#»** mit 🔒 hinter der Nummer bei gesperrten Briefings, **«Status»**
+  (in Arbeit NN % / Final vN, darunter die Phase) und **«Letzte Änderung»** (vN · Datum · Bearbeiter,
+  dazu 🔗 n aktive Freigabelinks – die bisherige Spalte «Links»). Aktionen als Symbole in einer
+  Zeile: ✎ Bearbeiten (bei Sperre stattdessen 👁 Briefingsicht), ⧉ Duplizieren, 🗑 Löschen.
+* **Bearbeitungsstand «vN»** zählt neu Bearbeitungssitzungen statt Speichervorgänge: +1 beim ersten
+  Speichern nach dem Öffnen der Erarbeitung, nach einer Freigabe und nach einem Final-PDF.
+  Bestand übernimmt den bisherigen Zähler (Worker-Spalte `edition`, Feld `b.edition`).
+* **Erarbeitung:** Knopf «Alle verfügbaren Daten aktualisieren» über dem Abschnitt A; Abschnittstitel
+  A–D markant (Kennbuchstabe, Balken); D heisst **«Crew-/Pax-Briefing»**; linke Navigation als
+  **Akkordeon** – nur der Abschnitt der gerade bearbeiteten Stelle ist offen (folgt dem Scrollen und
+  dem Fokus), selbst geöffnete Abschnitte bleiben offen.
+* **Zusatzboxen je Panel:** «Eigener Text / Bilder einfügen» und «Zusatzinfo (eigene Recherche)»
+  sind zu **«Eigener Text / Bilder / Daten»** (blau) zusammengelegt, dazu **«Kommentar PIC»** (gelb).
+  Beide erscheinen nur mit Inhalt oder nach Klick auf die Symbolknöpfe 📝/💬 im Panelkopf (unter
+  KI-Kommentar/Quelle). Ausnahme: Panels mit Einfügepflicht (LINK + EINFÜGEN) behalten das Feld
+  «Bericht / Daten einfügen». Bestehende eigene Texte/Bilder in Auto-Panels wandern in die Zusatzbox.
+* **METAR/TAF:** Klartext beginnt mit «METAR LSZH …» bzw. «TAF LSZH …»; hinter der Zeit steht das
+  Alter **«(vor 0:30 h)»**; Änderungsgruppen (→ BECMG/TEMPO/PROB) ohne Aufzählungspunkt, da sie
+  sich auf die Punkte davor beziehen.
+* **Briefingsicht:** Klick auf Grafiken, Bilder und Tabellen öffnet eine **vergrösserte Ansicht**
+  (Popup mit ✕, Escape); Kopfzeile typographisch neu – eine Schriftfamilie, links Datum · Ort und
+  Ballonzeile, rechts Logo, Titelzeile, letzte Änderung, Status (die Titelzeile erbte bisher eine
+  SVG-Achsenklasse `.tl` → Monospace).
+* **SondeHub:** Startort der Sonde mit Ortsname; im Ausland mit Kfz-Länderkennzeichen («D-Stuttgart»).
+* Begriff «grenzwertig» → **«marginal»** (Ampel, Tabellen, KI-Prompts).
+* KI-Zusammenfassung (rechte Spalte): Knopf in der KI-Farbe mit «direkt erstellen» und «…»
+  (Prompt zuerst anpassen) wie in den Panels.
+* **NOTAM: autorouter als zweite Quelle.** Zugänge «autorouter Benutzer/Kennwort» (Einstellungen →
+  Zugänge); dann werden NOTAM je FIR der Fahrt (Startort, Landeraum, Lufträume) über
+  `api.autorouter.aero` geholt und auf den Umkreis gefiltert; FAA bleibt Rückfall (mit einem
+  Wiederholungsversuch). Länder-Matrix nennt die FIR-Kennungen (CH LSAS, DE EDMM/EDGG/EDWW, …).
+
 ## 0.11.1 — 2026-10-05 · Länder-Matrix · DWD-Dämmerungszeiten · Rückmeldungen
 
 * **Länder-Matrix** (Einstellungen → Experte): je Land (CH, LI, DE, AT, FR, IT, übrige) amtliches
