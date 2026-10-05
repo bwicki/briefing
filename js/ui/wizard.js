@@ -4,7 +4,7 @@ import { t, getLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, kv, stats, fieldAdd } from './widgets.js';
 import { scheduleEditor } from './parts.js';
-import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan } from '../model.js';
+import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan, directionText } from '../model.js';
 import { placeRow, placeLine, pickPlace, mapsLink, typeToPick } from './place.js';
 import { stammLabel } from '../stamm.js';
 import { resolveBalloon } from '../defaults.js';
@@ -13,7 +13,7 @@ import { hhmm, fmtDate, fmtDur, localParts, isoDate } from '../calc/time.js';
 import { geocode, pointInfo, siteWeatherAt, route } from '../net.js';
 import { startAmpel, quickTraj } from '../auto/data.js';
 import { baseLayers } from './autorender.js';
-import { TRAJ_COLORS } from '../auto/traj.js';
+import { TRAJ_COLORS, targetEstimate } from '../auto/traj.js';
 import { trailerMinutes } from '../calc/schedule.js';
 import { mandatoryPanels } from '../panels.js';
 import { tt } from '../i18n.js';
@@ -149,6 +149,8 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       try {
         const r = await quickTraj(ctx, b, levels);
         if (!mapEl.isConnected) return;
+        wrap.tracks = r.tracks;
+        if (b.landing?.lat != null) { const est = targetEstimate(r.tracks, b.site, b.landing); const nd = directionText(b, lang, est); if (nd !== b.intent.direction) { b.intent.direction = nd; wrap.onDirection?.(nd); } }
         note.textContent = `${t('trajprev_note', { d: fmtDur(r.durationMin), l: levels.join(', ') })} · ${r.modelName || ''}`;
         legend.append(h('span.muted.small', `${t('auto_legendAlt')}: `), ...r.tracks.filter((tr) => !tr.belowGround).map((tr) => h('span.item', [h('span.sw', { style: { background: TRAJ_COLORS[r.tracks.indexOf(tr) % TRAJ_COLORS.length] } }), ` ${tr.label} · ${tr.altFt} ft`])));
         if (typeof L === 'undefined') return;
@@ -317,12 +319,14 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const suggBox = h('div.note');
     const landBox = h('div');
     const setLanding = (p) => {
-      applyLanding(b, p, lang); if (p) dir.value = it.direction;
+      const est = p && preview?.tracks ? targetEstimate(preview.tracks, b.site, p) : null;
+      applyLanding(b, p, lang, est); if (p) dir.value = it.direction;
       persistSoon(); drawLand();
     };
     const drawLand = () => { clear(landBox); landBox.appendChild(placeRow(b.landing, { label: t('landingSite'), title: t('landingSite'), allowClear: true, from: b.site, onPick: setLanding })); landBox.appendChild(h('div.note', t('landingHint'))); };
     drawLand();
     preview = trajPreview(setLanding);
+    preview.onDirection = (v) => { dir.value = v; persistSoon(); };
     function sugg() {
       const sun = sunFor(b, ctx.settings, ctx.racTable);
       const s = equipmentSuggest(b, sun);
@@ -380,7 +384,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       const src = b.weather.source === 'model' ? t('mp_modelStand', { t: b.weather.stand || '' }) : `${t('mp_temp')} ${b.weather.tempC} °C · QNH ${b.weather.qnh}`;
       if (type === 'hab') {
         preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewLift')} (${bal.reg})`), h('span.sub2', `${t('mp_persons')} ${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg · ${src}`)])]), stats([
-          [t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'],
+          [t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_allowed'), `${fmt(r.allowed)} kg`, null, t(r.limitBy === 'mtom' ? 'mp_limitMtom' : 'mp_limitLift', { l: fmt(r.liftAtSite), m: fmt(r.mtom) })], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'],
           [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (b.weather.envTempC || bal.envTempC) ? 'neg' : ''],
           [t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m` : '–'],
           [t('mp_need', { d: fmtDur(b.intent.durationMin), r: Math.round(r.reserveMin) + ' min' }), `${fmt(r.needKg)} kg`], [t('mp_usable'), `${fmt(r.usable)} kg`, r.fuelMargin < 0 ? 'neg' : 'pos'],
@@ -426,7 +430,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s2'))), h('div.card-body', kv([[t('site'), placeLine(b.site)], [t('date'), `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('sun'), sun ? `BCMT ${hhmm(z, sun.official.bcmt)} · SR ${hhmm(z, sun.official.sr)} · SS ${hhmm(z, sun.official.ss)} · ECET ${hhmm(z, sun.official.ecet)}` : '–'], sun?.nightStart ? ['', h('span.warn', t('night'))] : null]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s3'))), h('div.card-body', kv([[t('duration'), fmtDur(b.intent.durationMin)], [t('altBand'), `${b.intent.altMinFt}–${b.intent.altMaxFt} ft`], [t('direction'), b.intent.direction || '–'], b.landing?.lat != null ? [t('landingSite'), placeLine(b.landing)] : null, [t('levels'), b.intent.levels.join(', ')]]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s4'))), h('div.card-body', kv([[t('pic'), b.persons.pic], [t('retrieve'), b.persons.retrieve || '–'], [t('pax'), b.persons.pax.map((p) => p.name).join(', ') || '–'], type === 'hab' ? [t('mp_takeoff'), `${fmt(r.takeoff)} kg (${fmtSigned(r.massDelta)} kg)`] : [t('gb_ballast'), `${fmt(r.ballast)} kg`]]))]),
-        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv([[t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–')]].concat(b.schedule.skip ? [[t('sch_title'), t('sch_skipped')]] : rows.map((row) => [hhmm(z, row.ms), scheduleRowLabel(row, b, t)]))))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv([[t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–')]].concat(b.schedule.skip ? [[t('sch_title'), t('sch_skipped')]] : rows.map((row) => [hhmm(z, row.ms), scheduleRowLabel(row, b, t, S.activities?.custom)]))))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_mandatory'))), h('div.card-body', [h('ul.mand', mandatoryPanels(S, b).map((p) => h('li', h('b', tt(p))))), h('div.note', t('wiz_createHint'))])]),
       ]),
     );

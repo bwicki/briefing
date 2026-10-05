@@ -12,7 +12,8 @@ import { racLookup } from './calc/rac.js';
 import { hotAir, gasBalloon } from './calc/aero.js';
 import { buildSchedule, scheduleWarnings, buildPlan, planTemplate, planToStops } from './calc/schedule.js';
 import { icao, bearing, distKm, compass, countryGuess } from './calc/geo.js';
-import { PANELS } from './panels.js';
+import { PANELS, touchesCH } from './panels.js';
+import { tt } from './i18n.js';
 
 export function newBriefing(settings, now = Date.now()) {
   const sel = defaultBalloon(settings);
@@ -211,25 +212,52 @@ export function syncMeeting(s) {
   const last = s.stops[s.stops.length - 1]; s.driveMin = last.driveMin ?? null; s.driveKm = last.driveKm ?? null; s.driveSource = last.driveSource || '';
 }
 /** Landeraum setzen (oder löschen) und die Zielrichtung daraus ableiten (Himmelsrichtung · Kurs · Distanz · Ort). */
-export function applyLanding(b, p, lang = 'de') {
+export function applyLanding(b, p, lang = 'de', est = null) {
   if (p) {
     Object.assign(b.landing, { name: p.name || '', lat: p.lat, lon: p.lon, elev: p.elev ?? null, icao: icao(p.lat, p.lon), address: p.address || '', country: p.country || countryGuess(p.lat, p.lon) || '' });
-    if (b.site.lat != null) {
-      const brg = Math.round(bearing(b.site.lat, b.site.lon, p.lat, p.lon)), km = distKm(b.site.lat, b.site.lon, p.lat, p.lon);
-      b.intent.direction = `${compass(brg, lang)} ${String(brg).padStart(3, '0')}° · ${km.toFixed(0)} km · ${p.name || b.landing.icao}`;
-    }
+    if (b.site.lat != null) b.intent.direction = directionText(b, lang, est);
   } else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' });
   return b.landing;
 }
+/** «Ort · W266° · 25 km · ~1:30 h · ⌀ 1200 m AMSL» – Fahrzeit/Höhe aus der Trajektorienschar (est von targetEstimate), falls vorhanden. */
+export function directionText(b, lang = 'de', est = null) {
+  const p = b.landing; if (!p || p.lat == null || b.site.lat == null) return b.intent.direction || '';
+  const brg = Math.round(bearing(b.site.lat, b.site.lon, p.lat, p.lon)), km = distKm(b.site.lat, b.site.lon, p.lat, p.lon);
+  const parts = [p.name || p.icao || icao(p.lat, p.lon), `${compass(brg, lang)}${String(brg).padStart(3, '0')}°`, `${km.toFixed(0)} km`];
+  if (est && !est.unreliable) { const hh = Math.floor(est.min / 60), mm = est.min % 60; parts.push(`${est.beyond ? '>' : '~'}${hh}:${String(mm).padStart(2, '0')} h`, `⌀ ${est.altM} m AMSL`); }
+  return parts.join(' · ');
+}
+/** Länder entlang der Fahrt: FIR-Folge der Luftraumanalyse (falls geladen), sonst Startort, Landeraum und Trajektorienpunkte (grobe Schätzung). */
+export function routeCountries(b) {
+  const out = new Set();
+  if (b.site?.country) out.add(b.site.country);
+  if (b.landing?.lat != null) out.add(b.landing.country || countryGuess(b.landing.lat, b.landing.lon));
+  const firs = b.panels?.['C.airspace']?.content?.auto?.data?.firs || [];
+  let fromFir = false;
+  for (const f of firs) for (const s of f.seq || []) if (s.country) { out.add(s.country); fromFir = true; }
+  if (!fromFir) for (const tr of b.panels?.['B.traj']?.content?.auto?.data?.tracks || []) for (const p of tr.points || []) { const c = countryGuess(p.lat, p.lon); if (c) out.add(c); }
+  out.delete('');
+  return out;
+}
+export const crossesBorder = (b) => routeCountries(b).size > 1;
+export { touchesCH };
+/** Flugplan nötig? NVFR, Grenzüberschreitung oder Gasfahrt → Standard «ja». */
+export const fplSuggested = (b) => !!(b.flight?.nvfr || b.balloon?.type === 'gas' || crossesBorder(b));
 /** Beschriftung einer Zeitplan-Zeile (Etappen mit Namen). */
-export function scheduleRowLabel(r, b, tr) {
+export function scheduleRowLabel(r, b, tr, acts) {
   if (r.type) {
     const place = r.type === 'arrive' ? b.site?.name : r.type === 'landing' ? (b.landing?.name || '') : (r.place?.name || r.name || '');
-    return `${tr('act_' + r.type)}${place ? ' · ' + place : ''}${r.info ? ' – ' + r.info : ''}`;
+    return `${actLabel(r, tr, acts)}${place ? ' · ' + place : ''}${r.info ? ' – ' + r.info : ''}`;
   }
   if (r.kind === 'depart') return `${tr('sch_departAt')}${r.name ? ' · ' + r.name : ''}`;
   if (r.key === 'arrive') return `${tr('sch_arrive')}${b.site?.name ? ' · ' + b.site.name : ''}`;
   return tr('sch_' + r.key);
+}
+
+/** Beschriftung eines Aktivitätstyps; eigene Aktivitäten (Experte) über it.act. */
+export function actLabel(it, tr, acts) {
+  if (it.type === 'custom' && it.act) { const a = (acts || []).find((x) => x.id === it.act); if (a) return tt(a) || tr('act_custom'); }
+  return tr('act_' + it.type);
 }
 
 /** Vorschläge Spezialausrüstung aus Fahrtabsicht und Nacht. */

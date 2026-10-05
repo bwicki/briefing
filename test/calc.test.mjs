@@ -6,7 +6,9 @@ import { sunTimes, moonTimes, moonIllumination, moonPhaseName } from '../js/calc
 import { parseRacText, racLookup } from '../js/calc/rac.js';
 import { fromLocal, hhmm, localParts, tzOffsetMin, isoDate } from '../js/calc/time.js';
 import { icao, parseIcao, distKm } from '../js/calc/geo.js';
-import { buildSchedule, trailerMinutes, buildPlan, planTemplate, planToStops, scheduleWarnings, ACT_DEFAULT_MIN } from '../js/calc/schedule.js';
+import { touchesCH, panelNo, visiblePanels } from '../js/panels.js';
+import { targetEstimate } from '../js/auto/traj.js';
+import { buildSchedule, trailerMinutes, buildPlan, planTemplate, planToStops, scheduleWarnings, planOrderWarnings, ACT_DEFAULT_MIN } from '../js/calc/schedule.js';
 import { readFileSync } from 'node:fs';
 import * as OM from '../js/auto/openmeteo.js';
 import { parseLevel, tracks, levelAltM } from '../js/auto/traj.js';
@@ -28,7 +30,8 @@ const qwp = hotAir({
   usableFraction: 0.9, burnRate: 25, durationMin: 120, reserve: { pct: 25, capMin: 30 },
 });
 near(qwp.takeoff, 765, 0.5, 'Startgewicht');
-near(qwp.massDelta, -118, 0.5, 'Minder-/Mehrgewicht');
+near(qwp.massDeltaMtom, -118, 0.5, 'Minder-/Mehrgewicht (MTOM)');
+ok(qwp.allowed <= qwp.mtom && qwp.massDelta === qwp.takeoff - qwp.allowed && ['lift', 'mtom'].includes(qwp.limitBy), 'zulässig = min(Tragkraft, MTOM)');
 near(qwp.required, 0.225, 0.001, 'nötige Tragkraft/m³');
 ok(qwp.maxAltExcel === 5700, `Max. Steighöhe Excel-Regel = ${qwp.maxAltExcel}`);
 near(qwp.usable, 108, 0.01, 'Gasvorrat ausfliegbar');
@@ -52,7 +55,7 @@ const qwz = hotAir({
   usableFraction: 1.0, burnRate: 25, durationMin: 90, reserve: { pct: 25, capMin: 30 },
 });
 near(qwz.takeoff, 568, 0.5, 'Startgewicht');
-near(qwz.massDelta, -162, 0.5, 'Minder-/Mehrgewicht');
+near(qwz.massDeltaMtom, -162, 0.5, 'Minder-/Mehrgewicht (MTOM)');
 ok(qwz.maxAltExcel === 5400, `Max. Steighöhe Excel-Regel = ${qwz.maxAltExcel}`);
 near(qwz.usable, 80, 0.01, 'Gasvorrat ausfliegbar 100 %');
 near(qwz.reserveMin, 22.5, 0.01, 'Reserve 1.5 h → 22.5 min');
@@ -65,7 +68,7 @@ const qwzPdf = hotAir({
   persons: 3, personWeight: 90, cylinders: [{ ...wo, count: 4 }], mtom: 730, usableFraction: 1.0, burnRate: 25,
 });
 near(qwzPdf.takeoff, 583, 0.5, 'Startgewicht');
-near(qwzPdf.massDelta, -147, 0.5, 'Minder-/Mehrgewicht');
+near(qwzPdf.massDeltaMtom, -147, 0.5, 'Minder-/Mehrgewicht (MTOM)');
 ok(qwzPdf.maxAltExcel === 1800, `Max. Steighöhe = ${qwzPdf.maxAltExcel}`);
 
 console.log('Gasballon HB-QPJ (Excel v2: ρ 1.21398, Auftrieb 1274.68, Ballast 804.32)');
@@ -270,8 +273,29 @@ ok(requirementKey({ typeKey: 'TMA', cls: 'E' }) === 'classE' && requirementKey({
   ok(buildPlan([{ id: 'a', type: 'custom', min: 7 }, { id: 'start', type: 'start' }, { id: 'b', type: 'custom', min: 7 }, { id: 'c', type: 'custom', min: 7 }], { startMs }).map((r) => (r.ms - startMs) / 60000).join() === '-10,0,0,5', 'Rundung auf 5 min (rückwärts abgerundet, vorwärts kaufmännisch)');
   const stops = planToStops(tpl);
   ok(stops.length === 2 && stops[0].name === 'Katzenrüti' && stops[0].driveMin === 25 && stops[0].driveSource === 'routing' && stops[0].driveKm === 18 && stops[1].driveMin === 10, 'Etappen (Altform) aus dem Zeitplan abgeleitet');
+  const ow = planOrderWarnings(moved);
+  ok(ow.length === 2 && ow.some((x) => x.a === 'recovery' && x.b === 'flight') && ow.some((x) => x.a === 'recovery' && x.b === 'landing') && planOrderWarnings(tpl).length === 0, 'Reihenfolge-Warnung: Bergung vor Fahrt/Landung');
   const w = scheduleWarnings(rows, { bcmt: startMs + 60000, ecet: startMs + 60 * 60000, ss: startMs + 30 * 60000 });
   ok(w.join() === 'nightStart,nightLanding,returnAfterSunset', 'Warnungen aus Typ-Schlüsseln');
+}
+
+// ---- 0.9.2: DABS nur bei CH-Berührung, Panel-Nummern, Zielschätzung aus der Trajektorienschar
+{
+  const bDE = { site: { country: 'DE', lat: 51.57, lon: 6.98 }, landing: { lat: null }, panels: {} };
+  ok(!touchesCH(bDE) && !visiblePanels({ panels: { hidden: [] } }, bDE).some((p) => p.key === 'C.dabs'), 'Gladbeck ohne CH-Berührung: kein DABS');
+  const bDE2 = { ...bDE, panels: { 'B.traj': { content: { auto: { data: { tracks: [{ points: [{ lat: 47.5, lon: 8.2 }] }] } } } } } };
+  ok(touchesCH(bDE2), 'Trajektorienpunkt in CH → DABS');
+  const bFir = { ...bDE, panels: { 'C.airspace': { content: { auto: { data: { firs: [{ seq: [{ country: 'DE' }, { country: 'CH' }] }] } } } } } };
+  ok(touchesCH(bFir), 'FIR-Folge mit CH → DABS');
+  const vis = visiblePanels({ panels: { hidden: [] } }, { site: { country: 'CH' }, panels: {} });
+  ok(panelNo(vis[0], vis) === 'A1' && panelNo(vis.find((p) => p.key === 'C.dabs'), vis) === 'C2' && panelNo(vis.find((p) => p.key === 'B.metar'), vis) === 'B2', 'Panel-Nummern A1 / B2 / C2');
+  const t0 = Date.UTC(2026, 9, 10, 4, 0);
+  const mk = (altM, brg) => ({ altM, points: Array.from({ length: 13 }, (_, k) => { const km = k * 2; const r = km / 111; return { ms: t0 + k * 10 * 60000, lat: 47 + r * Math.cos(brg * Math.PI / 180), lon: 8 + r * Math.sin(brg * Math.PI / 180) / Math.cos(47 * Math.PI / 180) }; }) });
+  const trs = [mk(800, 80), mk(1500, 100)];
+  const est = targetEstimate(trs, { lat: 47, lon: 8 }, { lat: 47 + (12 / 111) * Math.cos(90 * Math.PI / 180), lon: 8 + (12 / 111) * Math.sin(90 * Math.PI / 180) / Math.cos(47 * Math.PI / 180) });
+  ok(est && est.min >= 55 && est.min <= 65 && est.altM > 800 && est.altM < 1500 && !est.beyond, `Ziel zwischen zwei Bahnen: ~60 min, Höhe gemittelt (${est && est.min} min, ${est && est.altM} m)`);
+  const far = targetEstimate(trs, { lat: 47, lon: 8 }, { lat: 47, lon: 8 + (40 / 111) / Math.cos(47 * Math.PI / 180) });
+  ok(far && far.beyond, 'Ziel jenseits der Bahnenden → «>»');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

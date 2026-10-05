@@ -113,6 +113,12 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
             assert 'DWD' not in pg.inner_text('#panel-B\\.balloon').split('EIGENE')[0].split('Stand:')[-1][:60] or True
         pg.wait_for_timeout(1500)
         assert '4725N00816E' in pg.inner_text('#panel-A\\.landing'), 'Landeraum im Editor'
+        # 0.9.2: Panel-Nummerierung, «Astronomische Daten» ohne KI-Knopf, DABS nur bei CH-Berührung, Flugplan-Schalter
+        assert pg.inner_text('#panel-A\\.core .panel-head .ttl').startswith('A1') and pg.inner_text('#panel-A\\.sun .panel-head .ttl').startswith('A2'), 'Panel-Nummern A1/A2'
+        assert 'Astronomische Daten' in pg.inner_text('#panel-A\\.sun .panel-head') and pg.query_selector('#panel-A\\.sun .aibtns') is None and pg.query_selector('#panel-A\\.core .aibtns') is None, 'Astronomische Daten ohne KI-Knopf'
+        assert pg.query_selector('#panel-C\\.dabs') is not None, 'DABS vorhanden (Landeraum in CH)'
+        assert pg.query_selector('#panel-C\\.fpl input[type=checkbox]') is not None, 'Flugplan-Schalter'
+        assert 'Ziel' in pg.inner_text('#panel-B\\.traj .traj-legend') and '°' in pg.inner_text('#panel-B\\.traj .traj-legend'), 'Zielzeile im Trajektorien-Panel'
         # NOTAM: Umkreis um Orte (Standard Startort, 200 km)
         pg.select_option('#panel-C\\.notam .ptools select', 'places'); pg.wait_for_timeout(400)
         assert pg.query_selector('#panel-C\\.notam .notam-places .np-row') is not None and '200' in pg.input_value('#panel-C\\.notam .notam-places input[type=number]'), 'NOTAM-Orte-Editor mit Startort und 200 km'
@@ -154,6 +160,15 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         # Settings
         pg.goto(BASE + '#/settings?balloons'); pg.wait_for_timeout(700)
         pg.screenshot(path=f'{OUT}/{name}_10_settings.png', full_page=True)
+        # 0.9.2: Zurück-Knopf, Speichern als Umriss bis zur ersten Änderung, Tracker je Ballon
+        assert pg.query_selector('#tools button[title="Zurück"]') is not None, 'Zurück-Knopf in den Einstellungen'
+        assert 'primary' not in (pg.get_attribute('#tools button.save', 'class') or ''), 'Speichern zunächst nur Umriss'
+        assert 'tracker-links' in pg.inner_text('.settings').lower(), 'Tracker-Links beim Ballon'
+        pg.fill('.settings .item-box input[type=text]', 'HB-TEST'); pg.wait_for_timeout(200)
+        assert 'primary' in (pg.get_attribute('#tools button.save', 'class') or ''), 'Speichern gefüllt nach Änderung'
+        pg.click('#menuBtn'); pg.wait_for_timeout(300)
+        assert pg.query_selector('#menu details.submenu summary:has-text("JSON")') is not None, 'JSON-Untermenü im Hamburger'
+        pg.click('#menuBtn'); pg.wait_for_timeout(200)
         # Liste erneut
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
         pg.screenshot(path=f'{OUT}/{name}_11_list.png')

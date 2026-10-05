@@ -3,9 +3,9 @@ import { h, clear, fmt, fmtSigned, textToNodes } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
-import { SECTIONS, visiblePanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { sunRows } from './parts.js';
-import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel } from '../model.js';
+import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
+import { sunRows, twilightClass } from './parts.js';
+import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, fplSuggested } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeLine } from './place.js';
 import { renderSnapshot, standLine } from './autorender.js';
@@ -82,13 +82,15 @@ export async function renderBrief(view, ctx, id, opts = {}) {
           if (b.schedule.skip) { cell.appendChild(h('div', t('sch_skipped'))); break; }
           // Zeit · Aktivität (Ort, Info) · Dauer · Ort mit Maps-Link, wo einer gesetzt ist
           const rowPlace = (r) => (r.type === 'arrive' ? b.site : r.type === 'landing' ? b.landing : r.place);
-          cell.appendChild(h('table.inner.sched-view', sched.rows.map((r) => { const pl = rowPlace(r); return h('tr', [h('td', { style: { textAlign: 'left', fontFamily: 'monospace', whiteSpace: 'nowrap' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, [scheduleRowLabel(r, b, t), r.dur ? h('span.muted.small', ` · ${r.dur} min`) : null]), h('td', { style: { textAlign: 'left' } }, pl?.lat != null ? placeLine({ name: '', lat: pl.lat, lon: pl.lon }, { noElev: true }) : '')]); })));
+          const twl = twilightClass(sun);
+          cell.appendChild(h('table.inner.sched-view', sched.rows.map((r) => { const pl = rowPlace(r); return h('tr', { class: twl(r.ms) }, [h('td', { style: { textAlign: 'left', fontFamily: 'monospace', whiteSpace: 'nowrap' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, [scheduleRowLabel(r, b, t, S.activities?.custom), r.dur ? h('span.muted.small', ` · ${r.dur} min`) : null]), h('td', { style: { textAlign: 'left' } }, pl?.lat != null ? placeLine({ name: '', lat: pl.lat, lon: pl.lon }, { noElev: true }) : '')]); })));
           break;
         }
         case 'equipment': { const items = d.content.items || ['none']; cell.appendChild(h('div', S.equipmentItems.map((it) => h('span.chk', `${items.includes(it) ? '☑' : '☐'} ${t('eq_' + it)}`)))); break; }
         case 'transition': { const items = d.content.items || S.transitionDefaults[b.site.country] || []; cell.appendChild(h('div', S.transitionAltitudes.map((ta) => h('span.chk', `${items.includes(ta.id) ? '☑' : '☐'} ${ta.label}`)))); break; }
         case 'paxbriefing': cell.appendChild(h('div', [h('div', S.paxBriefingItems.map((it) => h('span.chk', `${(d.content.items || S.paxBriefingItems).includes(it) ? '☑' : '☐'} ${t('pb_' + it)}`))), b.balloon.type === 'gas' ? h('ul', { style: { margin: '4px 0', paddingLeft: '16px' } }, GAS_BRIEFING_EXTRA[lang].map((x) => h('li', x))) : null, h('div.mini', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, AMC1_BOP_BAS_115)])); break;
         case 'text': cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (p.defaultText ? tt(p.defaultText) : '–')))); break;
+        case 'fpl': { const on = b.fpl?.enabled ?? fplSuggested(b); cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap' } }, on ? textToNodes(d.content.text || t('fpl_planned')) : t('fpl_none'))); break; }
         case 'landing': cell.appendChild(h('div', [b.landing?.lat != null ? h('div', [h('b', `${t('landingSite')}: `), placeLine(b.landing), b.site.lat != null ? h('span.mini', ` · ${distKm(b.site.lat, b.site.lon, b.landing.lat, b.landing.lon).toFixed(1)} km · ${Math.round(bearing(b.site.lat, b.site.lon, b.landing.lat, b.landing.lon)).toString().padStart(3, '0')}°`) : null]) : null, h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (b.landing?.lat != null ? '' : '–')))])); break;
         case 'auto': {
           const snap = d.content?.auto;
@@ -117,7 +119,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       }
       if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b', t('ai') + ': '), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
-      tbl.appendChild(h('tr', { class: 'row-' + p.key.replace('.', '-') }, [h('th', [tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null]), cell]));
+      tbl.appendChild(h('tr', { class: 'row-' + p.key.replace('.', '-') }, [h('th', [h('span.pno', panelNo(p, panels)), ' ', tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null]), cell]));
     }
     brief.appendChild(tbl);
   }
@@ -141,7 +143,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
     const src = w.source === 'model' ? t('mp_modelStand', { t: w.stand || '' }) : 'manuell';
     if (mp.type === 'hab') {
       return h('div.cols', [
-        h('div.kv', [[t('mp_volume'), `${fmt(bal.volume)} m³`], [t('mp_siteAlt'), `${fmt(b.site.elev)} m · ${w.tempC} °C · QNH ${w.qnh} hPa${w.rh != null ? ' · RH ' + w.rh + ' %' : ''} (${src})`], [t('mp_envTemp'), `${w.envTempC ?? bal.envTempC} °C`], [t('mp_equip'), `${bal.masses.envelope} / ${bal.masses.burner} / ${bal.masses.basket} / ${bal.masses.equipment} kg = ${fmt(r.equipMass)} kg`], [t('mp_persons'), `${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg`], [t('mp_cyl'), (b.cylinders || bal.cylinders).filter((c) => c.count).map((c) => `${c.count}× ${c.name}`).join(', ') + ` = ${fmt(r.cylMass)} kg`], [t('mp_takeoff'), h('b', `${fmt(r.takeoff)} kg`)], [t('mp_mtom'), `${fmt(r.mtom)} kg → ${fmtSigned(r.massDelta)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
+        h('div.kv', [[t('mp_volume'), `${fmt(bal.volume)} m³`], [t('mp_siteAlt'), `${fmt(b.site.elev)} m · ${w.tempC} °C · QNH ${w.qnh} hPa${w.rh != null ? ' · RH ' + w.rh + ' %' : ''} (${src})`], [t('mp_envTemp'), `${w.envTempC ?? bal.envTempC} °C`], [t('mp_equip'), `${bal.masses.envelope} / ${bal.masses.burner} / ${bal.masses.basket} / ${bal.masses.equipment} kg = ${fmt(r.equipMass)} kg`], [t('mp_persons'), `${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg`], [t('mp_cyl'), (b.cylinders || bal.cylinders).filter((c) => c.count).map((c) => `${c.count}× ${c.name}`).join(', ') + ` = ${fmt(r.cylMass)} kg`], [t('mp_takeoff'), h('b', `${fmt(r.takeoff)} kg`)], [t('mp_allowed'), `${fmt(r.allowed)} kg (${t(r.limitBy === 'mtom' ? 'mp_limitMtom' : 'mp_limitLift', { l: fmt(r.liftAtSite), m: fmt(r.mtom) })}) → ${fmtSigned(r.massDelta)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
         h('div.kv', [[t('mp_maxAlt'), `${r.maxAltExcel != null ? fmt(r.maxAltExcel) + ' m AMSL' : '> 10 000 m'} (${t('mp_required')} ${r.required.toFixed(3)} kg/m³)`], [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C · ${t('mp_envMargin', { t: w.envTempC ?? bal.envTempC })} ${fmtSigned(r.envMargin)} K` : '–'], [t('mp_usable'), `${fmt(r.usable)} kg`], [t('mp_burn'), `${fmt(r.burn)} kg/h`], [t('mp_endurance'), fmtDur(r.enduranceMin)], [t('mp_enduranceRes'), fmtDur(r.enduranceExcelReserve)], [t('mp_need', { d: fmtDur(b.intent.durationMin), r: `${Math.round(r.reserveMin)} min` }), `${fmt(r.needKg)} kg → ${t('mp_margin')} ${fmtSigned(r.fuelMargin)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
       ]);
     }

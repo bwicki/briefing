@@ -32,7 +32,7 @@ export const addBtn = (onclick, title) => h('button.btn.add', { type: 'button', 
 export const listHead = (title, box, label) => h('div.card-head', [h('div.section-title', title), addBtn(() => box.addFn?.(), label)]);
 /** Feld mit Beschriftung und «+» daneben. */
 export const fieldAdd = (label, content, onAdd, title) => h('div.f', [h('div.lblrow', [h('label', label), addBtn(onAdd, title)]), content]);
-export const stats = (items) => h('div.stat-strip', items.map(([k, v, cls]) => h('div.stat', [h('div.k', k), h('div.v' + (cls ? '.' + cls : ''), v)])));
+export const stats = (items) => h('div.stat-strip', items.filter(Boolean).map(([k, v, cls, sub]) => h('div.stat', [h('div.k', k), h('div.v' + (cls ? '.' + cls : ''), v), sub ? h('div.sub.small.muted', sub) : null])));
 export function card(title, body, opts = {}) {
   const el = h('div.card', [title ? h('div.card-head', [h('div.section-title', title), ...(opts.headExtra || [])]) : null, h('div.card-body', body)]);
   return el;

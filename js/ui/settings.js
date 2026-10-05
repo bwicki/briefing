@@ -6,6 +6,7 @@ import { field, input, select, textarea, check, listHead, fieldAdd, docsEditor }
 import { PANELS, SECTIONS } from '../panels.js';
 import { parseRacText, racValidity, linesFromPdfItems } from '../calc/rac.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
+import { ACT_TYPES, ACT_DEFAULT_MIN } from '../calc/schedule.js';
 import { placeRow, mapsUrl } from './place.js';
 import { exportAll } from './extras.js';
 import { usersSection, statsSection } from './users.js';
@@ -15,14 +16,15 @@ const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent',
 export async function renderSettings(view, ctx) {
   let S = deepCopy(ctx.settings);
   let cur = location.hash.split('?')[1] || 'general';
-  const saveBtn = h('button.btn.primary', { type: 'button', onclick: async () => { await ctx.saveSettings(S); S = deepCopy(ctx.settings); toast(t('set_saved')); draw(); } }, t('set_save'));
-  const expBtn = h('button.btn', { type: 'button', onclick: () => { const a = document.createElement('a'); a.href = 'data:application/json,' + encodeURIComponent(JSON.stringify(S, null, 2)); a.download = 'briefing-settings.json'; a.click(); } }, t('set_export'));
-  const impIn = h('input', { type: 'file', accept: 'application/json', style: { display: 'none' }, onchange: async (e) => { try { const txt = await e.target.files[0].text(); S = { ...S, ...JSON.parse(txt) }; draw(); toast(t('ok')); } catch (err) { toast(err.message); } } });
-  const impBtn = h('button.btn', { type: 'button', onclick: () => impIn.click() }, t('set_import'));
-  setHeader({ title: t('set_title'), tools: [expBtn, impBtn, saveBtn] });
+  // «Speichern» als Umriss; gefüllt, sobald sich etwas geändert hat
+  const saveBtn = h('button.btn.save', { type: 'button', onclick: async () => { await ctx.saveSettings(S); S = deepCopy(ctx.settings); toast(t('set_saved')); draw(); markDirty(); } }, t('set_save'));
+  const markDirty = () => { const dirty = JSON.stringify(S) !== JSON.stringify(ctx.settings); saveBtn.classList.toggle('primary', dirty); saveBtn.classList.toggle('dirty', dirty); };
+  const backBtn = h('button.btn.icon', { type: 'button', title: t('back'), 'aria-label': t('back'), onclick: () => ctx.navigate(ctx.settingsReturn && !ctx.settingsReturn.startsWith('#/settings') ? ctx.settingsReturn : '#/list') }, '←');
+  setHeader({ title: t('set_title'), tools: [backBtn, saveBtn] });
   const nav = h('div.snav');
   const body = h('div');
-  view.appendChild(h('div.settings', [nav, body, impIn]));
+  view.appendChild(h('div.settings', [nav, body]));
+  for (const ev of ['input', 'change', 'click']) body.addEventListener(ev, () => setTimeout(markDirty, 0));
 
   function draw() {
     clear(nav);
@@ -62,6 +64,7 @@ export async function renderSettings(view, ctx) {
           h('div.frow.c4', [numField(x, 'mtom', t('b_mtom'))]),
           h('div.frow.c4', [numField(x.masses, 'envelope', `${t('b_envelope')} kg`), numField(x.masses, 'burner', `${t('b_burner')} kg`), numField(x.masses, 'basket', `${t('b_basket')} kg`), numField(x.masses, 'equipment', `${t('b_equipment')} kg`)]),
           h('div.frow.c4', [numField(x, 'personWeight', `${t('b_personWeight')} kg`), numField(x, 'maxPersons', t('b_maxPersons')), numField(x, 'burnRate', t('b_burn')), numField(x, 'rigMin', t('b_rig'))]),
+          h('div.frow.c2', [txtField(x, 'colour', t('b_colour')), field(t('b_trackers'), textarea((x.trackers || []).join('\n'), { rows: 2, placeholder: 'https://live.garmin.com/… · https://aprs.fi/… · https://www.flightradar24.com/…', oninput: (e) => { x.trackers = e.target.value.split(/[\n,;\s]+/).map((x2) => x2.trim()).filter((x2) => /^https?:\/\//i.test(x2)); } })),]),
           S.expert ? h('div.frow.c3', [numField(x, 'envTempC', t('b_envTemp')), numField(x, 'envMaxC', t('b_envMax')), field(`${t('b_usable')} (0–1)`, input('number', x.usableFraction, { step: 0.05, min: 0, max: 1, oninput: (e) => { x.usableFraction = num(e.target.value, 1); } }))]) : null,
           h('details', [h('summary.small', t('b_cyl')), h('table.cyl', [h('thead', h('tr', [h('th', t('b_cyl')), h('th', t('mp_count')), h('th', 'l'), h('th', 'kg Gas'), h('th', 'kg')])), h('tbody', cylRows)])]),
           (() => { const de = docsEditor(x, S.docTypes?.balloon, ctx); return fieldAdd(t('docs'), de, () => de.addFn(), t('doc_add')); })(),
@@ -77,6 +80,7 @@ export async function renderSettings(view, ctx) {
         h('div.head', [h('b', x.id), x.placeholder ? h('span.tag.half', t('placeholderMark')) : null, h('label.check', [h('input', { type: 'radio', name: 'defEnv', checked: B.defaultEnvelope === x.id, onchange: () => { B.defaultEnvelope = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.envelopes.splice(i, 1); drawEnv(); } }, '🗑')]),
         h('div.frow.c4', [txtField(x, 'id', t('registration')), txtField(x, 'model', t('b_model')), txtField(x, 'hex', t('b_hex')), numField(x, 'volume', t('b_volume'))]),
         h('div.frow.c4', [numField(x, 'mass', `${t('b_envelope')} kg`)]),
+        h('div.frow.c2', [txtField(x, 'colour', t('b_colour')), field(t('b_trackers'), textarea((x.trackers || []).join('\n'), { rows: 2, placeholder: 'https://live.garmin.com/… · https://aprs.fi/… · https://www.flightradar24.com/…', oninput: (e) => { x.trackers = e.target.value.split(/[\n,;\s]+/).map((x2) => x2.trim()).filter((x2) => /^https?:\/\//i.test(x2)); } })),]),
         (() => { const de = docsEditor(x, S.docTypes?.balloon, ctx); return fieldAdd(t('docs'), de, () => de.addFn(), t('doc_add')); })(),
         S.expert ? h('div.frow.c3', [field(t('b_gas'), select([{ value: 'H2', label: 'H₂' }, { value: 'He', label: 'He' }], x.gas, { onchange: (e) => { x.gas = e.target.value; } })), field(`${t('b_purity')} (0–1)`, input('number', x.purity, { step: 0.001, oninput: (e) => { x.purity = num(e.target.value, 1); } })), field('Füllgrad (0–1)', input('number', x.fillFraction ?? 1, { step: 0.05, oninput: (e) => { x.fillFraction = num(e.target.value, 1); } }))]) : null,
         check(t('placeholderMark'), x.placeholder, (v) => { x.placeholder = v; }),
@@ -113,7 +117,6 @@ export async function renderSettings(view, ctx) {
       S.persons.forEach((p, i) => box.appendChild(h('div.item-box', [
         h('div.head', [h('b', p.name), h('button.btn.icon', { type: 'button', onclick: () => { S.persons.splice(i, 1); drawP(); } }, '🗑')]),
         h('div.frow.c4', [txtField(p, 'name', t('name')), txtField(p, 'phone', t('phone')), txtField(p, 'email', t('email')), numField(p, 'weight', `${t('weight')} kg`)]),
-        field(t('p_trackers'), textarea((p.trackers || []).join('\n'), { rows: 2, placeholder: 'https://live.garmin.com/… · https://aprs.fi/… · https://www.flightradar24.com/…', oninput: (e) => { p.trackers = e.target.value.split(/[\n,;\s]+/).map((x) => x.trim()).filter((x) => /^https?:\/\//i.test(x)); } })),
         h('div.chips', ROLES.map((r) => h('button.chip', { type: 'button', 'aria-pressed': (p.roles || []).includes(r), onclick: (e) => { p.roles = p.roles || []; const i2 = p.roles.indexOf(r); if (i2 >= 0) p.roles.splice(i2, 1); else p.roles.push(r); e.currentTarget.setAttribute('aria-pressed', p.roles.includes(r)); } }, r.toUpperCase()))),
         (() => { const de = docsEditor(p, S.docTypes?.person, ctx); return fieldAdd(t('docs'), de, () => de.addFn(), t('doc_add')); })(),
       ])));
@@ -311,6 +314,19 @@ export async function renderSettings(view, ctx) {
     return h('div.card', h('div.card-body', [h('details.exp', { open: ro }, [h('summary', t('set_access')), h('div.note', t('set_secretsHint')), box])]));
   }
 
+  /** Aktivitäten des Tagesplans: eingebaute ein-/ausblenden, Standarddauer; eigene (DE/EN, Dauer, mit Ort). */
+  function activitiesCard() {
+    S.activities = S.activities || { hidden: [], minutes: {}, custom: [] };
+    const A = S.activities; A.hidden = A.hidden || []; A.minutes = A.minutes || {}; A.custom = A.custom || [];
+    const fixed = new Set(['start', 'flight', 'landing']);
+    const builtin = h('table.auto.acts', [h('thead', h('tr', [t('sch_colAct'), t('sch_colMin'), t('act_visible')].map((x) => h('th', x)))), h('tbody', ACT_TYPES.map((k) => h('tr', [h('td', t('act_' + k)), h('td', k === 'flight' ? h('span.muted', t('sch_flightFromIntent')) : input('number', A.minutes[k] ?? ACT_DEFAULT_MIN[k], { step: 5, min: 0, oninput: (e) => { const v = num(e.target.value, null); if (v == null || v === ACT_DEFAULT_MIN[k]) delete A.minutes[k]; else A.minutes[k] = v; } })), h('td', fixed.has(k) ? '✓' : h('input', { type: 'checkbox', checked: !A.hidden.includes(k), onchange: (e) => { const i = A.hidden.indexOf(k); if (e.target.checked && i >= 0) A.hidden.splice(i, 1); if (!e.target.checked && i < 0) A.hidden.push(k); } }))])))]);
+    const box = h('div');
+    const drawC = () => { clear(box); A.custom.forEach((a, i) => box.appendChild(h('div.frow.c4', [txtField(a, 'de', 'DE'), txtField(a, 'en', 'EN'), numField(a, 'min', t('sch_colMin'), 5), h('div.f', [h('label', t('sch_colPlace')), h('div.row-actions', [check(t('act_withPlace'), a.place !== false, (v) => { a.place = v; }), h('button.btn.icon', { type: 'button', onclick: () => { A.custom.splice(i, 1); drawC(); } }, '🗑')])])]))); };
+    drawC();
+    box.addFn = () => { A.custom.push({ id: uid(5), de: '', en: '', min: 15, place: true }); drawC(); };
+    return h('div.card', [listHead(t('set_activities'), box, t('act_add')), h('div.card-body', [h('div.note', t('set_activitiesHint')), h('div.tbl-scroll', builtin), h('div.lbl', { style: { marginTop: '10px' } }, t('act_own')), box])]);
+  }
+
   function expert() {
     const pwOld = input('password', '', { autocomplete: 'current-password' }), pwNew = input('password', '', { autocomplete: 'new-password' }), pwNew2 = input('password', '', { autocomplete: 'new-password' });
     const pwBtn = h('button.btn', { type: 'button', onclick: async () => {
@@ -331,6 +347,7 @@ export async function renderSettings(view, ctx) {
       h('div.card', [h('div.card-head', h('div.section-title', t('set_airspaceWarn'))), h('div.card-body', h('div.frow.c4', [numField(S, 'airspaceTmaWarnFt', t('set_tmaWarn'), 100)]))]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_paxCardTitle'))), h('div.card-body', [h('div.frow', [txtField(S.paxCardTitle, 'de', 'DE'), txtField(S.paxCardTitle, 'en', 'EN')]), h('div.note', t('set_paxCardTitleHint'))])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_pdiffWarn'))), h('div.card-body', h('div.frow.c4', [numField(S.pdiffWarn, 'half', `${t('set_pdiffHalf')} hPa`, 0.5), numField(S.pdiffWarn, 'neg', `${t('set_pdiffNeg')} hPa`, 0.5)]))]),
+      activitiesCard(),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_docTypes'))), h('div.card-body', h('div.frow', [field(t('set_docTypesBalloon'), textarea((S.docTypes?.balloon || []).join('\n'), { rows: 6, oninput: (e) => { (S.docTypes = S.docTypes || {}).balloon = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } })), field(t('set_docTypesPerson'), textarea((S.docTypes?.person || []).join('\n'), { rows: 6, oninput: (e) => { (S.docTypes = S.docTypes || {}).person = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } }))]))]),
     ]);
   }

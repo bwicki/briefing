@@ -112,6 +112,20 @@ export function planToStops(items) {
   return out;
 }
 
+/** Erwartete Reihenfolge der Aktivitäten (Rang); Typen ohne Rang (Verpflegung, Tanken, Sonstiges) sind frei. */
+export const ACT_RANK = { meet: 1, drive: 1, buffer: 3, arrive: 4, rig: 5, fill: 6, briefing: 7, start: 8, flight: 9, landing: 10, recovery: 11, return: 12 };
+/** Plausibilität der Reihenfolge: Paare (früher, später), die gegen die erwartete Abfolge verstossen – z. B. Landung vor Start. */
+export function planOrderWarnings(items) {
+  const out = [];
+  const ranked = (items || []).map((it, k) => ({ it, k, rank: ACT_RANK[it.type] })).filter((x) => x.rank != null);
+  for (let i = 0; i < ranked.length; i++) {
+    for (let j = i + 1; j < ranked.length; j++) {
+      if (ranked[i].rank > ranked[j].rank && !out.some((w) => w.a === ranked[i].it.type && w.b === ranked[j].it.type)) out.push({ a: ranked[i].it.type, b: ranked[j].it.type });
+    }
+  }
+  return out;
+}
+
 /** Fahrzeit mit Anhänger aus der Routing-Dauer (s): Faktor und Zuschlag. */
 export function trailerMinutes(routeSeconds, factor = 1.15, surchargeMin = 5) {
   return Math.round(routeSeconds / 60 * factor + surchargeMin);

@@ -16,8 +16,8 @@ export const SECTIONS = [
 
 export const PANELS = [
   // A
-  { key: 'A.core', section: 'A', kind: 'core', de: 'Stammdaten', en: 'Flight data', grade: 'calc', always: true },
-  { key: 'A.sun', section: 'A', kind: 'sun', de: 'Sonnenauf-/untergang', en: 'Sunrise / sunset', grade: 'calc', always: true },
+  { key: 'A.core', section: 'A', kind: 'core', de: 'Stammdaten', en: 'Flight data', grade: 'calc', always: true, noAi: true },
+  { key: 'A.sun', section: 'A', kind: 'sun', de: 'Astronomische Daten', en: 'Astronomical data', grade: 'calc', always: true, noAi: true },
   { key: 'A.massperf', section: 'A', kind: 'massperf', de: 'Tragkraft-, Treibstoff- und Massenberechnung', en: 'Lift, fuel and mass calculation', grade: 'calc', always: true },
   { key: 'A.landing', section: 'A', kind: 'landing', de: 'Geplante Landeorte, Besonderheiten', en: 'Planned landing areas, particulars', grade: 'manual' },
   { key: 'A.equipment', section: 'A', kind: 'equipment', de: 'Erforderliche Spezialausrüstung', en: 'Special equipment required', grade: 'calc' },
@@ -43,7 +43,7 @@ export const PANELS = [
   { key: 'C.airspace', section: 'C', kind: 'auto', auto: 'airspace', de: 'Luftraum entlang des Fahrtwegs', en: 'Airspace along the route', grade: 'auto', phase2: 'openAIP: Lufträume entlang der Trajektorien, Höhenband, Korridor, FIR-Folge' },
   { key: 'C.dabs', section: 'C', kind: 'auto', auto: 'dabs', de: 'DABS', en: 'DABS', grade: 'auto', link: 'skybriefingDabs', phase2: 'DABS-PDF automatisch (CH)', chOnly: true },
   { key: 'C.notam', section: 'C', kind: 'auto', auto: 'notam', de: 'NOTAM (VFR-relevant)', en: 'NOTAM (VFR relevant)', grade: 'auto', link: 'skybriefing', phase2: 'FAA-NOTAM-API: Strecke (Start → Landeraum/Trajektorien) oder Umkreis um gewählte Orte, VFR-Filter' },
-  { key: 'C.fpl', section: 'C', kind: 'text', de: 'Flugplan', en: 'Flight plan', grade: 'manual', defaultText: { de: 'keiner', en: 'none' } },
+  { key: 'C.fpl', section: 'C', kind: 'fpl', de: 'Flugplan', en: 'Flight plan', grade: 'manual', defaultText: { de: 'keiner', en: 'none' } },
   { key: 'C.agreements', section: 'C', kind: 'text', de: 'Besondere Absprachen', en: 'Special agreements', grade: 'manual', defaultText: { de: 'keine', en: 'none' } },
   { key: 'C.transition', section: 'C', kind: 'transition', de: 'Übergangshöhe', en: 'Transition altitude', grade: 'calc' },
   { key: 'C.remarks', section: 'C', kind: 'text', de: 'Bemerkungen', en: 'Remarks', grade: 'manual' },
@@ -55,12 +55,29 @@ export const PANELS = [
 
 export const panelByKey = (k) => PANELS.find((p) => p.key === k);
 
-/** Sichtbare Panels in Reihenfolge (ausgeblendete und CH-only ausserhalb CH entfernt). */
+/** Sichtbare Panels in Reihenfolge (ausgeblendete und CH-only entfernt, wenn die Fahrt die Schweiz nicht berührt). */
 export function visiblePanels(settings, briefing) {
   const hidden = new Set(settings?.panels?.hidden || []);
-  const ch = (briefing?.site?.country || '') === 'CH';
+  const ch = briefing ? touchesCH(briefing) : true;
   return PANELS.filter((p) => !hidden.has(p.key) && (!p.chOnly || ch));
 }
+/** Berührt die Fahrt die Schweiz? Startort/Landeraum/FIR-Folge/Trajektorienpunkte (grobe Länderschätzung). */
+export function touchesCH(b) {
+  if ((b?.site?.country || '') === 'CH' || (b?.landing?.country || '') === 'CH') return true;
+  const inCH = (lat, lon) => lat >= 45.8 && lat <= 47.9 && lon >= 5.9 && lon <= 10.6;
+  if (b?.landing?.lat != null && inCH(b.landing.lat, b.landing.lon)) return true;
+  for (const f of b?.panels?.['C.airspace']?.content?.auto?.data?.firs || []) for (const sq of f.seq || []) if (sq.country === 'CH') return true;
+  for (const tr of b?.panels?.['B.traj']?.content?.auto?.data?.tracks || []) for (const p of tr.points || []) if (inCH(p.lat, p.lon)) return true;
+  return false;
+}
+/** Nummer eines Panels innerhalb seines Abschnitts (A1 … An) in der sichtbaren Liste. */
+export function panelNo(p, list) {
+  const same = (list || PANELS).filter((x) => x.section === p.section);
+  const k = same.findIndex((x) => x.key === p.key);
+  return `${p.section}${k >= 0 ? k + 1 : ''}`;
+}
+/** «A1 · Stammdaten» */
+export const panelTitle = (p, list, tr) => `${panelNo(p, list)} · ${tr(p)}`;
 
 /** Ist ein Panel inhaltlich gefüllt? (für Freigabe-Checkliste) */
 export function panelFilled(p, briefing) {
@@ -72,6 +89,8 @@ export function panelFilled(p, briefing) {
       return true;
     case 'text':
       return !!((d.content?.text || '').trim() || extraText);
+    case 'fpl':
+      return true;
     case 'landing':
       return !!((d.content?.text || '').trim() || extraText || briefing.landing?.lat != null);
     case 'paste':

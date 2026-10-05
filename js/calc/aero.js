@@ -95,9 +95,13 @@ export function hotAir(i) {
   const reserveMin = reserveMinutes(dur, resRule);
   const needKg = (dur + reserveMin) / 60 * burn;
 
+  // Zulässiges Startgewicht = Tragkraft am Startplatz (bei Hüllentemperatur), höchstens MTOM
+  const allowed = i.mtom ? Math.min(liftAtSite, i.mtom) : liftAtSite;
+  const limitBy = i.mtom && i.mtom <= liftAtSite ? 'mtom' : 'lift';
   return {
     tsl, equipMass, cylMass, gasKg, gasL, paxMass, takeoff, required, mtom: i.mtom,
-    massDelta: i.mtom ? takeoff - i.mtom : null,
+    massDeltaMtom: i.mtom ? takeoff - i.mtom : null,
+    allowed, limitBy, massDelta: takeoff - allowed,
     rows, maxAltExcel, maxAltExact, p0, rho0, envReq, envMargin: envReq != null ? i.envTempC - envReq : null,
     envMaxMargin: envReq != null && i.envMaxC ? i.envMaxC - envReq : null,
     liftAtSite, climbAtSite: liftAtSite - takeoff,

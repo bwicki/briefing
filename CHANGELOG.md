@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.9.2 — 2026-10-05 · Rückmeldungen zu 0.9.1 und vierte Liste (Teil 1)
+
+* Tagesplan: **Dauer der Ballonfahrt** in der Tabelle schreibt zurück nach «Was ist geplant»
+  (eine Quelle); **Plausibilitätswarnungen** zur Reihenfolge (z. B. «Bergung» vor «Landung»,
+  «Start» nach «Landung»); **Treffpunkt-Auswahl in der Spalte «Ort»** (Dropdown der Treffpunkte aus
+  dem Stamm, «anderer …» per Ortswahl, ✎ zum Ändern) – kein Namensfeld mehr unter der Aktivität;
+  **Zeilen-Schattierung nach Dämmerung** (dunkel = vor BCMT / nach ECET, hell = BCMT–SR bzw.
+  SS–ECET; Legende unter der Tabelle; auch in der Briefingsicht und im Druck).
+* **Aktivitäten unter Experte definierbar**: eingebaute ein-/ausblenden und Standarddauer ändern,
+  eigene Aktivitäten (DE/EN, Dauer, mit/ohne Ort); Start, Fahrt (Ballon) und Landung bleiben fix.
+* **Minder-/Mehrgewicht** neu gegenüber dem **zulässigen Startgewicht = Tragkraft am Startplatz
+  (Hüllentemperatur), höchstens MTOM**; die massgebende Grenze wird angezeigt (Ablauf Schritt 4,
+  Panel Tragkraft, Briefingsicht). Die Excel-Vergleichstests prüfen weiterhin den MTOM-Bezug.
+* **Panel-Nummerierung A1–An, B1–Bn, C1–Cn, D1–Dn** (Titelbalken, linke Navigation, Briefingsicht);
+  Nummern folgen der sichtbaren Reihenfolge.
+* **Tracker-Links je Ballon** (Heissluft und Gas-Hülle, Einstellungen → Ballone) statt je Person;
+  Passagierkarte nimmt die Links des Ballons (Rückfall: PIC). Neu beim Ballon: **Farbe (Hülle)**
+  für den Flugplan.
+* Einstellungen: **Zurück-Knopf (←)** in der Kopfzeile führt an die Stelle zurück, von der man
+  gekommen ist; **«Speichern» ist ein Umriss** und füllt sich erst nach einer Änderung;
+  **JSON-Untermenü im Hamburger** (über «Einstellungen»): Import JSON / Export JSON der Einstellungen.
+* «Was ist geplant»: **Zielrichtung** beim Setzen des Zielpunkts neu als
+  `Ort · W266° · 25 km · ~1:30 h · ⌀ 1200 m AMSL` – Fahrzeit und mittlere Fahrthöhe (konstante
+  Höhe) aus den beiden nächsten Trajektorien links und rechts des Ziels, nach Querabstand
+  gewichtet (`>` wenn das Ziel jenseits der Bahnenden liegt); **dieselbe Zeile im Panel
+  Trajektorien** rechts der Legende.
+* **KI-Kommentar** bei «Stammdaten» und «Astronomische Daten» (neuer Name für
+  «Sonnenauf-/untergang») ausgeblendet.
+* **DABS** nur, wenn die Fahrt die Schweiz berührt (Startort, Landeraum, FIR-Folge der
+  Luftraumanalyse oder Trajektorienpunkte in der Schweiz) – nicht mehr nur bei Schweizer Startort.
+* **Flugplan-Panel mit Schalter «Flugplan erstellen?»** – Standard «ja» bei NVFR, Grenzüberschreitung
+  (Länder entlang der Fahrt) oder Gasfahrt, sonst «nein»; Begründung wird angezeigt. Die
+  automatische Erstellung folgt in 0.10.0.
+* METAR und Radiosondierung: **Richtungspfeil vor der km-Distanz**.
+* Tests: 135 Rechentests (DABS-Regel, Panel-Nummern, Zielschätzung, Reihenfolge-Warnung),
+  Smoke-Test prüft Nummerierung, Astronomie-Panel ohne KI, Flugplan-Schalter, Zielzeile,
+  Einstellungen (Zurück, Speichern-Zustand, Tracker beim Ballon, JSON-Untermenü).
+
 ## 0.9.1 — 2026-10-04 · Dritte Rückmeldungsrunde (Teil 2): tabellarischer Zeitplan
 
 * **Tagesplanung als Tabelle** (Ablauf Schritt 5, Panel «Zeitplan» in der Erarbeitung): je Zeile

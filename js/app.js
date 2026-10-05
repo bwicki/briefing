@@ -80,8 +80,10 @@ function buildMenu() {
   for (const g of ctx.pageMenu || []) if (g.items?.length) sub(g.label, g.items, !!g.open);
   if ((ctx.pageMenu || []).length) m.appendChild(h('div.sep'));
   if (!ctx.shared && store.isAuthed()) {
+    // JSON: Einstellungen exportieren / importieren (über «Einstellungen»)
+    sub('JSON', [{ label: t('set_import'), fn: importSettingsJson }, { label: t('set_export'), fn: exportSettingsJson }]);
     const sects = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'meteo', 'panels', 'links', 'users', 'access', 'expert'];
-    sub(t('nav_settings'), sects.map((k) => ({ label: t('set_' + k), fn: () => ctx.navigate('#/settings?' + k) })));
+    sub(t('nav_settings'), sects.map((k) => ({ label: t('set_' + k), fn: () => { if (!location.hash.startsWith('#/settings')) ctx.settingsReturn = location.hash || '#/list'; ctx.navigate('#/settings?' + k); } })));
     m.appendChild(h('div.sep'));
   }
   item(t('nav_theme'), () => { applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true); });
@@ -90,6 +92,19 @@ function buildMenu() {
   if (ctx.user && !ctx.shared && store.mode === 'remote') { m.appendChild(h('div.menu-user', `${ctx.user.name} · ${ctx.user.id} · ${t(ctx.user.role === 'super' ? 'role_super' : 'role_master')}`)); m.appendChild(h('div.sep')); }
   item(t('nav_about'), () => dialog(t('nav_about'), h('div.note', [h('p', `${APP.name} ${APP.version} · ${APP.date}`), h('p', t('about')), h('p', [h('a', { href: APP.repo, target: '_blank', rel: 'noopener' }, APP.repo)])]), [{ label: t('close'), primary: true }]));
   if (!ctx.shared) item(t('nav_lock'), () => lock());
+}
+
+/** Einstellungen als JSON-Datei sichern / aus Datei einlesen (zusammenführen, speichern, Seite neu zeichnen). */
+export function exportSettingsJson() {
+  const a = document.createElement('a'); a.href = 'data:application/json,' + encodeURIComponent(JSON.stringify(ctx.settings, null, 2)); a.download = `briefing-settings-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+}
+export function importSettingsJson() {
+  const inp = h('input', { type: 'file', accept: 'application/json', style: { display: 'none' }, onchange: async (e) => {
+    try { const txt = await e.target.files[0].text(); const j = JSON.parse(txt); if (!j || typeof j !== 'object') throw new Error('JSON'); await ctx.saveSettings({ ...ctx.settings, ...j }); toast(t('set_saved')); route(); }
+    catch (err) { toast(`${t('error')}: ${err.message}`); }
+    finally { inp.remove(); }
+  } });
+  document.body.appendChild(inp); inp.click();
 }
 
 function applyTheme(th, persist) {

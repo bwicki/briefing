@@ -121,3 +121,34 @@ export function trajSvg(trs, o = {}) {
   if (o.landing?.lat != null) { const [x, y] = toKm(o.landing); svg.appendChild(mk('path', { d: `M${X(x) - 5},${Y(y) + 5} L${X(x)},${Y(y) - 5} L${X(x) + 5},${Y(y) + 5} Z`, class: 'tland' })); }
   return svg;
 }
+
+/**
+ * Schätzung für einen Zielpunkt aus der Trajektorienschar: Fahrzeit und mittlere Fahrthöhe (Annahme
+ * konstante Höhe) aus den beiden nächsten Bahnen links und rechts des Ziels, gewichtet nach Querabstand.
+ * tracks: [{ altM, points:[{ms,lat,lon}], belowGround? }], site {lat,lon}, target {lat,lon}
+ * → { min, altM, beyond (Ziel jenseits der Bahnenden), nearestKm } oder null
+ */
+export function targetEstimate(tracks, site, target) {
+  if (!site || site.lat == null || !target || target.lat == null) return null;
+  const brgT = bearing(site.lat, site.lon, target.lat, target.lon);
+  const cands = [];
+  for (const tr of tracks || []) {
+    if (tr.belowGround || !tr.points?.length || tr.altM == null) continue;
+    let best = null;
+    tr.points.forEach((p, k) => { const d = distKm(p.lat, p.lon, target.lat, target.lon); if (!best || d < best.d) best = { d, k, p }; });
+    const brgP = bearing(site.lat, site.lon, best.p.lat, best.p.lon);
+    const side = ((brgP - brgT + 540) % 360) - 180;   // > 0 rechts der Linie Start→Ziel, < 0 links
+    cands.push({ d: best.d, side, min: (best.p.ms - tr.points[0].ms) / 60000, altM: tr.altM, atEnd: best.k >= tr.points.length - 1 });
+  }
+  if (!cands.length) return null;
+  const byD = (a, b) => a.d - b.d;
+  const left = cands.filter((c) => c.side < 0).sort(byD)[0], right = cands.filter((c) => c.side >= 0).sort(byD)[0];
+  let min, altM, beyond;
+  if (left && right) { const w = left.d + right.d || 1; const fl = right.d / w, fr = left.d / w; min = left.min * fl + right.min * fr; altM = left.altM * fl + right.altM * fr; beyond = left.atEnd && right.atEnd; }
+  else { const c = left || right; min = c.min; altM = c.altM; beyond = c.atEnd; }
+  const nearestKm = Math.min(...cands.map((c) => c.d));
+  const distKmT = distKm(site.lat, site.lon, target.lat, target.lon);
+  // Ziel abseits der Schar (nächste Bahn weiter weg als die halbe Zieldistanz) oder nur am Startpunkt am nächsten → keine Schätzung
+  const unreliable = min <= 0 || nearestKm > Math.max(3, 0.5 * distKmT);
+  return { min: Math.round(min / 5) * 5, altM: Math.round(altM / 10) * 10, beyond, nearestKm, unreliable };
+}

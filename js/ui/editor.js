@@ -5,8 +5,8 @@ import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
-import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding } from '../model.js';
+import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, fplSuggested, crossesBorder } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock, askAi } from './autopanels.js';
@@ -84,7 +84,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       const ps = panels.filter((p) => p.section === s.id);
       if (!ps.length) continue;
       const det = h('details', { open: window.innerWidth >= 900 || s.id === 'A' }, [h('summary', `${s.id} · ${s[lang] || s.de}`)]);
-      for (const p of ps) det.appendChild(h('div.it', { onclick: () => document.getElementById('panel-' + p.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [h('span.dot.' + panelStatus(p)), tt(p), mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null]));
+      for (const p of ps) det.appendChild(h('div.it', { onclick: () => document.getElementById('panel-' + p.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [h('span.dot.' + panelStatus(p)), h('span.pno', panelNo(p, panels)), ' ', tt(p), mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null]));
       e.appendChild(det);
     }
     e.appendChild(h('div.note', { style: { marginTop: '8px' } }, t('navLegend')));
@@ -134,11 +134,11 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const d = b.panels[p.key] || (b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '' });
     const srcUrl = sourceUrlOf(p, d);
     const head = h('div.panel-head', [
-      h('div.ttl', tt(p)),
+      h('div.ttl', [h('span.pno', panelNo(p, panels)), ' ', tt(p)]),
       mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
       p.grade === 'auto' ? tag('auto', 'AUTO') : p.grade === 'half' ? tag('half', 'LINK + EINFÜGEN') : p.grade === 'calc' ? tag('calc', 'CALC') : null,
       srcUrl ? h('a.srclink', { href: srcUrl, target: '_blank', rel: 'noopener', title: srcUrl }, shortUrl(srcUrl)) : null,
-      aiButtons(p, d),
+      p.noAi ? null : aiButtons(p, d),
       d.updatedAt ? h('span.src', `${t('stand')}: ${fmtDateTime(z, d.updatedAt, lang)} · ${d.updatedBy || ''}`) : null,
     ]);
     const body = h('div.panel-body');
@@ -154,6 +154,20 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       case 'text': {
         if (d.content.text == null && p.defaultText) d.content.text = tt(p.defaultText);
         content = textarea(d.content.text || '', { rows: 2, oninput: (e) => { d.content.text = e.target.value; touched(p.key); } });
+        break;
+      }
+      case 'fpl': {
+        // Schalter «Flugplan erstellen?» – Standard ja bei NVFR, Grenzüberschreitung oder Gasfahrt
+        b.fpl = b.fpl || {};
+        if (b.fpl.enabled == null) b.fpl.enabled = fplSuggested(b);
+        const ro = shared?.role === 'read';
+        const ta = textarea(d.content.text || '', { rows: 3, placeholder: t('fpl_textHint'), readOnly: ro, oninput: (e) => { d.content.text = e.target.value; touched(p.key); } });
+        const body2 = h('div');
+        const drawFpl = () => { clear(body2); if (b.fpl.enabled) body2.append(ta, h('div.note.small', t('fpl_soon'))); else body2.append(h('div.note', t('fpl_none'))); };
+        const sw = check(t('fpl_create'), !!b.fpl.enabled, (v) => { b.fpl.enabled = v; drawFpl(); touched(p.key); }, { disabled: ro });
+        const why = [b.flight?.nvfr ? t('nvfr') : null, b.balloon?.type === 'gas' ? t('gas') : null, crossesBorder(b) ? t('fpl_border') : null].filter(Boolean);
+        drawFpl();
+        content = h('div', [h('div.row-actions', [sw, why.length ? h('span.note.small', `${t('fpl_why')}: ${why.join(', ')}`) : null]), body2]);
         break;
       }
       case 'landing': {

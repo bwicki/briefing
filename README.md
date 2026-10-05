@@ -99,7 +99,9 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
 3. **Fahrtabsicht** — Start-Ampel, Dauer, Höhenband, Trajektorien-Niveaus; **Trajektorien-
    Karte mit allen Niveaus** (Legende, Stundenpunkte, zeichnet bei Änderungen neu); ein
    Klick auf die Karte übernimmt den Punkt als **geplanten Landeraum** und füllt die
-   Zielrichtung (Himmelsrichtung, Kurs, Distanz, Ort). Trajektorien-
+   Zielrichtung als `Ort · W266° · 25 km · ~1:30 h · ⌀ 1200 m AMSL` (Fahrzeit und
+   mittlere Fahrthöhe aus den beiden nächsten Trajektorien links/rechts des Ziels,
+   nach Querabstand gewichtet; `>` = Ziel jenseits der Bahnenden). Trajektorien-
    Niveaus (Startwerte je Ballontyp aus den Einstellungen). Landeraum und Richtung
    bleiben optional.
 4. **Personen** — PIC, **mehrere Nachfahrer** (Liste aus Stamm oder frei), Pax
@@ -109,12 +111,16 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
 5. **Tagesplanung** — **Tabelle** mit je Zeile Zeit · Aktivität (Dropdown:
    Treffpunkt, Fahrt, Ankunft Startplatz, Aufrüsten, Füllen, Reserve, Briefing,
    Start, Fahrt (Ballon), Landung, Bergung, Rückfahrt, Verpflegung, Tanken,
-   Sonstiges) · Info · Dauer (min) · Ort. Zeilen per Ziehen oder ▲▼ verschieben,
-   hinzufügen, löschen – die Zeiten laufen mit: Anker ist «Start» (Startzeit),
-   danach Zeit + Dauer vorwärts, davor rückwärts, Rundung auf 5 min. Zeit tippen =
-   Pin (↺ löst ihn). Fahrten werden geroutet (OSRM × Anhängerfaktor + Zuschlag),
-   sobald Ort davor und danach bekannt sind; Ankunft = Startplatz, Landung =
-   Landeraum. «Vorlage neu» baut die Tabelle aus Stamm und Favoriten neu. Klickbox
+   Sonstiges; unter Experte ein-/ausblendbar, Standarddauer, eigene Aktivitäten) ·
+   Info · Dauer (min) · Ort. Zeilen per Ziehen oder ▲▼ verschieben, hinzufügen,
+   löschen – die Zeiten laufen mit: Anker ist «Start» (Startzeit), danach Zeit +
+   Dauer vorwärts, davor rückwärts, Rundung auf 5 min. Zeit tippen = Pin (↺ löst
+   ihn). Treffpunkte aus dem Stamm in der Spalte «Ort» wählbar («anderer …» per
+   Ortswahl); Fahrten werden geroutet (OSRM × Anhängerfaktor + Zuschlag), sobald Ort
+   davor und danach bekannt sind; Ankunft = Startplatz, Landung = Landeraum; die
+   Dauer der Ballonfahrt ist dieselbe wie in «Was ist geplant». Warnungen bei
+   unplausibler Reihenfolge; Zeilen vor BCMT / nach ECET dunkel, Dämmerung hell
+   schattiert. «Vorlage neu» baut die Tabelle aus Stamm und Favoriten neu. Klickbox
    **«kein Tagesplan anlegen / später»**.
 6. **Prüfen** — Zusammenfassung und Pflicht-Panels; *Briefing anlegen*.
 
@@ -131,10 +137,12 @@ Ergebnis in allen Sichten: **Name · Kurzkoordinaten · Höhe · Google Maps ↗
 
 ### Erarbeitungssicht
 
-Oben in jeder Sicht die Hauptnavigation **Briefings · + Neues Briefing ·
-Einstellungen**. Links die Navigation A–D mit Status-Punkt je Panel (grün erledigt, blau
+Oben in jeder Sicht die Hauptnavigation **Briefings · + Neues Briefing**; Einstellungen,
+JSON (Import/Export der Einstellungen), Berechtigungen und «Mehr» im Hamburger-Menü.
+Links die Navigation A–D mit Status-Punkt je Panel (grün erledigt, blau
 automatisch/noch nicht geladen, orange manuell offen, rot Pflicht offen), Mitte die Panels
-in Druckreihenfolge, rechts Planungshorizont, Panel-Zähler und Protokoll. Im Kopf
+in Druckreihenfolge, **nummeriert A1–An, B1–Bn, C1–Cn, D1–Dn**, rechts Planungshorizont,
+Panel-Zähler und Protokoll. Im Kopf
 die **Arbeitsversion** («v12 · Datum Zeit · Name»), der Status und die Phase.
 
 Jedes Panel hat unter dem Inhalt drei einklappbare Blöcke: **Zusatzinfo** (eigene
@@ -261,8 +269,12 @@ haben **Muster** (z. B. BB26E) und **Transponder-Hexcode**; Ballone und Personen
 PDF/Bild – im Server-Modus in der Worker-Ablage R2, nicht in GitHub). Abgelaufene
 Dokumente erscheinen mit ⚠ im Stammdaten-Panel.
 
+Der Zurück-Knopf (←) in der Kopfzeile führt an die Stelle zurück, von der man in die
+Einstellungen kam; «Speichern» füllt sich erst, wenn etwas geändert wurde.
+
 Allgemein (Sprache, Thema, Name im Protokoll, Expertenmodus), Ballone (Heissluft-
-Profile mit Tanks; Gas: Hüllen und Körbe getrennt; Standardkombination), Personen,
+Profile mit Tanks; Gas: Hüllen und Körbe getrennt; Standardkombination; je Ballon
+Tracker-Links für die Passagierkarte und die Hüllenfarbe für den Flugplan), Personen,
 Lufttransportführer, Startplätze & Treffpunkte, Fahrtabsicht-Startwerte, Zeitplan,
 Meteo & Auto-Panels (Ampel-Grenzen, Trajektorien-Dauer, Profilhöhe, METAR-Umkreis,
 NOTAM-Radius, KI-Modell, Karten für «Allgemeine Lage»)
@@ -290,7 +302,9 @@ die Einstellungen (ohne Zugänge).
   ρ·(T_H − T)/(273.15 + T_H), Tabelle je 100 m, Max. Steighöhe wie VLOOKUP − 100 m),
   erweitert um feuchte Luft (Magnus, optional), exakte Gleichgewichtshöhe,
   benötigte Hüllentemperatur, Treibstoffbedarf = (Dauer + Reserve) · Verbrauch mit
-  Reserve = min(25 % · Dauer, 30 min) (einstellbar).
+  Reserve = min(25 % · Dauer, 30 min) (einstellbar). **Zulässiges Startgewicht** =
+  Tragkraft am Startplatz bei Hüllentemperatur, höchstens MTOM; Minder-/Mehrgewicht
+  bezieht sich darauf (die massgebende Grenze wird genannt).
 * **Gas** — Brutto-Auftrieb = V · (ρ_Luft − ρ_Gasgemisch) mit Gasdichte aus p, T
   und Reinheit; Ballast = Brutto-Auftrieb − Nettomasse; Kennzahlen Abkühlung je K,
   Ballast je 100 m, Ballast-Einheiten, Landereserve. Ein Excel-Modus reproduziert

@@ -1,16 +1,16 @@
 /* Fahrtbriefing — Bausteine, die Ablauf, Erarbeitungssicht und Briefingsicht teilen:
  * Sonne/Mond-Block, Tragkraft-/Ballast-Editor, Zeitplan-Editor. */
 import { h, clear, num, fmt, fmtSigned, toast, uid } from '../util.js';
-import { t, getLang } from '../i18n.js';
+import { t, tt, getLang } from '../i18n.js';
 import { field, input, select, kv, stats, liftCurve } from './widgets.js';
-import { sunFor, massPerf, scheduleFor, setStart, ensurePlan, scheduleRowLabel } from '../model.js';
+import { sunFor, massPerf, scheduleFor, setStart, ensurePlan, actLabel } from '../model.js';
 import { placeLine, pickPlace } from './place.js';
 import { hhmm, localParts, fmtDur, fmtDate } from '../calc/time.js';
 import { icao } from '../calc/geo.js';
 import { moonPhaseName } from '../calc/sun.js';
 import { racValidity } from '../calc/rac.js';
 import { siteWeatherAt, route } from '../net.js';
-import { trailerMinutes, ACT_TYPES, ACT_DEFAULT_MIN, ACT_PLACE } from '../calc/schedule.js';
+import { trailerMinutes, ACT_TYPES, ACT_DEFAULT_MIN, ACT_PLACE, planOrderWarnings } from '../calc/schedule.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
 
 const tzOf = (b) => b.site.tz || 'Europe/Zurich';
@@ -72,7 +72,7 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
         // Vorgaben aus dem Stamm (Ballonprofil) – nur lesen
         section(t('mp_given'), 'given', [kv([[t('mp_volume'), `${fmt(bal.volume)} m³`], [t('mp_siteAlt'), `${fmt(b.site.elev)} m AMSL`], [t('mp_equip'), `${m.envelope} / ${m.burner} / ${m.basket} / ${m.equipment} kg`], [t('mp_total'), `${fmt(r.equipMass)} kg`], [t('mp_persons'), `${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg`], [t('mp_cylMass'), `${fmt(r.cylMass)} kg`]])]),
         // Resultate Masse
-        section(t('mp_resMass'), 'res', [stats([[t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_mtom'), `${fmt(r.mtom)} kg`], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'], [t('mp_required'), `${r.required.toFixed(3)} kg/m³`]])]),
+        section(t('mp_resMass'), 'res', [stats([[t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_allowed'), `${fmt(r.allowed)} kg`, null, t(r.limitBy === 'mtom' ? 'mp_limitMtom' : 'mp_limitLift', { l: fmt(r.liftAtSite), m: fmt(r.mtom) })], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'], [t('mp_required'), `${r.required.toFixed(3)} kg/m³`]])]),
         // Resultate Höhe / Hüllentemperatur
         section(t('mp_resAlt'), 'res', [h('div.alt-grid', [stats([[t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m AMSL` : '> 10 000 m'], [t('mp_maxAltExact'), r.maxAltExact != null ? `${fmt(r.maxAltExact)} m` : '–'], [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (w.envTempC ?? bal.envTempC) ? 'neg' : 'pos'], [t('mp_envMargin', { t: w.envTempC ?? bal.envTempC }), r.envMargin != null ? `${fmtSigned(r.envMargin)} K` : '–', r.envMargin < 0 ? 'neg' : ''], [t('mp_maxAgl'), r.maxAltExcel != null ? `${fmt(Math.max(0, r.maxAltExcel - (b.site.elev || 0)))} m AGL` : '–'], [t('mp_envTemp'), `${w.envTempC ?? bal.envTempC} °C`]]), h('figure.curve-fig', [liftCurve(r.rows, r.takeoff, r.maxAltExcel), h('figcaption.mini', t('mp_curve'))])])]),
         // Gasplanung (Vorgabe: Flaschen; Resultat: Vorrat, Dauer, Bedarf)
@@ -103,13 +103,28 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
 /** Tabellarischer Zeitplan: Zeilen = Aktivitäten (Dropdown), Info, Dauer, Zeit (Pin) und Ort; Zeilen per Ziehen
  *  oder ▲▼ verschiebbar – die Zeiten laufen mit (Anker «Start»). Fahrten werden geroutet (OSRM, Anhängerfaktor),
  *  wenn Ort davor und danach bekannt sind. */
+/** Zeilenklasse nach Dämmerung: night (vor BCMT / nach ECET), dusk (BCMT–SR, SS–ECET), sonst ''. */
+export function twilightClass(sun) {
+  if (!sun?.official) return () => '';
+  const o = sun.official;
+  return (ms) => (ms < o.bcmt || ms > o.ecet ? 'night' : ms < o.sr || ms > o.ss ? 'dusk' : '');
+}
 export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
   const S = ctx.settings, sc = b.schedule, z = tzOf(b);
   ensurePlan(b);
   const wrap = h('div');
   const table = h('table.sched.plan');
   const warnBox = h('div');
-  const typeOpts = ACT_TYPES.map((k) => ({ value: k, label: t('act_' + k) }));
+  const ACTS = S.activities || {};
+  const customs = ACTS.custom || [];
+  const hiddenActs = new Set(ACTS.hidden || []);
+  const usedTypes = new Set(sc.plan.map((x) => x.type));
+  const typeOpts = ACT_TYPES.filter((k) => !hiddenActs.has(k) || usedTypes.has(k)).map((k) => ({ value: k, label: t('act_' + k) }))
+    .concat(customs.map((a) => ({ value: 'custom:' + a.id, label: tt(a) || t('act_custom') })));
+  const typeValue = (it) => (it.type === 'custom' && it.act ? 'custom:' + it.act : it.type);
+  const defMin = (type, act) => { if (act) { const a = customs.find((x) => x.id === act); if (a?.min != null) return a.min; } return ACTS.minutes?.[type] ?? ACT_DEFAULT_MIN[type]; };
+  const placeKind = (it) => (it.type === 'custom' && it.act ? ((customs.find((x) => x.id === it.act) || {}).place === false ? false : true) : ACT_PLACE[it.type]);
+  const meetings = (ctx.stamm?.meetings || []).filter((m) => m.lat != null);
   let dragFrom = null;
   const placeOf = (it) => (ACT_PLACE[it.type] === 'site' ? b.site : ACT_PLACE[it.type] === 'landing' ? (b.landing?.lat != null ? b.landing : null) : it.place);
   const prevPlace = (k) => { for (let i = k - 1; i >= 0; i--) { const pl = placeOf(sc.plan[i]); if (pl?.lat != null) return pl; } return null; };
@@ -130,6 +145,7 @@ export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
     const sun = sunFor(b, S, ctx.racTable);
     const { rows, warnings } = scheduleFor(b, sun);
     sc.rows = rows.map((r) => ({ key: r.key, ms: r.ms }));
+    const twilight = twilightClass(sun);
     table.appendChild(h('thead', h('tr', [readOnly ? null : h('th'), h('th', t('sch_colTime')), h('th', t('sch_colAct')), h('th', t('sch_colInfo')), h('th', t('sch_colMin')), h('th', t('sch_colPlace')), readOnly ? null : h('th')])));
     const tbody = h('tbody');
     rows.forEach((r, k) => {
@@ -143,18 +159,39 @@ export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
         redraw(); onChange();
       } });
       if (r.overridden && !readOnly) tIn.classList.add('ov');
-      const typeSel = readOnly ? h('b', t('act_' + it.type)) : select(typeOpts, it.type, { onchange: (e) => { const nt = e.target.value; if (nt !== 'start' && it.type === 'start') { e.target.value = 'start'; return; } it.type = nt; if (it.min == null && nt !== 'flight') it.min = ACT_DEFAULT_MIN[nt]; if (nt === 'flight') it.min = null; if (!ACT_PLACE[nt] || typeof ACT_PLACE[nt] === 'string') it.place = null; routeAll(); } });
+      const typeSel = readOnly ? h('b', actLabel(it, t, customs)) : select(typeOpts, typeValue(it), { onchange: (e) => {
+        const v = e.target.value; const nt = v.startsWith('custom:') ? 'custom' : v; const act = v.startsWith('custom:') ? v.slice(7) : null;
+        if (nt !== 'start' && it.type === 'start') { e.target.value = 'start'; return; }
+        it.type = nt; it.act = act || undefined;
+        it.min = nt === 'flight' ? null : defMin(nt, act);
+        const pk2 = placeKind(it); if (!pk2 || typeof pk2 === 'string') it.place = null;
+        if (nt !== 'meet') { delete it.meetingId; it.name = ''; }
+        routeAll();
+      } });
       const infoIn = readOnly ? h('span', it.info || '') : input('text', it.info || '', { placeholder: t('sch_infoHint'), oninput: (e) => { it.info = e.target.value; onChange(); } });
-      const minIn = readOnly ? h('span.mono', `${r.dur}`) : input('number', it.type === 'flight' && it.min == null ? b.intent.durationMin : (it.min ?? ACT_DEFAULT_MIN[it.type] ?? 0), { step: 5, min: 0, title: it.type === 'flight' ? t('sch_flightFromIntent') : it.minSource === 'routing' ? `${t('driveAuto')}${it.km ? ` · ${it.km} km` : ''}` : '', oninput: (e) => { it.min = num(e.target.value, 0); if (it.type === 'drive' || it.type === 'return') it.minSource = 'manual'; redraw(); onChange(); } });
+      // Dauer der Ballonfahrt: Quelle ist «Was ist geplant» – Änderung hier schreibt dorthin zurück
+      const minIn = readOnly ? h('span.mono', `${r.dur}`) : input('number', it.type === 'flight' ? b.intent.durationMin : (it.min ?? defMin(it.type, it.act) ?? 0), { step: 5, min: 0, title: it.type === 'flight' ? t('sch_flightFromIntent') : it.minSource === 'routing' ? `${t('driveAuto')}${it.km ? ` · ${it.km} km` : ''}` : '', oninput: (e) => { if (it.type === 'flight') { b.intent.durationMin = num(e.target.value, 0); it.min = null; } else { it.min = num(e.target.value, 0); if (it.type === 'drive' || it.type === 'return') it.minSource = 'manual'; } redraw(); onChange(); opts.onIntent?.(); } });
       if (it.minSource === 'routing' && !readOnly) minIn.classList.add('auto');
       // Ort: Startplatz/Landeraum aus dem Briefing, sonst wählbar (kompakt: Name · Wählen/✎ · ✕)
       let placeCell;
-      const pk = ACT_PLACE[it.type];
+      const pk = placeKind(it);
       const pname = (p) => (p?.name ? h('span.pname', p.name) : h('span.mono', icao(p.lat, p.lon)));
+      const pick = async () => { const p = await pickPlace(it.place, { title: actLabel(it, t, customs), from: prevPlace(k) }); if (p) { it.place = { name: p.name || '', lat: p.lat, lon: p.lon }; if (it.type === 'meet') { it.name = p.name || it.name; it.meetingId = meetings.find((m) => m.lat === p.lat && m.lon === p.lon)?.id || 'custom'; } routeAll(); } };
       if (pk === 'site') placeCell = pname(b.site);
       else if (pk === 'landing') placeCell = b.landing?.lat != null ? pname(b.landing) : h('span.muted', t('landingSite') + ' –');
-      else if (pk && !readOnly) {
-        const pick = async () => { const p = await pickPlace(it.place, { title: t('act_' + it.type), from: prevPlace(k) }); if (p) { it.place = { name: p.name || '', lat: p.lat, lon: p.lon }; if (it.type === 'meet') it.name = p.name || it.name; routeAll(); } };
+      else if (it.type === 'meet' && !readOnly) {
+        // Treffpunkt: Auswahl aus dem Stamm (Treffpunkte) oder «anderer …» per Ortswahl
+        const curId = it.meetingId && meetings.some((m) => m.id === it.meetingId) ? it.meetingId : (it.place?.lat != null ? 'custom' : '');
+        const mOpts = [{ value: '', label: '–' }, ...meetings.map((m) => ({ value: m.id, label: m.name })), { value: 'custom', label: it.place?.lat != null && curId === 'custom' ? `${it.place.name || icao(it.place.lat, it.place.lon)} …` : t('meetingCustom') + ' …' }];
+        const mSel = select(mOpts, curId, { onchange: async (e) => {
+          const v = e.target.value;
+          if (v === 'custom') { await pick(); return; }
+          const m = meetings.find((x) => x.id === v);
+          if (m) { it.meetingId = m.id; it.name = m.name; it.place = { name: m.name, lat: m.lat, lon: m.lon }; } else { it.meetingId = ''; it.name = ''; it.place = null; }
+          routeAll();
+        } });
+        placeCell = h('span.pcell', [mSel, it.place?.lat != null ? h('button.btn.icon.small.ghost', { type: 'button', title: t('pick_change'), onclick: pick }, '✎') : null]);
+      } else if (pk && !readOnly) {
         placeCell = h('span.pcell', [
           it.place?.lat != null ? pname(it.place) : h('span.muted', '–'),
           h('button.btn.icon.small', { type: 'button', title: it.place?.lat != null ? t('pick_change') : t('pick_choose'), onclick: pick }, it.place?.lat != null ? '✎' : '📍'),
@@ -162,11 +199,10 @@ export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
         ]);
       } else if (pk && it.place?.lat != null) placeCell = placeLine(it.place, { noElev: true });
       else placeCell = h('span.muted', '–');
-      const nameIn = it.type === 'meet' && !readOnly ? input('text', it.name || '', { placeholder: t('meeting'), style: { marginTop: '3px' }, oninput: (e) => { it.name = e.target.value; onChange(); } }) : null;
-      const row = h('tr', { draggable: !readOnly, class: isStart ? 'anchor' : '' }, [
+      const row = h('tr', { draggable: !readOnly, class: [isStart ? 'anchor' : '', twilight(r.ms)].filter(Boolean).join(' ') }, [
         readOnly ? null : h('td.handle', [h('span.handle', { title: t('sch_drag') }, '≡'), h('span.updown', [h('button.tiny', { type: 'button', title: t('sch_moveUp'), disabled: k === 0, onclick: () => move(k, k - 1) }, '▲'), h('button.tiny', { type: 'button', title: t('sch_moveDown'), disabled: k === rows.length - 1, onclick: () => move(k, k + 1) }, '▼')])]),
         h('td.tm', [tIn, r.overridden && !readOnly ? h('button.btn.icon.small', { type: 'button', title: t('recompute'), onclick: () => { delete it.pin; redraw(); onChange(); } }, '↺') : null]),
-        h('td.act', [typeSel, nameIn]),
+        h('td.act', typeSel),
         h('td.info', infoIn),
         h('td.min', minIn),
         h('td.place', { class: pk ? '' : 'none' }, placeCell),
@@ -183,8 +219,10 @@ export function scheduleEditor(b, ctx, onChange, readOnly = false, opts = {}) {
     });
     table.appendChild(tbody);
     for (const wkey of warnings) warnBox.appendChild(h('div.warn', '⚠ ' + (wkey === 'nightStart' ? t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) }) : wkey === 'nightLanding' ? t('nightLandWarn', { e: hhmm(z, sun.official.ecet) }) : (getLang() === 'en' ? 'Return after sunset' : 'Rückfahrt nach Sonnenuntergang'))));
+    for (const ow of planOrderWarnings(sc.plan)) warnBox.appendChild(h('div.warn', '⚠ ' + t('sch_orderWarn', { a: t('act_' + ow.a), b: t('act_' + ow.b) })));
+    if (sun && !readOnly) warnBox.appendChild(h('div.note.small.sch-legend', [h('span.sw.night'), ` ${t('sch_legendNight')} · `, h('span.sw.dusk'), ` ${t('sch_legendDusk', { b: hhmm(z, sun.official.bcmt), s: hhmm(z, sun.official.sr), ss: hhmm(z, sun.official.ss), e: hhmm(z, sun.official.ecet) })}`]));
   }
-  const addRow = (type = 'custom') => { const a = sc.plan.findIndex((x) => x.type === 'start'); const it = { id: uid(5), type, name: '', info: '', min: type === 'flight' ? null : ACT_DEFAULT_MIN[type], place: null }; sc.plan.splice(a >= 0 ? a : sc.plan.length, 0, it); redraw(); onChange(); setTimeout(() => table.querySelectorAll('tbody tr')[Math.max(0, a)]?.querySelector('select')?.focus(), 30); };
+  const addRow = (type = 'custom') => { const a = sc.plan.findIndex((x) => x.type === 'start'); const it = { id: uid(5), type, name: '', info: '', min: type === 'flight' ? null : defMin(type), place: null }; sc.plan.splice(a >= 0 ? a : sc.plan.length, 0, it); redraw(); onChange(); setTimeout(() => table.querySelectorAll('tbody tr')[Math.max(0, a)]?.querySelector('select')?.focus(), 30); };
   table.addFn = () => addRow('custom');
   if (!readOnly) {
     // «Vorlage neu»: zweistufig (erster Klick fragt, zweiter innert 4 s führt aus) – kein Browser-Dialog

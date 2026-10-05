@@ -5,7 +5,8 @@ import { t, getLang } from '../i18n.js';
 import { hhmm, fmtDateTime, fmtDate, fmtDur } from '../calc/time.js';
 import { MS_TO_KT, M_TO_FT } from '../auto/openmeteo.js';
 import { meteogram as meteogramSvg, windChart, stueveChart, mk } from '../auto/charts.js';
-import { trajSvg, TRAJ_COLORS } from '../auto/traj.js';
+import { trajSvg, TRAJ_COLORS, targetEstimate } from '../auto/traj.js';
+import { directionText } from '../model.js';
 import { mapsLink } from './place.js';
 import { decodeMetar, decodeTaf, badToken, MARK0, MARK1 } from '../calc/metar.js';
 import { bearing, compass } from '../calc/geo.js';
@@ -213,7 +214,7 @@ export function renderTemps(snap, b, ctx) {
     const main = o.levels.filter((l) => [1000, 925, 850, 700, 600, 500].includes(Math.round(l.hPa)) || l.hPa === o.levels[0].hPa);
     const oSvg = stueveChart(o.levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 40)) === 0 || main.includes(l)), { w: 560, h: 360, lang: getLang() });
     const oRows = [...main].sort((a, c) => c.ft - a.ft).map((l) => h('tr', [h('td', l.label), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)]));
-    parts.push(h('div.side-grid', { style: { marginTop: '10px' } }, [h('div.num', [h('div.lbl', `${t('auto_sounding')} ${o.station.name} (${o.station.id}) · ${(o.time || '').slice(0, 13).replace('T', ' ')} UTC`), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', oRows)])), h('div.note', [t('auto_soundingNote'), ' ', h('a', { href: 'https://www.meteoschweiz.admin.ch/service-und-publikationen/applikationen/radiosondierungen.html', target: '_blank', rel: 'noopener' }, 'MeteoSchweiz ↗'), ' · ', h('a', { href: o.url || '#', target: '_blank', rel: 'noopener' }, 'UWyo ↗')])]), h('div.gfx', oSvg || h('div.note', t('auto_noProfile')))]));
+    parts.push(h('div.side-grid', { style: { marginTop: '10px' } }, [h('div.num', [h('div.lbl', [`${t('auto_sounding')} ${o.station.name} (${o.station.id}) · `, o.station.lat != null && b.site.lat != null ? h('span.dirarrow', { title: `${Math.round(bearing(b.site.lat, b.site.lon, o.station.lat, o.station.lon)).toString().padStart(3, '0')}°`, style: { transform: `rotate(${Math.round(bearing(b.site.lat, b.site.lon, o.station.lat, o.station.lon)) - 90}deg)` } }, '➜') : null, o.station.d != null ? ` ${Math.round(o.station.d)} km · ` : '', `${(o.time || '').slice(0, 13).replace('T', ' ')} UTC`]), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', oRows)])), h('div.note', [t('auto_soundingNote'), ' ', h('a', { href: 'https://www.meteoschweiz.admin.ch/service-und-publikationen/applikationen/radiosondierungen.html', target: '_blank', rel: 'noopener' }, 'MeteoSchweiz ↗'), ' · ', h('a', { href: o.url || '#', target: '_blank', rel: 'noopener' }, 'UWyo ↗')])]), h('div.gfx', oSvg || h('div.note', t('auto_noProfile')))]));
   } else if (d.obsErr) parts.push(h('div.note', `${t('auto_sounding')}: ${d.obsErr}`));
   return h('div.auto-wrap', parts);
 }
@@ -227,6 +228,8 @@ export function renderTraj(snap, b, ctx, opts = {}) {
     h('tbody', d.tracks.map((tr, k) => h('tr', [h('td', [h('span.sw', { style: { background: TRAJ_COLORS[k % TRAJ_COLORS.length] } }), ' ', tr.label]), h('td.mono', tr.altFt), ...(tr.belowGround ? [h('td', { colspan: (d.tracks.find((x) => x.hourly.length)?.hourly.length || 0) + 1 }, h('span.muted', t('auto_belowGround')))] : [...tr.hourly.map((hh) => h('td.mono', `${hh.km} km/${deg(hh.brg)}°`)), h('td', [h('span.mono', tr.end.icao), ' ', mapsLink(tr.end.lat, tr.end.lon, '↗'), tr.ok ? null : h('span.warn', ` ${t('auto_trajCut')}`)])])]))),
   ]);
   const legend = h('div.traj-legend', [h('span.muted.small', `${t('auto_legendAlt')}: `), ...d.tracks.filter((tr) => !tr.belowGround).map((tr, k) => h('span.item', [h('span.sw', { style: { background: TRAJ_COLORS[d.tracks.indexOf(tr) % TRAJ_COLORS.length] } }), ` ${tr.label} · ${tr.altFt} ft`]))]);
+  // Zielpunkt: Ort · Richtung · Distanz · Fahrzeit · mittlere Höhe aus der Schar (rechts von der Legende)
+  if (b.landing?.lat != null) { const est = targetEstimate(d.tracks, b.site, b.landing); legend.appendChild(h('span.item.target', [h('span.sw', { style: { background: '#2f8f4e', borderRadius: '50%' } }), ` ${t('auto_target')}: ${directionText(b, getLang(), est)}`])); }
   const mapEl = opts.interactive ? h('div.map.traj') : null;
   const grid = h('div.traj-grid' + (mapEl ? '.maponly' : ''), [svg, mapEl]);
   const wrap = h('div.auto-wrap', [legend, grid, h('div.note', `${t('auto_trajStart')} ${hhmm(z, d.startMs)} LT · ${d.durationMin} min · ${d.levels.join(', ')} · ${t('auto_trajNote')}${opts.onLanding ? ' · ' + t('auto_dragLanding') : ''}`), h('div.tbl-scroll', table)]);
@@ -326,7 +329,7 @@ export function renderMetar(snap, b) {
     ...d.metar.map((m) => {
       const taf = d.taf?.[m.icaoId];
       return h('div.metar', [
-        h('div', [h('b', m.icaoId), ` ${m.name || ''} · ${Math.round(m.distKm)} km `, arrow(m), m.obsTime ? h('span.muted.small', ` · ${new Date(m.obsTime * 1000).toISOString().slice(11, 16)} UTC`) : null]),
+        h('div', [h('b', m.icaoId), ` ${m.name || ''} · `, arrow(m), ` ${Math.round(m.distKm)} km`, m.obsTime ? h('span.muted.small', ` · ${new Date(m.obsTime * 1000).toISOString().slice(11, 16)} UTC`) : null]),
         pair('METAR', m.rawOb || '', decodeMetar(m.rawOb || '', lang)),
         taf ? pair('TAF', tafFmt(taf.rawTAF), decodeTaf(taf.rawTAF || '', lang)) : h('div.note', `${t('auto_noTaf')}`),
       ]);
