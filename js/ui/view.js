@@ -5,7 +5,7 @@ import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunRows, twilightClass } from './parts.js';
-import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine } from '../model.js';
+import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine } from '../model.js';
 import { fplView } from './fplpanel.js';
 import { docsLine } from '../stamm.js';
 import { placeLine } from './place.js';
@@ -143,7 +143,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
 
   function coreRows() {
     return h('div.kv', [
-      [t('core_no'), b.no || '–'], [t('core_reg'), b.balloon.label], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
+      [t('core_no'), b.no || '–'], [t('core_reg'), b.balloon.label], [t('core_countries'), countriesLine(b)], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
       [t('core_kind'), ['private', 'commercial', 'training', 'exam'].map((k) => `${b.flight.kind === k ? '☑' : '☐'} ${t('kind_' + k)}`).join('  ') + ` · LTF: ${b.flight.operatorName}`],
       [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('core_pic'), b.persons.pic],
       [t('core_pax'), paxLine(b, S, (i) => t('paxPlaceholder', { n: i + 1 }))], [t('core_retrieve'), b.persons.retrieve || '–'],

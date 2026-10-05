@@ -25,7 +25,7 @@ export const DEFAULT_SETTINGS = {
     hab: [
       {
         id: 'HB-QWP', name: 'HB-QWP', model: 'G 34/24', hex: '4B2C8B', volume: 3400,
-        masses: { envelope: 139, burner: 26, basket: 68, equipment: 20 }, mtom: 883,
+        masses: { envelope: 139, burner: 26, basket: 68, equipment: 20 }, mtom: 950,
         personWeight: 80, envTempC: 100, envMaxC: null, usableFraction: 0.9, burnRate: 25,
         cylinders: [cyl('va70', 4)], rigMin: 45, maxPersons: 5,
       },
@@ -207,6 +207,7 @@ export function mergeSettings(saved) {
   for (const x of out.balloons?.hab || []) {
     if (x.hex == null) x.hex = '';
     if (x.id === 'HB-QWZ' && x.hex.toLowerCase() === '4c4b4') x.hex = '';   // alter, unvollständiger Wert
+    if (x.id === 'HB-QWP' && x.mtom === 883) x.mtom = 950;   // 0.11.1: MTOM nach BAZL-Register
     applyRegister(x);
   }
   for (const x of out.balloons?.envelopes || []) applyRegister(x);

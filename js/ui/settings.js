@@ -9,6 +9,7 @@ import { CYLINDER_CATALOG } from '../calc/aero.js';
 import { ACT_TYPES, ACT_DEFAULT_MIN } from '../calc/schedule.js';
 import { placeRow, mapsUrl } from './place.js';
 import { exportAll } from './extras.js';
+import { COUNTRY_MATRIX, ROLES } from '../countries.js';
 import { usersSection, statsSection } from './users.js';
 
 const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'fpl', 'rac', 'transition', 'gonogo', 'meteo', 'panels', 'links', 'users', 'stats', 'access', 'expert'];
@@ -392,6 +393,23 @@ export async function renderSettings(view, ctx) {
     return h('div.card', [listHead(t('set_activities'), box, t('act_add')), h('div.card-body', [h('div.note', t('set_activitiesHint')), h('div.tbl-scroll', builtin), h('div.lbl', { style: { marginTop: '10px' } }, t('act_own')), box])]);
   }
 
+  /** Länder-Matrix: Quellen und Pflichtpunkte je Land und Rolle (Start/Überflug/Landung); eigene Notizen je Land. */
+  function countryMatrixCard() {
+    const lang = getLang();
+    S.countryNotes = S.countryNotes || {};
+    const rows = Object.entries(COUNTRY_MATRIX).map(([code, c]) => h('tr', [
+      h('td.cc', [h('b', code), h('div.small.muted', c.name[lang] || c.name.de)]),
+      h('td', [c.official.url ? h('a', { href: c.official.url, target: '_blank', rel: 'noopener' }, c.official.label) : c.official.label, h('div.small.muted', `${c.official.reports} · ${t('cm_access')}: ${c.official.access}`), h('div.small.muted', `${t('cm_model')}: ${c.model}`)]),
+      h('td', [h('div', c.airspace), h('div.small.muted', `NOTAM: ${c.notam}`), c.dabs !== '–' ? h('div.small', { style: { color: 'var(--neg,#b00)' } }, `DABS: ${c.dabs}`) : null]),
+      h('td', [h('div', c.sun), h('div.small.muted', `FPL: ${c.fpl}`), h('div.small.muted', c.contacts)]),
+      h('td', ROLES.map((r) => h('div.small', [h('b', t('cm_role_' + r) + ': '), (c.roles[r] || []).join('; ') || '–']))),
+      h('td', [c.notes?.length ? h('div.small.muted', c.notes.join(' · ')) : null, textarea(S.countryNotes[code] || '', { rows: 2, placeholder: t('cm_notes'), oninput: (e) => { S.countryNotes[code] = e.target.value; } })]),
+    ]));
+    return h('div.card', [h('div.card-head', h('div.section-title', t('cm_title'))), h('div.card-body', [
+      h('div.note', t('cm_hint')),
+      h('div.tbl-wrap', h('table.cm-tbl', [h('thead', h('tr', [h('th', t('cm_country')), h('th', t('cm_official')), h('th', t('cm_airspace')), h('th', t('cm_sunFpl')), h('th', t('cm_roles')), h('th', t('cm_notesCol'))])), h('tbody', rows)])),
+    ])]);
+  }
   function expert() {
     const pwOld = input('password', '', { autocomplete: 'current-password' }), pwNew = input('password', '', { autocomplete: 'new-password' }), pwNew2 = input('password', '', { autocomplete: 'new-password' });
     const pwBtn = h('button.btn', { type: 'button', onclick: async () => {
@@ -413,6 +431,7 @@ export async function renderSettings(view, ctx) {
       h('div.card', [h('div.card-head', h('div.section-title', t('set_paxCardTitle'))), h('div.card-body', [h('div.frow', [txtField(S.paxCardTitle, 'de', 'DE'), txtField(S.paxCardTitle, 'en', 'EN')]), h('div.note', t('set_paxCardTitleHint'))])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_pdiffWarn'))), h('div.card-body', h('div.frow.c4', [numField(S.pdiffWarn, 'half', `${t('set_pdiffHalf')} hPa`, 0.5), numField(S.pdiffWarn, 'neg', `${t('set_pdiffNeg')} hPa`, 0.5)]))]),
       activitiesCard(),
+      countryMatrixCard(),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_docTypes'))), h('div.card-body', h('div.frow', [field(t('set_docTypesBalloon'), textarea((S.docTypes?.balloon || []).join('\n'), { rows: 6, oninput: (e) => { (S.docTypes = S.docTypes || {}).balloon = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } })), field(t('set_docTypesPerson'), textarea((S.docTypes?.person || []).join('\n'), { rows: 6, oninput: (e) => { (S.docTypes = S.docTypes || {}).person = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } }))]))]),
     ]);
   }

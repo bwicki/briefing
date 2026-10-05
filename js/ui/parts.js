@@ -22,7 +22,7 @@ export function sunRows(b, ctx) {
   const z = tzOf(b);
   const f = (ms) => (ms ? hhmm(z, ms) : '–');
   const rows = [
-    [`${t('bcmt')} / ${t('sr')} / ${t('ss')} / ${t('ecet')} LT`, h('span', [h('b', `${f(sun.official.bcmt)} · ${f(sun.official.sr)} · ${f(sun.official.ss)} · ${f(sun.official.ecet)}`), ' ', h('span.muted.small', sun.source === 'rac' ? `(${t('sun_rac')})` : `(${t('sun_astro')})`)])],
+    [`${t('bcmt')} / ${t('sr')} / ${t('ss')} / ${t('ecet')} LT`, h('span', [h('b', `${f(sun.official.bcmt)} · ${f(sun.official.sr)} · ${f(sun.official.ss)} · ${f(sun.official.ecet)}`), ' ', h('span.muted.small', sun.source === 'rac' ? `(${t('sun_rac')})` : sun.source === 'dwd' ? `(${t('sun_dwd', { id: sun.dwdArea })})` : `(${t('sun_astro')})`)])],
     sun.source === 'rac' ? [t('sun_astro'), `${f(sun.astro.bcmt)} · ${f(sun.astro.sr)} · ${f(sun.astro.ss)} · ${f(sun.astro.ecet)}`] : null,
     [t('sun_moon'), `${t('sun_moonrise')} ${f(sun.moon.rise)} · ${t('sun_moonset')} ${f(sun.moon.set)} · ${moonPhaseName(sun.moon.phase, getLang())} · ${Math.round(sun.moon.fraction * 100)} % ${t('sun_illum')}`],
     ['UTC', `${f(sun.official.bcmt) && hhmm('UTC', sun.official.bcmt)} · ${hhmm('UTC', sun.official.sr)} · ${hhmm('UTC', sun.official.ss)} · ${hhmm('UTC', sun.official.ecet)}`],

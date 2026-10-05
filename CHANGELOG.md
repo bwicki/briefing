@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.11.1 — 2026-10-05 · Länder-Matrix · DWD-Dämmerungszeiten · Rückmeldungen
+
+* **Länder-Matrix** (Einstellungen → Experte): je Land (CH, LI, DE, AT, FR, IT, übrige) amtliches
+  Flugwetter mit Zugang, Modell, Luftraum/NOTAM, DABS-Pflicht, Sonnenquelle, Flugplan, Kontakte und
+  Pflichtpunkte je **Rolle der Fahrt (Start, Überflug, Landung)**; eigene Notizen je Land werden
+  gespeichert. Deutschland nach dem Vorbild GaforCast (DWD über GAFOR-Gebiete), Schweiz mit DABS
+  (vorgeschrieben) und RAC 4-4, übrige Länder mit Open-Meteo/openAIP/FAA-NOTAM. Stammdaten A1 zeigen
+  die Zeile **«Länder (Rolle)»**, z. B. «CH (Start) · AT (Überflug) · DE (Landung)».
+* **Deutschland: Dämmerungszeiten amtlich aus dem DWD-Ballonwetterbericht** des Gebiets
+  («Astronomische Angaben», UTC → LT), sobald das Panel B «Ballonprognose» geladen ist und der Bericht
+  den Fahrttag abdeckt; A2 nennt die Quelle «amtlich (DWD … Gebiet NN)». Sonst wie bisher berechnet.
+* HB-QWP: MTOM 950 kg nach BAZL-Register (bisher 883; gespeicherte 883 werden angehoben).
+* Modell (Gasfahrt-Planung): Ballast in kg; Etappen-Briefings mit Meteo + Luftraum/NOTAM/FIR;
+  Relief über Open-Meteo-Elevation (weltweit) – festgehalten für 0.12.
+
 ## 0.11.0 — 2026-10-05 · Ordnungsnummer · Fortschritt · Sperre nach der Fahrt · Kopfzeilen
 
 * **Ordnungsnummer `JJJJ-NNN`** je Briefing (Jahr des Fahrtdatums, laufend je Jahr; Server-Modus:

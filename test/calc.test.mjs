@@ -18,7 +18,9 @@ import { normalizeAirspace, analyzeAirspaces, limitFt, limitText, inAirspace, di
 import { goNoGo } from '../js/calc/gonogo.js';
 import { changesSinceFinal } from '../js/calc/diff.js';
 import { resolveBalloon, mergeSettings } from '../js/defaults.js';
-import { balloonImage, formatNo, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing } from '../js/model.js';
+import { routeMatrix, countryInfo } from '../js/countries.js';
+import { parseDwdAstro } from '../js/calc/sun.js';
+import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing } from '../js/model.js';
 
 let fails = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('  FAIL', msg); } else console.log('  ok  ', msg); };
@@ -371,6 +373,28 @@ console.log('Ordnungsnummer, Fortschritt, Sperre (0.11.0)');
   ok(c0 >= 0 && c0 <= 100 && Number.isInteger(c0), `Fortschritt in Prozent (${c0} %)`);
   const d = duplicateBriefing(b, S);
   ok(d.no === null && d.id !== b.id && d.status === 'draft', 'Kopie: neue Nummer wird beim Speichern vergeben');
+}
+
+
+console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
+{
+  const S = mergeSettings({});
+  ok(countryInfo('ch').dabs.startsWith('Pflicht') && countryInfo('XX').name.de === 'übrige Länder' && countryInfo('DE').panels.includes('B.balloon'), 'Länder-Matrix: CH DABS Pflicht, Standard für unbekannte Länder, DE Ballonbericht');
+  const bR = { site: { country: 'CH' }, landing: { lat: 47.9, lon: 11.5, country: 'DE' }, panels: { 'C.airspace': { content: { auto: { data: { firs: [{ seq: [{ country: 'CH' }, { country: 'AT' }, { country: 'DE' }] }] } } } } } };
+  const rm = routeMatrix(bR, new Set(['CH', 'AT', 'DE']));
+  ok(rm.map((e) => `${e.code}:${e.roles.join('/')}`).join(' ') === 'CH:start AT:overflight DE:landing', 'Rollen Start/Überflug/Landung: ' + rm.map((e) => `${e.code}:${e.roles.join('/')}`).join(' '));
+  ok(countriesLine(bR).startsWith('CH (Start) · AT (Überflug) · DE (Landung)'), 'Länderzeile: ' + countriesLine(bR));
+  const a = parseDwdAstro('Vorhersagen für Montag, 05.10.2026\n\nAstronomische Angaben [UTC]\n\nSonnenaufgang  05:37  Sonnenuntergang  16:56\n\nBeginn bürgerl. Dämmerung  05:01  Ende bürgerl. Dämmerung  17:30\n');
+  ok(a && a.date === '2026-10-05' && a.bcmt === '05:01' && a.ecet === '17:30', 'DWD-Astroangaben geparst');
+  ok(parseDwdAstro('kein Bericht') === null, 'ohne Angaben → null');
+  const bDE = newBriefing(S, Date.UTC(2026, 9, 4, 8, 0));
+  bDE.site = { name: 'Gladbeck', lat: 51.57, lon: 6.98, elev: 40, tz: 'Europe/Berlin', country: 'DE' }; bDE.time = { date: '2026-10-05', time: '08:00', startMs: Date.UTC(2026, 9, 5, 6, 0) }; bDE.intent.durationMin = 120;
+  bDE.panels['B.balloon'].content.auto = { data: { dwd: { id: '31', text: 'Vorhersagen für Montag, 05.10.2026\nSonnenaufgang  05:37  Sonnenuntergang  16:56\nBeginn bürgerl. Dämmerung  05:01  Ende bürgerl. Dämmerung  17:30\n' } } };
+  const sun = sunFor(bDE, S, null);
+  ok(sun.source === 'dwd' && sun.dwdArea === '31' && sun.official.bcmt === Date.UTC(2026, 9, 5, 5, 1) && sun.official.ecet === Date.UTC(2026, 9, 5, 17, 30), 'DE: amtliche Dämmerungszeiten aus dem DWD-Bericht (UTC) übernommen');
+  bDE.panels['B.balloon'].content.auto.data.dwd.text = 'Vorhersagen für Sonntag, 04.10.2026\nSonnenaufgang  05:37  Sonnenuntergang  16:56\nBeginn bürgerl. Dämmerung  05:01  Ende bürgerl. Dämmerung  17:30\n';
+  ok(sunFor(bDE, S, null).source === 'astro', 'DWD-Bericht eines anderen Tages → berechnet');
+  ok(mergeSettings({ balloons: { hab: [{ id: 'HB-QWP', mtom: 883 }] } }).balloons.hab[0].mtom === 950, 'HB-QWP MTOM 883 → 950 (BAZL)');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

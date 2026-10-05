@@ -184,6 +184,8 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.goto(BASE + '#/settings?panels'); pg.wait_for_timeout(600)
         assert pg.query_selector('table.panels-tbl') is not None and 'A1' in pg.inner_text('table.panels-tbl .pno'), 'Panel-Tabelle mit Nummern'
         pg.screenshot(path=f'{OUT}/{name}_13_panels.png', full_page=True)
+        pg.goto(BASE + '#/settings?expert'); pg.wait_for_timeout(600)
+        assert pg.query_selector('table.cm-tbl') is not None and 'DABS' in pg.inner_text('table.cm-tbl'), 'Länder-Matrix im Expertenbereich'
         pg.goto(BASE + f'#/pax/{bid}'); pg.wait_for_timeout(900)
         assert pg.query_selector('.paxsheet img.bimg') is not None, 'Hüllenbild im Pax-Blatt'
         pg.goto(BASE + f'#/v/{bid}'); pg.wait_for_timeout(900)

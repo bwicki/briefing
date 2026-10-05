@@ -146,3 +146,15 @@ export function moonTimes(lat, lon, startMs) {
   const up = moonAltitude(lat, lon, startMs) - h0 >= 0;
   return { rise, set, alwaysUp: rise == null && set == null && up, alwaysDown: rise == null && set == null && !up };
 }
+
+/** Astronomische Angaben aus dem DWD-Ballonwetterbericht (UTC): «Sonnenaufgang 05:37 Sonnenuntergang 16:56 …
+ *  Beginn bürgerl. Dämmerung 05:01 Ende bürgerl. Dämmerung 17:30», Datum aus «Vorhersagen für Montag, 05.10.2026».
+ *  → { date: 'YYYY-MM-DD', sr, ss, bcmt, ecet } als 'HH:MM' UTC, oder null. */
+export function parseDwdAstro(text) {
+  const s = String(text || '');
+  const d = /Vorhersagen f[üu]r \w+,?\s*(\d{2})\.(\d{2})\.(\d{4})/.exec(s);
+  const sr = /Sonnenaufgang\s+(\d{2}:\d{2})/.exec(s), ss = /Sonnenuntergang\s+(\d{2}:\d{2})/.exec(s);
+  const bc = /Beginn b[üu]rgerl\.?\s*D[äa]mmerung\s+(\d{2}:\d{2})/.exec(s), ec = /Ende b[üu]rgerl\.?\s*D[äa]mmerung\s+(\d{2}:\d{2})/.exec(s);
+  if (!sr || !ss || !bc || !ec) return null;
+  return { date: d ? `${d[3]}-${d[2]}-${d[1]}` : null, sr: sr[1], ss: ss[1], bcmt: bc[1], ecet: ec[1] };
+}

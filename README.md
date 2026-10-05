@@ -208,6 +208,15 @@ in Einstellungen → Meteo (Bodenwind, Böen, Böigkeit, Niederschlag, CAPE, Sic
 Wolkenbasis, bürgerliche Dämmerung). Sie ersetzt keine Beratung — sie zeigt,
 welche Stunden man anschauen muss.
 
+### Länder-Matrix (0.11.1)
+
+Einstellungen → Experte → **Länder-Matrix**: je Land (CH, LI, DE, AT, FR, IT, übrige) stehen
+amtliches Flugwetter und Zugang, Modell, Luftraum/NOTAM, DABS-Pflicht, Sonnenquelle, Flugplan,
+Kontakte und die Pflichtpunkte je Rolle der Fahrt (Start, Überflug, Landung); eigene Notizen je
+Land bleiben gespeichert. Die Stammdaten zeigen «Länder (Rolle)». Für deutsche Startorte
+übernimmt A2 die Dämmerungszeiten aus dem DWD-Ballonwetterbericht des Gebiets, sobald die
+Ballonprognose geladen ist.
+
 ### Ordnungsnummer, Fortschritt, Sperre (0.11)
 
 Jedes Briefing erhält beim ersten Speichern eine **Ordnungsnummer `JJJJ-NNN`**

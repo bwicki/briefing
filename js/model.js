@@ -7,13 +7,14 @@
 import { uid, deepCopy } from './util.js';
 import { resolveBalloon, defaultBalloon } from './defaults.js';
 import { fromLocal, localParts, isoDate, hhmm, addMin, fmtDate, fmtDateTime } from './calc/time.js';
-import { sunTimes, moonTimes, moonIllumination } from './calc/sun.js';
+import { sunTimes, moonTimes, moonIllumination, parseDwdAstro } from './calc/sun.js';
 import { racLookup } from './calc/rac.js';
 import { hotAir, gasBalloon } from './calc/aero.js';
 import { buildSchedule, scheduleWarnings, buildPlan, planTemplate, planToStops } from './calc/schedule.js';
 import { icao, bearing, distKm, compass, countryGuess } from './calc/geo.js';
 import { PANELS, touchesCH, visiblePanels, panelFilled } from './panels.js';
-import { tt } from './i18n.js';
+import { tt, t as tr } from './i18n.js';
+import { routeMatrix, routeMatrixLine } from './countries.js';
 
 export function newBriefing(settings, now = Date.now()) {
   const sel = defaultBalloon(settings);
@@ -108,6 +109,17 @@ export function sunFor(b, settings, racTable) {
       source = 'rac';
     } else racMissing = true;
   }
+  let dwdArea = null;
+  if (!official && (b.site.country || '') === 'DE') {
+    // Deutschland: amtliche Angaben aus dem DWD-Ballonwetterbericht des Gebiets (UTC), sofern er den Fahrttag abdeckt
+    const dwd = b.panels?.['B.balloon']?.content?.auto?.data?.dwd;
+    const a = dwd ? parseDwdAstro(dwd.text) : null;
+    if (a && a.date === date) {
+      const u = (hm) => fromLocal('UTC', date, hm);
+      official = { bcmt: u(a.bcmt), sr: u(a.sr), ss: u(a.ss), ecet: u(a.ecet) };
+      source = 'dwd'; dwdArea = dwd.id;
+    }
+  }
   if (!official) official = { bcmt: astro.dawn, sr: astro.sunrise, ss: astro.sunset, ecet: astro.dusk };
   const dayStart = fromLocal(tz, date, '00:00');
   const moon = moonTimes(lat, lon, dayStart);
@@ -125,7 +137,7 @@ export function sunFor(b, settings, racTable) {
   const nvfr = !!b.flight?.nvfr;
   const startBeforeBcmt = b.time.startMs < official.bcmt, landingAfterEcet = ecetLanding != null && landing > ecetLanding;
   return {
-    date, tz, official, astro: { bcmt: astro.dawn, sr: astro.sunrise, ss: astro.sunset, ecet: astro.dusk }, source, racMissing,
+    date, tz, official, astro: { bcmt: astro.dawn, sr: astro.sunrise, ss: astro.sunset, ecet: astro.dusk }, source, racMissing, dwdArea,
     moon: { ...moon, fraction: ill.fraction, phase: ill.phase },
     nightStart: !nvfr && startBeforeBcmt, nightLanding: !nvfr && landingAfterEcet, landing, nvfr, startBeforeBcmt, landingAfterEcet,
   };
@@ -324,4 +336,9 @@ export function paxLine(b, settings, placeholder = (i) => `Pax ${i + 1}`) {
   const norm = b.balloon?.personWeight ?? settings?.balloons?.gasDefaults?.personWeight ?? null;
   const names = pax.map((x, i) => { const w = x.weight ?? norm; return `${x.name || placeholder(i)}${w != null ? ` (${Math.round(w)} kg)` : ''}`; });
   return `${pax.length} Pax: ${names.join(', ')}`;
+}
+/** Länderzeile für die Stammdaten: «CH (Start) · DE (Überflug) · AT (Landung)». */
+export function countriesLine(b) {
+  const entries = routeMatrix(b, routeCountries(b));
+  return entries.length ? routeMatrixLine(entries, (r) => tr('cm_role_' + r)) : '–';
 }
