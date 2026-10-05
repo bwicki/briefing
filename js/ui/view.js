@@ -66,12 +66,11 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       h('h1', `${fmtDate(z, b.time.startMs, lang)} · ${b.site.name}`),
       h('div.bline', `${b.balloon.label} · ${t('kind_' + b.flight.kind)} · LTF ${b.flight.operatorName}`),
     ]),
-    h('div.r', [
-      h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }),
-      h('div.tline', titleLine(b, lang, t('appName'))),
-      h('div.meta', lastChangeLine(b, lang, t('lastChange'))),
-      h('div.meta', `${b.status === 'final' ? t('released', { n: b.finalNo }) : b.progress == null ? t('status_inwork') : t('status_progress', { p: b.progress })} · v${b.edition ?? b.revision ?? 0} · PIC ${b.persons.pic}${locked ? ' · 🔒' : ''}`),
-    ]),
+    h('div.r', h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' })),
+    // Titelzeile und Metazeilen über die ganze Breite, rechtsbündig (bricht nicht um)
+    h('div.tline', titleLine(b, lang, t('appName'))),
+    h('div.meta', lastChangeLine(b, lang, t('lastChange'))),
+    h('div.meta', `${b.status === 'final' ? t('released', { n: b.finalNo }) : b.progress == null ? t('status_inwork') : t('status_progress', { p: b.progress })} · v${b.edition ?? b.revision ?? 0} · PIC ${b.persons.pic}${locked ? ' · 🔒' : ''}`),
   ]));
   // Grafiken, Bilder und Tabellen: Klick öffnet eine vergrösserte Ansicht (nur am Bildschirm)
   brief.addEventListener('click', (e) => {

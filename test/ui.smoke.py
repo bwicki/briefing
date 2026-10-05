@@ -204,8 +204,9 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         assert re.search(r'20\d\d-\d{3}', lst), 'Ordnungsnummer in der Liste'
         assert 'in Arbeit' in lst and 'Entwurf' not in lst, 'Status «in Arbeit NN %» statt Entwurf'
         pg.goto(BASE + f'#/v/{bid}'); pg.wait_for_timeout(900)
-        hdr = pg.inner_text('.brief .bh .r')
+        hdr = pg.inner_text('.brief .bh .tline') + ' | ' + pg.inner_text('.brief .bh')
         assert hdr.startswith('Fahrtbriefing · 20') and 'Start:' in hdr and 'Letzte Änderung' in hdr, 'Titelzeile und letzte Änderung: ' + hdr[:80]
+        assert pg.evaluate("(() => { const e = document.querySelector('.brief .bh .tline'); return e.getBoundingClientRect().height < 1.8 * parseFloat(getComputedStyle(e).fontSize); })()"), 'Titelzeile einzeilig'
         assert 'Ordnungsnummer' in pg.inner_text('.brief tr.row-A-core') and 'Pax:' in pg.inner_text('.brief tr.row-A-core'), 'Nummer und Pax-Zeile in den Stammdaten'
         pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1200)
         assert pg.query_selector('.editor .refresh-all button') is not None and pg.query_selector('#panel-A\\.core .refresh-all') is None, 'Knopf «Alle verfügbaren Daten aktualisieren» über Abschnitt A'

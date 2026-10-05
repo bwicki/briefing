@@ -68,7 +68,6 @@ img.bimg{width:2cm;height:2cm;object-fit:cover;border:1px solid #ccc;border-radi
 .brief .bh .l{display:flex;flex-direction:column;gap:2px}
 
 /* 0.11: Titelzeile rechtsbündig, Logo oben rechts */
-.brief .bh .r{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:1px}
-.brief .bh .r img{margin:0 0 3px 0}
-.brief .bh .r .tline{font-weight:700;font-size:10.5pt}
+.brief .bh .r img{margin:0}
+.brief .bh .tline{font-weight:700;font-size:10.5pt;white-space:nowrap}
 .lockbar{display:none}

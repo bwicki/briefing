@@ -172,7 +172,7 @@ export function paxSheet(b, ctx) {
   const pic = S.persons.find((p) => p.id === b.persons.picId);
   const items = (S.paxCardItems?.[lang] || S.paxCardItems?.de || []);
   const card = h('div.brief.paxcard', [
-    h('div.bh.pax', [h('div.l.row', [balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null, h('div', [h('h1', `${paxCardTitle(S)} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div.bline', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)])]), h('div.r', [h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }), h('div.tline', titleLine(b, lang, t('appName'))), h('div.meta', lastChangeLine(b, lang, t('lastChange')))])]),
+    h('div.bh.pax', [h('div.l.row', [balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null, h('div', [h('h1', `${paxCardTitle(S)} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div.bline', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)])]), h('div.r', h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' })), h('div.tline', titleLine(b, lang, t('appName'))), h('div.meta', lastChangeLine(b, lang, t('lastChange')))]),
     h('div.bs', t('pax_meet')),
     h('div.pax-meet', [h('div.kv.pax-kv', [
       [t('meeting'), meet ? placeLine({ name: meet.name, lat: meet.lat, lon: meet.lon }, { noElev: true }) : (b.schedule.meetingName || '–')],
