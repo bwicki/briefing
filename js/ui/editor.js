@@ -6,7 +6,7 @@ import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, fplSuggested, crossesBorder } from '../model.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock, askAi } from './autopanels.js';
@@ -16,6 +16,7 @@ import { changesSinceFinal } from '../calc/diff.js';
 import { panelByKey } from '../panels.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { openAccessDialog } from './access.js';
+import { fplPanel } from './fplpanel.js';
 
 export async function renderEditor(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
@@ -156,20 +157,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         content = textarea(d.content.text || '', { rows: 2, oninput: (e) => { d.content.text = e.target.value; touched(p.key); } });
         break;
       }
-      case 'fpl': {
-        // Schalter «Flugplan erstellen?» – Standard ja bei NVFR, Grenzüberschreitung oder Gasfahrt
-        b.fpl = b.fpl || {};
-        if (b.fpl.enabled == null) b.fpl.enabled = fplSuggested(b);
-        const ro = shared?.role === 'read';
-        const ta = textarea(d.content.text || '', { rows: 3, placeholder: t('fpl_textHint'), readOnly: ro, oninput: (e) => { d.content.text = e.target.value; touched(p.key); } });
-        const body2 = h('div');
-        const drawFpl = () => { clear(body2); if (b.fpl.enabled) body2.append(ta, h('div.note.small', t('fpl_soon'))); else body2.append(h('div.note', t('fpl_none'))); };
-        const sw = check(t('fpl_create'), !!b.fpl.enabled, (v) => { b.fpl.enabled = v; drawFpl(); touched(p.key); }, { disabled: ro });
-        const why = [b.flight?.nvfr ? t('nvfr') : null, b.balloon?.type === 'gas' ? t('gas') : null, crossesBorder(b) ? t('fpl_border') : null].filter(Boolean);
-        drawFpl();
-        content = h('div', [h('div.row-actions', [sw, why.length ? h('span.note.small', `${t('fpl_why')}: ${why.join(', ')}`) : null]), body2]);
-        break;
-      }
+      case 'fpl': content = fplPanel(b, ctx, d, () => touched(p.key), shared?.role === 'read'); break;
       case 'landing': {
         const ro = shared?.role === 'read';
         const box = h('div');

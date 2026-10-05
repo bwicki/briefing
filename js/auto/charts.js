@@ -71,7 +71,7 @@ export function windChart(levels, o = {}) {
 /** Stüve-Diagramm mit Windfeld. levels [{hPa, ft, m, spd, dir, temp, dew, rh}] oben→unten. */
 export function stueveChart(levels, o = {}) {
   const KAPPA = 0.2857, fp = (p) => Math.pow(p / 1000, KAPPA);
-  const PAD_T = 14, PAD_B = 30, PAD_L = 74, PAD_R = 30, GAP = 26, ALT_X = 34, SPLIT = 0.66, RH_START = 85, RH_MAX_ALPHA = 0.42;
+  const PAD_T = 14, PAD_B = 30, PAD_L = 74, PAD_R = 30, GAP = 26, ALT_X = 34, SPLIT = 0.66, RH_START = 85, RH_MAX_ALPHA = 0.30, CLOUD_RH = 95, CLOUD_ALPHA = 0.40;
   const rhAlpha = (rh) => (rh == null || rh <= RH_START ? 0 : RH_MAX_ALPHA * Math.min(1, (rh - RH_START) / (100 - RH_START)));
   const lv = levels.filter((l) => l.hPa != null && l.temp != null);
   if (lv.length < 3) return null;
@@ -96,7 +96,8 @@ export function stueveChart(levels, o = {}) {
   const stops = [...lv].sort((a, b) => a.hPa - b.hPa);
   if (stops.some((l) => rhAlpha(l.rh) > 0)) {
     const grad = mk('linearGradient', { id: `${id}-rh`, x1: 0, y1: 0, x2: 0, y2: 1 });
-    for (const l of stops) grad.appendChild(mk('stop', { offset: `${(clamp((y(l.hPa) - plotT) / (plotH || 1), 0, 1) * 100).toFixed(2)}%`, 'stop-color': 'var(--sv-humid)', 'stop-opacity': rhAlpha(l.rh).toFixed(3) }));
+    // feucht (RH ≥ 85 %) blau, Wolkenschicht (RH ≥ 95 %) rötlich – wie die kritischen METAR-Angaben
+    for (const l of stops) grad.appendChild(mk('stop', { offset: `${(clamp((y(l.hPa) - plotT) / (plotH || 1), 0, 1) * 100).toFixed(2)}%`, 'stop-color': l.rh >= CLOUD_RH ? 'var(--sv-cloud)' : 'var(--sv-humid)', 'stop-opacity': (l.rh >= CLOUD_RH ? CLOUD_ALPHA : rhAlpha(l.rh)).toFixed(3) }));
     defs.appendChild(grad);
   }
   svg.appendChild(defs);

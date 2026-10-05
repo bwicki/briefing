@@ -82,7 +82,7 @@ function buildMenu() {
   if (!ctx.shared && store.isAuthed()) {
     // JSON: Einstellungen exportieren / importieren (über «Einstellungen»)
     sub('JSON', [{ label: t('set_import'), fn: importSettingsJson }, { label: t('set_export'), fn: exportSettingsJson }]);
-    const sects = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'meteo', 'panels', 'links', 'users', 'access', 'expert'];
+    const sects = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'fpl', 'meteo', 'panels', 'links', 'users', 'access', 'expert'];
     sub(t('nav_settings'), sects.map((k) => ({ label: t('set_' + k), fn: () => { if (!location.hash.startsWith('#/settings')) ctx.settingsReturn = location.hash || '#/list'; ctx.navigate('#/settings?' + k); } })));
     m.appendChild(h('div.sep'));
   }

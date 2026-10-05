@@ -182,7 +182,8 @@ kurz danach).
 |---|---|---|
 | Allgemeine Lage | Schnappschüsse amtlicher Karten (DWD-Bodenanalysen, ECMWF Bodendruck/Wind 850 hPa zur Startzeit und +24 h; Liste in Einstellungen → Meteo) **und** die Grosswetteranalyse des nationalen Dienstes als Text für das Land des Startorts/Landeraums (DWD Synoptische Übersicht Kurz-/Mittelfrist und ORF/GeoSphere Austria geprüft; MeteoSchweiz und Aeronautica Militare liefern nur per JavaScript → als Link; weitere Seiten mit CSS-Selektor konfigurierbar, Haken «abrufen») | DWD, ECMWF Open Charts (CC-BY-4.0), nationale Dienste; über Worker (`/api/wx/snapshot`, `/api/wx/wxtext`) |
 | METAR/TAF | alle Plätze im Umkreis (direkt im Panel einstellbar, Standard 150 km); Richtungspfeil vom Startort zum Platz; Schlechtwetter rot (Wind/Böen ≥ 14 kt, Sicht < 5 km, Niederschlag/Nebel/Gewitter, Basis ≤ 1500 ft, CB/TCU); je Platz **Rohmeldung und Klartext nebeneinander** (DE/EN: Wind, Sicht, Wetter, Wolken, T/Td, QNH, Trend; TAF mit BECMG/TEMPO/PROB/FM-Gruppen und Gültigkeit) | aviationweather.gov über Worker; Rückfall GaforCast-Kopie |
-| Temps | Stüve-Diagramm des Modellprofils zur Startzeit (T, Td, Feuchteschattierung, Windfahnen, Grenzschicht, 0 °C), Inversionen; dazu die **letzte Radiosondierung** der nächsten Station (Payerne u. a.) als zweites Stüve mit Tabelle | Open-Meteo Druckflächen; Radiosonde über Worker `/api/wx/sounding` (Archiv University of Wyoming) |
+| Temps | Stüve-Diagramm des Modellprofils zur Startzeit (T, Td, Feuchteschattierung blau ab RH 85 %, **Wolkenschichten rötlich ab RH 95 %**, Windfahnen, Grenzschicht, 0 °C), Inversionen; dazu die **letzte Radiosondierung** der nächsten Station (Payerne u. a.) als zweites Stüve mit Tabelle; **nächste Live-Radiosonde aus SondeHub** (Amateurempfang, letzte 12 h, Umkreis einstellbar) als drittes Stüve | Open-Meteo Druckflächen; Radiosonde über Worker `/api/wx/sounding` (Archiv University of Wyoming); SondeHub über `/api/wx/sondes`, `/api/wx/sonde`) |
+| Beobachtungen (Wetterstationen) | **Wetterstationen im Umkreis** des Startorts (Standard 50 km, im Panel einstellbar): SwissMetNet (MeteoSchweiz via api.existenz.ch), DWD (Bright Sky), übriges Europa EUMETNET MeteoGate/E-SOH; Tabelle Pfeil · km · Zeit · Wind/Böen (rot ab 14/20 kt) · T/Td · RH · QNH · Niederschlag | über Worker (`/api/wx/stations`) |
 | Flugwetterprognose | **DE:** DWD Flugwetterübersicht des Bereichs + GAFOR-Einstufung des Gebiets (Punkt-in-Polygon). **CH:** MeteoSchweiz-Prognose einfügen (Pflicht) | DWD-Luftsportberichte (Kopie gafor.wicki.aero) |
 | Windprognose | Windprofil Start–Landung stündlich (°/kt je Niveau), Profilgrafiken mit Höhenband-Marken | Open-Meteo |
 | Ballonprognose | **DE:** DWD-Gebietsvorhersage Ballonsport (Tabellen); immer: eigene Stundentabelle mit Ampel fahrbar/grenzwertig/nein und Begründung | DWD (Kopie), Open-Meteo |
@@ -191,7 +192,7 @@ kurz danach).
 | SIGWX | SIGMET/AIRMET im Umkreis automatisch; SIGWX-Karte einfügen | aviationweather.gov über Worker |
 | Thermik | eigene Abschätzung aus dem Modell: Globalstrahlung × Bowen-Faktor → Wärmestrom, mit Grenzschichthöhe zur konvektiven Geschwindigkeitsskala w* (Deardorff); je Stunde Klasse keine/schwach/mässig/kräftig/stark (Grenzen unter Einstellungen → Experte), Einsetzen, Maximum, Abschwächen, Fahrtfenster; Tabelle links, Balken rechts | Open-Meteo |
 | Meteogramm | Grafik über Start −6 h … Landung +6 h mit beschrifteten Bändern (Temperatur/Taupunkt mit Extremwerten, Wind/Böen kt mit Fahnen, Bewölkung hoch/mittel/tief, Niederschlag mm/h + CAPE), Zeitachse LT mit Tageswechsel, Start-/Landemarke, Nacht- und Fahrtfenster-Schattierung, Ampelstreifen und Legende; dazu Stundentabelle mit Nebelrisiko und Wolkenbasis | Open-Meteo |
-| Radar | Live-Radar (RainViewer) auf der Karte (weit genug für die Niederschlagsgebiete), Startort und Landeraum markiert, **Webcams im Umkreis automatisch aus öffentlichen Quellen** (europaweit: Windy Webcams API mit Schlüssel, OpenStreetMap ohne; Umkreis in Einstellungen → Meteo, Standard 40 km um Start und Landeraum) plus eigene Liste, als Kamera-Symbol mit Popup (Vorschaubild, Link) und aufklappbarer Liste; Links Windy/MeteoSchweiz/Blitzortung/Sat24 — nur am Bildschirm | RainViewer, Windy, OSM/Overpass; über Worker (`/api/wx/webcams`) |
+| Radar | Live-Radar (RainViewer) auf der Karte (weit genug für die Niederschlagsgebiete), Startort und Landeraum markiert, **Webcams im Umkreis automatisch aus öffentlichen Quellen** (europaweit: Windy Webcams API mit Schlüssel, OpenStreetMap ohne; Umkreis in Einstellungen → Meteo, Standard 40 km um Start und Landeraum) plus eigene Liste, als Kamera-Symbol mit Popup (Vorschaubild, Link) und aufklappbarer Liste; Klickboxen Regen/Webcams/Sonden; **Klick auf eine Sonde** verkleinert die Karte und öffnet daneben Emagramm + Daten der Sonde; Links Windy/MeteoSchweiz/Blitzortung/Sat24 — nur am Bildschirm | RainViewer, Windy, OSM/Overpass; über Worker (`/api/wx/webcams`) |
 | Luftraum entlang des Fahrtwegs | **Luftraumanalyse** aus openAIP für die berechneten Trajektorien: je Luftraum *durchfahren* (Bahn innerhalb, Untergrenze unter der geplanten Maximalhöhe; km ab Start, ETA je Bahn), *nahe* (im Korridor, Standard 5 km, Einstellungen → Meteo) oder *oberhalb der Maximalhöhe* (eingeklappt); Typ (CTR, TMA, TMZ, RMZ, R/D/P, TRA/TSA, ATZ …), ICAO-Klasse, Unter-/Obergrenze, Zusatzcodes (NOTAM/REQ/AGRMT, Squawk, Frequenz); reine Klasse-E/G-Lufträume werden nicht gelistet; **Warnungen** Startort in CTR/ATZ und TMA/CTA tiefer als 900 ft über dem Startort (Experte); **FIR-Folge** je Bahn mit Wechselpunkt (km, LT, +h:mm ab Start); Karte mit Polygonen und Bahnen (Bildschirm), Nord-oben-Skizze (Druck). Braucht die Trajektorien (werden sonst mitberechnet) und den openAIP-Schlüssel («Zugänge: openaip» oder der Kachel-Schlüssel der Overlay-URL) | openAIP Core API über Worker `/api/wx/airspace` (6 h Cache je Ausschnitt) |
 | DABS | DABS-PDF (heute/morgen) automatisch holen; Seiten im kleinen Viewer mit Blättern (‹ ›, Pfeiltasten, Link zum PDF), im Druck alle Seiten bzw. als Beilage | skybriefing über Worker, R2 |
 | NOTAM | FAA-NOTAM-API wahlweise **Strecke** (Startort → Landeraum → Trajektorien-Endpunkte, Radius einstellbar) oder **Umkreis um Orte** (Ortswahl, Standard Startort, Radius 200 km); **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | FAA NOTAM API (Zugang in Einstellungen → Zugänge) |
@@ -251,6 +252,19 @@ Seiten nach dem Briefing; die Klickbox «Beilagen mitdrucken» in der Werkzeugle
 schaltet sie für den Druck ab (am Bildschirm zeigt das Panel den Viewer). Die
 Pax-Karte (A5 hoch, mit QR-Code des Treffpunkts) druckt auf A4 quer zwei Karten
 nebeneinander zum Trennen. Auf dem Handy werden die Tabellen gestapelt.
+
+### Flugplan (ICAO FPL)
+
+Panel C «Flugplan»: Schalter «Flugplan erstellen?» (Vorschlag ja bei NVFR, Grenzüberschreitung
+oder Gasfahrt), dann «Aus Briefing erzeugen». Der Datensatz folgt dem ICAO-Flugplanblatt
+(Doc 4444): Kennung, Flugregeln V, Art des Flugs, ZZZZ/L, Ausrüstung, EOBT UTC, Geschwindigkeit,
+Flugfläche aus der Maximalhöhe, Route `DRIFTING … FROM … TO … VIA …`, Gesamt-EET, ALTN ZZZZ,
+Feld 18 (DEP/ DEST/ mit Kurzkoordinaten, DOF/, **EET/ je FIR aus der Luftraumanalyse**, TYP/,
+ALTN/UNKNOWN, RMK/NVFR CREW CONTACT …) und Feld 19 (Autonomie, Personen, Notfunk,
+Überlebensausrüstung, Westen, Rettungsinseln, Farbe aus dem Ballon, Bemerkungen, PIC). Jedes
+Feld ist überschreibbar; die ICAO-Nachricht kann kopiert, als .txt oder .xml geladen werden.
+Standardwerte unter Einstellungen → Flugplan. Trajektorien und Luftraum vorher laden, damit
+Route und EET/ gefüllt sind.
 
 ### Berechtigungen (persönliche Links)
 
@@ -378,8 +392,8 @@ js/defaults.js             Standard-Einstellungen und Stammdaten
 js/panels.js               Panel-Register A–D
 js/i18n.js                 Oberflächentexte DE/EN
 js/net.js                  Open-Meteo, Nominatim, OSRM
-js/calc/*.js               Sonne/Mond, RAC-Parser, Aerostatik, Zeitplan, Geo, Zeit
-js/ui/*.js                 Liste, Ablauf, Erarbeitung, Briefingsicht, Einstellungen, Links
+js/calc/*.js               Sonne/Mond, RAC-Parser, Aerostatik, Zeitplan, Geo, Zeit, Flugplan (fpl.js)
+js/ui/*.js                 Liste, Ablauf, Erarbeitung, Briefingsicht, Einstellungen, Links, Flugplan-Panel (fplpanel.js)
 js/vendor/                 Leaflet (BSD-2), qrcode-generator (MIT)
 data/rac/rac-ch.json       RAC 4-4 OCT 2026 – DEC 2027
 worker/                    Cloudflare Worker (src/index.js, schema.sql, wrangler.toml)

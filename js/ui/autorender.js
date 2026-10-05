@@ -207,7 +207,7 @@ export function renderTemps(snap, b, ctx) {
   const inv = d.inversions?.length ? h('div.warn', `${t('auto_inversion')}: ${d.inversions.map((x) => `${x.fromFt}–${x.toFt} ft (+${x.dT} K)`).join(', ')}`) : h('div.note', t('auto_noInversion'));
   const rows = [...d.profile].sort((a, c) => c.ft - a.ft).map((l) => h('tr', [h('td', l.label), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)]));
   const table = h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', rows)]));
-  const parts = [h('div.side-grid', [h('div.num', [h('div.lbl', `${t('auto_modelProfile')} ${snap.modelName || ''}`), table, inv, h('div.note', `${t('auto_pbl')}: ${d.pbl != null ? Math.round(d.pbl * M_TO_FT) + ' ft AGL' : '–'} · 0 °C: ${d.fzl != null ? Math.round(d.fzl * M_TO_FT) + ' ft AMSL' : '–'}`)]), h('div.gfx', svg || h('div.note', t('auto_noProfile')))])];
+  const parts = [h('div.side-grid', [h('div.num', [h('div.lbl', `${t('auto_modelProfile')} ${snap.modelName || ''}`), table, inv, h('div.note', `${t('auto_pbl')}: ${d.pbl != null ? Math.round(d.pbl * M_TO_FT) + ' ft AGL' : '–'} · 0 °C: ${d.fzl != null ? Math.round(d.fzl * M_TO_FT) + ' ft AMSL' : '–'}`), h('div.note.small', [h('span.sw', { style: { background: 'var(--sv-cloud)', opacity: .5 } }), ` ${t('auto_cloudShade')} · `, h('span.sw', { style: { background: 'var(--sv-humid)', opacity: .4 } }), ` ${t('auto_humidShade')}`])]), h('div.gfx', svg || h('div.note', t('auto_noProfile')))])];
   // Letzte Messung (Radiosonde Payerne u. a.): zweites Stüve + Tabelle der Hauptdruckflächen
   if (d.obs?.levels?.length) {
     const o = d.obs;
@@ -216,6 +216,15 @@ export function renderTemps(snap, b, ctx) {
     const oRows = [...main].sort((a, c) => c.ft - a.ft).map((l) => h('tr', [h('td', l.label), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)]));
     parts.push(h('div.side-grid', { style: { marginTop: '10px' } }, [h('div.num', [h('div.lbl', [`${t('auto_sounding')} ${o.station.name} (${o.station.id}) · `, o.station.lat != null && b.site.lat != null ? h('span.dirarrow', { title: `${Math.round(bearing(b.site.lat, b.site.lon, o.station.lat, o.station.lon)).toString().padStart(3, '0')}°`, style: { transform: `rotate(${Math.round(bearing(b.site.lat, b.site.lon, o.station.lat, o.station.lon)) - 90}deg)` } }, '➜') : null, o.station.d != null ? ` ${Math.round(o.station.d)} km · ` : '', `${(o.time || '').slice(0, 13).replace('T', ' ')} UTC`]), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', oRows)])), h('div.note', [t('auto_soundingNote'), ' ', h('a', { href: 'https://www.meteoschweiz.admin.ch/service-und-publikationen/applikationen/radiosondierungen.html', target: '_blank', rel: 'noopener' }, 'MeteoSchweiz ↗'), ' · ', h('a', { href: o.url || '#', target: '_blank', rel: 'noopener' }, 'UWyo ↗')])]), h('div.gfx', oSvg || h('div.note', t('auto_noProfile')))]));
   } else if (d.obsErr) parts.push(h('div.note', `${t('auto_sounding')}: ${d.obsErr}`));
+  // SondeHub: nächste Live-Sonde (Amateurempfang) als drittes Stüve
+  if (d.sonde?.levels?.length) {
+    const sN = d.sonde;
+    const lv = sN.levels.filter((l) => l.temp != null);
+    const sSvg = lv.length >= 4 ? stueveChart(lv.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 40)) === 0 || i === a.length - 1), { w: 560, h: 360, lang: getLang() }) : null;
+    const sel = lv.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 12)) === 0 || i === a.length - 1);
+    const sRows = [...sel].reverse().map((l) => h('tr', [h('td', l.label), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)]));
+    parts.push(h('div.side-grid', { style: { marginTop: '10px' } }, [h('div.num', [h('div.lbl', [`${t('auto_sondehub')} ${sN.serial} · `, dirArrow(b, sN.lat, sN.lon), ` ${Math.round(sN.km)} km · ${(sN.launch || '').slice(0, 16).replace('T', ' ')} UTC`]), h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', [t('auto_level'), 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', sRows)])), h('div.note', [t('auto_sondehubNote'), ' ', h('a', { href: `https://sondehub.org/${encodeURIComponent(sN.serial)}`, target: '_blank', rel: 'noopener' }, 'sondehub.org ↗')])]), h('div.gfx', sSvg || h('div.note', t('auto_noProfile')))]));
+  }
   return h('div.auto-wrap', parts);
 }
 
@@ -394,7 +403,46 @@ function renderImagesOnly(snap) {
   return wrap;
 }
 
-export const RENDERERS = { airspace: renderAirspace, thermal: renderThermal, meteogram: renderMeteogram, wind: renderWind, temps: renderTemps, traj: renderTraj, balloon: renderBalloon, pdiff: renderPdiff, metar: renderMetar, sigmet: renderSigmet, notam: renderNotam, dabs: renderImages, synoptic: renderImages, fwp: renderFwp };
+/** Richtungspfeil vom Startort (vor der km-Angabe). */
+const dirArrow = (b, lat, lon) => { if (lat == null || b.site?.lat == null) return null; const brg = bearing(b.site.lat, b.site.lon, lat, lon); return h('span.dirarrow', { title: `${deg(brg)}° ${compass(brg, getLang())}`, style: { transform: `rotate(${Math.round(brg) - 90}deg)` } }, '➜'); };
+
+/** Beobachtungen: Wetterstationen im Umkreis als Tabelle (Pfeil · km · Zeit · Wind · T/Td · RH · QNH · Niederschlag). */
+export function renderObs(snap, b) {
+  const d = snap.data || {};
+  if (d.local) return h('div.note', t('auto_obsLocal'));
+  const st = d.stations || [];
+  if (!st.length) return h('div', [h('div.note', t('auto_obsNone', { km: d.km })), d.errors?.length ? h('div.note.small', d.errors.join(' · ')) : null]);
+  const age = (iso) => { if (!iso) return ''; const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 90 ? `${m} min` : `${Math.round(m / 60)} h`; };
+  const windCls = (x) => ((x.kt || 0) >= 14 || (x.gustKt || 0) >= 20 ? 'bad' : '');
+  const rows = st.map((x) => h('tr', [
+    h('td', [h('b', x.name), h('span.muted.small', ` ${x.src}`)]),
+    h('td.mono', [dirArrow(b, x.lat, x.lon), ` ${x.km} km`]),
+    h('td.mono', x.time ? `${x.time.slice(11, 16)}Z (${age(x.time)})` : '–'),
+    h('td.mono', { class: windCls(x) }, `${deg(x.dir)}/${x.kt != null ? Math.round(x.kt) : '–'}${x.gustKt != null ? ` G${Math.round(x.gustKt)}` : ''} kt`),
+    h('td.mono', `${x.tempC != null ? x.tempC.toFixed(1) : '–'}${x.dewC != null ? ' / ' + x.dewC.toFixed(1) : ''} °C`),
+    h('td.mono', x.rh != null ? `${Math.round(x.rh)} %` : '–'),
+    h('td.mono', x.qnh != null ? `${Math.round(x.qnh)} hPa` : '–'),
+    h('td.mono', x.precipMm != null ? `${x.precipMm} mm` : '–'),
+  ]));
+  return h('div', [
+    h('div.tbl-scroll', h('table.auto.obs-tbl', [h('thead', h('tr', [t('auto_station'), 'km', 'UTC', t('auto_wind'), 'T / Td', 'RH', 'QNH', t('auto_precip')].map((x) => h('th', x)))), h('tbody', rows)])),
+    h('div.note.small', `${t('auto_obsNote', { km: d.km })}${d.errors?.length ? ' · ' + d.errors.join(' · ') : ''}`),
+  ]);
+}
+
+/** Sonden-Fenster (Radar-Karte): Emagramm + Kopf + Tabelle der Telemetrie-Niveaus. */
+export function renderSondeWindow(box, so, b) {
+  const old = box.querySelector('.note'); if (old) old.remove();
+  const levels = (so.levels || []).map((l) => ({ label: `${l.hPa} hPa`, hPa: l.hPa, ft: l.ft, m: l.m, temp: l.temp, dew: l.dew, rh: l.rh, dir: l.dir, spd: l.kt != null ? l.kt / MS_TO_KT : null })).filter((l) => l.temp != null);
+  const svg = levels.length >= 4 ? stueveChart(levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 40)) === 0 || i === a.length - 1), { w: 520, h: 340, lang: getLang() }) : null;
+  const sel = levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 14)) === 0 || i === a.length - 1);
+  box.appendChild(h('div.note.small', `${t('auto_sondeLaunch')} ${(so.launch || '').slice(0, 16).replace('T', ' ')} UTC · ${t('auto_sondeTop')} ${so.topM ?? '–'} m · ${so.points} ${t('auto_sondePoints')}${so.levels?.some((l) => !l.pressureMeasured) ? ` · ${t('auto_sondePressNote')}` : ''}`));
+  box.appendChild(h('div.gfx', svg || h('div.note', t('auto_noProfile'))));
+  box.appendChild(h('div.tbl-scroll', h('table.auto', [h('thead', h('tr', ['hPa', 'ft', 'T', 'Td', 'RH', 'kt'].map((x) => h('th', x)))), h('tbody', [...sel].reverse().map((l) => h('tr', [h('td.mono', l.hPa), h('td.mono', l.ft), h('td', l.temp != null ? l.temp.toFixed(1) : '–'), h('td', l.dew != null ? l.dew.toFixed(1) : '–'), h('td', l.rh ?? '–'), h('td.mono', `${deg(l.dir)}/${kt(l.spd)}`)])))])));
+  box.appendChild(h('div.note.small', [h('a', { href: `https://sondehub.org/${encodeURIComponent(so.serial)}`, target: '_blank', rel: 'noopener' }, 'sondehub.org ↗')]));
+}
+
+export const RENDERERS = { obs: renderObs, airspace: renderAirspace, thermal: renderThermal, meteogram: renderMeteogram, wind: renderWind, temps: renderTemps, traj: renderTraj, balloon: renderBalloon, pdiff: renderPdiff, metar: renderMetar, sigmet: renderSigmet, notam: renderNotam, dabs: renderImages, synoptic: renderImages, fwp: renderFwp };
 export function renderSnapshot(snap, b, ctx, opts = {}) {
   if (!snap) return null;
   const f = RENDERERS[snap.kind];

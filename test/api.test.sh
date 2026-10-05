@@ -30,6 +30,10 @@ echo "# Dokument-Ablage (Stammdaten)"; DOC=$(j -H "$H" -X POST $A/api/docs -d "{
 echo "# wxtext fremder Host → 400"; code -H "$H" "$A/api/wx/wxtext?url=https://example.com/x"; echo
 echo "# webcams ohne Koordinaten → 400"; code -H "$H" "$A/api/wx/webcams"; echo
 echo "# sounding-Route vorhanden (Netz im Test gesperrt → 500, nicht 404)"; code -H "$H" "$A/api/wx/sounding?stn=06610"; echo
+echo "# stations ohne Koordinaten → 400"; code -H "$H" "$A/api/wx/stations"; echo
+echo "# stations Umkreis (Quellen im Test gesperrt → leere Liste mit errors, 200)"; j -H "$H" "$A/api/wx/stations?lat=47.26&lon=8.30&km=40" | head -c 200; echo
+echo "# sondes-Route vorhanden (Netz gesperrt → 500, nicht 404)"; code -H "$H" "$A/api/wx/sondes?lat=47.26&lon=8.30&km=150&h=12"; echo
+echo "# sonde ohne serial → 400"; code -H "$H" "$A/api/wx/sonde"; echo
 echo "# airspace ohne Schlüssel → 424, bbox fehlerhaft → 400"; code -H "$H" "$A/api/wx/airspace?bbox=8.2,47.2,8.9,47.6"; echo; code -H "$H" "$A/api/wx/airspace?bbox=9,47,8,48"; echo
 echo "# webcams Umkreis (ohne Windy-Schlüssel: OSM)"; j -H "$H" "$A/api/wx/webcams?lat=47.26&lon=8.30&km=30" | head -c 300; echo
 echo "# Export"; j -H "$H" $A/api/export | head -c 200; echo

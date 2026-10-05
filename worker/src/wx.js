@@ -4,7 +4,8 @@
  * Schlüssel nicht sehen. Hier laufen deshalb: Open-Meteo (mit Kundenschlüssel),
  * METAR/TAF/SIGMET (aviationweather.gov, Rückfall GaforCast-Kopie), DABS-PDF
  * (skybriefing), Bild-Schnappschüsse amtlicher Karten (R2), Wettertexte der
- * nationalen Dienste, Webcams im Umkreis (Windy/OSM), FAA-NOTAM und die
+ * nationalen Dienste, Webcams im Umkreis (Windy/OSM), Wetterstationen im Umkreis
+ * (SwissMetNet/Bright Sky/MeteoGate), Radiosonden (SondeHub), FAA-NOTAM und die
  * Anthropic-API für KI-Hinweise. Antworten werden über die Cache-API kurz
  * zwischengespeichert, damit mehrere Nutzer eines Briefings die Quellen nicht
  * mehrfach belasten.
@@ -313,6 +314,109 @@ async function sounding(ctx, q) {
   return json(data);
 }
 
+// ------------------------------------------------------------ Wetterstationen im Umkreis (Beobachtungen)
+/** SwissMetNet (MeteoSchweiz) über api.existenz.ch; Liste wie cockpit.wicki.aero. */
+const SMN = [
+  ['ABO','Adelboden',46.491703,7.560703],['AEG','Oberägeri',47.133636,8.608206],['AIG','Aigle',46.326647,6.924472],['ALT','Altdorf',46.887069,8.621894],['AND','Andeer',46.610139,9.431981],['ANT','Andermatt',46.630914,8.580553],['ARH','Altenrhein',47.483631,9.56685],['ARO','Arosa',46.792661,9.679014],['ATT','Les Attelas',46.0991,7.26865],['BAN','Bantiger',46.977806,7.528667],['BAS','Basel',47.541142,7.583525],['BEH','Passo del Bernina',46.409158,10.019567],['BER','Bern',46.990744,7.464061],['BEZ','Beznau',47.557256,8.233325],['BIA','Biasca',46.336053,8.978197],['BIE','Bière',46.524908,6.342386],['BIN','Binn',46.367661,8.192306],['BIV','Bivio',46.462494,9.668639],['BIZ','Bischofszell',47.508828,9.266797],['BLA','Blatten',46.422261,7.825914],['BOL','Boltigen',46.623519,7.384206],['BOU','Bouveret',46.393447,6.857006],['BRL','La Brevine',46.983844,6.610297],['BRZ','Brienz',46.740719,8.060864],['BUF','Buffalora',46.648408,10.2672],['BUS','Buchs/Aarau',47.384381,8.07955],['CDF','La Chaux-de-Fonds',47.082947,6.792314],['CDM','Col des Mosses',46.391525,7.098239],['CEV','Cevio',46.320486,8.603161],['CGI','Nyon',46.401053,6.227722],['CHA','Chasseral',47.131761,7.054367],['CHB','Les Charbonnieres',46.67015,6.312428],['CHD','Chateau-dOex',46.479819,7.139656],['CHM','Chaumont',47.049169,6.978825],['CHU','Chur',46.870572,9.530761],['CHZ','Cham',47.188278,8.464642],['CIM','Cimetta',46.200467,8.79165],['CMA','Crap Masegn',46.842275,9.180042],['COM','Comprovasco',46.459517,8.935486],['COV','Piz Corvatsch',46.418039,9.821308],['COY','Courtelary',47.180811,7.090656],['CRM','Cressier',47.047581,7.059147],['DAV','Davos',46.812969,9.843558],['DEM','Delemont',47.351706,7.349567],['DIA','Les Diablerets',46.32675,7.203781],['DIS','Disentis',46.706569,8.853478],['DOL','La Dole',46.424794,6.099453],['EBK','Ebnat-Kappel',47.273389,9.108494],['EGH','Eggishorn',46.426528,8.092728],['EGO','Egolzwil',47.179428,8.004758],['EIN','Einsiedeln',47.133042,8.756556],['ELM','Elm',46.923742,9.175347],['ENG','Engelberg',46.821639,8.410514],['EVI','Evionnaz',46.182953,7.026747],['EVO','Evolene',46.112211,7.508631],['FAH','Fahy',47.423814,6.941194],['FLU','Fluhli',46.889436,8.020336],['FRE','La Fretaz',46.840622,6.576369],['FRU','Frutigen',46.599003,7.657542],['GEN','Monte Generoso',45.927592,9.017875],['GES','Gersau',46.996069,8.523442],['GIH','Giswil',46.849447,8.190225],['GLA','Glarus',47.034586,9.066961],['GOE','Gosgen',47.363147,7.973733],['GOR','Gornergrat',45.983644,7.785944],['GOS','Goschenen',46.692678,8.595364],['GRA','Fribourg/Grangeneuve',46.7714,7.113736],['GRC','Grachen',46.195314,7.836822],['GRE','Grenchen',47.179097,7.415144],['GRH','Grimsel Hospiz',46.571689,8.333256],['GRO','Grono',46.255075,9.163758],['GSB','Grand St-Bernard',45.869092,7.170683],['GUE','Gutsch/Andermatt',46.652475,8.615531],['GUT','Guttingen',47.601733,9.279428],['GVE','Geneve',46.247519,6.127742],['HAI','Salen-Reutenen',47.651242,9.023911],['HLL','Hallau',47.697278,8.470464],['HOE','Hornli',47.370864,8.941644],['ILZ','Ilanz',46.775039,9.215353],['INT','Interlaken',46.672033,7.87045],['JUN','Jungfraujoch',46.547556,7.985444],['KLO','Zurich/Kloten',47.479611,8.535961],['KOP','Koppigen',47.11885,7.605503],['LAC','Lachen',47.179197,8.858686],['LAE','Lagern',47.481933,8.397222],['LAG','Langnau',46.939633,7.806425],['LAT','Bergun/Latsch',46.627275,9.753706],['LEI','Leibstadt',47.597361,8.1882],['LUG','Lugano',46.004217,8.960322],['LUZ','Luzern',47.036439,8.301022],['MAG','Magadino',46.160025,8.933672],['MAH','Mathod',46.736978,6.567983],['MAR','Les Marecottes',46.118903,7.016597],['MAS','Marsens',46.656486,7.069669],['MER','Meiringen',46.732222,8.169247],['MLS','Le Moleson',46.546197,7.017753],['MOA','Mosen',47.243847,8.232831],['MOB','Montagnier',46.071019,7.225272],['MOE','Mohlin',47.572197,7.877911],['MRP','Monte Rosa-Plattje',45.956628,7.814575]
+];
+const DEW = (t, rh) => { if (t == null || rh == null || rh <= 0) return null; const a = 17.62, b = 243.12; const g = Math.log(rh / 100) + a * t / (b + t); return Math.round(b * g / (a - g) * 10) / 10; };
+/**
+ * Beobachtungen der Wetterstationen im Umkreis: CH SwissMetNet (api.existenz.ch), DE DWD (Bright Sky),
+ * übriges Europa EUMETNET MeteoGate/E-SOH. Rückgabe vereinheitlicht: [{ id, name, lat, lon, km, time, dir, kt, gustKt, tempC, dewC, rh, qnh, precipMm, src }].
+ */
+async function stations(ctx, q) {
+  if (q.get('lat') == null || q.get('lon') == null) return err('lat/lon');
+  const lat = +q.get('lat'), lon = +q.get('lon'), km = Math.min(150, Math.max(10, +q.get('km') || 50));
+  if (!isFinite(lat) || !isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return err('lat/lon');
+  const data = await cached(ctx, `stations/${lat.toFixed(2)},${lon.toFixed(2)},${km}`, 600, async () => {
+    const out = [], errors = [];
+    const push = (st) => { if (st.lat == null || (st.tempC == null && st.dir == null && st.kt == null)) return; st.km = Math.round(distKm(lat, lon, st.lat, st.lon) * 10) / 10; if (st.km <= km) out.push(st); };
+    // CH
+    const chNear = SMN.map(([code, name, la, lo]) => ({ code, name, lat: la, lon: lo, d: distKm(lat, lon, la, lo) })).filter((s) => s.d <= km).sort((a, b) => a.d - b.d).slice(0, 40);
+    if (chNear.length) {
+      try {
+        const j = await (await get(`https://api.existenz.ch/apiv1/smn/latest?locations=${chNear.map((s) => s.code).join(',')}&parameters=dd,ff,ffx,tt,rh,pp,rr&app=fahrtbriefing&version=${encodeURIComponent(UA.split(' ')[0])}`, {}, 15000)).json();
+        const by = {};
+        const add = (code, p, v, ts) => { if (v == null || isNaN(+v)) return; (by[code] = by[code] || {})[p] = +v; if (ts) by[code].ts = ts; };
+        const recs = Array.isArray(j) ? j : Array.isArray(j?.payload) ? j.payload : [];
+        for (const r of recs) { const code = r.loc || r.location || r.station; if (!code) continue; if (r.par && r.val != null) add(code, r.par, r.val, r.timestamp); else if (r.parameter && r.value != null) add(code, r.parameter, r.value, r.timestamp); else for (const k of ['dd', 'ff', 'ffx', 'tt', 'rh', 'pp', 'rr']) if (r[k] != null) add(code, k, r[k], r.timestamp); }
+        if (!recs.length && j && typeof j === 'object') for (const [code, rec] of Object.entries(j)) { const v = rec?.values || rec; if (v && typeof v === 'object') for (const k of ['dd', 'ff', 'ffx', 'tt', 'rh', 'pp', 'rr']) { const x = v[k]; if (x != null) add(code, k, typeof x === 'object' ? x.value : x, v.timestamp || rec.timestamp); } }
+        for (const s of chNear) { const v = by[s.code]; if (!v) continue; push({ id: s.code, name: s.name, lat: s.lat, lon: s.lon, time: v.ts ? new Date((v.ts > 1e12 ? v.ts : v.ts * 1000)).toISOString() : null, dir: v.dd ?? null, kt: v.ff != null ? Math.round(v.ff / 1.852 * 10) / 10 : null, gustKt: v.ffx != null ? Math.round(v.ffx / 1.852 * 10) / 10 : null, tempC: v.tt ?? null, rh: v.rh ?? null, dewC: DEW(v.tt, v.rh), qnh: v.pp ?? null, precipMm: v.rr ?? null, src: 'SwissMetNet' }); }
+      } catch (e) { errors.push('SMN: ' + e.message); }
+    }
+    // DE: Bright Sky – nächste DWD-Station je Rasterpunkt (nur innerhalb Deutschlands Treffer)
+    const pts = [[lat, lon]];
+    const stepKm = Math.max(15, km / 3);
+    for (let r = stepKm; r <= km; r += stepKm) for (let a = 0; a < 360; a += 60) { const d = r / 111; pts.push([lat + d * Math.cos(a * Math.PI / 180), lon + d * Math.sin(a * Math.PI / 180) / Math.cos(lat * Math.PI / 180)]); }
+    const seen = new Set();
+    const deRes = await Promise.allSettled(pts.slice(0, 19).map(([la, lo]) => get(`https://api.brightsky.dev/current_weather?lat=${la.toFixed(3)}&lon=${lo.toFixed(3)}&max_dist=${Math.round(Math.min(60000, km * 1000))}`, {}, 10000).then((r) => r.json()).catch((e) => { if (!/HTTP 404/.test(e.message)) errors.push('BrightSky: ' + e.message); return null; })));
+    for (const r of deRes) { const j = r.status === 'fulfilled' ? r.value : null; if (!j?.weather) continue; const src = j.sources?.[0] || {}; const key = src.dwd_station_id || src.station_name; if (!key || seen.has(key)) continue; seen.add(key); const w = j.weather; push({ id: src.dwd_station_id || '', name: src.station_name || 'DWD', lat: src.lat, lon: src.lon, time: w.timestamp || null, dir: w.wind_direction_10 ?? w.wind_direction ?? null, kt: (w.wind_speed_10 ?? w.wind_speed) != null ? Math.round((w.wind_speed_10 ?? w.wind_speed) / 1.852 * 10) / 10 : null, gustKt: (w.wind_gust_speed_10 ?? w.wind_gust_speed) != null ? Math.round((w.wind_gust_speed_10 ?? w.wind_gust_speed) / 1.852 * 10) / 10 : null, tempC: w.temperature ?? null, rh: w.relative_humidity ?? null, dewC: w.dew_point ?? DEW(w.temperature, w.relative_humidity), qnh: w.pressure_msl ?? null, precipMm: w.precipitation_60 ?? w.precipitation_10 ?? null, src: 'DWD (Bright Sky)' }); }
+    // übriges Europa: MeteoGate/E-SOH (EUMETNET) – Stationsliste (gross, 24 h im Cache), dann je Station die Zeitreihe
+    try {
+      const list = await cached(ctx, 'stations/meteogate-locations', 86400, async () => {
+        const j = await (await get('https://observations.meteogate.eu/collections/observations/locations', {}, 25000)).json();
+        return (j.features || []).filter((f) => (f.properties?.['parameter-name'] || []).some((p) => /^wind_speed|^wind_from_direction|^air_temperature/.test(p))).map((f) => ({ id: f.id, name: f.properties?.name || '', lon: f.geometry?.coordinates?.[0], lat: f.geometry?.coordinates?.[1], link: f.properties?.['timeseries-link'] || '' }));
+      });
+      const near = list.map((s) => ({ ...s, d: distKm(lat, lon, s.lat, s.lon) })).filter((s) => s.d <= km && s.link && !out.some((o) => distKm(o.lat, o.lon, s.lat, s.lon) < 3)).sort((a, b) => a.d - b.d).slice(0, 15);
+      const mg = await Promise.allSettled(near.map((s) => get(s.link + (s.link.includes('?') ? '&' : '?') + 'limit=40', {}, 12000).then((r) => r.json()).then((j) => ({ s, j }))));
+      for (const r of mg) {
+        if (r.status !== 'fulfilled') continue;
+        const { s, j } = r.value; const feats = Array.isArray(j?.features) ? j.features : j?.type === 'Feature' ? [j] : [];
+        const latest = {};
+        for (const f of feats) { const p = f.properties || {}; const name = p['parameter-name'] || p.parameter || ''; const v = p.value ?? p.result ?? null; const tm = p.resultTime || p.phenomenonTime || p.time || ''; if (v == null || !name) continue; if (!latest[name] || tm > latest[name].t) latest[name] = { v: +v, t: tm }; }
+        const find = (pre) => { const k = Object.keys(latest).find((x) => x.startsWith(pre)); return k ? latest[k] : null; };
+        const dir = find('wind_from_direction'), spd = find('wind_speed'), tt = find('air_temperature'), rh = find('relative_humidity'), pp = find('air_pressure_at_sea_level');
+        push({ id: s.id, name: s.name, lat: s.lat, lon: s.lon, time: (tt || spd || dir)?.t || null, dir: dir ? Math.round(dir.v) : null, kt: spd ? Math.round(spd.v * 1.943844 * 10) / 10 : null, gustKt: null, tempC: tt ? (tt.v > 100 ? Math.round((tt.v - 273.15) * 10) / 10 : tt.v) : null, rh: rh ? rh.v : null, dewC: tt && rh ? DEW(tt.v > 100 ? tt.v - 273.15 : tt.v, rh.v) : null, qnh: pp ? (pp.v > 2000 ? Math.round(pp.v / 100 * 10) / 10 : pp.v) : null, precipMm: null, src: 'EUMETNET (MeteoGate)' });
+      }
+    } catch (e) { errors.push('MeteoGate: ' + e.message); }
+    out.sort((a, b) => a.km - b.km);
+    return { stations: out, errors: [...new Set(errors)], generated: new Date().toISOString() };
+  });
+  return json(data);
+}
+
+// ------------------------------------------------------------ Radiosonden (SondeHub)
+/** Sonden der letzten Stunden im Umkreis: letzte Telemetrie je Sonde (Position, Höhe, Zeit). */
+async function sondes(ctx, q) {
+  if (q.get('lat') == null || q.get('lon') == null) return err('lat/lon');
+  const lat = +q.get('lat'), lon = +q.get('lon'), km = Math.min(400, Math.max(20, +q.get('km') || 200)), hours = Math.min(48, Math.max(1, +q.get('h') || 12));
+  if (!isFinite(lat) || !isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return err('lat/lon');
+  const data = await cached(ctx, `sondes/${lat.toFixed(1)},${lon.toFixed(1)},${km},${hours}`, 300, async () => {
+    const j = await (await get(`https://api.v2.sondehub.org/sondes?lat=${lat.toFixed(3)}&lon=${lon.toFixed(3)}&distance=${Math.round(km * 1000)}&last=${hours * 3600}`, {}, 20000)).json();
+    const list = Object.values(j || {}).filter((s) => s && s.lat != null).map((s) => ({ serial: s.serial, type: s.type || s.subtype || '', lat: s.lat, lon: s.lon, alt: s.alt, time: s.datetime, velV: s.vel_v ?? null, temp: s.temp ?? null, humidity: s.humidity ?? null, pressure: s.pressure ?? null, km: Math.round(distKm(lat, lon, s.lat, s.lon) * 10) / 10, uploader: s.uploader_callsign || '' }));
+    list.sort((a, b) => a.km - b.km);
+    return { sondes: list, generated: new Date().toISOString() };
+  });
+  return json(data);
+}
+/** Telemetrie einer Sonde (bis 12 h) als Profil: T, Td/RH, Druck, Wind aus der Drift; für Emagramm und Tabelle. */
+async function sonde(ctx, q) {
+  const serial = (q.get('serial') || '').replace(/[^A-Za-z0-9_-]/g, '');
+  if (!serial) return err('serial');
+  const data = await cached(ctx, `sonde/${serial}`, 600, async () => {
+    const j = await (await get(`https://api.v2.sondehub.org/sondes/telemetry?serial=${encodeURIComponent(serial)}&duration=12h`, {}, 25000)).json();
+    const bySerial = j?.[serial] || {};
+    const pts = Object.keys(bySerial).map((ts) => ({ ...bySerial[ts], datetime: bySerial[ts].datetime || ts })).filter((p) => p.lat != null && p.lon != null && p.alt != null).sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+    // Aufstieg: bis zur maximalen Höhe
+    let top = 0; pts.forEach((p, i) => { if (p.alt > (pts[top]?.alt ?? -1)) top = i; });
+    const asc = pts.slice(0, top + 1);
+    const levels = [];
+    let lastBin = -1;
+    for (let i = 1; i < asc.length; i++) {
+      const a = asc[i - 1], b = asc[i]; const bin = Math.floor(b.alt / 200);
+      if (bin === lastBin) continue; lastBin = bin;
+      const dt = (new Date(b.datetime) - new Date(a.datetime)) / 1000; let dir = null, kt = null;
+      if (dt > 0 && dt < 300) { const dKm = distKm(a.lat, a.lon, b.lat, b.lon); const brg = (Math.atan2(Math.sin(rad(b.lon - a.lon)) * Math.cos(rad(b.lat)), Math.cos(rad(a.lat)) * Math.sin(rad(b.lat)) - Math.sin(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.cos(rad(b.lon - a.lon))) * 180 / Math.PI + 360) % 360; dir = Math.round((brg + 180) % 360); kt = Math.round(dKm * 1000 / dt * 1.943844 * 10) / 10; }
+      const temp = b.temp != null && b.temp > -200 ? Math.round(b.temp * 10) / 10 : null, rh = b.humidity != null && b.humidity >= 0 ? Math.round(b.humidity) : null;
+      const hPa = b.pressure != null && b.pressure > 0 ? Math.round(b.pressure * 10) / 10 : Math.round(1013.25 * Math.pow(1 - 2.25577e-5 * b.alt, 5.25588) * 10) / 10;
+      levels.push({ m: Math.round(b.alt), ft: Math.round(b.alt * 3.28084), hPa, temp, dew: DEW(temp, rh), rh, dir, kt, pressureMeasured: b.pressure != null && b.pressure > 0 });
+    }
+    const first = pts[0], last = pts[pts.length - 1];
+    return { serial, type: first?.type || first?.subtype || '', launch: first?.datetime || null, lastFix: last?.datetime || null, lat: first?.lat, lon: first?.lon, topM: asc.length ? Math.round(asc[asc.length - 1].alt) : null, points: pts.length, levels, generated: new Date().toISOString() };
+  });
+  return json(data);
+}
+
 // ------------------------------------------------------------ FAA NOTAM
 async function notam(env, decrypt, ctx, q) {
   const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
@@ -403,6 +507,9 @@ export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
     case 'webcams': return webcams(env, decrypt, ctx, q);
     case 'airspace': return airspace(env, decrypt, ctx, q);
     case 'sounding': return sounding(ctx, q);
+    case 'stations': return stations(ctx, q);
+    case 'sondes': return sondes(ctx, q);
+    case 'sonde': return sonde(ctx, q);
     case 'notam': return notam(env, decrypt, ctx, q);
     case 'ai': if (!canWrite) return err('forbidden', 403); return ai(env, decrypt, body);
     case 'pdf': if (!auth.owner) return err('forbidden', 403); return pdfRender(env, decrypt, ctx, body, auth);

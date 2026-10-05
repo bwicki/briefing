@@ -5,7 +5,7 @@
 import { h, clear, toast, num, dialog } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { field, input, select, textarea, check } from './widgets.js';
-import { renderSnapshot, setAirspaceUrl } from './autorender.js';
+import { renderSnapshot, setAirspaceUrl, renderSondeWindow } from './autorender.js';
 import * as DATA from '../auto/data.js';
 import { MODELS, modelsFor, modelName, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDateTime } from '../calc/time.js';
@@ -61,6 +61,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
       toolbar.appendChild(h('button.btn.small', { type: 'button', onclick: () => run() }, d.content.auto ? t('auto_refresh') : t('auto_load')));
       if (p.auto === 'traj') toolbar.appendChild(trajControls(b, ctx, () => { onChange(); run(); }));
       if (p.auto === 'dabs') toolbar.appendChild(select([{ value: 'today', label: t('auto_today') }, { value: 'tomorrow', label: t('auto_tomorrow') }], b.dabsDay || dabsDayFor(b), { onchange: (e) => { b.dabsDay = e.target.value; onChange(); } }));
+      if (p.auto === 'obs') toolbar.appendChild(h('span.inline', [h('span.note', t('auto_obsKm')), input('number', b.obsKm || ctx.settings.obsRadiusKm || 50, { step: 10, min: 10, max: 150, style: { width: '74px' }, onchange: (e) => { b.obsKm = Math.min(150, Math.max(10, num(e.target.value, 50))); onChange(); run(); } })]));
       if (p.auto === 'metar') toolbar.appendChild(h('span.inline', [h('span.note', t('auto_metarKm')), input('number', b.metarKm || ctx.settings.metarRadiusKm || 150, { step: 10, min: 20, max: 400, style: { width: '74px' }, onchange: (e) => { b.metarKm = Math.min(400, Math.max(20, num(e.target.value, 150))); onChange(); run(); } })]));
       if (p.auto === 'notam') {
         if (!ctx.can('notam')) toolbar.appendChild(h('span.note', t('feat_disabled')));
@@ -167,6 +168,8 @@ async function fetchSynoptic(b, ctx) {
 /** Radar live (RainViewer-Kacheln auf OSM), nur Bildschirm; Webcams im Umkreis (Worker: Windy/OSM) plus eigene Liste. */
 function radarLive(b, ctx) {
   const el = h('div.map.radar.no-print');
+  const sondeBox = h('div.sonde-win.no-print', { hidden: true });
+  const grid = h('div.radar-grid', [el, sondeBox]);
   const note = h('div.note', t('auto_radarNote'));
   const camList = h('div.cams');
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -193,9 +196,20 @@ function radarLive(b, ctx) {
       } catch { /* ohne Startplätze */ }
       try {
         const j = await fetch(`https://api.v2.sondehub.org/sondes?lat=${b.site.lat.toFixed(3)}&lon=${b.site.lon.toFixed(3)}&distance=250000&last=21600`).then((r) => r.json());
-        for (const sd of Object.values(j || {})) { if (sd.lat == null) continue; L.marker([sd.lat, sd.lon], { icon: sIcon(true), title: sd.serial }).addTo(sondeGroup).bindPopup(`<b>${esc(sd.serial)}</b> ${esc(sd.type || '')}<br>${Math.round(sd.alt)} m · ${esc((sd.datetime || '').slice(11, 16))} UTC${sd.vel_v != null ? ` · ${sd.vel_v > 0 ? '↑' : '↓'} ${Math.abs(sd.vel_v).toFixed(1)} m/s` : ''}<br><a href="https://sondehub.org/${esc(sd.serial)}" target="_blank" rel="noopener">sondehub.org ↗</a>`); }
+        for (const sd of Object.values(j || {})) { if (sd.lat == null) continue; const mk2 = L.marker([sd.lat, sd.lon], { icon: sIcon(true), title: sd.serial }).addTo(sondeGroup).bindTooltip(`${esc(sd.serial)} · ${Math.round(sd.alt)} m · ${esc((sd.datetime || '').slice(11, 16))} UTC`); mk2.on('click', () => openSonde(sd)); }
       } catch { /* ohne Sonden */ }
     });
+    // Klick auf eine Sonde: Karte verkleinert links (Ausschnitt um die Sonde), rechts Emagramm + Daten
+    async function openSonde(sd) {
+      grid.classList.add('with-sonde'); sondeBox.hidden = false; clear(sondeBox);
+      sondeBox.appendChild(h('div.sonde-head', [h('b', `🎈 ${sd.serial}`), h('span.muted.small', ` ${sd.type || ''} · ${Math.round(distKm(b.site.lat, b.site.lon, sd.lat, sd.lon))} km`), h('button.btn.icon.small', { type: 'button', title: t('close'), style: { marginLeft: 'auto' }, onclick: () => { grid.classList.remove('with-sonde'); sondeBox.hidden = true; setTimeout(() => map.invalidateSize(), 60); } }, '✕')]));
+      sondeBox.appendChild(h('div.note', t('loading')));
+      setTimeout(() => { map.invalidateSize(); map.setView([sd.lat, sd.lon], Math.max(map.getZoom(), 9)); }, 60);
+      try {
+        const so = await ctx.store.data('sonde', { serial: sd.serial }, shareTok(ctx));
+        renderSondeWindow(sondeBox, so, b);
+      } catch (e) { sondeBox.appendChild(h('div.err', `${t('error')}: ${e.code === 'remote' ? t('auto_sondeLocal') : e.message}`)); }
+    }
     const camIcon = (own) => L.divIcon({ className: `cam-ico${own ? ' own' : ''}`, html: '📷', iconSize: [22, 22], iconAnchor: [11, 11] });
     // Eigene Webcams (Einstellungen → Meteo)
     const own = (ctx.settings.webcams || []).filter((w) => w.lat != null && w.lon != null);
@@ -224,7 +238,7 @@ function radarLive(b, ctx) {
     setTimeout(() => map.invalidateSize(), 60);
   }, 0);
   const links = ctx.settings.sources || {};
-  return h('div', [el, note, camList, h('div.row-actions', [links.windy ? h('a.btn', { href: links.windy, target: '_blank', rel: 'noopener' }, 'Windy ↗') : null, h('a.btn', { href: 'https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-aktuell/radarbild.html', target: '_blank', rel: 'noopener' }, 'MeteoSchweiz Radar ↗'), h('a.btn', { href: 'https://www.blitzortung.org/de/live_lightning_maps.php', target: '_blank', rel: 'noopener' }, 'Blitzortung ↗'), h('a.btn', { href: 'https://www.sat24.com/de/eu', target: '_blank', rel: 'noopener' }, 'Sat24 ↗')])]);
+  return h('div', [grid, note, camList, h('div.row-actions', [links.windy ? h('a.btn', { href: links.windy, target: '_blank', rel: 'noopener' }, 'Windy ↗') : null, h('a.btn', { href: 'https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-aktuell/radarbild.html', target: '_blank', rel: 'noopener' }, 'MeteoSchweiz Radar ↗'), h('a.btn', { href: 'https://www.blitzortung.org/de/live_lightning_maps.php', target: '_blank', rel: 'noopener' }, 'Blitzortung ↗'), h('a.btn', { href: 'https://www.sat24.com/de/eu', target: '_blank', rel: 'noopener' }, 'Sat24 ↗')])]);
 }
 
 /** KI-Kommentar anfordern (Worker → Anthropic). Standard: direkt, ohne Prompt-Maske; opts.edit = Prompt zuerst zeigen. */

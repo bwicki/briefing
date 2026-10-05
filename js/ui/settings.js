@@ -11,7 +11,7 @@ import { placeRow, mapsUrl } from './place.js';
 import { exportAll } from './extras.js';
 import { usersSection, statsSection } from './users.js';
 
-const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'rac', 'transition', 'gonogo', 'meteo', 'panels', 'links', 'users', 'stats', 'access', 'expert'];
+const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'fpl', 'rac', 'transition', 'gonogo', 'meteo', 'panels', 'links', 'users', 'stats', 'access', 'expert'];
 
 export async function renderSettings(view, ctx) {
   let S = deepCopy(ctx.settings);
@@ -33,7 +33,7 @@ export async function renderSettings(view, ctx) {
     for (const s of sects) nav.appendChild(h('button', { type: 'button', class: cur === s ? 'on' : '', onclick: () => { cur = s; draw(); } }, t('set_' + s)));
     setTimeout(() => nav.querySelector('button.on')?.scrollIntoView({ inline: 'center', block: 'nearest' }), 0);
     clear(body);
-    body.appendChild(({ general, balloons, persons, operators, sites, intent, schedule, rac, transition, gonogo, meteo, panels, links, users, stats, access, expert })[cur]());
+    body.appendChild(({ general, balloons, persons, operators, sites, intent, schedule, fpl, rac, transition, gonogo, meteo, panels, links, users, stats, access, expert })[cur]());
   }
   const numField = (obj, key, label, step = 1, cls) => field(label, input('number', obj[key] ?? '', { step, oninput: (e) => { obj[key] = num(e.target.value, null); } }), cls);
   const txtField = (obj, key, label, cls) => field(label, input('text', obj[key] ?? '', { oninput: (e) => { obj[key] = e.target.value; } }), cls);
@@ -179,6 +179,29 @@ export async function renderSettings(view, ctx) {
     return h('div.card', h('div.card-body', box));
   }
 
+  /** Flugplan: Standardwerte für den ICAO-FPL (Felder 8, 10, 15, 18, 19) je Ballontyp, Vorlagen mit Platzhaltern. */
+  function fpl() {
+    S.fpl = S.fpl || {}; const F = S.fpl;
+    for (const k of ['gas', 'hab', 'r19', 's19', 'j19', 'd19', 'typeOfFlight']) F[k] = F[k] || {};
+    const flags = (key, labels) => h('div.f', [h('label', t('fpl_f_' + key)), h('div.chips', Object.keys(labels).map((k) => h('button.chip', { type: 'button', 'aria-pressed': !!F[key][k], onclick: (e) => { F[key][k] = !F[key][k]; e.currentTarget.setAttribute('aria-pressed', F[key][k]); } }, labels[k])))]);
+    const tof = (k) => field(`${t('fpl_f_typeOfFlight8')} (${t('kind_' + k)})`, select([['G', 'G – General aviation'], ['N', 'N – Non-scheduled'], ['S', 'S – Scheduled'], ['X', 'X – Other']].map(([v, l]) => ({ value: v, label: l })), F.typeOfFlight[k] || (k === 'commercial' ? 'N' : 'G'), { onchange: (e) => { F.typeOfFlight[k] = e.target.value; } }));
+    return h('div', [
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_fpl'))), h('div.card-body', [
+        h('div.note', t('set_fplHint')),
+        h('div.frow.c4', [tof('commercial'), tof('private'), txtField(F, 'equip10a', t('fpl_f_equip10a')), txtField(F, 'equip10b', t('fpl_f_equip10b'))]),
+        h('div.frow.c4', [numField(F, 'levelFromFt', t('set_fplLevelFrom'), 500), txtField(F, 'satphone', t('set_fplSatphone')), txtField(F, 'colour', t('set_fplColour')), field(t('set_fplPicOrder'), select([{ value: 'last-first', label: 'WICKI BALTHASAR' }, { value: 'first-last', label: 'BALTHASAR WICKI' }], F.picNameOrder || 'last-first', { onchange: (e) => { F.picNameOrder = e.target.value; } }))]),
+        h('div.frow', [txtField(F, 'rmk18', 'RMK/ ' + t('set_fplTemplate')), txtField(F, 'n19', 'N/ ' + t('set_fplTemplate'))]),
+        h('div.note.small', t('set_fplVars')),
+      ])]),
+      h('div.card', [h('div.card-head', h('div.section-title', `${t('gas')}`)), h('div.card-body', h('div.frow.c4', [txtField(F.gas, 'speed15', t('fpl_f_speed15')), numField(F.gas, 'enduranceMin', t('set_fplEndurance')), txtField(F.gas, 'typ18', 'TYP/'), txtField(F.gas, 'equip10b', `${t('fpl_f_equip10b')} (${t('gas')})`)]))]),
+      h('div.card', [h('div.card-head', h('div.section-title', `${t('hab')}`)), h('div.card-body', [h('div.frow.c4', [txtField(F.hab, 'speed15', t('fpl_f_speed15')), txtField(F.hab, 'typ18', 'TYP/'), txtField(F.hab, 'equip10b', `${t('fpl_f_equip10b')} (${t('hab')})`)]), h('div.note.small', t('set_fplHabEndurance'))])]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('fpl_i19'))), h('div.card-body', [
+        h('div.frow.c3', [flags('r19', { uhf: 'UHF', vhf: 'VHF', elba: 'ELBA' }), flags('s19', { polar: 'POLAR', desert: 'DESERT', maritime: 'MARITIME', jungle: 'JUNGLE' }), flags('j19', { light: 'LIGHT', fluores: 'FLUORES', uhf: 'UHF', vhf: 'VHF' })]),
+        h('div.frow.c4', [txtField(F.d19, 'number', 'D/ ' + t('fpl_f_dNumber')), txtField(F.d19, 'capacity', t('fpl_f_dCapacity')), check(t('fpl_f_dCover'), !!F.d19.cover, (v) => { F.d19.cover = v; }), txtField(F.d19, 'colour', t('fpl_f_dColour'))]),
+      ])]),
+    ]);
+  }
+
   function schedule() {
     const d = S.scheduleDefaults;
     return h('div.card', h('div.card-body', h('div.frow.c4', [numField(d, 'trailerFactor', t('set_trailer'), 0.05), numField(d, 'surchargeMin', t('set_surcharge')), numField(d, 'bufferMin', t('set_buffer')), numField(d, 'recoveryMin', t('set_recovery'))])));
@@ -257,7 +280,7 @@ export async function renderSettings(view, ctx) {
     return h('div', [
       h('div.card', [h('div.card-head', h('div.section-title', t('set_flyLimits'))), h('div.card-body', [h('div.frow.c4', [pair('wind', `${t('auto_wind')} m/s (grenzwertig / nein)`), pair('gust', `${t('auto_gust')} m/s`), pair('gustSpread', 'Böe − Wind m/s'), pair('cape', 'CAPE J/kg')]), h('div.frow.c3', [numField(F, 'precip', 'Niederschlag ≥ mm/h → nein', 0.1), numField(F, 'visKm', 'Sicht < km → nein', 0.5), numField(F, 'baseFt', 'Wolkenbasis < ft → grenzwertig', 100)])])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_trajDefaults'))), h('div.card-body', h('div.frow.c3', [numField(T, 'hab', `${t('hab')} (min)`, 30), numField(T, 'gas', `${t('gas')} (min)`, 60), numField(T, 'stepMin', 'Zeitschritt (min)', 5)]))]),
-      h('div.card', [h('div.card-head', h('div.section-title', t('set_meteo'))), h('div.card-body', [h('div.frow.c4', [numField(S.meteoDefaults, 'topHpa', 'Profil bis hPa', 50), numField(S, 'metarRadiusKm', t('set_metar'), 10), numField(S, 'metarCount', t('set_metarN')), numField(S, 'notamRadiusNm', t('set_notamNm'), 5)]), h('div.frow.c4', [numField(S, 'airspaceCorridorKm', t('set_airspaceCorridor'), 1), txtField(S, 'aiModel', t('set_aiModel'))])])]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_meteo'))), h('div.card-body', [h('div.frow.c4', [numField(S.meteoDefaults, 'topHpa', 'Profil bis hPa', 50), numField(S, 'metarRadiusKm', t('set_metar'), 10), numField(S, 'metarCount', t('set_metarN')), numField(S, 'notamRadiusNm', t('set_notamNm'), 5)]), h('div.frow.c4', [numField(S, 'airspaceCorridorKm', t('set_airspaceCorridor'), 1), numField(S, 'obsRadiusKm', t('set_obsRadius'), 10), numField(S, 'sondeKm', t('set_sondeKm'), 10), txtField(S, 'aiModel', t('set_aiModel'))])])]),
       h('div.card', [listHead(t('set_wxTexts'), txtBox), h('div.card-body', [txtBox, h('div.note', t('set_wxTextsHint'))])]),
       h('div.card', [listHead(t('set_webcams'), camBox), h('div.card-body', [h('div.note', t('set_webcamsAuto')), h('div.frow.c4', [numField(S, 'webcamKm', t('set_webcamKm'), 5)]), camBox, h('div.note', t('set_webcamsHint'))])]),
       h('div.card', [listHead(t('set_synoptic'), chartsBox), h('div.card-body', [chartsBox, h('div.note', 'Nur Bild-URLs von dwd.de, ecmwf.int, meteoschweiz.admin.ch, rainviewer, meteoblue, skybriefing, eumetsat (Allowlist im Worker).')])]),

@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.10.0 — 2026-10-05 · ICAO-Flugplan aus dem Briefing · Wetterstationen · SondeHub
+
+* Panel **C «Flugplan»**: Schalter «Flugplan erstellen?» (Standard ja bei NVFR, Grenzüberschreitung
+  oder Gasfahrt) und **«Aus Briefing erzeugen»** – füllt den ICAO-Flugplan nach den vier
+  skybriefing-Mustern (HB-QPJ):
+  * 7 Kennung (ohne Bindestrich) · 8 V + Art des Flugs (gewerblich N, privat G; Einstellungen) ·
+    9 ZZZZ/L · 10 Ausrüstung/Überwachung (z. B. GY/E, GY/EB1; je Ballontyp) ·
+    13 ZZZZ + EOBT UTC aus der Startzeit · 15 Geschwindigkeit (Gas N0025, Heissluft N0015), Höhe
+    als Flugfläche aus der Maximalhöhe (ab 5000 ft, sonst VFR) und Route
+    `DRIFTING NW LATER NNW THEN NE FROM <DEP> TO <DEST> [VIA …]` (Richtungswörter aus der
+    mittleren Trajektorie, VIA frei) · 16 ZZZZ + Gesamt-EET aus der Fahrtdauer, ALTN ZZZZ (Gas:
+    zwei) · 18 `DEP/<ORT> <KOORD> DEST/… DOF/ EET/<FIR><HHMM> … TYP/ ALTN/UNKNOWN RMK/NVFR CREW
+    CONTACT …` – **EET/ je FIR aus der FIR-Folge der Luftraumanalyse** (FIR-Namen → ICAO-Codes,
+    Tabelle Europa; Eintrittszeit ab EOBT aus den Trajektorien) · 19 E/ Autonomie (Gas aus
+    Einstellungen, Heissluft aus der Treibstoffrechnung), P/ Personen (PIC + Pax), R/ S/ J/ D/
+    (Einstellungen), **A/ Farbe aus dem Ballon** (neu bei Heissluft und Gas-Hülle), N/ und RMK/
+    aus Vorlagen mit {picPhone} {satphone}, C/ PIC «NACHNAME VORNAME».
+  * Formular mit allen Feldern (editierbar), Plausibilitätsprüfung, **ICAO-Nachricht** (Doc 4444,
+    Feld 19 als Zusatzzeile), **Kopieren**, **Download .txt (ICAO-Text) und .xml**; Briefingsicht
+    und Druck zeigen Kurzformular und Nachricht.
+  * Neue Einstellungs-Seite **«Flugplan»** (Art des Flugs je Fahrttyp, Ausrüstung, Flugflächen-
+    Schwelle, Satellitentelefon, Farbe, PIC-Namensform, Vorlagen RMK/ und N/, je Ballontyp
+    Geschwindigkeit/Autonomie/TYP/, Feld-19-Ausrüstung).
+  * Unverifiziert: das skybriefing-Importformat («ICO» / XML) ist öffentlich nicht dokumentiert –
+    das XML folgt einem einfachen eigenen Schema; bitte mit einer Datei im Import prüfen.
+* Panel **B «Beobachtungen (Wetterstationen)»** (bisher Einfügen): **Wetterstationen im Umkreis
+  des Startorts** (Standard 50 km, im Panel einstellbar) wie in cockpit.wicki.aero – SwissMetNet
+  (MeteoSchweiz via api.existenz.ch), DWD (Bright Sky) und übriges Europa EUMETNET
+  MeteoGate/E-SOH; Tabelle mit Richtungspfeil · km · Beobachtungszeit · Wind/Böen kt (rot ab 14 /
+  20 kt) · T/Td · RH · QNH · Niederschlag; Worker-Route `GET /api/wx/stations`.
+* Panel **Temps**: zusätzlich die **nächste Live-Radiosonde aus SondeHub** (Amateurempfang, letzte
+  12 h, Umkreis 150 km einstellbar) als drittes Stüve mit Tabelle: Temperatur/Feuchte vom
+  Sondensensor, Wind aus der Drift je 200 m, Druck gemessen oder aus der Höhe gerechnet
+  (Worker `GET /api/wx/sondes`, `/api/wx/sonde?serial=`). radiosondy.info hat keine
+  dokumentierte Schnittstelle – nicht angebunden.
+* **Vertikalprofile: Wolkenschichten rötlich** (RH ≥ 95 %), feuchte Schichten weiter blau
+  (RH ≥ 85 %); Legende unter dem Modellprofil.
+* **Radar-Karte: Klick auf eine Sonde** verkleinert die Karte nach links (Ausschnitt um die Sonde)
+  und öffnet rechts ein Fenster mit Emagramm, Kopfdaten und Tabelle der Sonde (✕ schliesst).
+* Tests: 147 Rechentests (FIR-Codes, Namen, Telefon, Flugfläche, vollständige Nachricht gegen das
+  Muster, XML, Heissluft-Variante); Smoke-Test erzeugt den Flugplan und prüft die Nachricht;
+  API-Test prüft die neuen Routen.
+
 ## 0.9.2 — 2026-10-05 · Rückmeldungen zu 0.9.1 und vierte Liste (Teil 1)
 
 * Tagesplan: **Dauer der Ballonfahrt** in der Tabelle schreibt zurück nach «Was ist geplant»

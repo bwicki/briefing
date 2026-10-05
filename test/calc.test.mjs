@@ -8,6 +8,7 @@ import { fromLocal, hhmm, localParts, tzOffsetMin, isoDate } from '../js/calc/ti
 import { icao, parseIcao, distKm } from '../js/calc/geo.js';
 import { touchesCH, panelNo, visiblePanels } from '../js/panels.js';
 import { targetEstimate } from '../js/auto/traj.js';
+import { buildFpl, fplMessage, fplXml, fplCheck, firCode, fplName, fplPerson, fplPhone, fplLevel, driftWords, eetFromFirs } from '../js/calc/fpl.js';
 import { buildSchedule, trailerMinutes, buildPlan, planTemplate, planToStops, scheduleWarnings, planOrderWarnings, ACT_DEFAULT_MIN } from '../js/calc/schedule.js';
 import { readFileSync } from 'node:fs';
 import * as OM from '../js/auto/openmeteo.js';
@@ -296,6 +297,32 @@ ok(requirementKey({ typeKey: 'TMA', cls: 'E' }) === 'classE' && requirementKey({
   ok(est && est.min >= 55 && est.min <= 65 && est.altM > 800 && est.altM < 1500 && !est.beyond, `Ziel zwischen zwei Bahnen: ~60 min, Höhe gemittelt (${est && est.min} min, ${est && est.altM} m)`);
   const far = targetEstimate(trs, { lat: 47, lon: 8 }, { lat: 47, lon: 8 + (40 / 111) / Math.cos(47 * Math.PI / 180) });
   ok(far && far.beyond, 'Ziel jenseits der Bahnenden → «>»');
+}
+
+// ---- 0.10.0: ICAO-Flugplan aus dem Briefing (Muster HB-QPJ Gasfahrten)
+{
+  ok(firCode('SWITZERLAND FIR') === 'LSAS' && firCode('Praha FIR') === 'LKAA' && firCode('LZBB BRATISLAVA FIR') === 'LZBB' && firCode('KOBENHAVN FIR') === 'EKDK' && firCode('unbekannt') === '', 'FIR-Namen → ICAO-Codes');
+  ok(fplName('Bitterfeld-Wolfen') === 'BITTERFELDWOLFEN' && fplName('Neumarkt in der Oberpfalz') === 'NEUMARKTINDEROBERPFALZ' && fplName('Bad Leonfelden') === 'BADLEONFELDEN' && fplName('Zürich Süd') === 'ZUERICHSUED', 'Ortsnamen für DEP/ DEST/');
+  ok(fplPerson('Balthasar Wicki') === 'WICKI BALTHASAR' && fplPhone('+41 79 611 12 10') === '0041796111210' && fplLevel(12500) === 'F125' && fplLevel(16500) === 'F165' && fplLevel(4000) === 'VFR', 'PIC-Name, Telefon, Flugfläche');
+  const t0 = Date.UTC(2026, 4, 1, 17, 0);
+  const S = { persons: [{ id: 'p1', name: 'Balthasar Wicki', phone: '+41 79 611 12 10' }], fpl: { satphone: '+881632624091', gas: { enduranceMin: 2880, equip10b: 'EB1', speed15: 'N0025', typ18: 'GASBALLOON' }, r19: { vhf: true, elba: true }, s19: { maritime: true }, j19: { light: true }, d19: { number: '2', capacity: '2', cover: true, colour: 'orange' } } };
+  const firs = [{ seq: [{ name: 'BREMEN FIR', country: 'DE', fromKm: 0, fromMs: t0 }, { name: 'KOBENHAVN FIR', country: 'DK', fromKm: 300, fromMs: t0 + 8 * 3600000 }, { name: 'SWEDEN FIR', country: 'SE', fromKm: 600, fromMs: t0 + 13.5 * 3600000 }, { name: 'RIGA FIR', country: 'LV', fromKm: 900, fromMs: t0 + 20 * 3600000 }] }];
+  const b = { balloon: { type: 'gas', reg: 'HB-QPJ', colour: 'white' }, flight: { kind: 'private', nvfr: true }, time: { startMs: t0 }, intent: { durationMin: 1440, altMaxFt: 12500 }, site: { name: 'Bitterfeld-Wolfen', lat: 51.62, lon: 12.28, country: 'DE' }, landing: { name: 'Jelgava', lat: 56.57, lon: 23.5 }, persons: { picId: 'p1', pic: 'Balthasar Wicki', pax: [{ name: 'X' }] },
+    panels: { 'C.airspace': { content: { auto: { data: { firs } } } }, 'B.traj': { content: { auto: { data: { startMs: t0, tracks: [{ altM: 3000, points: [{ lat: 51.62, lon: 12.28 }, { lat: 52.4, lon: 11.0 }, { lat: 53.5, lon: 11.4 }, { lat: 55, lon: 14 }, { lat: 56.5, lon: 23 }] }] } } } } } };
+  const d = buildFpl(b, S);
+  const msg = fplMessage(d);
+  ok(msg.startsWith('(FPL-HBQPJ-VG\n-ZZZZ/L-GY/EB1\n-ZZZZ1700\n-N0025F125 DRIFTING '), 'Felder 7–15: ' + msg.split('\n').slice(0, 4).join(' | '));
+  ok(msg.includes('FROM BITTERFELDWOLFEN TO JELGAVA') && msg.includes('\n-ZZZZ2400 ZZZZ ZZZZ\n'), 'Route und Feld 16 (EET 2400, ALTN ZZZZ ZZZZ)');
+  ok(msg.includes('DEP/BITTERFELDWOLFEN 5137N01217E DEST/JELGAVA 5634N02330E DOF/260501 EET/EKDK0800 ESAA1330 EVRR2000 TYP/GASBALLOON ALTN/UNKNOWN UNKNOWN RMK/NVFR CREW CONTACT 0041796111210 AND 00881632624091'), 'Feld 18 wie Muster (DEP/DEST/DOF/EET/TYP/ALTN/RMK)');
+  ok(msg.endsWith('-E/4800 P/2 R/VE S/M J/L D/2 2 C ORANGE A/WHITE N/GSM PIC 0041796111210 AND SATPHONE 00881632624091 C/WICKI BALTHASAR)'), 'Feld 19 wie Muster: ' + msg.split('\n').pop());
+  ok(fplCheck(d).length === 0, 'Plausibilität ohne Beanstandung');
+  const x = fplXml(d);
+  ok(x.includes('<AircraftIdentification>HBQPJ</AircraftIdentification>') && x.includes('<EET fir="EKDK" time="0800"/>') && x.includes('<Message>(FPL-HBQPJ-VG'), 'XML mit Feldern und Nachricht');
+  const bHab = { ...b, balloon: { type: 'hab', reg: 'HB-QWZ' }, flight: { kind: 'commercial', nvfr: false }, intent: { durationMin: 120, altMaxFt: 4000 }, panels: {} };
+  const dh = buildFpl(bHab, S, { fuelEnduranceMin: 190 });
+  ok(dh.typeOfFlight8 === 'N' && dh.level15 === 'VFR' && dh.speed15 === 'N0015' && dh.e19 === '0310' && dh.eet16 === '0200' && dh.altn16b === '' && !dh.rmk18.startsWith('NVFR') && dh.typ18 === 'HOT AIR BALLOON', 'Heissluft gewerblich: N, VFR, N0015, Autonomie aus Treibstoff, kein 2. ALTN');
+  ok(fplCheck(dh).includes('eet18') === false && eetFromFirs([], t0).length === 0, 'ohne FIR-Folge keine EET/-Einträge');
+  ok(driftWords([{ lat: 47, lon: 8 }, { lat: 47.5, lon: 8 }, { lat: 48, lon: 8 }]) === 'N', 'Richtungswörter: Nord');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

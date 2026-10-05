@@ -79,7 +79,7 @@ export const DEFAULT_SETTINGS = {
   meteoDefaults: { topHpa: 500 },
   thermalLimits: { none: 0.6, weak: 1.2, moderate: 2.0, strong: 3.0, onset: 1.0 },
   docTypes: { balloon: ['Lufttüchtigkeitszeugnis (ARC)', 'Eintragungsschein', 'Lärmzeugnis', 'Versicherungsnachweis', 'Funkkonzession', 'Wägebericht'], person: ['Lizenz (BPL)', 'Medical', 'Funkzeugnis', 'Ausweis / Pass', 'Versicherung'] },
-  webcamKm: 40,
+  webcamKm: 40, obsRadiusKm: 50, sondeKm: 150,
   airspaceCorridorKm: 5,
   airspaceTmaWarnFt: 900,
   pdiffWarn: { half: 3, neg: 4 },
@@ -123,6 +123,16 @@ export const DEFAULT_SETTINGS = {
   },
   equipmentItems: ['none', 'pressurisation', 'o2', 'nvr', 'alpine', 'heli'],
   paxBriefingItems: ['health', 'ticket', 'gloves'],
+  // Flugplan (ICAO FPL): Standardwerte je Ballontyp, Vorlagen mit {picPhone} {satphone} {pic}
+  fpl: {
+    typeOfFlight: { commercial: 'N', private: 'G' },
+    equip10a: 'GY', equip10b: 'E', levelFromFt: 5000, satphone: '', colour: 'WHITE', picNameOrder: 'last-first',
+    gas: { speed15: 'N0025', enduranceMin: 2880, equip10a: '', equip10b: '', typ18: 'GAS BALLOON' },
+    hab: { speed15: 'N0015', equip10a: '', equip10b: '', typ18: 'HOT AIR BALLOON' },
+    r19: { uhf: false, vhf: true, elba: false }, s19: { polar: false, desert: false, maritime: false, jungle: false },
+    j19: { light: true, fluores: false, uhf: false, vhf: false }, d19: { number: '', capacity: '', cover: false, colour: '' },
+    rmk18: 'CREW CONTACT {picPhone} AND {satphone}', n19: 'GSM PIC {picPhone} AND SATPHONE {satphone}',
+  },
 };
 
 /** Standardballon-Kombination für ein neues Briefing. */

@@ -135,7 +135,17 @@ export async function temps(ctx, b) {
     } catch (e) { obsErr = e.message; }
   }
   const obsText = obs ? `\n${t('auto_sounding')} ${obs.station.name} ${obs.time.slice(0, 13).replace('T', ' ')}Z: ` + obs.levels.filter((l) => [1000, 925, 850, 700, 500].includes(Math.round(l.hPa))).map((l) => `${Math.round(l.hPa)} hPa ${l.ft} ft ${l.temp}°/${l.dew}° ${String(l.dir).padStart(3, '0')}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ') : '';
-  return { kind: 'temps', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev, obs, obsErr }, text: text + obsText };
+  // SondeHub: nächste Radiosonde der letzten 12 h im Umkreis (Amateur-Empfang, Live-Telemetrie) – Server-Modus
+  let sonde = null;
+  if (ctx.store.mode === 'remote') {
+    try {
+      const sj = await ctx.store.data('sondes', { lat: b.site.lat.toFixed(3), lon: b.site.lon.toFixed(3), km: ctx.settings.sondeKm || 150, h: 12 }, shareTok(ctx));
+      const cand = (sj.sondes || []).filter((x) => x.alt > 3000)[0] || (sj.sondes || [])[0];
+      if (cand) { const so = await ctx.store.data('sonde', { serial: cand.serial }, shareTok(ctx)); if (so.levels?.length >= 5) sonde = { ...so, km: cand.km, brg: bearing(b.site.lat, b.site.lon, so.lat, so.lon), levels: so.levels.map((l) => ({ label: `${l.hPa} hPa`, hPa: l.hPa, ft: l.ft, m: l.m, temp: l.temp, dew: l.dew, rh: l.rh, dir: l.dir, spd: l.kt != null ? l.kt / OM.MS_TO_KT : null })) }; }
+    } catch { /* ohne Sonde */ }
+  }
+  const sondeText = sonde ? `\n${t('auto_sondehub')} ${sonde.serial} (${Math.round(sonde.km)} km, ${(sonde.launch || '').slice(0, 16).replace('T', ' ')}Z): ` + sonde.levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 8)) === 0).map((l) => `${l.ft} ft ${l.temp ?? '–'}°/${l.dew ?? '–'}° ${l.dir != null ? String(l.dir).padStart(3, '0') : '–'}/${l.spd != null ? Math.round(l.spd * OM.MS_TO_KT) : '–'} kt`).join(' · ') : '';
+  return { kind: 'temps', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev, obs, obsErr, sonde }, text: text + obsText + sondeText };
 }
 /** Radiosondenstationen (WMO) – die nächste zum Startort. */
 export const SOUNDING_STATIONS = [
@@ -254,6 +264,16 @@ export async function metar(ctx, b) {
   return { kind: 'metar', sourceUrl: 'https://aviationweather.gov/data/metar/', stand: Date.now(), source: j.source, data: { metar: j.metar || [], taf: j.taf || {}, generated: j.generated, radiusKm: b.metarKm || ctx.settings.metarRadiusKm || 150 }, text };
 }
 
+/** Beobachtungen: Wetterstationen im Umkreis (SwissMetNet, DWD/Bright Sky, EUMETNET MeteoGate) – Server-Modus. */
+export async function obs(ctx, b) {
+  const km = b.obsKm || ctx.settings.obsRadiusKm || 50;
+  if (ctx.store.mode !== 'remote') return { kind: 'obs', stand: Date.now(), source: '', data: { stations: [], km, local: true }, text: t('auto_obsLocal') };
+  const j = await ctx.store.data('stations', { lat: b.site.lat.toFixed(4), lon: b.site.lon.toFixed(4), km }, shareTok(ctx));
+  const st = (j.stations || []).map((x) => ({ ...x, brg: Math.round(bearing(b.site.lat, b.site.lon, x.lat, x.lon)) }));
+  const text = st.map((x) => `${x.name} (${x.km} km): ${x.dir != null ? String(x.dir).padStart(3, '0') : '–'}/${x.kt ?? '–'} kt${x.gustKt != null ? ` G${x.gustKt}` : ''} · ${x.tempC ?? '–'} °C${x.dewC != null ? `/${x.dewC}` : ''}${x.rh != null ? ` · ${x.rh} %` : ''}${x.qnh != null ? ` · ${x.qnh} hPa` : ''}${x.precipMm != null ? ` · ${x.precipMm} mm` : ''}`).join('\n') || t('auto_none');
+  return { kind: 'obs', sourceUrl: 'https://www.meteoschweiz.admin.ch/', stand: Date.now(), source: [...new Set(st.map((x) => x.src))].join(', '), data: { stations: st, km, errors: j.errors || [], generated: j.generated }, text };
+}
+
 /** SIGMET/AIRMET in der Umgebung. */
 export async function sigmet(ctx, b) {
   const j = await ctx.store.data('sigmet', { lat: b.site.lat, lon: b.site.lon }, shareTok(ctx));
@@ -343,7 +363,7 @@ export async function airspace(ctx, b) {
 }
 
 /** Alle automatischen Panels eines Briefings nacheinander; onStep(key, status, err). */
-export const AUTO_FETCHERS = { 'B.thermal': thermal, 'B.meteogram': meteogram, 'B.wind': wind, 'B.temps': temps, 'B.traj': traj, 'B.balloon': balloon, 'B.pdiff': pdiff, 'B.metar': metar, 'B.sigwx': sigmet, 'B.fwp': fwp, 'C.airspace': airspace, 'C.notam': notam };
+export const AUTO_FETCHERS = { 'B.thermal': thermal, 'B.meteogram': meteogram, 'B.wind': wind, 'B.temps': temps, 'B.traj': traj, 'B.balloon': balloon, 'B.pdiff': pdiff, 'B.metar': metar, 'B.obs': obs, 'B.sigwx': sigmet, 'B.fwp': fwp, 'C.airspace': airspace, 'C.notam': notam };
 export async function refreshAll(ctx, b, keys, onStep) {
   const out = {};
   for (const k of keys) {

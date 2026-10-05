@@ -446,8 +446,8 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .auto-imgs figure{margin:0 0 10px;max-width:900px;}
 .auto-imgs img{max-width:100%;width:auto;height:auto;max-height:none;border:1px solid var(--line);border-radius:6px;}   /* Seitenverhältnis bleibt */
 /* Grafiken */
-:root{ --sv-humid:#3d74b4; --sv-temp:#c2481a; --sv-dew:#1673a8; --mg-cloud:#5b6b7d; }
-:root[data-theme="dark"]{ --sv-humid:#4f86c6; --sv-temp:#e0662a; --sv-dew:#2f9bd4; --mg-cloud:#9aa8b8; }
+:root{ --sv-humid:#3d74b4; --sv-cloud:#d9432a; --sv-temp:#c2481a; --sv-dew:#1673a8; --mg-cloud:#5b6b7d; }
+:root[data-theme="dark"]{ --sv-humid:#4f86c6; --sv-cloud:#e8614a; --sv-temp:#e0662a; --sv-dew:#2f9bd4; --mg-cloud:#9aa8b8; }
 .sv-svg,.wp-svg,.mg-svg,.traj-svg{width:100%;height:auto;display:block;background:var(--panel-2);border-radius:8px;}
 .sv-svg{max-width:620px;} .traj-svg{max-width:460px;}
 .sv-grid line,.wp-grid line{stroke:var(--line-soft);stroke-width:1;}
@@ -599,3 +599,22 @@ table.sched.plan tr.anchor.night td,table.sched.plan tr.anchor.dusk td{backgroun
 table.auto.acts input[type=number]{width:70px;min-height:28px;padding:2px 6px}
 table.sched.plan td.place .pcell select{min-height:30px;padding:3px 24px 3px 6px;font-size:13px;width:auto;max-width:220px;flex:1}
 table.auto.acts{width:auto;min-width:420px}
+/* Flugplan-Panel */
+.fpl-form{display:flex;flex-direction:column;gap:6px}
+.fpl-item{border-top:1px solid var(--line-soft);padding-top:8px;margin-top:4px}
+.fpl-no{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px}.fpl-no b{color:var(--amber);margin-right:4px}
+.fpl-eet{display:flex;align-items:center;gap:6px;margin-bottom:4px}.fpl-eet input{min-height:30px;padding:3px 6px;font-size:13px}
+.fpl-msg{margin-top:10px}.fpl-msg pre,pre.fpl-msg{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;margin:4px 0 0;max-width:100%}
+.fpl-view{max-width:100%;min-width:0}.fpl-view table.inner td{overflow-wrap:anywhere}
+.fpl-form .note.mono{font-size:12px;overflow-wrap:anywhere}
+.fpl-form .chips .chip{min-height:28px;padding:2px 10px;font-size:12px}
+.fpl-tbl td.k{font-family:var(--mono);font-size:11px;color:var(--text-dim);white-space:nowrap;width:40px}
+.brief .fpl-msg{font-size:11.5px}
+/* Radar: Karte + Sonden-Fenster */
+.radar-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.radar-grid.with-sonde{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:899px){ .radar-grid.with-sonde{grid-template-columns:1fr} }
+.sonde-win{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel);min-width:0;overflow:auto}
+.sonde-win .sonde-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.sonde-win .gfx svg{max-width:100%;height:auto}
+table.auto.obs-tbl td.bad{color:var(--red,#c0392b);font-weight:600}
