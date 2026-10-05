@@ -188,6 +188,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.screenshot(path=f'{OUT}/{name}_13_panels.png', full_page=True)
         pg.goto(BASE + '#/settings?expert'); pg.wait_for_timeout(600)
         assert pg.query_selector('table.cm-tbl') is not None and 'DABS' in pg.inner_text('table.cm-tbl'), 'Länder-Matrix im Expertenbereich'
+        assert 'aerostatik' in pg.inner_text('#view').lower() and 'überhitzung' in pg.inner_text('#view').lower(), 'Aerostatik-Karte (Überhitzung) im Expertenbereich'
         pg.goto(BASE + f'#/pax/{bid}'); pg.wait_for_timeout(900)
         assert pg.query_selector('.paxsheet img.bimg') is not None, 'Hüllenbild im Pax-Blatt'
         pg.goto(BASE + f'#/v/{bid}'); pg.wait_for_timeout(900)
@@ -236,6 +237,14 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
                 lvin.focus(); pg.wait_for_timeout(200)
                 assert pg.is_visible('#panel-B\\.traj .lvl-pick') and len(pg.query_selector_all('#panel-B\\.traj .lvl-pick .lvl-it')) > 10, 'Niveauliste öffnet sich beim Klick ins Feld'
                 pg.screenshot(path=f'{OUT}/{name}_19_levels.png')
+            # 0.11.4: Vergrösserung auch im Editor (Klick auf die Tragkraft-Grafik), Füllungsgrad nur bei Gasballon
+            pg.keyboard.press('Escape')
+            pg.click('#panel-A\\.massperf svg.curve', position={'x': 60, 'y': 40}); pg.wait_for_timeout(400)
+            assert pg.is_visible('.dialog.lb') and pg.query_selector('.dialog.lb .lb-body svg') is not None, 'Lightbox im Editor nach Klick auf die Grafik'
+            pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
+            assert pg.query_selector('.dialog.lb') is None, 'Lightbox mit Escape geschlossen'
+            assert 'füllungsgrad' not in pg.inner_text('#panel-A\\.massperf .mp-sec.in').lower(), 'Heissluft: kein Füllungsgrad-Feld'
+            pg.screenshot(path=f'{OUT}/{name}_20_lb_editor.png')
         # Sperre: Fahrt in die Vergangenheit legen → Erarbeitung leitet auf die Briefingsicht mit Hinweis um
         pg.evaluate("""(id) => { const all = JSON.parse(localStorage.getItem('fb.briefings') || '{}'); const b = all[id]; b.time.startMs = Date.now() - 48 * 3600000; localStorage.setItem('fb.briefings', JSON.stringify(all)); }""", bid)
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(500)

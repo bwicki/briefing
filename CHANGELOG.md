@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.11.4 — 2026-10-05 · Antworten zu 0.11.3 · Füllungsgrad · Aerostatik-Parameter · Konzept 0.12
+
+* **Vergrösserte Ansicht auch im Editor:** Klick auf Grafiken, Bilder und Datentabellen öffnet wie in
+  der Briefingsicht das Grossbild (Eingabefelder, Karten, Niveauliste und Symbole ausgenommen); Bilder
+  der Zusatz-/Kommentarboxen ebenfalls.
+* **Alter von METAR/TAF und Beobachtungen** «(vor 0:30 h)» bezieht sich auf den **Publikations-
+  zeitpunkt des Briefings** (Freigabe als Final); in der Erarbeitung auf jetzt, nach der Fahrt
+  (gesperrt, ohne Freigabe) auf den Startzeitpunkt (`ageRefMs`).
+* **A3 Gasballon – Füllungsgrad (%)** je Briefing, Vorgabe **100 %** (meist wird voll gefüllt);
+  Gasmenge, Ballast und Kennzahlen folgen daraus; Bestand übernimmt den Stammwert der Hülle. Grundlage
+  für Prallhöhe und Ballastmodell in 0.12.
+* **Einstellungen → Experten → «Aerostatik Gasballon»:** Überhitzung des Traggases Tag/Nacht bei klarem
+  (+15 / −3 K) und bedecktem Himmel (+5 / −1 K), Auftriebsänderung je K (0.4 %), Verlust über der
+  Prallhöhe (1 % je 80 m) – Parameter des Ballastmodells 0.12 (`S.aero`).
+* **Bearbeitungsstand** bleibt wie in 0.11.2 (zählt beim ersten Speichern einer Sitzung, nicht beim
+  Öffnen).
+* **Konzept 0.12:** `docs/Konzept_0.12_Hoehenprofil.md` mit allen Entscheiden vom 05.10.2026 als
+  Startvorlage; Skizze Stand 3 (zwei X-Zeilen Distanz/Zeit, Zeit über den Wind der Fahrthöhe
+  gekoppelt, 300-m-Reliefband mit Warnung, Etappenmarker auf der Karte deutlich anders als
+  Zeitmarken, Ballastmodell mit 100 % Füllung).
+* Tests: calc 197, Smoke (Lightbox im Editor, Aerostatik-Karte), Gasballon-Prüfung A3.
+
 ## 0.11.3 — 2026-10-05 · Kopie ab Schritt 1 · NVFR-Schalter · Niveauliste · Sortierung · Tragkraft-Grafik
 
 * **Kopie eines (gesperrten) Briefings** beginnt den Ablauf wieder bei Schritt 1; Nicht-Zeitabhängiges

@@ -3,7 +3,7 @@
 import { h, clear, num, fmt, fmtSigned, toast, uid } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
 import { field, input, select, kv, stats, liftCurve } from './widgets.js';
-import { sunFor, massPerf, scheduleFor, setStart, ensurePlan, actLabel } from '../model.js';
+import { sunFor, massPerf, fillFractionOf, scheduleFor, setStart, ensurePlan, actLabel } from '../model.js';
 import { placeLine, pickPlace } from './place.js';
 import { hhmm, localParts, fmtDur, fmtDate } from '../calc/time.js';
 import { icao } from '../calc/geo.js';
@@ -59,7 +59,10 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
     clear(inputsBox);
     inputsBox.append(mk('tempC', `${t('mp_temp')} (°C)`, 0.5), mk('qnh', `${t('mp_qnh')} (hPa)`), mk('rh', `${t('mp_rh')} (%)`));
     if (bal.type === 'hab') { const f = mk('envTempC', `${t('mp_envTemp')} (°C)`, 5); f.appendChild(h('div.note.small', t('mp_envDefault', { r: bal.reg || bal.id || '', t: bal.envTempC ?? '–' }))); inputsBox.append(f); }
-    else if (ctx.settings.expert) inputsBox.append(mk('gasDeltaT', `${t('gb_gasDeltaT')} (K)`));
+    else {
+      const f = mk('fillPct', `${t('gb_fillPct')} (%)`, 5); f.appendChild(h('div.note.small', t('gb_fillDefault'))); inputsBox.append(f);
+      if (ctx.settings.expert) inputsBox.append(mk('gasDeltaT', `${t('gb_gasDeltaT')} (K)`));
+    }
   }
   const section = (title, cls, children) => h('div.mp-sec.' + cls, [h('div.lbl', title), ...children]);
   function draw() {
@@ -85,7 +88,7 @@ export function massPerfEditor(b, ctx, onChange, readOnly = false) {
       );
     } else {
       out.append(
-        section(t('mp_given'), 'given', [kv([[t('mp_volume'), `${fmt(bal.volume)} m³ (${Math.round((bal.fillFraction ?? 1) * 100)} %)`], [t('b_gas'), `${bal.gas} · ${t('gb_purity')} ${Math.round((bal.purity ?? 1) * 1000) / 10} %`], [t('mp_siteAlt'), `${fmt(b.site.elev)} m AMSL`], [t('gb_net'), `${fmt(r.net)} kg (${bal.masses.envelope} + ${bal.masses.basket} + ${bal.masses.equipment + (bal.masses.instruments || 0)} + ${fmt(r.paxMass)})`], [t('mp_persons'), `${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg`], [t('gb_reserve'), `${bal.reserveUnits || 0} × ${bal.ballastUnitKg || 0} kg = ${fmt(r.reserveKg)} kg`]])]),
+        section(t('mp_given'), 'given', [kv([[t('mp_volume'), `${fmt(bal.volume)} m³ · ${t('gb_fillPct')} ${Math.round(fillFractionOf(b) * 100)} % = ${fmt(bal.volume * fillFractionOf(b))} m³`], [t('b_gas'), `${bal.gas} · ${t('gb_purity')} ${Math.round((bal.purity ?? 1) * 1000) / 10} %`], [t('mp_siteAlt'), `${fmt(b.site.elev)} m AMSL`], [t('gb_net'), `${fmt(r.net)} kg (${bal.masses.envelope} + ${bal.masses.basket} + ${bal.masses.equipment + (bal.masses.instruments || 0)} + ${fmt(r.paxMass)})`], [t('mp_persons'), `${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg`], [t('gb_reserve'), `${bal.reserveUnits || 0} × ${bal.ballastUnitKg || 0} kg = ${fmt(r.reserveKg)} kg`]])]),
         section(t('mp_resBallast'), 'res', [
           stats([[t('gb_rhoAir'), `${r.rhoAir.toFixed(4)} kg/m³`], [t('gb_rhoGas'), `${r.rhoGas.toFixed(4)} kg/m³`], [t('gb_gasMass'), `${fmt(r.gasMass)} kg`], [t('gb_gross'), `${fmt(r.grossLift)} kg`]]),
           stats([[t('gb_ballast'), `${fmt(r.ballast)} kg`, r.ballast < r.reserveKg ? 'neg' : 'pos'], ['%', `${fmt(r.ballastPct, 1)} %`], [t('gb_units'), r.units != null ? `${fmt(r.units, 1)} × ${bal.ballastUnitKg} kg` : '–'], [t('gb_cooling'), `${fmt(r.coolingLossPerK, 1)} kg/K`], [t('gb_per100'), `${fmt(r.ballastPer100m, 1)} kg`]]),

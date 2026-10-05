@@ -5,7 +5,7 @@ import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunRows, twilightClass } from './parts.js';
-import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine } from '../model.js';
+import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine } from '../model.js';
 import { fplView } from './fplpanel.js';
 import { docsLine } from '../stamm.js';
 import { placeLine } from './place.js';
@@ -174,7 +174,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       ]);
     }
     return h('div.cols', [
-      h('div.kv', [[t('mp_volume'), `${fmt(bal.volume)} m³ · ${bal.gas} ${Math.round((bal.purity ?? 1) * 1000) / 10} %`], [t('mp_siteAlt'), `${fmt(b.site.elev)} m · ${w.tempC} °C · QNH ${w.qnh} hPa${w.rh != null ? ' · RH ' + w.rh + ' %' : ''} (${src})`], [t('gb_rhoAir'), `${r.rhoAir.toFixed(4)} kg/m³`], [t('gb_rhoGas'), `${r.rhoGas.toFixed(4)} kg/m³ · ${fmt(r.gasMass)} kg`], [t('gb_net'), `${fmt(r.net)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
+      h('div.kv', [[t('mp_volume'), `${fmt(bal.volume)} m³ · ${t('gb_fillPct')} ${Math.round(fillFractionOf(b) * 100)} % · ${bal.gas} ${Math.round((bal.purity ?? 1) * 1000) / 10} %`], [t('mp_siteAlt'), `${fmt(b.site.elev)} m · ${w.tempC} °C · QNH ${w.qnh} hPa${w.rh != null ? ' · RH ' + w.rh + ' %' : ''} (${src})`], [t('gb_rhoAir'), `${r.rhoAir.toFixed(4)} kg/m³`], [t('gb_rhoGas'), `${r.rhoGas.toFixed(4)} kg/m³ · ${fmt(r.gasMass)} kg`], [t('gb_net'), `${fmt(r.net)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
       h('div.kv', [[t('gb_gross'), `${fmt(r.grossLift)} kg`], [t('gb_ballast'), h('b', `${fmt(r.ballast)} kg · ${fmt(r.ballastPct, 1)} %`)], [t('gb_units'), r.units != null ? `${fmt(r.units, 1)} × ${bal.ballastUnitKg} kg` : '–'], [t('gb_reserve'), `${fmt(r.reserveKg)} kg`], [t('gb_cooling'), `${fmt(r.coolingLossPerK, 1)} kg/K`], [t('gb_per100'), `${fmt(r.ballastPer100m, 1)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
     ]);
   }

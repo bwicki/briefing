@@ -38,7 +38,7 @@ export function newBriefing(settings, now = Date.now()) {
     landing: emptyPlace(),
     persons: { picId: settings.persons.find((x) => x.roles?.includes('pic'))?.id || '', pic: settings.persons.find((x) => x.roles?.includes('pic'))?.name || '', retrieveId: settings.persons.find((x) => x.roles?.includes('retrieve'))?.id || '', retrieve: settings.persons.find((x) => x.roles?.includes('retrieve'))?.name || '', retrievers: settings.persons.filter((x) => x.roles?.includes('retrieve')).slice(0, 1).map((x) => ({ id: x.id, name: x.name })), pax: [] },
     schedule: { stops: [{ id: 'm1', meetingId: meeting?.id || '', name: meeting?.name || '', lat: meeting?.lat ?? null, lon: meeting?.lon ?? null, driveMin: null, driveKm: null, driveSource: '', dwellMin: 0 }], meetingId: meeting?.id || '', meetingName: meeting?.name || '', meetingLat: meeting?.lat ?? null, meetingLon: meeting?.lon ?? null, driveMin: null, driveSource: '', driveKm: null, rigMin: bal?.rigMin ?? 45, fillMin: bal?.fillMin ?? 0, bufferMin: settings.scheduleDefaults.bufferMin, recoveryMin: settings.scheduleDefaults.recoveryMin, rows: [], overrides: {} },
-    weather: { tempC: 15, qnh: 1013, rh: null, envTempC: bal?.envTempC ?? 100, source: 'manual', stand: null, gasDeltaT: 0 },
+    weather: { tempC: 15, qnh: 1013, rh: null, envTempC: bal?.envTempC ?? 100, source: 'manual', stand: null, gasDeltaT: 0, fillPct: 100 },
     panels: {}, versions: [], log: [], accessCount: 0,
   };
   for (const p of PANELS) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
@@ -60,6 +60,8 @@ export function upgradeBriefing(b) {
   for (const p of PANELS) if (!b.panels[p.key]) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
   // 0.11.2: Bearbeitungsstand «vN» (Sitzungen) – Bestand übernimmt den bisherigen Speicherzähler
   if (b.edition == null) b.edition = b.revision || 0;
+  // 0.11.4: Füllungsgrad je Briefing (Vorgabe 100 %, meist wird voll gefüllt); Bestand: Stammwert der Hülle
+  if (b.weather && b.weather.fillPct == null) b.weather.fillPct = Math.round((b.balloon?.fillFraction ?? 1) * 100);
   // 0.11.2: bei Auto-Panels ohne Einfügepflicht wandert «eigener Text/Bilder» (content) in die Zusatzbox (extra)
   for (const p of PANELS) {
     if (p.kind !== 'auto' || p.grade === 'half') continue;
@@ -159,6 +161,12 @@ export function sunFor(b, settings, racTable) {
   };
 }
 
+/** Füllungsgrad des Gasballons (0–1): Eingabe im Briefing (A3, Vorgabe 100 %), sonst Stammwert der Hülle. */
+export function fillFractionOf(b) {
+  const p = b?.weather?.fillPct;
+  if (p != null && Number.isFinite(+p) && +p > 0) return Math.min(1.2, +p / 100);
+  return b?.balloon?.fillFraction ?? 1;
+}
 /** Tragkraft (Heissluft) oder Ballast (Gas) aus Briefing-Eingaben. */
 export function massPerf(b, settings) {
   const bal = b.balloon, w = b.weather;
@@ -167,7 +175,7 @@ export function massPerf(b, settings) {
   const personMasses = [b.persons.picWeight || pw, ...(b.persons.pax || []).map((p) => p.weight || pw)];
   if (bal.type === 'gas') {
     return { type: 'gas', r: gasBalloon({
-      volume: bal.volume, fillFraction: bal.fillFraction ?? 1, gas: bal.gas, purity: bal.purity, siteAlt: b.site.elev || 0,
+      volume: bal.volume, fillFraction: fillFractionOf(b), gas: bal.gas, purity: bal.purity, siteAlt: b.site.elev || 0,
       tempC: w.tempC, qnh: w.qnh, rh: w.rh, gasDeltaT: w.gasDeltaT || 0,
       masses: bal.masses, persons, personWeight: pw, personMasses, ballastUnitKg: bal.ballastUnitKg, reserveUnits: bal.reserveUnits,
     }) };
@@ -330,6 +338,13 @@ export function lockMs(b) {
 }
 /** Gesperrt: die Fahrt liegt zurück → Briefing bleibt unverändert (Kopie mit neuem Datum anlegen). */
 export const isLocked = (b, now = Date.now()) => now > lockMs(b);
+/** Bezugszeit für «Alter» von Meldungen (METAR/TAF, Beobachtungen): der Publikationszeitpunkt des Briefings
+ * (letzte Freigabe als Final); ohne Freigabe während der Erarbeitung «jetzt», nach der Fahrt (gesperrt) der Startzeitpunkt. */
+export function ageRefMs(b, now = Date.now()) {
+  if (b?.status === 'final') { const v = (b.versions || []).slice(-1)[0]; if (v?.ts) return v.ts; }
+  if (b && isLocked(b, now)) return b.time?.startMs || now;
+  return now;
+}
 /** Dateibasis «2026-017_Fahrtbriefing_HB-QWZ_2026-10-06» für PDF, JSON, ICS, FPL. */
 export function fileBase(b) {
   const reg = (b.balloon?.reg || '').replace(/[^A-Za-z0-9-]+/g, '');

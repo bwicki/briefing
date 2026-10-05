@@ -6,7 +6,7 @@ import { hhmm, fmtDateTime, fmtDate, fmtDur } from '../calc/time.js';
 import { MS_TO_KT, M_TO_FT } from '../auto/openmeteo.js';
 import { meteogram as meteogramSvg, windChart, stueveChart, mk } from '../auto/charts.js';
 import { trajSvg, TRAJ_COLORS, targetEstimate } from '../auto/traj.js';
-import { directionText } from '../model.js';
+import { directionText, ageRefMs } from '../model.js';
 import { mapsLink } from './place.js';
 import { decodeMetar, decodeTaf, badToken, MARK0, MARK1 } from '../calc/metar.js';
 import { bearing, compass } from '../calc/geo.js';
@@ -330,8 +330,9 @@ export function renderMetar(snap, b) {
   const rawNodes = (raw) => raw.split(/(\s+)/).map((tk) => (/^\s+$/.test(tk) || !badToken(tk) ? tk : h('span.bad', tk)));
   // Klartext: Markierungen aus dem Decoder → rot
   const marked = (line) => line.split(new RegExp(`(${MARK0}[^${MARK1}]*${MARK1})`)).filter(Boolean).map((x) => (x.startsWith(MARK0) ? h('span.bad', x.slice(1, -1)) : x));
-  // Alter des Bulletins «(vor 0:30 h)» – bezogen auf jetzt
-  const age = (ms) => { if (!ms) return ''; const dm = Math.max(0, Math.round((Date.now() - ms) / 60000)); return ` (${t('age_ago', { t: dm >= 2880 ? `${Math.floor(dm / 1440)} d` : `${Math.floor(dm / 60)}:${String(dm % 60).padStart(2, '0')} h` })})`; };
+  // Alter des Bulletins «(vor 0:30 h)» – bezogen auf die Publikation des Briefings (Freigabe), sonst jetzt
+  const refMs = ageRefMs(b);
+  const age = (ms) => { if (!ms) return ''; const dm = Math.max(0, Math.round((refMs - ms) / 60000)); return ` (${t('age_ago', { t: dm >= 2880 ? `${Math.floor(dm / 1440)} d` : `${Math.floor(dm / 60)}:${String(dm % 60).padStart(2, '0')} h` })})`; };
   // Ausgabezeit aus «ddhhmmZ» (Monat/Jahr aus dem Schnappschuss)
   const zMs = (raw) => { const m = /\b(\d{2})(\d{2})(\d{2})Z\b/.exec(raw || ''); if (!m) return null; const ref = new Date(snap.stand || Date.now()); let dt = Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth(), +m[1], +m[2], +m[3]); if (dt - ref.getTime() > 2 * 86400000) dt = Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth() - 1, +m[1], +m[2], +m[3]); return dt; };
   // kompakt: Rohtext links, Klartext rechts; erste Klartextzeile «METAR LSZH · … (vor 0:30 h)»; Änderungsgruppen («→») ohne Aufzählungspunkt
@@ -422,7 +423,8 @@ export function renderObs(snap, b) {
   if (d.local) return h('div.note', t('auto_obsLocal'));
   const st = d.stations || [];
   if (!st.length) return h('div', [h('div.note', t('auto_obsNone', { km: d.km })), d.errors?.length ? h('div.note.small', d.errors.join(' · ')) : null]);
-  const age = (iso) => { if (!iso) return ''; const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 90 ? `${m} min` : `${Math.round(m / 60)} h`; };
+  const refMs = ageRefMs(b);
+  const age = (iso) => { if (!iso) return ''; const m = Math.max(0, Math.round((refMs - new Date(iso)) / 60000)); return m < 90 ? `${m} min` : `${Math.round(m / 60)} h`; };
   const windCls = (x) => ((x.kt || 0) >= 14 || (x.gustKt || 0) >= 20 ? 'bad' : '');
   const rows = st.map((x) => h('tr', [
     h('td', [h('b', x.name), h('span.muted.small', ` ${x.src}`)]),

@@ -83,6 +83,9 @@ export const DEFAULT_SETTINGS = {
   airspaceCorridorKm: 5,
   airspaceTmaWarnFt: 900,
   pdiffWarn: { half: 3, neg: 4 },
+  // 0.11.4: Aerostatik Gasballon (Grundlage für das Höhenprofil-Werkzeug 0.12): Überhitzung des Traggases gegenüber der Luft in K
+  // (Emden Tab. 9 / «Gone with the Wind» Kap. 4) – Tag/Nacht bei klarem Himmel und bei bedecktem Himmel; Kühlverlust ≈ 0.4 % Auftrieb je K
+  aero: { dtDayClear: 15, dtNightClear: -3, dtDayOvercast: 5, dtNightOvercast: -1, liftPctPerK: 0.4, fullLossPctPer80m: 1 },
   paxCardTitle: { de: 'Passagier Info-/Sicherheitskarte', en: 'Passenger info / safety card' },
   webcams: [{ id: 'uetliberg', name: 'Uetliberg (Roundshot)', lat: 47.3496, lon: 8.4913, url: 'https://uetliberg.roundshot.com/' }, { id: 'rigi', name: 'Rigi Kulm (Roundshot)', lat: 47.0569, lon: 8.4854, url: 'https://rigi.roundshot.com/' }],
   metarRadiusKm: 150, metarCount: 0, notamRadiusNm: 25, aiModel: 'claude-sonnet-5-5',

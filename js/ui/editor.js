@@ -1,6 +1,6 @@
 /* Fahrtbriefing — Erarbeitungssicht: Navigation, Panels, Zusatzinfo/KI/Kommentar,
  * Freigabe-Checkliste, Berechtigungen. Für Owner und Mitarbeit-Links. */
-import { h, clear, toast, dialog, debounce, uid, textToNodes } from '../util.js';
+import { h, clear, toast, dialog, debounce, uid, textToNodes, lightbox } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
@@ -130,6 +130,14 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   mainCol.addEventListener('focusin', (e) => { const el = e.target.closest('.panel'); if (el) setActive(el.id.replace(/^panel-/, '')); });
+  // Grafiken, Bilder und Datentabellen: Klick öffnet die vergrösserte Ansicht (wie in der Briefingsicht; Eingabefelder, Karten und Symbole ausgenommen)
+  mainCol.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, input, textarea, select, label, .leaflet-container, .lvl-pick, .no-lb')) return;
+    const el = e.target.closest('svg:not(.ico), img.pimg, table.auto, table.dwd');
+    if (!el || !mainCol.contains(el)) return;
+    const head = el.closest('.panel')?.querySelector('.panel-head .ttl');
+    lightbox(el, head ? head.textContent.replace(/\s+/g, ' ').trim().slice(0, 80) : '');
+  });
   function drawSide() {
     clear(side);
     const hrs = Math.round((b.time.startMs - Date.now()) / 3600000);

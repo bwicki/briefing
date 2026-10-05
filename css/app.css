@@ -709,6 +709,8 @@ table.tbl.list .tag{font-size:9.5px;padding:1px 6px}
 
 /* 0.11.2: vergrösserte Ansicht (Lightbox) in der Briefingsicht */
 .brief svg,.brief img.pimg,.brief table.auto,.brief table.inner,.brief table.dwd{cursor:zoom-in}
+.editor .panel svg:not(.ico),.editor .panel img.pimg,.editor .panel table.auto,.editor .panel table.dwd{cursor:zoom-in}
+.editor .panel .leaflet-container svg,.editor .panel .lvl-pick svg{cursor:inherit}
 .backdrop.lightbox{z-index:1200}
 .dialog.lb{max-width:min(96vw,1400px);width:auto;max-height:94vh}
 .dialog.lb .lb-body{padding:14px;overflow:auto;font-size:14px}

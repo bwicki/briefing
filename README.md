@@ -196,7 +196,7 @@ kurz danach).
 | Panel | Inhalt | Quelle |
 |---|---|---|
 | Allgemeine Lage | Schnappschüsse amtlicher Karten (DWD-Bodenanalysen, ECMWF Bodendruck/Wind 850 hPa zur Startzeit und +24 h; Liste in Einstellungen → Meteo) **und** die Grosswetteranalyse des nationalen Dienstes als Text für das Land des Startorts/Landeraums (DWD Synoptische Übersicht Kurz-/Mittelfrist und ORF/GeoSphere Austria geprüft; MeteoSchweiz und Aeronautica Militare liefern nur per JavaScript → als Link; weitere Seiten mit CSS-Selektor konfigurierbar, Haken «abrufen») | DWD, ECMWF Open Charts (CC-BY-4.0), nationale Dienste; über Worker (`/api/wx/snapshot`, `/api/wx/wxtext`) |
-| METAR/TAF | alle Plätze im Umkreis (direkt im Panel einstellbar, Standard 150 km); Richtungspfeil vom Startort zum Platz; Schlechtwetter rot (Wind/Böen ≥ 14 kt, Sicht < 5 km, Niederschlag/Nebel/Gewitter, Basis ≤ 1500 ft, CB/TCU); je Platz **Rohmeldung und Klartext nebeneinander** (DE/EN: Wind, Sicht, Wetter, Wolken, T/Td, QNH, Trend; TAF mit BECMG/TEMPO/PROB/FM-Gruppen und Gültigkeit) | aviationweather.gov über Worker; Rückfall GaforCast-Kopie |
+| METAR/TAF | alle Plätze im Umkreis (direkt im Panel einstellbar, Standard 150 km); Richtungspfeil vom Startort zum Platz; Schlechtwetter rot (Wind/Böen ≥ 14 kt, Sicht < 5 km, Niederschlag/Nebel/Gewitter, Basis ≤ 1500 ft, CB/TCU); je Platz **Rohmeldung und Klartext nebeneinander** (DE/EN: Wind, Sicht, Wetter, Wolken, T/Td, QNH, Trend; TAF mit BECMG/TEMPO/PROB/FM-Gruppen und Gültigkeit); Alter «(vor 0:30 h)» bezogen auf die Publikation des Briefings (Final), sonst auf jetzt | aviationweather.gov über Worker; Rückfall GaforCast-Kopie |
 | Temps | Stüve-Diagramm des Modellprofils zur Startzeit (T, Td, Feuchteschattierung blau ab RH 85 %, **Wolkenschichten rötlich ab RH 95 %**, Windfahnen, Grenzschicht, 0 °C), Inversionen; dazu die **letzte Radiosondierung** der nächsten Station (Payerne u. a.) als zweites Stüve mit Tabelle; **nächste Live-Radiosonde aus SondeHub** (Amateurempfang, letzte 12 h, Umkreis einstellbar, Standard 250 km) als drittes Stüve | Open-Meteo Druckflächen; Radiosonde über Worker `/api/wx/sounding` (Archiv University of Wyoming); SondeHub über `/api/wx/sondes`, `/api/wx/sonde`) |
 | Beobachtungen (Wetterstationen) | **Wetterstationen im Umkreis** des Startorts (Standard 75 km, im Panel einstellbar): SwissMetNet (MeteoSchweiz via api.existenz.ch), DWD (Bright Sky), übriges Europa EUMETNET MeteoGate/E-SOH; Tabelle Pfeil · km · Zeit · Wind/Böen (rot ab 14/20 kt) · T/Td · RH · QNH · Niederschlag | über Worker (`/api/wx/stations`) |
 | Flugwetterprognose | **DE:** DWD Flugwetterübersicht des Bereichs + GAFOR-Einstufung des Gebiets (Punkt-in-Polygon). **CH:** MeteoSchweiz-Prognose einfügen (Pflicht) | DWD-Luftsportberichte (Kopie gafor.wicki.aero) |
@@ -358,6 +358,9 @@ die Einstellungen (ohne Zugänge).
   2.10, «Gone with the Wind» Kap. 4): Zustandsklassen prall/unprall, Fundamentalsatz 1 % je
   80 m, Prallhöhe aus dem Füllungsgrad, Gesetz der Ballastwirkung, die vier Temperaturgesetze
   (≈ 5 kg je K je 1000 m³), Widerstandszahl für Steigen/Abfangen, Tag-Nacht-Übergang.
+  Die Parameter (Überhitzung klar/bedeckt Tag/Nacht, % je K, % je 80 m) stehen seit 0.11.4 unter
+  Einstellungen → Experten → Aerostatik; der Umsetzungsplan mit allen Entscheiden in
+  `docs/Konzept_0.12_Hoehenprofil.md`.
 * **Sonne/Dämmerung** — Schweiz: RAC 4-4 (VFR Manual, skyguide): BCMT, SR, SS, ECET
   in Lokalzeit, Referenz Sternwarte Bern, gültig für die FIR. Die mitgelieferte
   Tabelle (`data/rac/rac-ch.json`) deckt OCT 2026 – DEC 2027 ab; ein neues PDF wird
@@ -372,8 +375,8 @@ die Einstellungen (ohne Zugänge).
   Reserve = min(25 % · Dauer, 30 min) (einstellbar). **Zulässiges Startgewicht** =
   Tragkraft am Startplatz bei Hüllentemperatur, höchstens MTOM; Minder-/Mehrgewicht
   bezieht sich darauf (die massgebende Grenze wird genannt).
-* **Gas** — Brutto-Auftrieb = V · (ρ_Luft − ρ_Gasgemisch) mit Gasdichte aus p, T
-  und Reinheit; Ballast = Brutto-Auftrieb − Nettomasse; Kennzahlen Abkühlung je K,
+* **Gas** — Brutto-Auftrieb = V · Füllungsgrad · (ρ_Luft − ρ_Gasgemisch) mit Gasdichte aus p, T
+  und Reinheit (Füllungsgrad je Briefing in A3, Vorgabe 100 %); Ballast = Brutto-Auftrieb − Nettomasse; Kennzahlen Abkühlung je K,
   Ballast je 100 m, Ballast-Einheiten, Landereserve. Ein Excel-Modus reproduziert
   die Vorlage v2 exakt (Tests).
 * **Tagesplanung** — Zeilenliste mit Anker «Start»: vorwärts Zeit + Dauer,

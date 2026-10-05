@@ -431,6 +431,12 @@ export async function renderSettings(view, ctx) {
       h('div.card', [h('div.card-head', h('div.section-title', t('set_airspaceWarn'))), h('div.card-body', h('div.frow.c4', [numField(S, 'airspaceTmaWarnFt', t('set_tmaWarn'), 100)]))]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_paxCardTitle'))), h('div.card-body', [h('div.frow', [txtField(S.paxCardTitle, 'de', 'DE'), txtField(S.paxCardTitle, 'en', 'EN')]), h('div.note', t('set_paxCardTitleHint'))])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_pdiffWarn'))), h('div.card-body', h('div.frow.c4', [numField(S.pdiffWarn, 'half', `${t('set_pdiffHalf')} hPa`, 0.5), numField(S.pdiffWarn, 'neg', `${t('set_pdiffNeg')} hPa`, 0.5)]))]),
+      h('div.card', [h('div.card-head', h('div.section-title', t('set_aero'))), h('div.card-body', [
+        h('div.lbl', t('set_aeroClear')), h('div.frow.c4', [numField(S.aero, 'dtDayClear', `${t('set_aeroDay')} K`, 1), numField(S.aero, 'dtNightClear', `${t('set_aeroNight')} K`, 1)]),
+        h('div.lbl', t('set_aeroOvercast')), h('div.frow.c4', [numField(S.aero, 'dtDayOvercast', `${t('set_aeroDay')} K`, 1), numField(S.aero, 'dtNightOvercast', `${t('set_aeroNight')} K`, 1)]),
+        h('div.frow.c4', [numField(S.aero, 'liftPctPerK', `${t('set_aeroPerK')} %/K`, 0.05), numField(S.aero, 'fullLossPctPer80m', `${t('set_aeroFull')} %/80 m`, 0.1)]),
+        h('div.note', t('set_aeroHint')),
+      ])]),
       activitiesCard(),
       countryMatrixCard(),
       h('div.card', [h('div.card-head', h('div.section-title', t('set_docTypes'))), h('div.card-body', h('div.frow', [field(t('set_docTypesBalloon'), textarea((S.docTypes?.balloon || []).join('\n'), { rows: 6, oninput: (e) => { (S.docTypes = S.docTypes || {}).balloon = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } })), field(t('set_docTypesPerson'), textarea((S.docTypes?.person || []).join('\n'), { rows: 6, oninput: (e) => { (S.docTypes = S.docTypes || {}).person = e.target.value.split('\n').map((x) => x.trim()).filter(Boolean); } }))]))]),

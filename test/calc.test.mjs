@@ -20,7 +20,7 @@ import { changesSinceFinal } from '../js/calc/diff.js';
 import { resolveBalloon, mergeSettings } from '../js/defaults.js';
 import { routeMatrix, countryInfo } from '../js/countries.js';
 import { parseDwdAstro } from '../js/calc/sun.js';
-import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing } from '../js/model.js';
+import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing, ageRefMs, fillFractionOf, massPerf } from '../js/model.js';
 import { carCode } from '../js/net.js';
 import { decodeMetar as dMetar, decodeTaf as dTaf } from '../js/calc/metar.js';
 
@@ -435,6 +435,40 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(!panelFilled(panelByKey('C.fpl'), b), 'NVFR ohne erstellten Flugplan: Panel offen');
   b.fpl = { enabled: true };
   ok(panelFilled(panelByKey('C.fpl'), b), 'NVFR mit Flugplan: Panel erledigt');
+}
+
+// Bezugszeit für das Alter von Meldungen (0.11.4): Publikation (Final) > gesperrt: Start > sonst jetzt
+{
+  const S = mergeSettings(null);
+  const b = newBriefing(S);
+  const now = fromLocal('Europe/Zurich', '2026-10-05', '12:00');
+  b.time.startMs = fromLocal('Europe/Zurich', '2026-10-06', '06:30');
+  ok(ageRefMs(b, now) === now, 'in Erarbeitung: Alter bezogen auf jetzt');
+  b.status = 'final'; b.finalNo = 1; b.versions = [{ no: 1, ts: now - 3600000 }];
+  ok(ageRefMs(b, now) === now - 3600000, 'Final: Alter bezogen auf die Freigabe (Publikation)');
+  const c = newBriefing(S); c.time.startMs = fromLocal('Europe/Zurich', '2026-09-01', '06:30');
+  ok(ageRefMs(c, now) === c.time.startMs, 'gesperrt ohne Freigabe: Alter bezogen auf den Start');
+}
+
+// Füllungsgrad je Briefing (0.11.4): Vorgabe 100 %, Bestand übernimmt den Stammwert, Ballast folgt dem Füllungsgrad
+{
+  const S = mergeSettings(null);
+  const b = newBriefing(S);
+  ok(b.weather.fillPct === 100, 'neues Briefing: Füllungsgrad 100 %');
+  const gasBal = S.balloons.envelopes?.[0];
+  if (gasBal) {
+    b.balloon = { ...JSON.parse(JSON.stringify(gasBal)), type: 'gas', reg: gasBal.id, masses: { envelope: gasBal.mass || 116, basket: 60, equipment: 30, instruments: 0 }, ballastUnitKg: 12, reserveUnits: 4 };
+    b.site.elev = 450;
+    const full = massPerf(b, S).r.ballast;
+    b.weather.fillPct = 80;
+    ok(fillFractionOf(b) === 0.8, 'Füllungsgrad 80 % → 0.8');
+    const part = massPerf(b, S).r.ballast;
+    ok(part < full, `Ballast bei 80 % (${Math.round(part)} kg) kleiner als bei 100 % (${Math.round(full)} kg)`);
+  }
+  const old = newBriefing(S); delete old.weather.fillPct; old.balloon.fillFraction = 0.9;
+  upgradeBriefing(old);
+  ok(old.weather.fillPct === 90, 'Bestand ohne Füllungsgrad: Stammwert der Hülle (90 %)');
+  ok(S.aero.dtDayClear === 15 && S.aero.dtNightClear === -3 && S.aero.dtDayOvercast === 5 && S.aero.dtNightOvercast === -1, 'Aerostatik-Vorgaben im Expertenbereich');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

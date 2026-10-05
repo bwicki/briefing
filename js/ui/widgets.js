@@ -97,7 +97,7 @@ export function pasteArea(value, onChange, upload, opts = {}) {
       const cap = input('text', im.caption, { class: 'cap', placeholder: t('caption') });
       cap.addEventListener('input', () => { im.caption = cap.value; onChange(v); });
       imgs.appendChild(h('figure', [
-        h('img', { src: im.url, alt: im.caption || '' }),
+        h('img.pimg', { src: im.url, alt: im.caption || '' }),
         h('button.btn.icon.rm.no-print', { type: 'button', title: t('removeImage'), onclick: () => { v.images = v.images.filter((x) => x !== im); renderImgs(); onChange(v); } }, icon('close', 14)),
         cap,
       ]));
