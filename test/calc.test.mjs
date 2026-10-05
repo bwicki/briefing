@@ -17,6 +17,8 @@ import { vfrRelevant } from '../js/auto/data.js';
 import { normalizeAirspace, analyzeAirspaces, limitFt, limitText, inAirspace, distToAirspaceKm, requirementKey, siteWarnings, isPlainEG } from '../js/calc/airspace.js';
 import { goNoGo } from '../js/calc/gonogo.js';
 import { changesSinceFinal } from '../js/calc/diff.js';
+import { resolveBalloon, mergeSettings } from '../js/defaults.js';
+import { balloonImage } from '../js/model.js';
 
 let fails = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('  FAIL', msg); } else console.log('  ok  ', msg); };
@@ -323,6 +325,21 @@ ok(requirementKey({ typeKey: 'TMA', cls: 'E' }) === 'classE' && requirementKey({
   ok(dh.typeOfFlight8 === 'N' && dh.level15 === 'VFR' && dh.speed15 === 'N0015' && dh.e19 === '0310' && dh.eet16 === '0200' && dh.altn16b === '' && !dh.rmk18.startsWith('NVFR') && dh.typ18 === 'HOT AIR BALLOON', 'Heissluft gewerblich: N, VFR, N0015, Autonomie aus Treibstoff, kein 2. ALTN');
   ok(fplCheck(dh).includes('eet18') === false && eetFromFirs([], t0).length === 0, 'ohne FIR-Folge keine EET/-Einträge');
   ok(driftWords([{ lat: 47, lon: 8 }, { lat: 47.5, lon: 8 }, { lat: 48, lon: 8 }]) === 'N', 'Richtungswörter: Nord');
+}
+
+console.log('Bild der Hülle (0.10.1)');
+// 0.10.1: Bild der Hülle — Schnappschuss im Briefing, Rückgriff auf die Stammdaten
+{
+  const S = mergeSettings({});
+  S.balloons.envelopes[0].image = 'data:image/jpeg;base64,AAA';
+  const gas = resolveBalloon(S, { type: 'gas', envelopeId: S.balloons.envelopes[0].id, basketId: S.balloons.baskets[0].id });
+  ok(gas.image === 'data:image/jpeg;base64,AAA' && gas.label.includes('NL/STU-1000'), 'resolveBalloon gas: Bild und Muster im Schnappschuss');
+  S.balloons.hab[0].image = 'data:image/jpeg;base64,BBB';
+  const hab = resolveBalloon(S, { type: 'hab', id: S.balloons.hab[0].id });
+  ok(hab.image === 'data:image/jpeg;base64,BBB', 'resolveBalloon hab: Bild im Schnappschuss');
+  ok(balloonImage({ balloon: { ...hab, image: 'data:x' } }, S) === 'data:x', 'balloonImage: Schnappschuss vor Stammdaten');
+  ok(balloonImage({ balloon: { type: 'hab', id: hab.id } }, S) === 'data:image/jpeg;base64,BBB' && balloonImage({ balloon: { type: 'gas', envelopeId: gas.envelopeId } }, S) === 'data:image/jpeg;base64,AAA', 'balloonImage: Rückgriff auf Stammdaten (altes Briefing ohne Bild)');
+  ok(balloonImage({ balloon: { type: 'hab', id: 'nope' } }, S) === '', 'balloonImage: leer ohne Bild');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

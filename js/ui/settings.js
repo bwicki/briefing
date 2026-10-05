@@ -1,9 +1,9 @@
 /* Fahrtbriefing — Einstellungen (Stammdaten, Regeln, Zugänge, Experte). */
-import { h, clear, toast, deepCopy, num, dialog, uid } from '../util.js';
+import { h, clear, toast, deepCopy, num, dialog, uid, shrinkImage } from '../util.js';
 import { t, tt, getLang, setLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, listHead, fieldAdd, docsEditor } from './widgets.js';
-import { PANELS, SECTIONS } from '../panels.js';
+import { PANELS, SECTIONS, visiblePanels, panelNo } from '../panels.js';
 import { parseRacText, racValidity, linesFromPdfItems } from '../calc/rac.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
 import { ACT_TYPES, ACT_DEFAULT_MIN } from '../calc/schedule.js';
@@ -37,6 +37,24 @@ export async function renderSettings(view, ctx) {
   }
   const numField = (obj, key, label, step = 1, cls) => field(label, input('number', obj[key] ?? '', { step, oninput: (e) => { obj[key] = num(e.target.value, null); } }), cls);
   const txtField = (obj, key, label, cls) => field(label, input('text', obj[key] ?? '', { oninput: (e) => { obj[key] = e.target.value; } }), cls);
+  /** Bild der Hülle: Datei wählen → quadratisch auf 192 px verkleinert als JPEG-Daten-URL im Objekt (x.image). */
+  const imageField = (x) => {
+    const box = h('div.imgfield');
+    const draw = () => {
+      clear(box);
+      const file = h('input', { type: 'file', accept: 'image/*', style: { display: 'none' }, onchange: async (e) => { const f = e.target.files?.[0]; if (!f) return; try { x.image = await shrinkImage(f, 192); draw(); markDirty(); } catch { toast(t('b_imageErr')); } } });
+      box.append(
+        x.image ? h('img.bimg', { src: x.image, alt: '' }) : h('div.bimg.empty', '—'),
+        h('div.col', [
+          h('button.btn.small', { type: 'button', onclick: () => file.click() }, t('b_imageChoose')),
+          x.image ? h('button.btn.small', { type: 'button', onclick: () => { delete x.image; draw(); markDirty(); } }, t('b_imageRemove')) : null,
+          h('span.note.small', t('b_imageHint')),
+        ]), file,
+      );
+    };
+    draw();
+    return field(t('b_image'), box);
+  };
 
   function general() {
     return h('div.card', h('div.card-body', [
@@ -59,12 +77,13 @@ export async function renderSettings(view, ctx) {
       B.hab.forEach((x, i) => {
         const cylRows = CYLINDER_CATALOG.map((c) => { const cur = x.cylinders.find((y) => y.id === c.id); return h('tr', [h('td', c.name), h('td', input('number', cur?.count ?? 0, { min: 0, step: 1, oninput: (e) => { const n = num(e.target.value); const idx = x.cylinders.findIndex((y) => y.id === c.id); if (idx >= 0) x.cylinders[idx].count = n; else x.cylinders.push({ ...c, count: n }); } })), h('td', c.litres), h('td', c.gasKg), h('td', c.totalKg)]); });
         habBox.appendChild(h('div.item-box', [
-          h('div.head', [h('b', `${x.id} · ${x.model}`), h('label.check', [h('input', { type: 'radio', name: 'defHab', checked: B.defaultHab === x.id, onchange: () => { B.defaultHab = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.hab.splice(i, 1); drawHab(); } }, '🗑')]),
+          h('div.head', [h('b', `${x.id}${x.model ? ' · ' + x.model : ''}`), h('label.check', [h('input', { type: 'radio', name: 'defHab', checked: B.defaultHab === x.id, onchange: () => { B.defaultHab = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.hab.splice(i, 1); drawHab(); } }, '🗑')]),
           h('div.frow.c4', [txtField(x, 'id', t('registration')), txtField(x, 'model', t('b_model')), txtField(x, 'hex', t('b_hex')), numField(x, 'volume', t('b_volume'))]),
           h('div.frow.c4', [numField(x, 'mtom', t('b_mtom'))]),
           h('div.frow.c4', [numField(x.masses, 'envelope', `${t('b_envelope')} kg`), numField(x.masses, 'burner', `${t('b_burner')} kg`), numField(x.masses, 'basket', `${t('b_basket')} kg`), numField(x.masses, 'equipment', `${t('b_equipment')} kg`)]),
           h('div.frow.c4', [numField(x, 'personWeight', `${t('b_personWeight')} kg`), numField(x, 'maxPersons', t('b_maxPersons')), numField(x, 'burnRate', t('b_burn')), numField(x, 'rigMin', t('b_rig'))]),
           h('div.frow.c2', [txtField(x, 'colour', t('b_colour')), field(t('b_trackers'), textarea((x.trackers || []).join('\n'), { rows: 2, placeholder: 'https://live.garmin.com/… · https://aprs.fi/… · https://www.flightradar24.com/…', oninput: (e) => { x.trackers = e.target.value.split(/[\n,;\s]+/).map((x2) => x2.trim()).filter((x2) => /^https?:\/\//i.test(x2)); } })),]),
+          imageField(x),
           S.expert ? h('div.frow.c3', [numField(x, 'envTempC', t('b_envTemp')), numField(x, 'envMaxC', t('b_envMax')), field(`${t('b_usable')} (0–1)`, input('number', x.usableFraction, { step: 0.05, min: 0, max: 1, oninput: (e) => { x.usableFraction = num(e.target.value, 1); } }))]) : null,
           h('details', [h('summary.small', t('b_cyl')), h('table.cyl', [h('thead', h('tr', [h('th', t('b_cyl')), h('th', t('mp_count')), h('th', 'l'), h('th', 'kg Gas'), h('th', 'kg')])), h('tbody', cylRows)])]),
           (() => { const de = docsEditor(x, S.docTypes?.balloon, ctx); return fieldAdd(t('docs'), de, () => de.addFn(), t('doc_add')); })(),
@@ -77,10 +96,11 @@ export async function renderSettings(view, ctx) {
     const drawEnv = () => {
       clear(envBox);
       B.envelopes.forEach((x, i) => envBox.appendChild(h('div.item-box', [
-        h('div.head', [h('b', x.id), x.placeholder ? h('span.tag.half', t('placeholderMark')) : null, h('label.check', [h('input', { type: 'radio', name: 'defEnv', checked: B.defaultEnvelope === x.id, onchange: () => { B.defaultEnvelope = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.envelopes.splice(i, 1); drawEnv(); } }, '🗑')]),
+        h('div.head', [h('b', `${x.id}${x.model ? ' · ' + x.model : ''}`), x.placeholder ? h('span.tag.half', t('placeholderMark')) : null, h('label.check', [h('input', { type: 'radio', name: 'defEnv', checked: B.defaultEnvelope === x.id, onchange: () => { B.defaultEnvelope = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.envelopes.splice(i, 1); drawEnv(); } }, '🗑')]),
         h('div.frow.c4', [txtField(x, 'id', t('registration')), txtField(x, 'model', t('b_model')), txtField(x, 'hex', t('b_hex')), numField(x, 'volume', t('b_volume'))]),
         h('div.frow.c4', [numField(x, 'mass', `${t('b_envelope')} kg`)]),
         h('div.frow.c2', [txtField(x, 'colour', t('b_colour')), field(t('b_trackers'), textarea((x.trackers || []).join('\n'), { rows: 2, placeholder: 'https://live.garmin.com/… · https://aprs.fi/… · https://www.flightradar24.com/…', oninput: (e) => { x.trackers = e.target.value.split(/[\n,;\s]+/).map((x2) => x2.trim()).filter((x2) => /^https?:\/\//i.test(x2)); } })),]),
+        imageField(x),
         (() => { const de = docsEditor(x, S.docTypes?.balloon, ctx); return fieldAdd(t('docs'), de, () => de.addFn(), t('doc_add')); })(),
         S.expert ? h('div.frow.c3', [field(t('b_gas'), select([{ value: 'H2', label: 'H₂' }, { value: 'He', label: 'He' }], x.gas, { onchange: (e) => { x.gas = e.target.value; } })), field(`${t('b_purity')} (0–1)`, input('number', x.purity, { step: 0.001, oninput: (e) => { x.purity = num(e.target.value, 1); } })), field('Füllgrad (0–1)', input('number', x.fillFraction ?? 1, { step: 0.05, oninput: (e) => { x.fillFraction = num(e.target.value, 1); } }))]) : null,
         check(t('placeholderMark'), x.placeholder, (v) => { x.placeholder = v; }),
@@ -290,12 +310,27 @@ export async function renderSettings(view, ctx) {
   function panels() {
     const box = h('div');
     const hidden = new Set(S.panels.hidden || []), mand = new Set(S.panels.mandatory || []);
-    for (const s of SECTIONS) {
-      box.appendChild(h('div.sect-title', `${s.id} · ${s[getLang()] || s.de}`));
-      for (const p of PANELS.filter((x) => x.section === s.id)) {
-        box.appendChild(h('div.frow.c3', { style: { marginBottom: '2px' } }, [h('div', [tt(p), ' ', p.always ? h('span.tag.calc', 'fix') : null, p.chOnly ? h('span.tag', 'CH') : null]), p.always ? h('span') : check(t('set_hidden'), hidden.has(p.key), (v) => { if (v) hidden.add(p.key); else hidden.delete(p.key); S.panels.hidden = [...hidden]; }), p.always ? h('span') : check(t('set_mandatory'), mand.has(p.key), (v) => { if (v) mand.add(p.key); else mand.delete(p.key); S.panels.mandatory = [...mand]; })]));
+    /** Kompakte Tabelle je Abschnitt: Nr. (wie im Briefing, ausgeblendete ohne Nummer) · Panel · ausblenden · Pflicht. */
+    const draw = () => {
+      clear(box);
+      const vis = visiblePanels(S);
+      for (const s of SECTIONS) {
+        const rows = PANELS.filter((x) => x.section === s.id).map((p) => {
+          const on = !hidden.has(p.key);
+          return h('tr' + (on ? '' : '.off'), [
+            h('td.no', on ? h('span.pno', panelNo(p, vis)) : h('span.muted', '–')),
+            h('td.nm', [tt(p), p.always ? h('span.tag.calc', 'fix') : null, p.chOnly ? h('span.tag', 'CH') : null, p.grade === 'auto' ? h('span.tag.auto', 'AUTO') : null]),
+            h('td.ck', p.always ? '' : h('input', { type: 'checkbox', checked: hidden.has(p.key), title: t('set_hidden'), onchange: (e) => { if (e.target.checked) hidden.add(p.key); else hidden.delete(p.key); S.panels.hidden = [...hidden]; markDirty(); draw(); } })),
+            h('td.ck', p.always ? '' : h('input', { type: 'checkbox', checked: mand.has(p.key), title: t('set_mandatory'), onchange: (e) => { if (e.target.checked) mand.add(p.key); else mand.delete(p.key); S.panels.mandatory = [...mand]; markDirty(); } })),
+          ]);
+        });
+        box.appendChild(h('table.panels-tbl', [
+          h('thead', h('tr', [h('th.no', t('set_panelNo')), h('th.nm', `${s.id} · ${s[getLang()] || s.de}`), h('th.ck', t('set_hidden')), h('th.ck', t('set_mandatory'))])),
+          h('tbody', rows),
+        ]));
       }
-    }
+    };
+    draw();
     return h('div.card', h('div.card-body', [h('div.note', t('set_mandatoryHint')), box]));
   }
 

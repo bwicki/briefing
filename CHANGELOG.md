@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.10.1 — 2026-10-05 · Hüllenbild · Muster bei Gashüllen · Panel-Tabelle
+
+* Einstellungen → Ballone: **Bild der Hülle** je Heissluftballon und Gas-Hülle («Bild wählen …»,
+  wird auf 192 px verkleinert als JPEG in den Stammdaten gespeichert, «Bild entfernen»). Das Bild
+  erscheint **2 × 2 cm** im Titel des Panels A1 «Stammdaten» (Erarbeitung, Briefingsicht, Druck)
+  und links oben im **Pax-Info-/Sicherheitsblatt**. Neue Briefings tragen das Bild als
+  Schnappschuss; ältere Briefings zeigen das aktuelle Bild aus den Stammdaten.
+* Gas-Hüllen zeigen in der Kartenüberschrift das **Muster nach der Kennung**
+  («HB-QPJ · NL/STU-1000»), wie die Heissluftballone.
+* Einstellungen → Panels & Pflicht: **kompakte Tabelle je Abschnitt** mit **Panel-Nummer wie im
+  Briefing** (A1, A2 … D3), Kennzeichen fix/CH/AUTO und Spalten «ausblenden» / «Pflicht» als
+  Häkchen; ausgeblendete Panels erhalten keine Nummer, die übrigen rücken nach.
+
 ## 0.10.0 — 2026-10-05 · ICAO-Flugplan aus dem Briefing · Wetterstationen · SondeHub
 
 * Panel **C «Flugplan»**: Schalter «Flugplan erstellen?» (Standard ja bei NVFR, Grenzüberschreitung

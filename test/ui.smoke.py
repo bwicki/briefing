@@ -175,6 +175,22 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.click('#menuBtn'); pg.wait_for_timeout(300)
         assert pg.query_selector('#menu details.submenu summary:has-text("JSON")') is not None, 'JSON-Untermenü im Hamburger'
         pg.click('#menuBtn'); pg.wait_for_timeout(200)
+        # 0.10.1: Muster auch bei der Gashülle, Bild der Hülle, Panel-Tabelle mit Nummern
+        assert 'HB-QPJ · NL/STU-1000' in pg.inner_text('.settings'), 'Muster bei der Gashülle'
+        pg.set_input_files('.settings .item-box input[type=file]', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'img', 'wicki-logo.png')); pg.wait_for_timeout(600)
+        assert pg.query_selector('.settings img.bimg') is not None, 'Hüllenbild in den Einstellungen'
+        pg.fill('.settings .item-box input[type=text]', 'HB-QWZ'); pg.wait_for_timeout(200)
+        pg.click('#tools button.save'); pg.wait_for_timeout(600)
+        pg.goto(BASE + '#/settings?panels'); pg.wait_for_timeout(600)
+        assert pg.query_selector('table.panels-tbl') is not None and 'A1' in pg.inner_text('table.panels-tbl .pno'), 'Panel-Tabelle mit Nummern'
+        pg.screenshot(path=f'{OUT}/{name}_13_panels.png', full_page=True)
+        pg.goto(BASE + f'#/pax/{bid}'); pg.wait_for_timeout(900)
+        assert pg.query_selector('.paxsheet img.bimg') is not None, 'Hüllenbild im Pax-Blatt'
+        pg.goto(BASE + f'#/v/{bid}'); pg.wait_for_timeout(900)
+        assert pg.query_selector('.brief tr.row-A-core img.bimg') is not None, 'Hüllenbild in der Briefingsicht'
+        pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1500)
+        assert pg.query_selector('#panel-A\\.core .panel-head img.bimg') is not None, 'Hüllenbild im Stammdaten-Titel'
+        pg.screenshot(path=f'{OUT}/{name}_14_core_img.png')
         # Liste erneut
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
         pg.screenshot(path=f'{OUT}/{name}_11_list.png')

@@ -5,7 +5,7 @@ import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunRows, twilightClass } from './parts.js';
-import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel } from '../model.js';
+import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage } from '../model.js';
 import { fplView } from './fplpanel.js';
 import { docsLine } from '../stamm.js';
 import { placeLine } from './place.js';
@@ -120,7 +120,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       }
       if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b', t('ai') + ': '), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
-      tbl.appendChild(h('tr', { class: 'row-' + p.key.replace('.', '-') }, [h('th', [h('span.pno', panelNo(p, panels)), ' ', tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null]), cell]));
+      tbl.appendChild(h('tr', { class: 'row-' + p.key.replace('.', '-') }, [h('th', [h('span.pno', panelNo(p, panels)), ' ', tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, p.key === 'A.core' && balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null]), cell]));
     }
     brief.appendChild(tbl);
   }

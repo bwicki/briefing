@@ -312,6 +312,8 @@ details.exp summary{cursor:pointer;font-weight:600;padding:8px 0;}
 .brief .bh h1{margin:0;font-size:17px;color:#111;}
 .brief .bh .r{text-align:right;font-size:11.5px;color:#444;}
 .brief .bh img{height:30px;margin-left:8px;}
+.brief .bh .l{display:flex;align-items:flex-start;gap:10px;}
+.brief .bh img.bimg{height:2cm;width:2cm;margin:0;}
 .brief .bs{background:#1f2937;color:#fff;padding:3px 8px;font-weight:600;font-size:12px;margin:12px 0 6px;break-after:avoid;}
 .brief table.bp{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:4px;}
 .brief table.bp td{min-width:0;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto;}
@@ -618,3 +620,20 @@ table.auto.acts{width:auto;min-width:420px}
 .sonde-win .sonde-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .sonde-win .gfx svg{max-width:100%;height:auto}
 table.auto.obs-tbl td.bad{color:var(--red,#c0392b);font-weight:600}
+
+/* 0.10.1: Bild der Hülle (2 × 2 cm) — Stammdaten-Titel (Erarbeitung + Ansicht), Pax-Blatt, Einstellungen */
+img.bimg,.bimg.empty{width:2cm;height:2cm;object-fit:contain;border-radius:6px;border:1px solid var(--line-soft);background:#fff;flex:0 0 auto}
+.bimg.empty{display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:11px}
+.panel-head img.bimg{margin-left:4px}
+.brief table.bp th img.bimg{display:block;margin-top:4px}
+.imgfield{display:flex;align-items:flex-start;gap:10px}
+.imgfield .col{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+/* 0.10.1: Panels & Pflicht als kompakte Tabelle */
+table.panels-tbl{width:100%;border-collapse:collapse;margin-bottom:10px;font-size:12.5px}
+table.panels-tbl th{text-align:left;font-size:11px;color:var(--text-dim);font-weight:600;padding:4px 6px;border-bottom:1px solid var(--line-soft);background:var(--panel-2)}
+table.panels-tbl td{padding:3px 6px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+table.panels-tbl .no{width:44px;white-space:nowrap}
+table.panels-tbl .ck{width:88px;text-align:center}
+table.panels-tbl td.nm .tag{margin-left:6px}
+table.panels-tbl tr.off td.nm{color:var(--text-dim)}
+table.panels-tbl input[type=checkbox]{width:16px;height:16px;margin:0;vertical-align:middle}

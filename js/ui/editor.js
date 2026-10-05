@@ -6,7 +6,7 @@ import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding } from '../model.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock, askAi } from './autopanels.js';
@@ -136,6 +136,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const srcUrl = sourceUrlOf(p, d);
     const head = h('div.panel-head', [
       h('div.ttl', [h('span.pno', panelNo(p, panels)), ' ', tt(p)]),
+      p.key === 'A.core' && balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '', title: b.balloon.label || '' }) : null,
       mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
       p.grade === 'auto' ? tag('auto', 'AUTO') : p.grade === 'half' ? tag('half', 'LINK + EINFÜGEN') : p.grade === 'calc' ? tag('calc', 'CALC') : null,
       srcUrl ? h('a.srclink', { href: srcUrl, target: '_blank', rel: 'noopener', title: srcUrl }, shortUrl(srcUrl)) : null,

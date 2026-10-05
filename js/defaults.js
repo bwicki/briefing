@@ -156,7 +156,7 @@ export function resolveBalloon(settings, sel) {
       personWeight: b.gasDefaults.personWeight, maxPersons: bas.maxPersons,
       ballastUnitKg: bas.ballastUnitKg, reserveUnits: bas.reserveUnits,
       rigMin: b.gasDefaults.rigMin, fillMin: b.gasDefaults.fillMin,
-      trackers: env.trackers || [], colour: env.colour || '',
+      trackers: env.trackers || [], colour: env.colour || '', image: env.image || '',
     };
   }
   const h = b.hab.find((x) => x.id === sel.id) || b.hab[0];

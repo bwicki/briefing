@@ -5,7 +5,7 @@ import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { textarea, field, check } from './widgets.js';
 import { placeLine, mapsUrl } from './place.js';
-import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel } from '../model.js';
+import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel, balloonImage } from '../model.js';
 import { qrSvg } from './access.js';
 import { hhmm, fmtDate, fmtDateTime, fmtDur } from '../calc/time.js';
 import { goNoGo } from '../calc/gonogo.js';
@@ -168,7 +168,7 @@ export function paxSheet(b, ctx) {
   const pic = S.persons.find((p) => p.id === b.persons.picId);
   const items = (S.paxCardItems?.[lang] || S.paxCardItems?.de || []);
   const card = h('div.brief.paxcard', [
-    h('div.bh', [h('div', [h('h1', `${paxCardTitle(S)} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)]), h('div.r', h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }))]),
+    h('div.bh', [h('div.l', [balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null, h('div', [h('h1', `${paxCardTitle(S)} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)])]), h('div.r', h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }))]),
     h('div.bs', t('pax_meet')),
     h('div.pax-meet', [h('div.kv.pax-kv', [
       [t('meeting'), meet ? placeLine({ name: meet.name, lat: meet.lat, lon: meet.lon }, { noElev: true }) : (b.schedule.meetingName || '–')],

@@ -288,12 +288,14 @@ Einstellungen kam; «Speichern» füllt sich erst, wenn etwas geändert wurde.
 
 Allgemein (Sprache, Thema, Name im Protokoll, Expertenmodus), Ballone (Heissluft-
 Profile mit Tanks; Gas: Hüllen und Körbe getrennt; Standardkombination; je Ballon
-Tracker-Links für die Passagierkarte und die Hüllenfarbe für den Flugplan), Personen,
+Tracker-Links für die Passagierkarte, die Hüllenfarbe für den Flugplan und ein Bild der
+Hülle, das 2 × 2 cm im Titel des Stammdaten-Panels und im Pax-Blatt erscheint), Personen,
 Lufttransportführer, Startplätze & Treffpunkte, Fahrtabsicht-Startwerte, Zeitplan,
 Meteo & Auto-Panels (Ampel-Grenzen, Trajektorien-Dauer, Profilhöhe, METAR-Umkreis,
 NOTAM-Radius, KI-Modell, Karten für «Allgemeine Lage»)
 (Anhänger-Faktor, Zuschlag, Puffer, Bergezeit), Sonne/RAC 4-4 (PDF-Upload, siehe
-unten), Übergangshöhen, Go/No-Go-Kriterien (Ampel ab Phase 3), Panels & Pflicht,
+unten), Übergangshöhen, Go/No-Go-Kriterien (Ampel ab Phase 3), Panels & Pflicht
+(Tabelle je Abschnitt mit der Panel-Nummer wie im Briefing, ausblenden/Pflicht),
 Freigabe-Links, Benutzer & Freigaben (Stamm-Freigaben; Supermaster: Benutzer
 anlegen, Kennwort setzen, Freischaltungen, Stamm ansehen), Statistik (Supermaster),
 Zugänge (API-Schlüssel und Logins, zentral, verschlüsselt; nur der Supermaster

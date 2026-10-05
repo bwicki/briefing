@@ -61,3 +61,8 @@
 /* Dämmerungs-Schattierung auch im Druck */
 table.inner.sched-view tr.night td{background:#e3e7f2 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 table.inner.sched-view tr.dusk td{background:#f1f3f9 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* 0.10.1: Hüllenbild 2 × 2 cm auch im Druck */
+img.bimg{width:2cm;height:2cm;object-fit:contain;border:1px solid #ccc;border-radius:4px;background:#fff}
+.brief table.bp th img.bimg{display:block;margin-top:3px}
+.brief .bh .l{display:flex;gap:8px;align-items:flex-start}

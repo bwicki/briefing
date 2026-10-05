@@ -269,3 +269,11 @@ export function equipmentSuggest(b, sun) {
 }
 
 export const startLabel = (b) => `${hhmm(b.site.tz || 'Europe/Zurich', b.time.startMs)}`;
+
+/** Bild der Hülle: Schnappschuss im Briefing, sonst aus den aktuellen Stammdaten (ältere Briefings). */
+export function balloonImage(b, settings) {
+  if (b?.balloon?.image) return b.balloon.image;
+  const B = settings?.balloons; if (!B || !b?.balloon) return '';
+  const x = b.balloon.type === 'gas' ? (B.envelopes || []).find((e) => e.id === b.balloon.envelopeId) : (B.hab || []).find((e) => e.id === b.balloon.id);
+  return x?.image || '';
+}
