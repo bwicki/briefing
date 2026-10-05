@@ -1,5 +1,5 @@
 /* Fahrtbriefing — Einstellungen (Stammdaten, Regeln, Zugänge, Experte). */
-import { h, clear, toast, deepCopy, num, dialog, uid, shrinkImage } from '../util.js';
+import { h, clear, toast, deepCopy, num, dialog, uid, shrinkImageSquare } from '../util.js';
 import { t, tt, getLang, setLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, listHead, fieldAdd, docsEditor } from './widgets.js';
@@ -37,12 +37,12 @@ export async function renderSettings(view, ctx) {
   }
   const numField = (obj, key, label, step = 1, cls) => field(label, input('number', obj[key] ?? '', { step, oninput: (e) => { obj[key] = num(e.target.value, null); } }), cls);
   const txtField = (obj, key, label, cls) => field(label, input('text', obj[key] ?? '', { oninput: (e) => { obj[key] = e.target.value; } }), cls);
-  /** Bild der Hülle: Datei wählen → quadratisch auf 192 px verkleinert als JPEG-Daten-URL im Objekt (x.image). */
+  /** Bild der Hülle: Datei wählen → quadratischer Mittenausschnitt, 192 px, JPEG-Daten-URL im Objekt (x.image). */
   const imageField = (x) => {
     const box = h('div.imgfield');
     const draw = () => {
       clear(box);
-      const file = h('input', { type: 'file', accept: 'image/*', style: { display: 'none' }, onchange: async (e) => { const f = e.target.files?.[0]; if (!f) return; try { x.image = await shrinkImage(f, 192); draw(); markDirty(); } catch { toast(t('b_imageErr')); } } });
+      const file = h('input', { type: 'file', accept: 'image/*', style: { display: 'none' }, onchange: async (e) => { const f = e.target.files?.[0]; if (!f) return; try { x.image = await shrinkImageSquare(f, 192); draw(); markDirty(); } catch { toast(t('b_imageErr')); } } });
       box.append(
         x.image ? h('img.bimg', { src: x.image, alt: '' }) : h('div.bimg.empty', '—'),
         h('div.col', [
@@ -208,9 +208,12 @@ export async function renderSettings(view, ctx) {
     return h('div', [
       h('div.card', [h('div.card-head', h('div.section-title', t('set_fpl'))), h('div.card-body', [
         h('div.note', t('set_fplHint')),
-        h('div.frow.c4', [tof('commercial'), tof('private'), txtField(F, 'equip10a', t('fpl_f_equip10a')), txtField(F, 'equip10b', t('fpl_f_equip10b'))]),
+        h('div.frow.c4', [tof('commercial'), tof('private'), tof('training'), tof('exam')]),
+        h('div.frow.c4', [txtField(F, 'equip10a', t('fpl_f_equip10a')), txtField(F, 'equip10b', t('fpl_f_equip10b'))]),
         h('div.frow.c4', [numField(F, 'levelFromFt', t('set_fplLevelFrom'), 500), txtField(F, 'satphone', t('set_fplSatphone')), txtField(F, 'colour', t('set_fplColour')), field(t('set_fplPicOrder'), select([{ value: 'last-first', label: 'WICKI BALTHASAR' }, { value: 'first-last', label: 'BALTHASAR WICKI' }], F.picNameOrder || 'last-first', { onchange: (e) => { F.picNameOrder = e.target.value; } }))]),
         h('div.frow', [txtField(F, 'rmk18', 'RMK/ ' + t('set_fplTemplate')), txtField(F, 'n19', 'N/ ' + t('set_fplTemplate'))]),
+        h('div.frow.c2', [txtField(F, 'rmkTraining', `RMK/ ${t('kind_training')}`), txtField(F, 'rmkExam', `RMK/ ${t('kind_exam')}`)]),
+        h('div.note.small', t('set_fplRmkKind')),
         h('div.note.small', t('set_fplVars')),
       ])]),
       h('div.card', [h('div.card-head', h('div.section-title', `${t('gas')}`)), h('div.card-body', h('div.frow.c4', [txtField(F.gas, 'speed15', t('fpl_f_speed15')), numField(F.gas, 'enduranceMin', t('set_fplEndurance')), txtField(F.gas, 'typ18', 'TYP/'), txtField(F.gas, 'equip10b', `${t('fpl_f_equip10b')} (${t('gas')})`)]))]),

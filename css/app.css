@@ -622,9 +622,11 @@ table.auto.acts{width:auto;min-width:420px}
 table.auto.obs-tbl td.bad{color:var(--red,#c0392b);font-weight:600}
 
 /* 0.10.1: Bild der Hülle (2 × 2 cm) — Stammdaten-Titel (Erarbeitung + Ansicht), Pax-Blatt, Einstellungen */
-img.bimg,.bimg.empty{width:2cm;height:2cm;object-fit:contain;border-radius:6px;border:1px solid var(--line-soft);background:#fff;flex:0 0 auto}
+img.bimg,.bimg.empty{width:2cm;height:2cm;object-fit:cover;border-radius:6px;border:1px solid var(--line-soft);background:#fff;flex:0 0 auto}
 .bimg.empty{display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:11px}
-.panel-head img.bimg{margin-left:4px}
+.panel-head img.bimg{margin-left:4px;width:64px;height:64px}
+.wiz .bimg-f{flex:0 0 auto}
+.wiz .bimg-f img.bimg{width:64px;height:64px}
 .brief table.bp th img.bimg{display:block;margin-top:4px}
 .imgfield{display:flex;align-items:flex-start;gap:10px}
 .imgfield .col{display:flex;flex-direction:column;gap:4px;align-items:flex-start}

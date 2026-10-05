@@ -185,11 +185,14 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       clear(typeRow);
       for (const ty of ['hab', 'gas']) typeRow.appendChild(h('button.chip.lg', { type: 'button', 'aria-pressed': b.balloonSel.type === ty, onclick: () => { b.balloonSel = ty === 'gas' ? { type: 'gas', envelopeId: S.defaultEnvelope, basketId: S.defaultBasket } : { type: 'hab', id: S.defaultHab }; applyBalloon(); redraw(); } }, t(ty)));
       clear(combo);
+      const img = (x) => x?.image ? h('div.f.bimg-f', [h('label', '\u00a0'), h('img.bimg', { src: x.image, alt: x.id || '' })]) : null;
       if (b.balloonSel.type === 'gas') {
-        combo.appendChild(field(t('envelope'), select(S.envelopes.map((e) => ({ value: e.id, label: stammLabel(e, `${e.reg || e.id} · ${e.model} ${e.volume} m³`) })), b.balloonSel.envelopeId, { onchange: (e) => { b.balloonSel.envelopeId = e.target.value; applyBalloon(); } })));
+        combo.appendChild(field(t('envelope'), select(S.envelopes.map((e) => ({ value: e.id, label: stammLabel(e, `${e.reg || e.id} · ${e.model} ${e.volume} m³`) })), b.balloonSel.envelopeId, { onchange: (e) => { b.balloonSel.envelopeId = e.target.value; applyBalloon(); redraw(); } })));
         combo.appendChild(field(t('basket'), select(S.baskets.map((k) => ({ value: k.id, label: stammLabel(k, `${k.name} · ${k.mass} kg · max ${k.maxPersons} P.`) })), b.balloonSel.basketId, { onchange: (e) => { b.balloonSel.basketId = e.target.value; applyBalloon(); } })));
+        { const im = img(S.envelopes.find((e) => e.id === b.balloonSel.envelopeId)); if (im) combo.appendChild(im); }
       } else {
-        combo.appendChild(field(t('registration'), select(S.hab.map((x) => ({ value: x.id, label: stammLabel(x, `${x.reg || x.id} · ${x.model}`) })), b.balloonSel.id, { onchange: (e) => { b.balloonSel.id = e.target.value; applyBalloon(); } })));
+        combo.appendChild(field(t('registration'), select(S.hab.map((x) => ({ value: x.id, label: stammLabel(x, `${x.reg || x.id} · ${x.model}`) })), b.balloonSel.id, { onchange: (e) => { b.balloonSel.id = e.target.value; applyBalloon(); redraw(); } })));
+        { const im = img(S.hab.find((x) => x.id === b.balloonSel.id)); if (im) combo.appendChild(im); }
       }
     };
     function applyBalloon() {

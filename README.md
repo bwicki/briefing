@@ -182,8 +182,8 @@ kurz danach).
 |---|---|---|
 | Allgemeine Lage | Schnappschüsse amtlicher Karten (DWD-Bodenanalysen, ECMWF Bodendruck/Wind 850 hPa zur Startzeit und +24 h; Liste in Einstellungen → Meteo) **und** die Grosswetteranalyse des nationalen Dienstes als Text für das Land des Startorts/Landeraums (DWD Synoptische Übersicht Kurz-/Mittelfrist und ORF/GeoSphere Austria geprüft; MeteoSchweiz und Aeronautica Militare liefern nur per JavaScript → als Link; weitere Seiten mit CSS-Selektor konfigurierbar, Haken «abrufen») | DWD, ECMWF Open Charts (CC-BY-4.0), nationale Dienste; über Worker (`/api/wx/snapshot`, `/api/wx/wxtext`) |
 | METAR/TAF | alle Plätze im Umkreis (direkt im Panel einstellbar, Standard 150 km); Richtungspfeil vom Startort zum Platz; Schlechtwetter rot (Wind/Böen ≥ 14 kt, Sicht < 5 km, Niederschlag/Nebel/Gewitter, Basis ≤ 1500 ft, CB/TCU); je Platz **Rohmeldung und Klartext nebeneinander** (DE/EN: Wind, Sicht, Wetter, Wolken, T/Td, QNH, Trend; TAF mit BECMG/TEMPO/PROB/FM-Gruppen und Gültigkeit) | aviationweather.gov über Worker; Rückfall GaforCast-Kopie |
-| Temps | Stüve-Diagramm des Modellprofils zur Startzeit (T, Td, Feuchteschattierung blau ab RH 85 %, **Wolkenschichten rötlich ab RH 95 %**, Windfahnen, Grenzschicht, 0 °C), Inversionen; dazu die **letzte Radiosondierung** der nächsten Station (Payerne u. a.) als zweites Stüve mit Tabelle; **nächste Live-Radiosonde aus SondeHub** (Amateurempfang, letzte 12 h, Umkreis einstellbar) als drittes Stüve | Open-Meteo Druckflächen; Radiosonde über Worker `/api/wx/sounding` (Archiv University of Wyoming); SondeHub über `/api/wx/sondes`, `/api/wx/sonde`) |
-| Beobachtungen (Wetterstationen) | **Wetterstationen im Umkreis** des Startorts (Standard 50 km, im Panel einstellbar): SwissMetNet (MeteoSchweiz via api.existenz.ch), DWD (Bright Sky), übriges Europa EUMETNET MeteoGate/E-SOH; Tabelle Pfeil · km · Zeit · Wind/Böen (rot ab 14/20 kt) · T/Td · RH · QNH · Niederschlag | über Worker (`/api/wx/stations`) |
+| Temps | Stüve-Diagramm des Modellprofils zur Startzeit (T, Td, Feuchteschattierung blau ab RH 85 %, **Wolkenschichten rötlich ab RH 95 %**, Windfahnen, Grenzschicht, 0 °C), Inversionen; dazu die **letzte Radiosondierung** der nächsten Station (Payerne u. a.) als zweites Stüve mit Tabelle; **nächste Live-Radiosonde aus SondeHub** (Amateurempfang, letzte 12 h, Umkreis einstellbar, Standard 250 km) als drittes Stüve | Open-Meteo Druckflächen; Radiosonde über Worker `/api/wx/sounding` (Archiv University of Wyoming); SondeHub über `/api/wx/sondes`, `/api/wx/sonde`) |
+| Beobachtungen (Wetterstationen) | **Wetterstationen im Umkreis** des Startorts (Standard 75 km, im Panel einstellbar): SwissMetNet (MeteoSchweiz via api.existenz.ch), DWD (Bright Sky), übriges Europa EUMETNET MeteoGate/E-SOH; Tabelle Pfeil · km · Zeit · Wind/Böen (rot ab 14/20 kt) · T/Td · RH · QNH · Niederschlag | über Worker (`/api/wx/stations`) |
 | Flugwetterprognose | **DE:** DWD Flugwetterübersicht des Bereichs + GAFOR-Einstufung des Gebiets (Punkt-in-Polygon). **CH:** MeteoSchweiz-Prognose einfügen (Pflicht) | DWD-Luftsportberichte (Kopie gafor.wicki.aero) |
 | Windprognose | Windprofil Start–Landung stündlich (°/kt je Niveau), Profilgrafiken mit Höhenband-Marken | Open-Meteo |
 | Ballonprognose | **DE:** DWD-Gebietsvorhersage Ballonsport (Tabellen); immer: eigene Stundentabelle mit Ampel fahrbar/grenzwertig/nein und Begründung | DWD (Kopie), Open-Meteo |
@@ -262,7 +262,9 @@ Flugfläche aus der Maximalhöhe, Route `DRIFTING … FROM … TO … VIA …`, 
 Feld 18 (DEP/ DEST/ mit Kurzkoordinaten, DOF/, **EET/ je FIR aus der Luftraumanalyse**, TYP/,
 ALTN/UNKNOWN, RMK/NVFR CREW CONTACT …) und Feld 19 (Autonomie, Personen, Notfunk,
 Überlebensausrüstung, Westen, Rettungsinseln, Farbe aus dem Ballon, Bemerkungen, PIC). Jedes
-Feld ist überschreibbar; die ICAO-Nachricht kann kopiert, als .txt oder .xml geladen werden.
+Feld ist überschreibbar; die ICAO-Nachricht (Format des skybriefing-Imports: «Flightplan and
+Briefing → Flight Plan import», Text einfügen → Import) kann kopiert oder als .txt geladen werden.
+DEP/ und DEST/ behalten das Kantonskürzel als eigenes Wort («BUELACH ZH»).
 Standardwerte unter Einstellungen → Flugplan. Trajektorien und Luftraum vorher laden, damit
 Route und EET/ gefüllt sind.
 
@@ -289,7 +291,8 @@ Einstellungen kam; «Speichern» füllt sich erst, wenn etwas geändert wurde.
 Allgemein (Sprache, Thema, Name im Protokoll, Expertenmodus), Ballone (Heissluft-
 Profile mit Tanks; Gas: Hüllen und Körbe getrennt; Standardkombination; je Ballon
 Tracker-Links für die Passagierkarte, die Hüllenfarbe für den Flugplan und ein Bild der
-Hülle, das 2 × 2 cm im Titel des Stammdaten-Panels und im Pax-Blatt erscheint), Personen,
+Hülle – quadratischer Mittenausschnitt – das im Titel des Stammdaten-Panels, im Pax-Blatt und
+im Wizard erscheint, im Druck 2 × 2 cm), Personen,
 Lufttransportführer, Startplätze & Treffpunkte, Fahrtabsicht-Startwerte, Zeitplan,
 Meteo & Auto-Panels (Ampel-Grenzen, Trajektorien-Dauer, Profilhöhe, METAR-Umkreis,
 NOTAM-Radius, KI-Modell, Karten für «Allgemeine Lage»)

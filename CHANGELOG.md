@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.10.2 — 2026-10-05 · skybriefing-Importformat · Rückmeldungen 0.10.0/0.10.1
+
+* **Flugplan:** ICAO-Nachricht exakt im Format des skybriefing-Imports («Flightplan and Briefing →
+  Flight Plan import», Text einfügen → Import): Felder 7–18 je Zeile mit «-», Feld 19 als Zeile
+  `-E/ P/ R/ S/ J/ D/`, danach `A/`, `N/`, `C/` je eigene Zeile, Klammer zu am Schluss (wie die
+  skybriefing-Beispiele). Der XML-Export entfällt (skybriefing nimmt nur ICAO-Text).
+* Nach AIP Schweiz ENR 1.10 (Flight Planning): **RMK/TRAINING FLT** bei Ausbildung, **RMK/TRAINING FLT
+  SKILL TEST** bei Examination (Texte in den Einstellungen → Flugplan anpassbar; NVFR bleibt davor);
+  **CODE/** mit der 24-bit-Adresse, wenn beim Ballon ein vollständiger 6-stelliger Hexcode hinterlegt
+  ist (Reihenfolge TYP/ CODE/ ALTN/ RMK/); Hinweis im Panel und in der Briefingsicht zum **Schliessen
+  des Flugplans** nach der Landung (ARO 0800 437 837) sowie zu DLA/CHG/CNL.
+* **DEP/ DEST/ behalten das Kantonskürzel** als eigenes Wort («BUELACH ZH», «OBERLUNKHOFEN AG»).
+* **Flugart (Feld 8) je Fahrttyp** in den Einstellungen → Flugplan auch für **Ausbildung** und
+  **Examination** (Standard G; Examination ist weiterhin ein eigener Fahrttyp neben privat/gewerblich).
+* **Standardradien:** Beobachtungen 75 km (bisher 50), SondeHub-Sonden 250 km (bisher 150); gespeicherte
+  alte Standardwerte werden beim Laden angehoben, abweichende eigene Werte bleiben.
+* **Hüllenbild:** quadratischer **Mittenausschnitt ohne Verzerrung** (192 px); Anzeige 64 px im Titel
+  der Erarbeitung und **im Wizard Schritt 1 neben der Ballonwahl**, 2 × 2 cm in Briefingsicht, Druck
+  und Pax-Blatt.
+
 ## 0.10.1 — 2026-10-05 · Hüllenbild · Muster bei Gashüllen · Panel-Tabelle
 
 * Einstellungen → Ballone: **Bild der Hülle** je Heissluftballon und Gas-Hülle («Bild wählen …»,

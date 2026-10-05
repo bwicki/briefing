@@ -35,6 +35,12 @@ export function firCode(name) {
 export function fplName(s) {
   return (s || '').toUpperCase().replace(/Ä/g, 'AE').replace(/Ö/g, 'OE').replace(/Ü/g, 'UE').replace(/ß/g, 'SS').replace(/É|È|Ê/g, 'E').replace(/À|Â/g, 'A').replace(/[^A-Z0-9]/g, '').slice(0, 30);
 }
+/** Ortsname für DEP/ DEST/: Kantonskürzel bleibt als eigenes Wort («Bülach ZH» → BUELACH ZH). */
+export function fplPlace(s) {
+  const m = /^(.*?)\s+([A-Z]{2})$/.exec((s || '').trim());
+  if (m) return `${fplName(m[1])} ${m[2]}`.trim();
+  return fplName(s);
+}
 /** Name «Balthasar Wicki» → «WICKI BALTHASAR» (Nachname zuerst). */
 export function fplPerson(name, order = 'last-first') {
   const parts = (name || '').trim().toUpperCase().replace(/Ä/g, 'AE').replace(/Ö/g, 'OE').replace(/Ü/g, 'UE').replace(/ß/g, 'SS').split(/\s+/).filter(Boolean);
@@ -104,11 +110,10 @@ export function buildFpl(b, S, opts = {}) {
   const picPhone = fplPhone(pic.phone), sat = fplPhone(F.satphone);
   const vars = { picPhone, satphone: sat, pic: fplPerson(pic.name || b.persons?.pic, F.picNameOrder) };
   const tpl = (s) => (s || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '').replace(/\s+/g, ' ').trim();
-  const stripCanton = (n) => (n || '').replace(/\s+[A-Z]{2}$/, '');   // «Oberlunkhofen AG» → OBERLUNKHOFEN
-  const dep = { name: fplName(stripCanton(b.site?.name)), coord: b.site?.lat != null ? icao(b.site.lat, b.site.lon) : '' };
+  const dep = { name: fplPlace(b.site?.name), coord: b.site?.lat != null ? icao(b.site.lat, b.site.lon) : '' };
   const destPt = b.landing?.lat != null ? b.landing : (mid?.end || null);
   const destCoord = destPt ? icao(destPt.lat, destPt.lon) : '';
-  const destName = fplName(stripCanton(b.landing?.name || ''));
+  const destName = fplPlace(b.landing?.name || '');
   const dest = { name: destName && destName !== destCoord ? destName : '', coord: destCoord };
   const eet = eetFromFirs(firs, traj?.startMs ?? startMs);
   const kind = b.flight?.kind || 'private';
@@ -120,7 +125,11 @@ export function buildFpl(b, S, opts = {}) {
   // Standardvorlagen werden aus den vorhandenen Nummern gebaut (kein «AND» ins Leere); eigene Vorlagen roh ersetzt
   const rmkText = isDefault(F.rmk18, 'CREW CONTACT {picPhone} AND {satphone}') ? (contacts.length ? `CREW CONTACT ${contacts.join(' AND ')}` : '') : tpl(F.rmk18);
   const n19Text = isDefault(F.n19, 'GSM PIC {picPhone} AND SATPHONE {satphone}') ? [picPhone ? `GSM PIC ${picPhone}` : '', sat ? `SATPHONE ${sat}` : ''].filter(Boolean).join(' AND ') : tpl(F.n19);
-  const rmkParts = [nvfr ? 'NVFR' : '', rmkText].filter(Boolean);
+  // AIP CH ENR 1.10: RMK/ muss Ausbildungsflüge (TRAINING FLT) und VFR-Nachtflüge (NVFR) nennen
+  const rmkKind = kind === 'training' ? (F.rmkTraining ?? 'TRAINING FLT') : kind === 'exam' ? (F.rmkExam ?? 'TRAINING FLT SKILL TEST') : '';
+  const rmkParts = [nvfr ? 'NVFR' : '', rmkKind, rmkText].filter(Boolean);
+  const hex = String(b.balloon?.hex || '').trim().toUpperCase();
+  const code18 = /^[0-9A-F]{6}$/.test(hex) ? hex : '';   // CODE/ 24-bit-Adresse (6 Hex) nur, wenn vollständig hinterlegt
   return {
     v: 1,
     id7: (b.balloon?.reg || b.balloon?.id || '').replace(/[^A-Z0-9]/gi, '').toUpperCase(),
@@ -132,7 +141,7 @@ export function buildFpl(b, S, opts = {}) {
     drift15: mid ? driftWords(mid.points) : '', via15: '',
     dest16: 'ZZZZ', eet16: hhmm4(dur), altn16: 'ZZZZ', altn16b: type === 'gas' ? 'ZZZZ' : '',
     dep18: dep, dest18: dest, dof18: dof(startMs), eet18: eet.map((e) => ({ ...e, text: `${e.code}${hhmm4(e.min)}` })),
-    typ18: T.typ18 || (type === 'gas' ? 'GAS BALLOON' : 'HOT AIR BALLOON'), altn18: 'UNKNOWN' + (type === 'gas' ? ' UNKNOWN' : ''), rmk18: rmkParts.join(' '),
+    typ18: T.typ18 || (type === 'gas' ? 'GAS BALLOON' : 'HOT AIR BALLOON'), code18, altn18: 'UNKNOWN' + (type === 'gas' ? ' UNKNOWN' : ''), rmk18: rmkParts.join(' '),
     e19: hhmm4(enduranceMin), p19: 1 + (b.persons?.pax?.length || 0),
     r19: { uhf: !!F.r19?.uhf, vhf: F.r19?.vhf !== false, elba: !!F.r19?.elba },
     s19: { polar: !!F.s19?.polar, desert: !!F.s19?.desert, maritime: !!F.s19?.maritime, jungle: !!F.s19?.jungle },
@@ -161,6 +170,7 @@ export function otherInfo(d) {
   if (d.dof18) out.push(`DOF/${d.dof18}`);
   if (d.eet18?.length) out.push(`EET/${d.eet18.map((e) => e.text).join(' ')}`);
   if (d.typ18) out.push(`TYP/${d.typ18}`);
+  if (d.code18) out.push(`CODE/${d.code18}`);
   if (d.altn18) out.push(`ALTN/${d.altn18}`);
   if (d.rmk18) out.push(`RMK/${d.rmk18}`);
   return out.join(' ');
@@ -178,8 +188,24 @@ export function supplementary(d) {
   if (d.c19) out.push(`C/${d.c19}`);
   return out.join(' ');
 }
-/** ICAO-Nachricht (Doc 4444), Feld 19 als zusätzliche Zeile. */
+/** Feld 19 für die Nachricht: E/ P/ R/ S/ J/ D/ auf einer Zeile, A/ N/ C/ je eigene Zeile (skybriefing-Importbeispiele). */
+export function supplementaryLines(d) {
+  const flags = (o, keys) => keys.filter((k) => o?.[k]).map((k) => k[0].toUpperCase()).join('');
+  const first = [`E/${d.e19}`, `P/${d.p19}`];
+  const r = flags(d.r19, ['uhf', 'vhf', 'elba']); if (r) first.push(`R/${r}`);
+  const s = flags(d.s19, ['polar', 'desert', 'maritime', 'jungle']); if (s) first.push(`S/${s}`);
+  const j = flags(d.j19, ['light', 'fluores', 'uhf', 'vhf']); if (j) first.push(`J/${j}`);
+  if (d.d19?.number) first.push(`D/${d.d19.number} ${d.d19.capacity || ''} ${d.d19.cover ? 'C' : ''} ${d.d19.colour || ''}`.replace(/\s+/g, ' ').trim());
+  const lines = [first.join(' ')];
+  if (d.a19) lines.push(`A/${d.a19}`);
+  if (d.n19) lines.push(`N/${d.n19}`);
+  if (d.c19) lines.push(`C/${d.c19}`);
+  return lines;
+}
+/** ICAO-Nachricht (Doc 4444) im Format des skybriefing-Imports («Flight Plan import», Textfeld):
+ *  Felder 7–18 je Zeile mit führendem «-», Feld 19 als Zeile «-E/ P/ R/ S/ J/ D/», danach A/ N/ C/ je Zeile, Klammer zu. */
 export function fplMessage(d) {
+  const sup = supplementaryLines(d);
   const lines = [
     `(FPL-${d.id7}-${d.rules8}${d.typeOfFlight8}`,
     `-${d.number9 || ''}${d.type9}/${d.wake9}-${d.equip10a}/${d.equip10b}`,
@@ -187,8 +213,9 @@ export function fplMessage(d) {
     `-${d.speed15}${d.level15} ${routeText(d)}`,
     `-${d.dest16}${d.eet16} ${[d.altn16, d.altn16b].filter(Boolean).join(' ')}`.trimEnd(),
     `-${otherInfo(d)}`,
-    `-${supplementary(d)})`,
+    `-${sup[0]}`, ...sup.slice(1),
   ];
+  lines[lines.length - 1] += ')';
   return lines.join('\n');
 }
 /** XML (einfaches, selbsterklärendes Schema; skybriefing-Import nicht verifiziert). */

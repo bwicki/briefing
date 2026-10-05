@@ -3,9 +3,8 @@
 import { h, clear, toast } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { field, input, select, check, textarea } from './widgets.js';
-import { buildFpl, fplMessage, fplXml, fplCheck, routeText, otherInfo, supplementary, hhmm4 } from '../calc/fpl.js';
+import { buildFpl, fplMessage, fplCheck, routeText, otherInfo, supplementary, hhmm4 } from '../calc/fpl.js';
 import { fplSuggested, crossesBorder, massPerf } from '../model.js';
-import { APP } from '../version.js';
 
 const FLAGS = { r19: ['uhf', 'vhf', 'elba'], s19: ['polar', 'desert', 'maritime', 'jungle'], j19: ['light', 'fluores', 'uhf', 'vhf'] };
 
@@ -36,7 +35,6 @@ export function fplPanel(b, ctx, d, onChange, readOnly) {
       readOnly ? null : h('button.btn.small' + (data ? '' : '.primary'), { type: 'button', onclick: () => { b.fpl.data = generateFpl(b, ctx); draw(); onChange(); toast(t('fpl_generated')); } }, data ? t('fpl_regenerate') : t('fpl_generate')),
       data ? h('button.btn.small', { type: 'button', onclick: () => copyText(fplMessage(data)) }, t('fpl_copy')) : null,
       data ? h('button.btn.small', { type: 'button', onclick: () => download(`FPL_${data.id7}_${data.dof18}.txt`, fplMessage(data), 'text/plain') }, t('fpl_dlTxt')) : null,
-      data ? h('button.btn.small', { type: 'button', onclick: () => download(`FPL_${data.id7}_${data.dof18}.xml`, fplXml(data, { generator: `${APP.name} ${APP.version}` }), 'application/xml') }, t('fpl_dlXml')) : null,
     ]);
     body.appendChild(tools);
     if (!data) { body.appendChild(h('div.note', t('fpl_hintGenerate'))); return; }
@@ -46,6 +44,7 @@ export function fplPanel(b, ctx, d, onChange, readOnly) {
     body.appendChild(fplForm(data, readOnly, () => { data.edited = Date.now(); draw(); onChange(); }));
     body.appendChild(h('div.fpl-msg', [h('div.lbl', t('fpl_message')), h('pre.mono', fplMessage(data))]));
     body.appendChild(h('div.note.small', t('fpl_formatNote')));
+    body.appendChild(h('div.note.small', t('fpl_closeHint')));
     body.appendChild(field(t('fpl_textHint'), textarea(d.content?.text || '', { rows: 2, readOnly, oninput: (e) => { d.content = d.content || {}; d.content.text = e.target.value; onChange(); } })));
   }
   draw();
@@ -67,7 +66,8 @@ function fplForm(d, ro, onChange) {
     h('div.frow.c2', [txt(d, 'drift15', t('fpl_f_drift15'), { ph: 'NW LATER NNW THEN NE' }), txt(d, 'via15', t('fpl_f_via15'), { ph: 'WOLFSBURG SCHWERIN', upper: false })]),
     h('div.note.small.mono', routeText(d)),
     item('18', t('fpl_i18'), txt(d.dep18, 'name', 'DEP/ ' + t('name'), { w: '200px' }), txt(d.dep18, 'coord', 'DEP/ ' + t('coords'), { w: '140px' }), txt(d.dest18, 'name', 'DEST/ ' + t('name'), { w: '200px' }), txt(d.dest18, 'coord', 'DEST/ ' + t('coords'), { w: '140px' })),
-    h('div.frow.c4', [txt(d, 'dof18', 'DOF/', { w: '100px', ph: 'YYMMDD' }), txt(d, 'typ18', 'TYP/', { w: '200px' }), txt(d, 'altn18', 'ALTN/', { w: '200px' }), field('EET/', eetRows)]),
+    h('div.frow.c4', [txt(d, 'dof18', 'DOF/', { w: '100px', ph: 'YYMMDD' }), txt(d, 'typ18', 'TYP/', { w: '200px' }), txt(d, 'code18', 'CODE/', { w: '100px', ph: '4B1234' }), txt(d, 'altn18', 'ALTN/', { w: '200px' })]),
+    h('div.frow', [field('EET/', eetRows)]),
     h('div.frow', [txt(d, 'rmk18', 'RMK/')]),
     h('div.note.small.mono', otherInfo(d)),
     item('19', t('fpl_i19'), txt(d, 'e19', 'E/ ' + t('fpl_f_e19'), { w: '100px', ph: 'HHMM' }), num(d, 'p19', 'P/ ' + t('fpl_f_p19')), flags('r19', { uhf: 'UHF', vhf: 'VHF', elba: 'ELBA' }), flags('s19', { polar: 'POLAR', desert: 'DESERT', maritime: 'MARITIME', jungle: 'JUNGLE' })),
@@ -92,5 +92,6 @@ export function fplView(b, ctx) {
       row('16', `${d.dest16} ${d.eet16} ${[d.altn16, d.altn16b].filter(Boolean).join(' ')}`), row('18', otherInfo(d)), row('19', supplementary(d)),
     ]),
     h('pre.mono.fpl-msg', fplMessage(d)),
+    h('div.small', t('fpl_closeHint')),
   ]);
 }

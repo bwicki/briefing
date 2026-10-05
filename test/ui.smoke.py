@@ -191,6 +191,10 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1500)
         assert pg.query_selector('#panel-A\\.core .panel-head img.bimg') is not None, 'Hüllenbild im Stammdaten-Titel'
         pg.screenshot(path=f'{OUT}/{name}_14_core_img.png')
+        assert 'XML' not in pg.inner_text('#panel-C\\.fpl .row-actions'), 'kein XML-Export mehr'
+        pg.goto(BASE + '#/new'); pg.wait_for_timeout(900)
+        assert pg.query_selector('.wiz img.bimg') is not None, 'Hüllenbild im Wizard Schritt 1'
+        pg.screenshot(path=f'{OUT}/{name}_15_wizard_img.png')
         # Liste erneut
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
         pg.screenshot(path=f'{OUT}/{name}_11_list.png')

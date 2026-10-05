@@ -79,7 +79,7 @@ export const DEFAULT_SETTINGS = {
   meteoDefaults: { topHpa: 500 },
   thermalLimits: { none: 0.6, weak: 1.2, moderate: 2.0, strong: 3.0, onset: 1.0 },
   docTypes: { balloon: ['Lufttüchtigkeitszeugnis (ARC)', 'Eintragungsschein', 'Lärmzeugnis', 'Versicherungsnachweis', 'Funkkonzession', 'Wägebericht'], person: ['Lizenz (BPL)', 'Medical', 'Funkzeugnis', 'Ausweis / Pass', 'Versicherung'] },
-  webcamKm: 40, obsRadiusKm: 50, sondeKm: 150,
+  webcamKm: 40, obsRadiusKm: 75, sondeKm: 250,
   airspaceCorridorKm: 5,
   airspaceTmaWarnFt: 900,
   pdiffWarn: { half: 3, neg: 4 },
@@ -125,13 +125,14 @@ export const DEFAULT_SETTINGS = {
   paxBriefingItems: ['health', 'ticket', 'gloves'],
   // Flugplan (ICAO FPL): Standardwerte je Ballontyp, Vorlagen mit {picPhone} {satphone} {pic}
   fpl: {
-    typeOfFlight: { commercial: 'N', private: 'G' },
+    typeOfFlight: { commercial: 'N', private: 'G', training: 'G', exam: 'G' },
     equip10a: 'GY', equip10b: 'E', levelFromFt: 5000, satphone: '', colour: 'WHITE', picNameOrder: 'last-first',
     gas: { speed15: 'N0025', enduranceMin: 2880, equip10a: '', equip10b: '', typ18: 'GAS BALLOON' },
     hab: { speed15: 'N0015', equip10a: '', equip10b: '', typ18: 'HOT AIR BALLOON' },
     r19: { uhf: false, vhf: true, elba: false }, s19: { polar: false, desert: false, maritime: false, jungle: false },
     j19: { light: true, fluores: false, uhf: false, vhf: false }, d19: { number: '', capacity: '', cover: false, colour: '' },
     rmk18: 'CREW CONTACT {picPhone} AND {satphone}', n19: 'GSM PIC {picPhone} AND SATPHONE {satphone}',
+    rmkTraining: 'TRAINING FLT', rmkExam: 'TRAINING FLT SKILL TEST',
   },
 };
 
@@ -180,6 +181,9 @@ export function mergeSettings(saved) {
   if (out.metarRadiusKm === 120 && out.metarCount === 4) { out.metarRadiusKm = 150; out.metarCount = 0; }
   // 0.7.1: ungeprüfte Textquellen (geosphere Wetterübersicht, meteoam Situazione, MeteoSchweiz-Seite) → geprüfte Standardliste
   if ((out.wxTexts || []).some((x) => /geosphere\.at\/de\/wetter\/wetteruebersicht|meteoam\.it\/it\/situazione|wetterbericht\.html/.test(x.url || ''))) out.wxTexts = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.wxTexts));
+  // 0.10.2: Standardradien Beobachtungen 50 → 75 km, Sonden 150 → 250 km (nur wenn noch die alten Standards gespeichert sind)
+  if (out.obsRadiusKm === 50) out.obsRadiusKm = 75;
+  if (out.sondeKm === 150) out.sondeKm = 250;
   // 0.7: Beispielballone «Heissluft NNNN m³» → Muster (Beispiel) + Transponder-Hexcode
   for (const x of out.balloons?.hab || []) {
     if (x.id === 'HB-QWZ' && /^Heissluft/.test(x.model || '')) { x.model = 'BB26E'; if (!x.hex) x.hex = '4c4b4'; }

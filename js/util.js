@@ -85,6 +85,24 @@ export function shrinkImage(blob, max = 1600, quality = 0.85) {
     img.src = url;
   });
 }
+/** Bild quadratisch aus der Mitte beschneiden (ohne Verzerrung) und auf size × size px verkleinern → JPEG-Daten-URL (Hüllenbild). */
+export function shrinkImageSquare(blob, size = 192, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth || img.width, hh = img.naturalHeight || img.height;
+      if (!w || !hh) { URL.revokeObjectURL(url); return reject(new Error('image')); }
+      const side = Math.min(w, hh), sx = Math.round((w - side) / 2), sy = Math.round((hh - side) / 2);
+      const c = document.createElement('canvas'); c.width = size; c.height = size;
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, size, size); ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+    img.src = url;
+  });
+}
 export function dataUrlToBlob(dataUrl) {
   const [head, b64] = dataUrl.split(',');
   const mime = /data:([^;]+)/.exec(head)[1];
