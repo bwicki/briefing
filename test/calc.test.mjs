@@ -18,7 +18,7 @@ import { normalizeAirspace, analyzeAirspaces, limitFt, limitText, inAirspace, di
 import { goNoGo } from '../js/calc/gonogo.js';
 import { changesSinceFinal } from '../js/calc/diff.js';
 import { resolveBalloon, mergeSettings } from '../js/defaults.js';
-import { balloonImage } from '../js/model.js';
+import { balloonImage, formatNo, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing } from '../js/model.js';
 
 let fails = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('  FAIL', msg); } else console.log('  ok  ', msg); };
@@ -326,7 +326,7 @@ ok(requirementKey({ typeKey: 'TMA', cls: 'E' }) === 'classE' && requirementKey({
   const bHab = bHabBase();
   const bEx = { ...bHabBase(), flight: { kind: 'exam', nvfr: false } };
   ok(buildFpl(bEx, S).typeOfFlight8 === 'G' && buildFpl({ ...bEx, flight: { kind: 'training', nvfr: false } }, S).typeOfFlight8 === 'G' && buildFpl(bEx, { ...S, fpl: { ...S.fpl, typeOfFlight: { exam: 'X' } } }).typeOfFlight8 === 'X', 'Flugart je Fahrttyp: Ausbildung/Examination G, in Einstellungen überschreibbar');
-  ok(buildFpl({ ...bEx, flight: { kind: 'training', nvfr: true } }, S).rmk18.startsWith('NVFR TRAINING FLT ') && buildFpl(bEx, S).rmk18.startsWith('TRAINING FLT SKILL TEST') && !buildFpl(bHab, S).rmk18.includes('TRAINING'), 'RMK/ nach AIP CH: NVFR und TRAINING FLT je Fahrttyp');
+  ok(buildFpl({ ...bEx, flight: { kind: 'training', nvfr: true } }, S).rmk18.startsWith('NVFR TRG FLT ') && buildFpl(bEx, S).rmk18.startsWith('SKILL TEST') && !buildFpl(bHab, S).rmk18.includes('TRG'), 'RMK/ nach AIP CH: NVFR, TRG FLT (Ausbildung) und SKILL TEST (Examination) getrennt');
   ok(buildFpl({ ...bHab, balloon: { type: 'hab', reg: 'HB-QWZ', hex: '4b1c2d' } }, S).code18 === '4B1C2D' && fplMessage(buildFpl({ ...bHab, balloon: { type: 'hab', reg: 'HB-QWZ', hex: '4b1c2d' } }, S)).includes('TYP/HOT AIR BALLOON CODE/4B1C2D ALTN/') && buildFpl({ ...bHab, balloon: { type: 'hab', reg: 'HB-QWZ', hex: '4c4b4' } }, S).code18 === '', 'CODE/ nur bei vollständiger 24-bit-Adresse, Reihenfolge TYP CODE ALTN');
   const dh = buildFpl(bHab, S, { fuelEnduranceMin: 190 });
   ok(dh.typeOfFlight8 === 'N' && dh.level15 === 'VFR' && dh.speed15 === 'N0015' && dh.e19 === '0310' && dh.eet16 === '0200' && dh.altn16b === '' && !dh.rmk18.startsWith('NVFR') && dh.typ18 === 'HOT AIR BALLOON', 'Heissluft gewerblich: N, VFR, N0015, Autonomie aus Treibstoff, kein 2. ALTN');
@@ -340,13 +340,37 @@ console.log('Bild der Hülle (0.10.1)');
   const S = mergeSettings({});
   S.balloons.envelopes[0].image = 'data:image/jpeg;base64,AAA';
   const gas = resolveBalloon(S, { type: 'gas', envelopeId: S.balloons.envelopes[0].id, basketId: S.balloons.baskets[0].id });
-  ok(gas.image === 'data:image/jpeg;base64,AAA' && gas.label.includes('NL/STU-1000'), 'resolveBalloon gas: Bild und Muster im Schnappschuss');
+  ok(gas.image === 'data:image/jpeg;base64,AAA' && gas.label.includes('NL-STU/1000'), 'resolveBalloon gas: Bild und Muster im Schnappschuss');
   S.balloons.hab[0].image = 'data:image/jpeg;base64,BBB';
   const hab = resolveBalloon(S, { type: 'hab', id: S.balloons.hab[0].id });
   ok(hab.image === 'data:image/jpeg;base64,BBB', 'resolveBalloon hab: Bild im Schnappschuss');
   ok(balloonImage({ balloon: { ...hab, image: 'data:x' } }, S) === 'data:x', 'balloonImage: Schnappschuss vor Stammdaten');
   ok(balloonImage({ balloon: { type: 'hab', id: hab.id } }, S) === 'data:image/jpeg;base64,BBB' && balloonImage({ balloon: { type: 'gas', envelopeId: gas.envelopeId } }, S) === 'data:image/jpeg;base64,AAA', 'balloonImage: Rückgriff auf Stammdaten (altes Briefing ohne Bild)');
   ok(balloonImage({ balloon: { type: 'hab', id: 'nope' } }, S) === '', 'balloonImage: leer ohne Bild');
+}
+
+
+console.log('Ordnungsnummer, Fortschritt, Sperre (0.11.0)');
+{
+  const S = mergeSettings({});
+  const b = newBriefing(S, Date.UTC(2026, 9, 5, 8, 0));
+  ok(formatNo(2026, 17) === '2026-017' && formatNo(2027, 123) === '2027-123', 'Ordnungsnummer JJJJ-NNN');
+  ok(briefingYear({ time: { date: '2027-01-03', startMs: Date.UTC(2026, 11, 31) } }) === 2027 && briefingYear({ time: {}, createdAt: Date.UTC(2026, 5, 1) }) === 2026, 'Jahr aus dem Fahrtdatum, sonst Erstellung');
+  const t0 = Date.UTC(2026, 9, 6, 4, 30);
+  const bh = { time: { startMs: t0 }, intent: { durationMin: 120 } }, bg = { time: { startMs: t0 }, intent: { durationMin: 1440 } };
+  ok(lockMs(bh) === t0 + 6 * 3600000 && lockMs(bg) === t0 + 26 * 3600000, 'Sperre: Start + max(6 h, Dauer + 2 h)');
+  ok(!isLocked(bh, t0 + 5 * 3600000) && isLocked(bh, t0 + 7 * 3600000) && !isLocked(bg, t0 + 20 * 3600000), 'gesperrt erst nach Fahrtende');
+  b.no = '2026-017'; b.balloon.reg = 'HB-QWZ'; b.time.date = '2026-10-06'; b.time.startMs = t0; b.site.name = 'Oberlunkhofen AG'; b.site.tz = 'Europe/Zurich'; b.updatedAt = Date.UTC(2026, 9, 5, 7, 37); b.updatedBy = 'B. Wicki';
+  ok(fileBase(b) === '2026-017_Fahrtbriefing_HB-QWZ_2026-10-06', 'Dateibasis: ' + fileBase(b));
+  const tl = titleLine(b, 'de');
+  ok(tl.startsWith('Fahrtbriefing · 2026-017 · HB-QWZ · Start: ') && tl.includes('06:30 – Oberlunkhofen AG'), 'Titelzeile: ' + tl);
+  ok(lastChangeLine(b, 'de').startsWith('Letzte Änderung: ') && lastChangeLine(b, 'de').endsWith(' · B. Wicki'), 'Letzte Änderung: ' + lastChangeLine(b, 'de'));
+  b.persons.pax = [{ name: 'Viviane Graf', weight: 70 }, { name: '', weight: null }];
+  ok(paxLine(b, S) === `2 Pax: Viviane Graf (70 kg), Pax 2 (${Math.round(b.balloon.personWeight)} kg)`, 'Pax-Zeile mit Gewichten: ' + paxLine(b, S));
+  const c0 = completion(b, S);
+  ok(c0 >= 0 && c0 <= 100 && Number.isInteger(c0), `Fortschritt in Prozent (${c0} %)`);
+  const d = duplicateBriefing(b, S);
+  ok(d.no === null && d.id !== b.id && d.status === 'draft', 'Kopie: neue Nummer wird beim Speichern vergeben');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

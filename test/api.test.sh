@@ -18,6 +18,7 @@ echo "# Secret (Super)"; j -H "$H" -X PUT $A/api/secrets -d '{"name":"openmeteo"
 echo "# Secret anzeigen (Super)"; j -H "$H" $A/api/secrets/openmeteo | grep -o '"value":"abc123"'; code -H "$H" $A/api/secrets/nixda; echo
 echo "# Briefing anlegen"; j -H "$H" -X PUT $A/api/briefings/test00000001 -d '{"briefing":{"id":"test00000001","status":"draft","time":{"startMs":1791100800000},"site":{"name":"Oberlunkhofen","tz":"Europe/Zurich","icao":"4719N00824E","elev":461},"balloon":{"label":"HB-QWZ","reg":"HB-QWZ"},"flight":{"kind":"commercial"},"panels":{},"log":[]},"who":"test"}'; echo
 echo "# Liste (own)"; j -H "$H" $A/api/briefings; echo
+echo "# Ordnungsnummer vergeben (0.11)"; j -H "$H" $A/api/briefings | grep -o '"no":"[0-9]\{4\}-[0-9]\{3\}"' | head -1; echo
 echo "# Link erstellen"; LINK=$(j -H "$H" -X POST $A/api/briefings/test00000001/access -d '{"person":"Martin","role":"edit","expiresAt":1900000000000}'); echo "$LINK"; T=$(echo "$LINK" | tok)
 echo "# Shared GET"; j "$A/api/shared/$T?who=Martin" | head -c 300; echo
 echo "# Shared PUT"; j -X PUT "$A/api/shared/$T" -d '{"briefing":{"id":"test00000001","status":"final","time":{"startMs":1791100800000},"site":{"name":"Oberlunkhofen","tz":"Europe/Zurich"},"balloon":{"label":"HB-QWZ","reg":"HB-QWZ"},"flight":{"kind":"commercial"},"panels":{"A.landing":{"content":{"text":"Wohlen"}}},"log":[]},"who":"Martin"}'; echo

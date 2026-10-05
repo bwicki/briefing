@@ -6,7 +6,7 @@ import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage } from '../model.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, paxLine } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock, askAi } from './autopanels.js';
@@ -23,6 +23,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   const b = opts.briefing || await ctx.store.getBriefing(id);
   if (!b) { view.appendChild(h('div.err', 'not found')); return; }
   if (!shared && b.access === 'read') { ctx.navigate(`#/v/${b.id}`); return; }   // fremdes Briefing: nur Briefingsicht
+  if (isLocked(b)) { ctx.navigate(shared ? `#/s/${shared.token}/v` : `#/v/${b.id}`); return; }   // Fahrt vorbei: unverändert lassen (Hinweis in der Briefingsicht)
   upgradeBriefing(b);
   const S = ctx.settings, z = b.site.tz || 'Europe/Zurich', lang = getLang();
   const canOwn = !shared;
@@ -32,6 +33,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   async function saveNow(logEntry) {
     if (logEntry) b.log.push({ ts: Date.now(), who: ctx.who, ...logEntry });
     if (b.log.length > 300) b.log.splice(0, b.log.length - 300);
+    b.progress = completion(b, S);
     try {
       if (shared) await ctx.store.saveShared(shared.token, b, ctx.who); else await ctx.store.saveBriefing(b, ctx.who);
       dirty = false; drawHeader();
@@ -60,8 +62,8 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         canOwn ? { label: t('export_one'), fn: () => exportOne(b) } : null,
       ].filter(Boolean) },
     ].filter(Boolean);
-    const sub = h('span', [h('span.rev', t('rev', { n: b.revision || 0, t: b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–', who: b.updatedBy || '–' })), ' · ', b.status === 'final' ? tag('final', t('released', { n: b.finalNo })) : tag('', t('status_draft')), ' · ', tag(phaseOf(b.time.startMs) === 'final' ? 'final-phase' : phaseOf(b.time.startMs) === 'plan' ? 'plan' : 'pre', t('phase_' + phaseOf(b.time.startMs))), shared ? ` · ${shared.role === 'edit' ? t('ac_editlink') : t('ac_readonly')} · ${shared.person}` : '']);
-    setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub, tools, menu });
+    const sub = h('span', [h('span.rev', t('rev', { n: b.revision || 0, t: b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–', who: b.updatedBy || '–' })), ' · ', b.status === 'final' ? tag('final', t('released', { n: b.finalNo })) : tag('', t('status_progress', { p: completion(b, S) })), ' · ', tag(phaseOf(b.time.startMs) === 'final' ? 'final-phase' : phaseOf(b.time.startMs) === 'plan' ? 'plan' : 'pre', t('phase_' + phaseOf(b.time.startMs))), shared ? ` · ${shared.role === 'edit' ? t('ac_editlink') : t('ac_readonly')} · ${shared.person}` : '']);
+    setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub, tools, menu });
   }
 
   // ---------------------------------------------------------------- Layout
@@ -100,11 +102,21 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     side.append(...[
       goNoGoCard(b, ctx),
       ch ? h('div.card', [h('div.card-head', h('div.section-title', t('chg_title', { n: ch.since.no }))), h('div.card-body.note', ch.any ? [ch.fields.length ? h('div', `${t('chg_fields')}: ${ch.fields.map((f) => t('chg_' + f)).join(', ')}`) : null, ...ch.panels.map((p) => h('div', { onclick: () => document.getElementById('panel-' + p.key)?.scrollIntoView({ behavior: 'smooth' }), style: { cursor: 'pointer' } }, `• ${tt(panelByKey(p.key) || { de: p.key })} (${p.what.map((w) => t('chg_' + w)).join(', ')})`))] : t('chg_none'))]) : null,
-      b.assessment?.text ? h('div.card', [h('div.card-head', h('div.section-title', t('ass_title'))), h('div.card-body', [h('div.note', { style: { whiteSpace: 'pre-wrap' } }, b.assessment.text), h('div.note.small', `${b.assessment.model || ''} · ${fmtDateTime(z, b.assessment.ts, lang)}`)])]) : null,
       h('div.card', [h('div.card-head', h('div.section-title', t('horizon'))), h('div.card-body', [h('div', `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT · ${hhmm('UTC', b.time.startMs)} UTC`), h('div.note', `${hrs >= 0 ? '+' : ''}${hrs} h → ${t('phase_' + phaseOf(b.time.startMs))}`)])]),
       h('div.card', [h('div.card-head', h('div.section-title', 'Panels')), h('div.card-body', [h('div', [h('span.dot.ok'), ` ${counts.ok} ✓`]), h('div', [h('span.dot.must'), ` ${counts.must} ${t('panel_mandatory')}`]), h('div', [h('span.dot.auto'), ` ${counts.auto} auto`]), h('div', [h('span.dot.man'), ` ${counts.man} ${t('panel_optional')}`])])]),
       h('div.card', [h('div.card-head', h('div.section-title', t('log'))), h('div.card-body.note', (b.log || []).slice(-6).reverse().map((l) => h('div', `${fmtDateTime(z, l.ts, lang)} · ${l.who} · ${l.action}${l.panel ? ' · ' + l.panel : ''}${l.note ? ' · ' + l.note : ''}`)).concat((b.log || []).length ? [] : [h('div', '–')]))]),
+      summaryCard(),
     ].filter(Boolean));
+  }
+  /** Zuunterst: Zusammenfassung des Briefings (KI-Gesamteinschätzung) mit Knopf zum Erstellen/Erneuern. */
+  function summaryCard() {
+    const canAi = canOwn && ctx.store.mode === 'remote' && ctx.can('ai');
+    const a = b.assessment;
+    return h('div.card.summary', [h('div.card-head', h('div.section-title', t('summary_title'))), h('div.card-body', [
+      a?.text ? h('div.note', { style: { whiteSpace: 'pre-wrap' } }, a.text) : h('div.note.small', t('summary_hint')),
+      a?.text ? h('div.note.small', `${a.model || ''} · ${fmtDateTime(z, a.ts, lang)}`) : null,
+      canAi ? h('button.btn.small' + (a?.text ? '.ai.renew' : '.primary'), { type: 'button', style: { marginTop: '6px' }, onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }) }, a?.text ? t('summary_renew') : t('summary_make')) : null,
+    ])]);
   }
 
   // ---------------------------------------------------------------- Panels
@@ -135,13 +147,19 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const d = b.panels[p.key] || (b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '' });
     const srcUrl = sourceUrlOf(p, d);
     const head = h('div.panel-head', [
-      h('div.ttl', [h('span.pno', panelNo(p, panels)), ' ', tt(p)]),
+      h('div.lft', [
+        h('div.ttl', [h('span.pno', panelNo(p, panels)), ' ', tt(p)]),
+        h('div.src', `${t('stand')}: ${d.updatedAt ? `${fmtDateTime(z, d.updatedAt, lang)} · ${d.updatedBy || ''}` : t('stand_none')}`),
+      ]),
       p.key === 'A.core' && balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '', title: b.balloon.label || '' }) : null,
-      mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
-      p.grade === 'auto' ? tag('auto', 'AUTO') : p.grade === 'half' ? tag('half', 'LINK + EINFÜGEN') : p.grade === 'calc' ? tag('calc', 'CALC') : null,
-      srcUrl ? h('a.srclink', { href: srcUrl, target: '_blank', rel: 'noopener', title: srcUrl }, shortUrl(srcUrl)) : null,
-      p.noAi ? null : aiButtons(p, d),
-      d.updatedAt ? h('span.src', `${t('stand')}: ${fmtDateTime(z, d.updatedAt, lang)} · ${d.updatedBy || ''}`) : null,
+      h('div.rgt', [
+        h('div.rrow', [
+          mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
+          p.grade === 'auto' ? tag('auto', 'AUTO') : p.grade === 'half' ? tag('half', 'LINK + EINFÜGEN') : p.grade === 'calc' ? tag('calc', 'CALC') : null,
+          p.noAi ? null : aiButtons(p, d),
+        ]),
+        srcUrl ? h('a.srclink', { href: srcUrl, target: '_blank', rel: 'noopener', title: srcUrl }, shortUrl(srcUrl)) : null,
+      ]),
     ]);
     const body = h('div.panel-body');
     let content;
@@ -193,24 +211,29 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     if (ctx.store.mode !== 'remote' || !ctx.can('ai') || shared?.role === 'read') return null;
     const hasContent = !!(d.content?.auto || (d.content?.text || '').trim() || (d.content?.images || []).length || (d.extra?.text || '').trim() || (d.extra?.images || []).length || ['core', 'sun', 'massperf', 'schedule', 'equipment', 'transition'].includes(p.kind));
     if (!hasContent) return null;
-    const run = async (edit) => { const btn = wrap.querySelector('button'); btn.disabled = true; btn.textContent = t('ai_working'); await askAi(p, d, b, ctx, () => touched(p.key), drawPanels, { edit }); btn.disabled = false; btn.textContent = d.ai?.text ? t('ai_again') : t('ai_ask'); };
+    const run = async (edit) => { const btn = wrap.querySelector('button'); btn.disabled = true; btn.textContent = t('ai_working'); await askAi(p, d, b, ctx, () => touched(p.key), drawPanels, { edit }); btn.disabled = false; btn.textContent = d.ai?.text ? t('ai_again') : t('ai_ask'); btn.classList.toggle('renew', !!d.ai?.text); };
     const wrap = h('span.aibtns', [
-      h('button.btn.small.ai', { type: 'button', title: t('ai_direct'), onclick: () => run(false) }, d.ai?.text ? t('ai_again') : t('ai_ask')),
+      h('button.btn.small.ai' + (d.ai?.text ? '.renew' : ''), { type: 'button', title: t('ai_direct'), onclick: () => run(false) }, d.ai?.text ? t('ai_again') : t('ai_ask')),
       h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => run(true) }, '…'),
     ]);
     return wrap;
   }
   function coreBlock() {
     const rows = [
+      [t('core_no'), b.no || '–'],
       [t('core_reg'), b.balloon.label], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
       [t('core_kind'), `${t('kind_' + b.flight.kind)} · LTF: ${b.flight.operatorName}`], [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`],
-      [t('core_pic'), b.persons.pic], [t('core_pax'), `${b.persons.pax.length}: ${b.persons.pax.map((x) => x.name).join(', ') || '–'}`], [t('core_retrieve'), b.persons.retrieve || '–'],
+      [t('core_pic'), b.persons.pic], [t('core_pax'), paxLine(b, S)], [t('core_retrieve'), b.persons.retrieve || '–'],
       [t('core_site'), h('span', [placeLine(b.site), ` · ${b.site.country || ''}`])],
       [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}`],
       ...(docsLine(b.balloon.docs) ? [[t('docs'), docsLine(b.balloon.docs)]] : []),
       ...(docsLine(ctx.stamm?.persons?.find((x) => x.id === b.persons.picId)?.docs) ? [[`${t('docs')} PIC`, docsLine(ctx.stamm.persons.find((x) => x.id === b.persons.picId).docs)]] : []),
     ];
-    return h('div', [kv(rows), canOwn || shared?.role === 'edit' ? h('div.row-actions', { style: { marginTop: '8px' } }, [h('button.btn', { type: 'button', onclick: async () => { b.wizardStep = 1; await saveNow(); ctx.navigate(shared ? `#/s/${shared.token}/w` : `#/new/${b.id}`); } }, `✎ ${t('masterData')}`)]) : null]);
+    const canEdit = canOwn || shared?.role === 'edit';
+    // Oben: alle automatischen Panels neu laden (ohne KI-Kommentare); Status daneben
+    const st = h('span.note.small');
+    const refreshRow = canEdit && b.site.lat != null ? h('div.row-actions.refresh-all', [h('button.btn.primary.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, `⟳ ${t('refreshAllData')}`), st]) : null;
+    return h('div', [refreshRow, kv(rows), canEdit ? h('div.row-actions', { style: { marginTop: '8px' } }, [h('button.btn', { type: 'button', onclick: async () => { b.wizardStep = 1; await saveNow(); ctx.navigate(shared ? `#/s/${shared.token}/w` : `#/new/${b.id}`); } }, `✎ ${t('masterData')}`)]) : null]);
   }
   function equipmentBlock(p, d) {
     const sun = sunFor(b, S, ctx.racTable);

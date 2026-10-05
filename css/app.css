@@ -168,10 +168,14 @@ table.tbl td .sm,.item-box .sm{font-size:11.5px;color:var(--text-dim);font-famil
 .sect-title:first-child{margin-top:0;}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;scroll-margin-top:80px;}
 .panel.must-open{border-color:var(--temp);}
-.panel-head{display:flex;align-items:center;gap:8px;padding:6px 12px;min-height:52px;border-bottom:1px solid var(--line-soft);background:var(--panel-2);border-radius:var(--r) var(--r) 0 0;flex-wrap:wrap;}   /* alle Titelbalken gleich hoch (zweizeilig) */
-.panel-head .ttl{flex:1;min-width:0;font-weight:600;color:var(--text-strong);font-size:14px;line-height:1.25;}
-.panel-head .src{font-size:11px;color:var(--text-dim);width:100%;}
-.panel-head a.srclink{margin-left:auto;max-width:22%;font-size:10.5px;color:var(--text-dim);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);align-self:flex-end}
+/* Panel-Kopf (0.11): links Nummer + Titel, darunter Stand; rechts Kennzeichen + KI-Knöpfe, darunter der Quell-Link — alle Köpfe gleich strukturiert */
+.panel-head{display:flex;align-items:flex-start;gap:8px;padding:6px 12px;min-height:52px;border-bottom:1px solid var(--line-soft);background:var(--panel-2);border-radius:var(--r) var(--r) 0 0;}
+.panel-head .lft{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.panel-head .ttl{min-width:0;font-weight:600;color:var(--text-strong);font-size:14px;line-height:1.25;}
+.panel-head .src{font-size:11px;color:var(--text-dim);}
+.panel-head .rgt{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:0 0 auto;max-width:55%}
+.panel-head .rrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.panel-head a.srclink{max-width:100%;font-size:10.5px;color:var(--text-dim);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono)}
 .panel-head a.srclink:hover{color:var(--text);text-decoration:underline}
 .ptools{flex-wrap:wrap;gap:6px;margin-bottom:6px;align-items:center}
 .ptools .inline{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -429,6 +433,10 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .metar pre.report{margin:4px 0 0;white-space:pre-wrap;font-size:12px;}
 .metar-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:6px 14px;margin-top:6px;align-items:start}
 .metar-cols .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
+.metar-cols.compact{margin-top:3px;gap:2px 12px}
+.metar-cols.compact pre.report{margin:0}
+.metar-cols.compact ul.decoded{margin:0}
+.metar .mhead{font-size:12.5px}
 .metar-cols ul.decoded{margin:4px 0 0;padding-left:16px;font-size:12.5px;line-height:1.4}
 .metar-cols ul.decoded li:first-child{list-style:none;margin-left:-16px;font-weight:600}
 .metar .bad{color:var(--temp);font-weight:600}
@@ -491,7 +499,9 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .more{position:relative;}
 .more .more-menu{display:none;right:0;top:calc(100% + 4px);min-width:220px;}
 .more.open .more-menu{display:flex;flex-direction:column;}
-.gonogo .gn-level{font-size:15px;margin-bottom:4px;}
+.gonogo .gn-level{font-size:12.5px;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.gonogo .gn-level .dot{flex:0 0 auto;margin:0}
+.gonogo .gn-level b{font-size:12.5px}
 .gn-why{margin:4px 0 6px;padding-left:18px;font-size:12.5px;}
 .brief .bsum{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:8px 0 10px;font-size:12.5px;background:var(--panel-2);}
 .paxcard .pax-list{margin:4px 0 8px;padding-left:20px;font-size:14px;line-height:1.5;}
@@ -639,3 +649,20 @@ table.panels-tbl .ck{width:88px;text-align:center}
 table.panels-tbl td.nm .tag{margin-left:6px}
 table.panels-tbl tr.off td.nm{color:var(--text-dim)}
 table.panels-tbl input[type=checkbox]{width:16px;height:16px;margin:0;vertical-align:middle}
+
+/* 0.11: KI-Knopf «erneuern» violett schraffiert (anders als «erzeugen») */
+.btn.ai.renew,.aibtns .btn.ai.renew{background:repeating-linear-gradient(135deg,var(--violet,#6b4fb5) 0 6px,#8f78d1 6px 12px);color:#fff;border-color:transparent}
+/* 0.11: Kopf der Briefingsicht — rechts Logo oben, darunter Titelzeile rechtsbündig, letzte Änderung, Status */
+.brief .bh .r{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
+.brief .bh .r img{margin:0 0 4px 0}
+.brief .bh .r .tl{font-weight:700;color:#111;font-size:12.5px;white-space:nowrap}
+.brief .bh .l h1{margin:0}
+/* 0.11: Sperre (Fahrt vorbei) */
+.lockbar{margin:0 0 10px;border-color:#d9a400;background:#fff8e1}
+.lockbar .card-body{align-items:center;flex-wrap:wrap}
+.lock{font-size:12px}
+.card.summary .btn{margin-top:6px}
+/* 0.11: «Alle verfügbaren Daten aktualisieren» oben in den Stammdaten */
+.refresh-all{margin:0 0 10px;align-items:center}
+.tbl td.mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
+@media (max-width:680px){ .panel-head{flex-wrap:wrap} .panel-head .rgt{max-width:100%;align-items:flex-start;width:100%} .panel-head .rrow{justify-content:flex-start} .brief .bh .r .tl{white-space:normal} }

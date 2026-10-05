@@ -126,7 +126,7 @@ export function buildFpl(b, S, opts = {}) {
   const rmkText = isDefault(F.rmk18, 'CREW CONTACT {picPhone} AND {satphone}') ? (contacts.length ? `CREW CONTACT ${contacts.join(' AND ')}` : '') : tpl(F.rmk18);
   const n19Text = isDefault(F.n19, 'GSM PIC {picPhone} AND SATPHONE {satphone}') ? [picPhone ? `GSM PIC ${picPhone}` : '', sat ? `SATPHONE ${sat}` : ''].filter(Boolean).join(' AND ') : tpl(F.n19);
   // AIP CH ENR 1.10: RMK/ muss Ausbildungsflüge (TRAINING FLT) und VFR-Nachtflüge (NVFR) nennen
-  const rmkKind = kind === 'training' ? (F.rmkTraining ?? 'TRAINING FLT') : kind === 'exam' ? (F.rmkExam ?? 'TRAINING FLT SKILL TEST') : '';
+  const rmkKind = kind === 'training' ? (F.rmkTraining ?? 'TRG FLT') : kind === 'exam' ? (F.rmkExam ?? 'SKILL TEST') : '';
   const rmkParts = [nvfr ? 'NVFR' : '', rmkKind, rmkText].filter(Boolean);
   const hex = String(b.balloon?.hex || '').trim().toUpperCase();
   const code18 = /^[0-9A-F]{6}$/.test(hex) ? hex : '';   // CODE/ 24-bit-Adresse (6 Hex) nur, wenn vollständig hinterlegt

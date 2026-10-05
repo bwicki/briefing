@@ -3,7 +3,7 @@ import { h, clear, toast, dialog } from '../util.js';
 import { t } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { fmtDate, hhmm, fmtDateTime } from '../calc/time.js';
-import { phaseOf, duplicateBriefing, sunFor } from '../model.js';
+import { phaseOf, duplicateBriefing, sunFor, isLocked } from '../model.js';
 import { racValidity, racFmt, racLookup } from '../calc/rac.js';
 import { isoDate } from '../calc/time.js';
 import { tag } from './widgets.js';
@@ -32,7 +32,7 @@ export async function renderList(view, ctx) {
       const ph = phaseOf(b.startMs || 0, now);
       if (filter === 'planned' && ph === 'past') return false;
       if (filter === 'archive' && ph !== 'past') return false;
-      if (q) { const s = `${b.site || ''} ${b.reg || ''} ${b.balloon || ''} ${b.ownerName || ''} ${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)}`.toLowerCase(); if (!s.includes(q.toLowerCase())) return false; }
+      if (q) { const s = `${b.no || ''} ${b.site || ''} ${b.reg || ''} ${b.balloon || ''} ${b.ownerName || ''} ${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)}`.toLowerCase(); if (!s.includes(q.toLowerCase())) return false; }
       return true;
     });
   }
@@ -54,15 +54,16 @@ export async function renderList(view, ctx) {
     const narrow = window.innerWidth < 700;
     if (narrow) {
       tableWrap.appendChild(h('div.cards-list', rs.map((b) => h('div.bcard', { onclick: () => ctx.navigate(openHash(b)) }, [
-        h('div.t', `${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)} · ${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)} LT · ${b.reg || ''}`),
+        h('div.t', `${b.no ? b.no + ' · ' : ''}${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)} · ${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)} LT · ${b.reg || ''}`),
         h('div', `${b.site || '–'}${scope !== 'own' ? ` · ${b.ownerName || b.owner || ''}` : ''}`),
         h('div.m', [phaseTag(b), ' ', statusText(b)]),
       ]))));
       return;
     }
     const showOwner = scope !== 'own';
-    const tbl = h('table.tbl', [h('thead', h('tr', [h('th', t('colDate')), h('th', t('colSite')), showOwner ? h('th', t('colOwner')) : null, h('th', t('colBalloon')), h('th', t('colType')), h('th', t('colPhase')), h('th', t('colStatus')), h('th', t('colShared')), h('th', '')].filter(Boolean))),
+    const tbl = h('table.tbl', [h('thead', h('tr', [h('th', t('core_no')), h('th', t('colDate')), h('th', t('colSite')), showOwner ? h('th', t('colOwner')) : null, h('th', t('colBalloon')), h('th', t('colType')), h('th', t('colPhase')), h('th', t('colStatus')), h('th', t('colShared')), h('th', '')].filter(Boolean))),
       h('tbody', rs.map((b) => h('tr', [
+        h('td.mono', b.no || '–'),
         h('td', [fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0), h('br'), h('span.sm', `${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)} LT`)]),
         h('td', [b.site || '–', h('br'), h('span.sm', `${b.icao || ''}${b.elev != null ? ' · ' + Math.round(b.elev) + ' m' : ''}`)]),
         showOwner ? h('td', [b.ownerName || b.owner || '–', b.materialOwner && b.materialOwner !== b.owner ? h('div.sm', `${t('colMaterial')}: ${b.materialOwner}`) : null]) : null,
@@ -79,13 +80,15 @@ export async function renderList(view, ctx) {
       ].filter(Boolean))))]);
     tableWrap.appendChild(tbl);
   }
+  const locked = (b) => (b.endMs ? now > b.endMs : isLocked({ time: { startMs: b.startMs || 0 }, intent: {} }, now));
   function phaseTag(b) {
     const ph = phaseOf(b.startMs || 0, now);
     const cls = ph === 'plan' ? 'plan' : ph === 'final' ? 'final-phase' : 'pre';
-    return tag(cls, t('phase_' + ph));
+    return h('span', [locked(b) ? h('span.lock', { title: t('locked') }, '🔒 ') : null, tag(cls, t('phase_' + ph))]);
   }
+  /** Status: «Final v2» oder «in Arbeit 75 %» (Fortschritt = gefüllte Panels), dazu Revision und letzte Änderung. */
   function statusText(b) {
-    const st = b.status === 'final' ? t('released', { n: b.finalNo }) : t('status_draft');
+    const st = b.status === 'final' ? t('released', { n: b.finalNo }) : b.progress == null ? t('status_inwork') : t('status_progress', { p: b.progress });
     return `${st} · v${b.revision || 0} · ${b.updatedAt ? fmtDateTime(b.tz || 'Europe/Zurich', b.updatedAt) : ''}${b.updatedBy ? ' · ' + b.updatedBy : ''}`;
   }
   async function dup(id) {

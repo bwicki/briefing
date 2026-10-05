@@ -68,6 +68,42 @@ function timingSafeEqual(a, b) { let r = 0; for (let i = 0; i < a.length; i++) r
 async function getKv(env, k) { const row = await env.DB.prepare('SELECT v FROM kv WHERE k=?').bind(k).first(); return row ? JSON.parse(row.v) : null; }
 async function setKv(env, k, v) { await env.DB.prepare('INSERT INTO kv (k,v,updated_at) VALUES (?,?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v, updated_at=excluded.updated_at').bind(k, JSON.stringify(v), Date.now()).run(); }
 
+// ------------------------------------------------------------ Schema 0.11: Ordnungsnummer, Fortschritt, Fahrtende
+let schemaReady = false;
+async function ensureSchema(env) {
+  if (schemaReady) return;
+  for (const col of ['no TEXT', 'progress INTEGER', 'end_ms INTEGER']) {
+    try { await env.DB.prepare(`ALTER TABLE briefings ADD COLUMN ${col}`).run(); } catch { /* Spalte besteht */ }
+  }
+  // Bestand ohne Nummer: je Jahr des Fahrtdatums fortlaufend nach Startzeit vergeben (einmalig)
+  if (!(await getKv(env, 'no_migrated'))) {
+    const rows = (await env.DB.prepare('SELECT id, json, start_ms FROM briefings WHERE no IS NULL ORDER BY start_ms, created_at').all()).results || [];
+    for (const r of rows) {
+      let b; try { b = JSON.parse(r.json); } catch { continue; }
+      if (b.no) { await env.DB.prepare('UPDATE briefings SET no=? WHERE id=?').bind(b.no, r.id).run(); continue; }
+      b.no = await nextNo(env, yearOf(b));
+      await env.DB.prepare('UPDATE briefings SET no=?, json=?, end_ms=? WHERE id=?').bind(b.no, JSON.stringify(b), endMsOf(b), r.id).run();
+    }
+    await setKv(env, 'no_migrated', Date.now());
+  }
+  schemaReady = true;
+}
+/** Jahr des Fahrtdatums (Ablage nach Fahrt). */
+function yearOf(b) { const d = b?.time?.date; if (/^\d{4}-/.test(d || '')) return +d.slice(0, 4); return new Date(b?.time?.startMs || b?.createdAt || Date.now()).getUTCFullYear(); }
+/** Fahrtende für die Sperre: Start + max(6 h, Dauer + 2 h). */
+function endMsOf(b) { const start = b?.time?.startMs || 0; const dur = (b?.intent?.durationMin || 0) * 60000; return start + Math.max(6 * 3600000, dur + 2 * 3600000); }
+/** Nächste Ordnungsnummer «JJJJ-NNN» (Zähler je Jahr in kv; atomar via UPDATE … RETURNING). */
+async function nextNo(env, year) {
+  const k = `seq:${year}`;
+  await env.DB.prepare('INSERT OR IGNORE INTO kv (k,v,updated_at) VALUES (?,?,?)').bind(k, '0', Date.now()).run();
+  const r = await env.DB.prepare('UPDATE kv SET v=CAST(CAST(v AS INTEGER)+1 AS TEXT), updated_at=? WHERE k=? RETURNING v').bind(Date.now(), k).first();
+  let n = +(r?.v || 0);
+  // Lücken durch importierte Nummern schliessen
+  const mx = await env.DB.prepare('SELECT MAX(CAST(SUBSTR(no, 6) AS INTEGER)) AS m FROM briefings WHERE no LIKE ?').bind(`${year}-%`).first();
+  if ((mx?.m || 0) >= n) { n = (mx.m || 0) + 1; await setKv(env, k, n); }
+  return `${year}-${String(n).padStart(3, '0')}`;
+}
+
 // ------------------------------------------------------------ Benutzer
 let usersReady = false;
 /** Erster Start: Supermaster aus dem bisherigen Kennwort (kv) anlegen, Einstellungen übernehmen. */
@@ -118,6 +154,7 @@ async function sessionUser(env, req) {
   let p; try { p = JSON.parse(dec.decode(unb64u(payload))); } catch { return null; }
   if (!(p.exp > Date.now()) || !p.uid) return null;
   await ensureUsers(env);
+  await ensureSchema(env);
   const u = await getUser(env, p.uid);
   return u && u.active ? u : null;
 }
@@ -164,29 +201,36 @@ async function hasShare(env, from, to, category) {
 
 // ------------------------------------------------------------ Briefings
 function summaryOf(b) {
-  return { id: b.id, startMs: b.time?.startMs, tz: b.site?.tz, site: b.site?.name, icao: b.site?.icao, elev: b.site?.elev, balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo, revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy };
+  return { id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: endMsOf(b), tz: b.site?.tz, site: b.site?.name, icao: b.site?.icao, elev: b.site?.elev, balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo, progress: Number.isFinite(+b.progress) ? Math.round(+b.progress) : null, revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy };
 }
-const rowOut = (r) => ({ id: r.id, startMs: r.start_ms, tz: r.tz, site: r.site, icao: r.icao, elev: r.elev, reg: r.reg, balloon: r.balloon, kind: r.kind, status: r.status, finalNo: r.final_no, revision: r.revision, updatedAt: r.updated_at, updatedBy: r.updated_by, links: r.links ?? 0, owner: r.owner_id, ownerName: r.owner_name || r.owner_id, materialOwner: r.material_owner || null });
+const rowOut = (r) => ({ id: r.id, no: r.no || null, startMs: r.start_ms, endMs: r.end_ms ?? null, tz: r.tz, site: r.site, icao: r.icao, elev: r.elev, reg: r.reg, balloon: r.balloon, kind: r.kind, status: r.status, finalNo: r.final_no, progress: r.progress ?? null, revision: r.revision, updatedAt: r.updated_at, updatedBy: r.updated_by, links: r.links ?? 0, owner: r.owner_id, ownerName: r.owner_name || r.owner_id, materialOwner: r.material_owner || null });
 /** Speichern; ownerId nur beim Anlegen gesetzt; materialOwner = Eigner des Ballons (Freigabe nötig). */
 async function saveBriefing(env, ctx, b, who, ownerId, logUid) {
-  const row = await env.DB.prepare('SELECT revision, owner_id, final_no FROM briefings WHERE id=?').bind(b.id).first();
+  await ensureSchema(env);
+  const row = await env.DB.prepare('SELECT revision, owner_id, final_no, no FROM briefings WHERE id=?').bind(b.id).first();
   const isNew = !row;
   const owner = row?.owner_id || ownerId;
   b.revision = (row?.revision || 0) + 1; b.updatedAt = Date.now(); b.updatedBy = who || 'owner';
   if (!b.createdAt) b.createdAt = b.updatedAt;
   b.ownerId = owner;
+  // Ordnungsnummer: bleibt, sobald vergeben; neu oder (Import) belegt → nächste Nummer des Fahrtjahres
+  if (row?.no) b.no = row.no;
+  else {
+    const taken = b.no ? await env.DB.prepare('SELECT id FROM briefings WHERE no=? AND id<>?').bind(b.no, b.id).first() : null;
+    if (!b.no || taken) b.no = await nextNo(env, yearOf(b));
+  }
   let material = b.balloon?.ownerId && b.balloon.ownerId !== owner ? String(b.balloon.ownerId) : null;
   if (material && !(await hasShare(env, material, owner, 'balloons'))) material = null;
   const s = summaryOf(b);
-  await env.DB.prepare(`INSERT INTO briefings (id,json,revision,status,final_no,start_ms,tz,site,icao,elev,reg,balloon,kind,created_at,updated_at,updated_by,owner_id,material_owner)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    ON CONFLICT(id) DO UPDATE SET json=excluded.json, revision=excluded.revision, status=excluded.status, final_no=excluded.final_no, start_ms=excluded.start_ms, tz=excluded.tz, site=excluded.site, icao=excluded.icao, elev=excluded.elev, reg=excluded.reg, balloon=excluded.balloon, kind=excluded.kind, updated_at=excluded.updated_at, updated_by=excluded.updated_by, material_owner=excluded.material_owner`)
-    .bind(b.id, JSON.stringify(b), b.revision, b.status || 'draft', b.finalNo || 0, s.startMs || null, s.tz || null, s.site || null, s.icao || null, s.elev ?? null, s.reg || null, s.balloon || null, s.kind || null, b.createdAt, b.updatedAt, b.updatedBy, owner, material).run();
+  await env.DB.prepare(`INSERT INTO briefings (id,json,revision,status,final_no,start_ms,tz,site,icao,elev,reg,balloon,kind,created_at,updated_at,updated_by,owner_id,material_owner,no,progress,end_ms)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    ON CONFLICT(id) DO UPDATE SET json=excluded.json, revision=excluded.revision, status=excluded.status, final_no=excluded.final_no, start_ms=excluded.start_ms, tz=excluded.tz, site=excluded.site, icao=excluded.icao, elev=excluded.elev, reg=excluded.reg, balloon=excluded.balloon, kind=excluded.kind, updated_at=excluded.updated_at, updated_by=excluded.updated_by, material_owner=excluded.material_owner, no=excluded.no, progress=excluded.progress, end_ms=excluded.end_ms`)
+    .bind(b.id, JSON.stringify(b), b.revision, b.status || 'draft', b.finalNo || 0, s.startMs || null, s.tz || null, s.site || null, s.icao || null, s.elev ?? null, s.reg || null, s.balloon || null, s.kind || null, b.createdAt, b.updatedAt, b.updatedBy, owner, material, b.no, s.progress, s.endMs).run();
   if (logUid) {
     logUsage(env, ctx, logUid, isNew ? 'briefing_create' : 'briefing_save', b.id);
     if ((b.finalNo || 0) > (row?.final_no || 0)) logUsage(env, ctx, logUid, 'release', `${b.id} v${b.finalNo}`);
   }
-  return { revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy };
+  return { revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy, no: b.no };
 }
 async function loadBriefing(env, id) {
   const row = await env.DB.prepare('SELECT json, owner_id, material_owner FROM briefings WHERE id=?').bind(id).first();
@@ -239,7 +283,8 @@ async function route(req, env, url, ctx) {
   if (mm && req.method === 'GET') {
     const obj = await env.FILES.get(`${mm[1]}/${mm[2]}`);
     if (!obj) return err('not found', 404);
-    return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream', 'Cache-Control': 'public, max-age=31536000, immutable' } });
+    const fname = String(mm[2]).split('/').pop().replace(/[^A-Za-z0-9._-]+/g, '_');
+    return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream', 'Content-Disposition': `inline; filename="${fname}"`, 'Cache-Control': 'public, max-age=31536000, immutable' } });
   }
 
   // ---- Datenabrufe (Sitzung oder gültiger persönlicher Link)
@@ -462,7 +507,8 @@ async function route(req, env, url, ctx) {
     let where = 'b.owner_id=?', args = [user.id];
     if (scope === 'all') { if (!isSuper) return err('forbidden', 403); where = '1=1'; args = []; }
     else if (scope === 'material') { where = 'b.material_owner=? AND b.owner_id<>?'; args = [user.id, user.id]; }
-    const rows = await env.DB.prepare(`SELECT b.id,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name,
+    await ensureSchema(env);
+    const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.end_ms,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name,
       (SELECT COUNT(*) FROM access_links a WHERE a.briefing_id=b.id AND a.revoked=0 AND a.expires_at>?) AS links FROM briefings b LEFT JOIN users u ON u.id=b.owner_id WHERE ${where} ORDER BY b.start_ms`).bind(Date.now(), ...args).all();
     return json({ briefings: (rows.results || []).map(rowOut), scope });
   }

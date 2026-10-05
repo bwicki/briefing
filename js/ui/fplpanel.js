@@ -4,7 +4,7 @@ import { h, clear, toast } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { field, input, select, check, textarea } from './widgets.js';
 import { buildFpl, fplMessage, fplCheck, routeText, otherInfo, supplementary, hhmm4 } from '../calc/fpl.js';
-import { fplSuggested, crossesBorder, massPerf } from '../model.js';
+import { fplSuggested, crossesBorder, massPerf, fileBase } from '../model.js';
 
 const FLAGS = { r19: ['uhf', 'vhf', 'elba'], s19: ['polar', 'desert', 'maritime', 'jungle'], j19: ['light', 'fluores', 'uhf', 'vhf'] };
 
@@ -34,7 +34,7 @@ export function fplPanel(b, ctx, d, onChange, readOnly) {
     const tools = h('div.row-actions', [
       readOnly ? null : h('button.btn.small' + (data ? '' : '.primary'), { type: 'button', onclick: () => { b.fpl.data = generateFpl(b, ctx); draw(); onChange(); toast(t('fpl_generated')); } }, data ? t('fpl_regenerate') : t('fpl_generate')),
       data ? h('button.btn.small', { type: 'button', onclick: () => copyText(fplMessage(data)) }, t('fpl_copy')) : null,
-      data ? h('button.btn.small', { type: 'button', onclick: () => download(`FPL_${data.id7}_${data.dof18}.txt`, fplMessage(data), 'text/plain') }, t('fpl_dlTxt')) : null,
+      data ? h('button.btn.small', { type: 'button', onclick: () => download(`${fileBase(b)}_FPL.txt`, fplMessage(data), 'text/plain') }, t('fpl_dlTxt')) : null,
     ]);
     body.appendChild(tools);
     if (!data) { body.appendChild(h('div.note', t('fpl_hintGenerate'))); return; }

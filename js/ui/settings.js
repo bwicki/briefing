@@ -37,6 +37,8 @@ export async function renderSettings(view, ctx) {
   }
   const numField = (obj, key, label, step = 1, cls) => field(label, input('number', obj[key] ?? '', { step, oninput: (e) => { obj[key] = num(e.target.value, null); } }), cls);
   const txtField = (obj, key, label, cls) => field(label, input('text', obj[key] ?? '', { oninput: (e) => { obj[key] = e.target.value; } }), cls);
+  /** BAZL-Registerzeile (nur Anzeige): Hersteller · Muster · S/N · Baujahr · MTOM · MOPSC · ARC bis. */
+  const regLine = (x) => x.register ? h('div.note.small.regline', `${t('b_register')}: ${x.register.manufacturer} · ${x.register.model} · S/N ${x.register.serial} · ${x.register.year} · MTOM ${x.register.mtom} kg · MOPSC ${x.register.mopsc} · TCDS ${x.register.tcds} · ARC → ${x.register.arcUntil}`) : null;
   /** Bild der Hülle: Datei wählen → quadratischer Mittenausschnitt, 192 px, JPEG-Daten-URL im Objekt (x.image). */
   const imageField = (x) => {
     const box = h('div.imgfield');
@@ -79,6 +81,7 @@ export async function renderSettings(view, ctx) {
         habBox.appendChild(h('div.item-box', [
           h('div.head', [h('b', `${x.id}${x.model ? ' · ' + x.model : ''}`), h('label.check', [h('input', { type: 'radio', name: 'defHab', checked: B.defaultHab === x.id, onchange: () => { B.defaultHab = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.hab.splice(i, 1); drawHab(); } }, '🗑')]),
           h('div.frow.c4', [txtField(x, 'id', t('registration')), txtField(x, 'model', t('b_model')), txtField(x, 'hex', t('b_hex')), numField(x, 'volume', t('b_volume'))]),
+          regLine(x),
           h('div.frow.c4', [numField(x, 'mtom', t('b_mtom'))]),
           h('div.frow.c4', [numField(x.masses, 'envelope', `${t('b_envelope')} kg`), numField(x.masses, 'burner', `${t('b_burner')} kg`), numField(x.masses, 'basket', `${t('b_basket')} kg`), numField(x.masses, 'equipment', `${t('b_equipment')} kg`)]),
           h('div.frow.c4', [numField(x, 'personWeight', `${t('b_personWeight')} kg`), numField(x, 'maxPersons', t('b_maxPersons')), numField(x, 'burnRate', t('b_burn')), numField(x, 'rigMin', t('b_rig'))]),
@@ -98,6 +101,7 @@ export async function renderSettings(view, ctx) {
       B.envelopes.forEach((x, i) => envBox.appendChild(h('div.item-box', [
         h('div.head', [h('b', `${x.id}${x.model ? ' · ' + x.model : ''}`), x.placeholder ? h('span.tag.half', t('placeholderMark')) : null, h('label.check', [h('input', { type: 'radio', name: 'defEnv', checked: B.defaultEnvelope === x.id, onchange: () => { B.defaultEnvelope = x.id; } }), h('span', t('default'))]), h('button.btn.icon', { type: 'button', onclick: () => { B.envelopes.splice(i, 1); drawEnv(); } }, '🗑')]),
         h('div.frow.c4', [txtField(x, 'id', t('registration')), txtField(x, 'model', t('b_model')), txtField(x, 'hex', t('b_hex')), numField(x, 'volume', t('b_volume'))]),
+        regLine(x),
         h('div.frow.c4', [numField(x, 'mass', `${t('b_envelope')} kg`)]),
         h('div.frow.c2', [txtField(x, 'colour', t('b_colour')), field(t('b_trackers'), textarea((x.trackers || []).join('\n'), { rows: 2, placeholder: 'https://live.garmin.com/… · https://aprs.fi/… · https://www.flightradar24.com/…', oninput: (e) => { x.trackers = e.target.value.split(/[\n,;\s]+/).map((x2) => x2.trim()).filter((x2) => /^https?:\/\//i.test(x2)); } })),]),
         imageField(x),
@@ -105,7 +109,7 @@ export async function renderSettings(view, ctx) {
         S.expert ? h('div.frow.c3', [field(t('b_gas'), select([{ value: 'H2', label: 'H₂' }, { value: 'He', label: 'He' }], x.gas, { onchange: (e) => { x.gas = e.target.value; } })), field(`${t('b_purity')} (0–1)`, input('number', x.purity, { step: 0.001, oninput: (e) => { x.purity = num(e.target.value, 1); } })), field('Füllgrad (0–1)', input('number', x.fillFraction ?? 1, { step: 0.05, oninput: (e) => { x.fillFraction = num(e.target.value, 1); } }))]) : null,
         check(t('placeholderMark'), x.placeholder, (v) => { x.placeholder = v; }),
       ])));
-      envBox.addFn = () => { B.envelopes.push({ id: 'HB-XXX', name: 'HB-XXX', model: 'NL/STU-1000', volume: 1050, mass: 116, gas: 'H2', purity: 0.995, fillFraction: 1, placeholder: true }); drawEnv(); };
+      envBox.addFn = () => { B.envelopes.push({ id: 'HB-XXX', name: 'HB-XXX', model: 'NL-STU/1000', volume: 1050, mass: 116, gas: 'H2', purity: 0.995, fillFraction: 1, placeholder: true }); drawEnv(); };
     };
     drawEnv();
     const basBox = h('div');

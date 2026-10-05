@@ -6,13 +6,13 @@
  */
 import { uid, deepCopy } from './util.js';
 import { resolveBalloon, defaultBalloon } from './defaults.js';
-import { fromLocal, localParts, isoDate, hhmm, addMin } from './calc/time.js';
+import { fromLocal, localParts, isoDate, hhmm, addMin, fmtDate, fmtDateTime } from './calc/time.js';
 import { sunTimes, moonTimes, moonIllumination } from './calc/sun.js';
 import { racLookup } from './calc/rac.js';
 import { hotAir, gasBalloon } from './calc/aero.js';
 import { buildSchedule, scheduleWarnings, buildPlan, planTemplate, planToStops } from './calc/schedule.js';
 import { icao, bearing, distKm, compass, countryGuess } from './calc/geo.js';
-import { PANELS, touchesCH } from './panels.js';
+import { PANELS, touchesCH, visiblePanels, panelFilled } from './panels.js';
 import { tt } from './i18n.js';
 
 export function newBriefing(settings, now = Date.now()) {
@@ -64,6 +64,7 @@ export function upgradeBriefing(b) {
 export function duplicateBriefing(src, settings) {
   const b = deepCopy(src);
   b.id = uid(12); b.createdAt = Date.now(); b.updatedAt = Date.now(); b.revision = 0; b.status = 'draft'; b.finalNo = 0; b.versions = []; b.log = []; b.accessCount = 0;
+  b.no = null; b.pdfs = []; b.assessment = null;   // neue Ordnungsnummer beim Speichern
   const tz = b.site.tz || 'Europe/Zurich';
   const next = addMin(b.time.startMs, 7 * 24 * 60);
   b.time.date = isoDate(tz, next); b.time.startMs = fromLocal(tz, b.time.date, b.time.time);
@@ -276,4 +277,51 @@ export function balloonImage(b, settings) {
   const B = settings?.balloons; if (!B || !b?.balloon) return '';
   const x = b.balloon.type === 'gas' ? (B.envelopes || []).find((e) => e.id === b.balloon.envelopeId) : (B.hab || []).find((e) => e.id === b.balloon.id);
   return x?.image || '';
+}
+
+// ---------------------------------------------------------------- 0.11: Ordnungsnummer, Fortschritt, Sperre
+/** Jahr für die Ordnungsnummer: Jahr des Fahrtdatums (Ablage nach Fahrt), sonst Erstellungsjahr. */
+export function briefingYear(b) {
+  const d = b?.time?.date; if (/^\d{4}-/.test(d || '')) return +d.slice(0, 4);
+  return new Date(b?.time?.startMs || b?.createdAt || Date.now()).getUTCFullYear();
+}
+/** Ordnungsnummer «JJJJ-NNN» aus Jahr und laufender Nummer. */
+export const formatNo = (year, n) => `${year}-${String(n).padStart(3, '0')}`;
+/** Anteil gefüllter sichtbarer Panels in Prozent (Fortschritt «in Arbeit NN %»). */
+export function completion(b, settings) {
+  const ps = visiblePanels(settings, b);
+  if (!ps.length) return 0;
+  const n = ps.filter((p) => panelFilled(p, b)).length;
+  return Math.round((100 * n) / ps.length);
+}
+/** Ende der Fahrt für die Sperre: Start + max(6 h, Fahrtdauer + 2 h). */
+export function lockMs(b) {
+  const start = b?.time?.startMs || 0;
+  const dur = (b?.intent?.durationMin || 0) * 60000;
+  return start + Math.max(6 * 3600000, dur + 2 * 3600000);
+}
+/** Gesperrt: die Fahrt liegt zurück → Briefing bleibt unverändert (Kopie mit neuem Datum anlegen). */
+export const isLocked = (b, now = Date.now()) => now > lockMs(b);
+/** Dateibasis «2026-017_Fahrtbriefing_HB-QWZ_2026-10-06» für PDF, JSON, ICS, FPL. */
+export function fileBase(b) {
+  const reg = (b.balloon?.reg || '').replace(/[^A-Za-z0-9-]+/g, '');
+  return [b.no || 'ohne-Nr', 'Fahrtbriefing', reg, b.time?.date || ''].filter(Boolean).join('_');
+}
+/** Titelzeile für Ausdrucke: «Fahrtbriefing · 2026-017 · HB-QWZ · Start: Di 06.10.2026, 06:30 – Oberlunkhofen AG». */
+export function titleLine(b, lang = 'de', appName = 'Fahrtbriefing') {
+  const z = b.site?.tz || 'Europe/Zurich';
+  return [appName, b.no || '', b.balloon?.reg || '', `Start: ${fmtDate(z, b.time.startMs, lang)}, ${hhmm(z, b.time.startMs)} – ${b.site?.name || ''}`].filter(Boolean).join(' · ');
+}
+/** «Letzte Änderung: 05.10.2026 09:37 · B. Wicki». */
+export function lastChangeLine(b, lang = 'de', label = 'Letzte Änderung') {
+  const z = b.site?.tz || 'Europe/Zurich';
+  return `${label}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.updatedBy ? ' · ' + b.updatedBy : ''}`;
+}
+/** «2 Pax: Viviane Graf (70 kg), Max Muster (85 kg)» — Gewicht aus dem Briefing, sonst Normgewicht. */
+export function paxLine(b, settings, placeholder = (i) => `Pax ${i + 1}`) {
+  const pax = b.persons?.pax || [];
+  if (!pax.length) return '0 Pax';
+  const norm = b.balloon?.personWeight ?? settings?.balloons?.gasDefaults?.personWeight ?? null;
+  const names = pax.map((x, i) => { const w = x.weight ?? norm; return `${x.name || placeholder(i)}${w != null ? ` (${Math.round(w)} kg)` : ''}`; });
+  return `${pax.length} Pax: ${names.join(', ')}`;
 }

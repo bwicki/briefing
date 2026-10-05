@@ -483,7 +483,8 @@ async function pdfRender(env, decrypt, ctx, body, auth) {
     const ct = (r.headers.get('Content-Type') || '').split(';')[0];
     if (!r.ok || ct !== 'application/pdf') { let m = `Browser Rendering HTTP ${r.status}`; try { const j = await r.json(); m = j.errors?.[0]?.message || m; } catch { /* kein JSON */ } return err(m, 502); }
     const buf = await r.arrayBuffer();
-    const key = `${id}/final-v${b.finalNo || 0}-${Date.now()}.pdf`;
+    const base = [b.no || 'ohne-Nr', 'Fahrtbriefing', String(b.balloon?.reg || '').replace(/[^A-Za-z0-9-]+/g, ''), b.time?.date || ''].filter(Boolean).join('_');
+    const key = `${id}/${base}_final-v${b.finalNo || 0}-${Date.now()}.pdf`;
     await env.FILES.put(key, buf, { httpMetadata: { contentType: 'application/pdf' } });
     await env.DB.prepare('INSERT INTO files (key,briefing_id,content_type,size,created_at) VALUES (?,?,?,?,?)').bind(key, id, 'application/pdf', buf.byteLength, Date.now()).run();
     return json({ url: `/files/${key}`, key, size: buf.byteLength, finalNo: b.finalNo || 0 });

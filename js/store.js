@@ -9,6 +9,7 @@
  */
 import { load, save, del, uid } from './util.js';
 import { mergeSettings } from './defaults.js';
+import { briefingYear, formatNo, lockMs } from './model.js';
 
 const cfg = (typeof window !== 'undefined' && window.BRIEFING_CONFIG) || {};
 const API = (cfg.apiBase || '').replace(/\/$/, '');
@@ -51,6 +52,7 @@ const local = {
   async saveBriefing(b, who) {
     const all = load(LS.briefings, {});
     b.revision = (b.revision || 0) + 1; b.updatedAt = Date.now(); b.updatedBy = who || 'local';
+    if (!b.no) b.no = nextLocalNo(briefingYear(b), all);
     all[b.id] = b; save(LS.briefings, all); return b;
   },
   async deleteBriefing(id) { const all = load(LS.briefings, {}); delete all[id]; save(LS.briefings, all); },
@@ -125,7 +127,7 @@ const remote = {
   async getBriefing(id) { const j = await api(`/api/briefings/${id}`); if (j.briefing) j.briefing.access = j.access || 'write'; return j.briefing; },
   async saveBriefing(b, who) {
     const j = await api(`/api/briefings/${b.id}`, { method: 'PUT', body: { briefing: b, who } });
-    Object.assign(b, { revision: j.revision, updatedAt: j.updatedAt, updatedBy: j.updatedBy });
+    Object.assign(b, { revision: j.revision, updatedAt: j.updatedAt, updatedBy: j.updatedBy }); if (j.no) b.no = j.no;
     return b;
   },
   async deleteBriefing(id) { await api(`/api/briefings/${id}`, { method: 'DELETE' }); },
@@ -144,7 +146,7 @@ const remote = {
   async openShared(token, who) { return api(`/api/shared/${token}${who ? `?who=${encodeURIComponent(who)}` : ''}`); },
   async saveShared(token, b, who) {
     const j = await api(`/api/shared/${token}`, { method: 'PUT', body: { briefing: b, who } });
-    Object.assign(b, { revision: j.revision, updatedAt: j.updatedAt, updatedBy: j.updatedBy });
+    Object.assign(b, { revision: j.revision, updatedAt: j.updatedAt, updatedBy: j.updatedBy }); if (j.no) b.no = j.no;
     return b;
   },
   async getLog(id) { return (await api(`/api/briefings/${id}/log`)).log; },
@@ -159,10 +161,17 @@ const remote = {
 
 function summary(b) {
   return {
-    id: b.id, startMs: b.time?.startMs, tz: b.site?.tz, site: b.site?.name, icao: b.site?.icao, elev: b.site?.elev,
-    balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo,
+    id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: lockMs(b), tz: b.site?.tz, site: b.site?.name, icao: b.site?.icao, elev: b.site?.elev,
+    balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo, progress: b.progress ?? null,
     revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy, links: (b.accessCount || 0),
   };
+}
+/** Lokaler Modus: Ordnungsnummer «JJJJ-NNN» fortlaufend je Jahr (Zähler in localStorage, Lücken durch Bestand geschlossen). */
+function nextLocalNo(year, all) {
+  const seq = load('fb.seq', {});
+  let n = Math.max(seq[year] || 0, ...Object.values(all).map((x) => (x.no && x.no.startsWith(`${year}-`) ? +x.no.slice(5) || 0 : 0)));
+  n += 1; seq[year] = n; save('fb.seq', seq);
+  return formatNo(year, n);
 }
 
 export const store = {

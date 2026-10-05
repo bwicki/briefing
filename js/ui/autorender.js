@@ -328,17 +328,20 @@ export function renderMetar(snap, b) {
   const rawNodes = (raw) => raw.split(/(\s+)/).map((tk) => (/^\s+$/.test(tk) || !badToken(tk) ? tk : h('span.bad', tk)));
   // Klartext: Markierungen aus dem Decoder → rot
   const marked = (line) => line.split(new RegExp(`(${MARK0}[^${MARK1}]*${MARK1})`)).filter(Boolean).map((x) => (x.startsWith(MARK0) ? h('span.bad', x.slice(1, -1)) : x));
-  const pair = (label, raw, lines) => h('div.metar-cols', [
-    h('div.raw', [h('div.lbl', label), h('pre.report', rawNodes(raw))]),
-    h('div.dec', [h('div.lbl', t('auto_decoded')), h('ul.decoded', lines.map((x) => h('li', marked(x))))]),
+  // kompakt: ohne Zeilen «METAR»/«TAF»/«Klartext» — Rohtext links, Klartext rechts
+  const pair = (label, raw, lines) => h('div.metar-cols.compact', [
+    h('div.raw', h('pre.report', rawNodes(raw))),
+    h('div.dec', h('ul.decoded', lines.map((x) => h('li', marked(x))))),
   ]);
+  // Stationsnamen mit ICAO-Abkürzungen (AP = Airport, INTL, AB = Air Base, AFLD = Airfield)
+  const stName = (n) => String(n || '').replace(/\b(Arpt|Airport|Aprt|Apt)\b\.?/gi, 'AP').replace(/\bIntl\b\.?/gi, 'INTL').replace(/\b(Air Base|Airbase|AFB|AB)\b/g, 'AB').replace(/\b(Airfield|Aerodrome)\b/gi, 'AFLD').replace(/\s+/g, ' ').trim();
   const arrow = (m) => { if (m.lat == null || b.site.lat == null) return null; const brg = bearing(b.site.lat, b.site.lon, m.lat, m.lon); return h('span.dirarrow', { title: `${Math.round(brg).toString().padStart(3, '0')}° ${compass(brg, lang)}`, style: { transform: `rotate(${Math.round(brg) - 90}deg)` } }, '➜'); };
   return h('div.auto-wrap', [
     h('div.note', `${d.metar.length} ${t('auto_metarWithin')} ${d.radiusKm || ''} km · ${t('auto_badLegend')}`),
     ...d.metar.map((m) => {
       const taf = d.taf?.[m.icaoId];
       return h('div.metar', [
-        h('div', [h('b', m.icaoId), ` ${m.name || ''} · `, arrow(m), ` ${Math.round(m.distKm)} km`, m.obsTime ? h('span.muted.small', ` · ${new Date(m.obsTime * 1000).toISOString().slice(11, 16)} UTC`) : null]),
+        h('div.mhead', [h('b', m.icaoId), ` ${stName(m.name)} · `, arrow(m), ` ${Math.round(m.distKm)} km`, m.obsTime ? h('span.muted.small', ` · ${new Date(m.obsTime * 1000).toISOString().slice(11, 16)} UTC`) : null]),
         pair('METAR', m.rawOb || '', decodeMetar(m.rawOb || '', lang)),
         taf ? pair('TAF', tafFmt(taf.rawTAF), decodeTaf(taf.rawTAF || '', lang)) : h('div.note', `${t('auto_noTaf')}`),
       ]);

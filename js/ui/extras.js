@@ -5,7 +5,7 @@ import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { textarea, field, check } from './widgets.js';
 import { placeLine, mapsUrl } from './place.js';
-import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel, balloonImage } from '../model.js';
+import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel, balloonImage, titleLine, lastChangeLine, fileBase } from '../model.js';
 import { qrSvg } from './access.js';
 import { hhmm, fmtDate, fmtDateTime, fmtDur } from '../calc/time.js';
 import { goNoGo } from '../calc/gonogo.js';
@@ -73,7 +73,7 @@ export async function crewDialog(b, ctx) {
     h('button.btn', { type: 'button', onclick: () => navigator.clipboard.writeText(txt.value).then(() => toast(t('copied'))) }, t('copy')),
     h('a.btn', { href: '#', onclick: (e) => { e.preventDefault(); window.open(`https://wa.me/?text=${encodeURIComponent(txt.value)}`, '_blank', 'noopener'); } }, t('ac_whatsapp')),
     h('a.btn', { href: '#', onclick: (e) => { e.preventDefault(); location.href = `mailto:${encodeURIComponent(crewEmails(b, ctx))}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(txt.value)}`; } }, t('ac_mail')),
-    h('button.btn', { type: 'button', onclick: () => downloadText(`Ballonfahrt_${b.time.date}_${(b.site.name || 'start').replace(/[^\w]+/g, '_')}.ics`, icsFor(b, ctx, { link }), 'text/calendar') }, t('ics_download')),
+    h('button.btn', { type: 'button', onclick: () => downloadText(`${fileBase(b)}.ics`, icsFor(b, ctx, { link }), 'text/calendar') }, t('ics_download')),
   ])]);
   await dialog(t('crew_title'), content, [{ label: t('close'), primary: true }], { cls: 'wide' });
 }
@@ -168,7 +168,7 @@ export function paxSheet(b, ctx) {
   const pic = S.persons.find((p) => p.id === b.persons.picId);
   const items = (S.paxCardItems?.[lang] || S.paxCardItems?.de || []);
   const card = h('div.brief.paxcard', [
-    h('div.bh', [h('div.l', [balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null, h('div', [h('h1', `${paxCardTitle(S)} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)])]), h('div.r', h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }))]),
+    h('div.bh', [h('div.l', [balloonImage(b, S) ? h('img.bimg', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null, h('div', [h('h1', `${paxCardTitle(S)} · ${fmtDate(zz, b.time.startMs, lang)}`), h('div', `${b.balloon.label} · PIC ${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`)])]), h('div.r', [h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }), h('div.tl', titleLine(b, lang, t('appName'))), h('div', lastChangeLine(b, lang, t('lastChange')))])]),
     h('div.bs', t('pax_meet')),
     h('div.pax-meet', [h('div.kv.pax-kv', [
       [t('meeting'), meet ? placeLine({ name: meet.name, lat: meet.lat, lon: meet.lon }, { noElev: true }) : (b.schedule.meetingName || '–')],
@@ -207,7 +207,7 @@ export async function exportAll(ctx, all = false) {
   else data = { exportedAt: Date.now(), settings: ctx.settings, briefings: await Promise.all((await ctx.store.listBriefings()).map((s) => ctx.store.getBriefing(s.id))) };
   downloadText(`fahrtbriefing-export-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data, null, 1), 'application/json');
 }
-export function exportOne(b) { downloadText(`briefing-${b.time.date}-${(b.site.name || b.id).replace(/[^\w]+/g, '_')}.json`, JSON.stringify(b, null, 1), 'application/json'); }
+export function exportOne(b) { downloadText(`${fileBase(b)}.json`, JSON.stringify(b, null, 1), 'application/json'); }
 
 // ---------------------------------------------------------------- Final-PDF
 /** Server-PDF (Browser Rendering) oder manuelles Ablegen eines gedruckten PDFs. */

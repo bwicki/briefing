@@ -1,7 +1,7 @@
 """Playwright-Durchlauf im lokalen Modus: Kennwort, Ablauf 1–6, Erarbeitung, Briefingsicht, Settings.
 Aufruf: python3 test/ui.smoke.py [base_url]  (Server: python3 -m http.server 8080)
 """
-import sys, json, time, os
+import sys, json, time, os, re
 from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, os.path.dirname(__file__))
@@ -132,7 +132,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         keys = pg.evaluate("() => [...document.querySelectorAll('.panel')].map(p => p.id)")
         assert keys.index('panel-C.notam') < keys.index('panel-C.fpl'), 'Flugplan nach NOTAM'
         # Phase 3: Tendenz-Karte, «Mehr»-Menü, Pax-Karte, Crew-Dialog
-        assert 'tendenz' in pg.inner_text('.side').lower(), 'Go/No-Go-Karte'
+        assert 'modellsicht' in pg.inner_text('.side').lower(), 'Go/No-Go-Karte'
         pg.click('#menuBtn'); pg.wait_for_timeout(300)
         assert pg.is_visible('#menu details.submenu'), 'Hamburger mit Untermenüs offen'
         assert 'Neues Briefing' not in pg.inner_text('#menu'), 'kein «Neues Briefing» im Hamburger'
@@ -176,7 +176,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         assert pg.query_selector('#menu details.submenu summary:has-text("JSON")') is not None, 'JSON-Untermenü im Hamburger'
         pg.click('#menuBtn'); pg.wait_for_timeout(200)
         # 0.10.1: Muster auch bei der Gashülle, Bild der Hülle, Panel-Tabelle mit Nummern
-        assert 'HB-QPJ · NL/STU-1000' in pg.inner_text('.settings'), 'Muster bei der Gashülle'
+        assert 'HB-QPJ · NL-STU/1000' in pg.inner_text('.settings'), 'Muster bei der Gashülle'
         pg.set_input_files('.settings .item-box input[type=file]', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'img', 'wicki-logo.png')); pg.wait_for_timeout(600)
         assert pg.query_selector('.settings img.bimg') is not None, 'Hüllenbild in den Einstellungen'
         pg.fill('.settings .item-box input[type=text]', 'HB-QWZ'); pg.wait_for_timeout(200)
@@ -195,9 +195,30 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.goto(BASE + '#/new'); pg.wait_for_timeout(900)
         assert pg.query_selector('.wiz img.bimg') is not None, 'Hüllenbild im Wizard Schritt 1'
         pg.screenshot(path=f'{OUT}/{name}_15_wizard_img.png')
-        # Liste erneut
+        # Liste erneut — 0.11: Ordnungsnummer, «in Arbeit NN %», Kopfzeile, Sperre
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
         pg.screenshot(path=f'{OUT}/{name}_11_list.png')
+        lst = pg.inner_text('#view')
+        assert re.search(r'20\d\d-\d{3}', lst), 'Ordnungsnummer in der Liste'
+        assert 'in Arbeit' in lst and 'Entwurf' not in lst, 'Status «in Arbeit NN %» statt Entwurf'
+        pg.goto(BASE + f'#/v/{bid}'); pg.wait_for_timeout(900)
+        hdr = pg.inner_text('.brief .bh .r')
+        assert hdr.startswith('Fahrtbriefing · 20') and 'Start:' in hdr and 'Letzte Änderung' in hdr, 'Titelzeile und letzte Änderung: ' + hdr[:80]
+        assert 'Ordnungsnummer' in pg.inner_text('.brief tr.row-A-core') and 'Pax:' in pg.inner_text('.brief tr.row-A-core'), 'Nummer und Pax-Zeile in den Stammdaten'
+        pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1200)
+        assert pg.query_selector('#panel-A\\.core .refresh-all button') is not None, 'Knopf «Alle verfügbaren Daten aktualisieren»'
+        assert all(pg.query_selector(f'#panel-{k} .panel-head .lft .src') is not None for k in ['A\\.core', 'B\\.metar', 'C\\.fpl']), 'Stand-Zeile in jedem Panel-Kopf'
+        assert 'modellsicht' in pg.inner_text('.side').lower() and 'zusammenfassung' in pg.inner_text('.side').lower(), 'rechte Spalte: Einschätzung/Modellsicht + Zusammenfassung'
+        pg.screenshot(path=f'{OUT}/{name}_16_editor_head.png')
+        # Sperre: Fahrt in die Vergangenheit legen → Erarbeitung leitet auf die Briefingsicht mit Hinweis um
+        pg.evaluate("""(id) => { const all = JSON.parse(localStorage.getItem('fb.briefings') || '{}'); const b = all[id]; b.time.startMs = Date.now() - 48 * 3600000; localStorage.setItem('fb.briefings', JSON.stringify(all)); }""", bid)
+        pg.goto(BASE + '#/list'); pg.wait_for_timeout(500)
+        pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1500)
+        assert pg.query_selector('.lockbar') is not None and '#/v/' in pg.evaluate('location.hash'), 'gesperrtes Briefing → Briefingsicht mit Hinweis'
+        pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
+        pg.click('.list-head button.chip:has-text("Archiv")'); pg.wait_for_timeout(400)
+        assert '🔒' in pg.inner_text('#view'), 'Schloss in der Liste (Archiv)'
+        pg.screenshot(path=f'{OUT}/{name}_17_locked.png')
         b.close()
 
 run('desktop', {'width': 1366, 'height': 860})

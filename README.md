@@ -208,13 +208,31 @@ in Einstellungen → Meteo (Bodenwind, Böen, Böigkeit, Niederschlag, CAPE, Sic
 Wolkenbasis, bürgerliche Dämmerung). Sie ersetzt keine Beratung — sie zeigt,
 welche Stunden man anschauen muss.
 
+### Ordnungsnummer, Fortschritt, Sperre (0.11)
+
+Jedes Briefing erhält beim ersten Speichern eine **Ordnungsnummer `JJJJ-NNN`**
+(Jahr des Fahrtdatums, laufende Nummer je Jahr, z. B. `2026-017`); sie wird im
+Server-Modus zentral vergeben (eindeutig über alle Benutzer), im lokalen Modus im
+Browser. Sie steht in der Liste, in den Stammdaten, in der Kopfzeile und auf allen
+Ausdrucken rechtsbündig als Titelzeile `Fahrtbriefing · 2026-017 · HB-QWZ · Start:
+Di 06.10.2026, 06:30 – Oberlunkhofen AG`, darunter `Letzte Änderung: Datum Zeit ·
+Bearbeiter`. Dateinamen (PDF, JSON, ICS, FPL) beginnen mit der Nummer:
+`2026-017_Fahrtbriefing_HB-QWZ_2026-10-06[_final-v1].pdf`. Bestehende Briefings
+werden beim ersten Aufruf nach dem Update nach Startzeit durchnummeriert.
+
+Die Liste zeigt als Status **«in Arbeit NN %»** (Anteil gefüllter Panels) oder
+**«Final vN»**. Liegt die Fahrt zurück (Start + max. 6 h / Fahrtdauer + 2 h), ist das
+Briefing **gesperrt** (🔒 in der Liste): Erarbeitung und Wizard leiten auf die
+Briefingsicht um, dort steht der Hinweis mit **«Kopieren und neu anlegen»** (neue
+Nummer, Datum eine Woche später, Panels leer). Das alte Briefing bleibt unverändert.
+
 **Freigeben als Final** prüft die Pflicht-Panels (Einstellungen → Panels & Pflicht);
 fehlt etwas, kann mit Begründung trotzdem freigegeben werden (Protokoll). Jede
 Freigabe wird als Final v1, v2 … mit Schnappschuss abgelegt.
 
 ### Phase 3: Tendenz, Änderungen, Gesamteinschätzung, Pax-Karte, Crew, PDF, offline
 
-* **Tendenz (Modell)** rechts im Editor und oben in der Briefingsicht: fasst die
+* **Einschätzung/Modellsicht** rechts im Editor und oben in der Briefingsicht: fasst die
   Stundenampel des Meteogramms im Fahrtfenster und die Go/No-Go-Kriterien
   (Trockenfenster, Gewitterabstand/CAPE, Mittelwind, Böen; Einstellungen →
   Go/No-Go) zu fahrbar/grenzwertig/nein mit Gründen zusammen. Kein Startentscheid.

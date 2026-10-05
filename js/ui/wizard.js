@@ -4,7 +4,7 @@ import { t, getLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, kv, stats, fieldAdd } from './widgets.js';
 import { scheduleEditor } from './parts.js';
-import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan, directionText } from '../model.js';
+import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan, directionText, isLocked } from '../model.js';
 import { placeRow, placeLine, pickPlace, mapsLink, typeToPick } from './place.js';
 import { stammLabel } from '../stamm.js';
 import { resolveBalloon } from '../defaults.js';
@@ -25,6 +25,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
   let b = opts.briefing || (id && !ctx.shared ? await ctx.store.getBriefing(id) : null);
   let fresh = false;
   if (!b) { b = newBriefing(ctx.settings); fresh = true; }
+  if (!fresh && isLocked(b)) { ctx.navigate(ctx.shared ? `#/s/${ctx.shared.token}/v` : `#/v/${b.id}`); return; }   // Fahrt vorbei: unverändert lassen
   upgradeBriefing(b);
   let step = b.wizardStep || (id ? 6 : 1);
   const tz = () => b.site.tz || 'Europe/Zurich';

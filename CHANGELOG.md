@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.11.0 — 2026-10-05 · Ordnungsnummer · Fortschritt · Sperre nach der Fahrt · Kopfzeilen
+
+* **Ordnungsnummer `JJJJ-NNN`** je Briefing (Jahr des Fahrtdatums, laufend je Jahr; Server-Modus:
+  zentraler Zähler in D1, eindeutig über alle Benutzer; lokaler Modus: Browser). Anzeige in der
+  Liste (eigene Spalte, suchbar), in den Stammdaten, in der Kopfzeile und auf allen Ausdrucken als
+  rechtsbündige Titelzeile **«Fahrtbriefing · 2026-017 · HB-QWZ · Start: Di 06.10.2026, 06:30 –
+  Oberlunkhofen AG»**; darunter **«Letzte Änderung: Datum Zeit · Bearbeiter»**. Dateinamen von
+  PDF (Server-Render), JSON-Export, Kalender (.ics) und FPL-Text beginnen mit der Nummer. Bestand
+  wird beim ersten Aufruf nach dem Update nach Startzeit durchnummeriert (Worker-Migration, neue
+  Spalten `no`, `progress`, `end_ms`).
+* Liste: Status **«in Arbeit NN %»** (Anteil gefüllter sichtbarer Panels) statt «Entwurf»; finale
+  Briefings zeigen nur **«Final vN»**; Phase «läuft» heisst «Fahrt läuft».
+* **Sperre nach der Fahrt:** liegt Start + max(6 h, Fahrtdauer + 2 h) zurück, bleibt das Briefing
+  unverändert – Erarbeitung und Wizard leiten auf die Briefingsicht um, dort Hinweis mit
+  **«Kopieren und neu anlegen»** (neue Nummer, Datum +7 Tage). 🔒 in der Liste und Kopfzeile.
+* Briefingsicht: rechts oben Logo, darunter Titelzeile, letzte Änderung, Status; Pax-Blatt ebenso.
+* **Panel-Köpfe einheitlich:** links Nummer + Titel und darunter immer «Stand: …» (oder «noch nicht
+  bearbeitet»), rechts Kennzeichen + KI-Knöpfe und darunter rechtsbündig der Quell-Link.
+  KI-Knopf **«erneuern» violett schraffiert**, «KI-Kommentar» (neu) wie bisher.
+* Rechte Spalte: **«Einschätzung/Modellsicht»** (bisher «Tendenz (Modell)»), Wertung in normaler
+  Schriftgrösse mit horizontal ausgerichtetem Punkt; zuunterst Karte **«Zusammenfassung»** mit
+  Knopf «KI-Zusammenfassung erstellen/erneuern» (Gesamteinschätzung) und Text.
+* Stammdaten A1: Zeile **Ordnungsnummer**; **«2 Pax: Name (70 kg), Name (85 kg)»** (Gewicht aus
+  dem Briefing, sonst Normgewicht); oben Knopf **«Alle verfügbaren Daten aktualisieren»** (alle
+  automatischen Panels, ohne KI-Kommentare) mit Status.
+* METAR/TAF kompakter: ohne Zeilen «METAR», «TAF», «Klartext»; Stationsnamen mit ICAO-Abkürzungen
+  (AP, INTL, AB, AFLD statt «Arpt»).
+* **BAZL-Registerdaten** der vier Ballone (Luftfahrzeugregister, Stand 05.10.2026) in den Stammdaten:
+  24-bit-Adresse (HB-QWP 4B2C8B, HB-QWZ 4B2C95, HB-QPJ 4B2BCF, HB-QWV 4B2C91), Muster (HB-QWP
+  = Schroeder Fire Balloons G 34/24, bisher falsch «BB34Z»; Wörner NL-STU/1000), Hersteller, S/N,
+  Baujahr, MTOM, MOPSC, TCDS, ARC gültig bis (als Dokument «Lufttüchtigkeitszeugnis (ARC)» mit
+  Ablaufdatum). Bestehende Einstellungen werden beim Laden ergänzt (alter Hexcode «4c4b4» ersetzt);
+  CODE/ im Flugplan erscheint damit automatisch.
+* Flugplan: RMK/ bei Ausbildung **«TRG FLT»**, bei Examination **«SKILL TEST»** (getrennt einstellbar).
+
 ## 0.10.2 — 2026-10-05 · skybriefing-Importformat · Rückmeldungen 0.10.0/0.10.1
 
 * **Flugplan:** ICAO-Nachricht exakt im Format des skybriefing-Imports («Flightplan and Briefing →

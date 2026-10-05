@@ -24,21 +24,21 @@ export const DEFAULT_SETTINGS = {
     defaultBasket: 'wettkampf',
     hab: [
       {
-        id: 'HB-QWP', name: 'HB-QWP', model: 'BB34Z', hex: '', volume: 3400,
+        id: 'HB-QWP', name: 'HB-QWP', model: 'G 34/24', hex: '4B2C8B', volume: 3400,
         masses: { envelope: 139, burner: 26, basket: 68, equipment: 20 }, mtom: 883,
         personWeight: 80, envTempC: 100, envMaxC: null, usableFraction: 0.9, burnRate: 25,
         cylinders: [cyl('va70', 4)], rigMin: 45, maxPersons: 5,
       },
       {
-        id: 'HB-QWZ', name: 'HB-QWZ', model: 'BB26E', hex: '4c4b4', volume: 2600,
+        id: 'HB-QWZ', name: 'HB-QWZ', model: 'BB26E', hex: '4B2C95', volume: 2600,
         masses: { envelope: 103, burner: 14, basket: 49, equipment: 15 }, mtom: 730,
         personWeight: 85, envTempC: 110, envMaxC: null, usableFraction: 1.0, burnRate: 25,
         cylinders: [cyl('wo_s', 4)], rigMin: 45, maxPersons: 4,
       },
     ],
     envelopes: [
-      { id: 'HB-QPJ', name: 'HB-QPJ', model: 'NL/STU-1000', volume: 1050, mass: 116, gas: 'H2', purity: 0.995, fillFraction: 1.0, placeholder: false },
-      { id: 'HB-QWV', name: 'HB-QWV', model: 'NL/STU-1000', volume: 1050, mass: 116, gas: 'H2', purity: 0.995, fillFraction: 1.0, placeholder: true },
+      { id: 'HB-QPJ', name: 'HB-QPJ', model: 'NL-STU/1000', hex: '4B2BCF', volume: 1050, mass: 116, gas: 'H2', purity: 0.995, fillFraction: 1.0, placeholder: false },
+      { id: 'HB-QWV', name: 'HB-QWV', model: 'NL-STU/1000', hex: '4B2C91', volume: 1050, mass: 116, gas: 'H2', purity: 0.995, fillFraction: 1.0, placeholder: true },
     ],
     baskets: [
       { id: 'wettkampf', name: 'Wettkampfkorb', mass: 50, equipment: 40, instruments: 0, maxPersons: 2, ballastUnitKg: 15, reserveUnits: 3, placeholder: true },
@@ -132,9 +132,28 @@ export const DEFAULT_SETTINGS = {
     r19: { uhf: false, vhf: true, elba: false }, s19: { polar: false, desert: false, maritime: false, jungle: false },
     j19: { light: true, fluores: false, uhf: false, vhf: false }, d19: { number: '', capacity: '', cover: false, colour: '' },
     rmk18: 'CREW CONTACT {picPhone} AND {satphone}', n19: 'GSM PIC {picPhone} AND SATPHONE {satphone}',
-    rmkTraining: 'TRAINING FLT', rmkExam: 'TRAINING FLT SKILL TEST',
+    rmkTraining: 'TRG FLT', rmkExam: 'SKILL TEST',
   },
 };
+
+/** Schweizerisches Luftfahrzeugregister (BAZL, app02.bazl.admin.ch), Stand 05.10.2026 — wird in die Stammdaten übernommen. */
+export const BAZL_REGISTER = {
+  'HB-QWP': { manufacturer: 'Theo Schroeder Fire Balloons GmbH', model: 'G 34/24', type: 'hab', hex: '4B2C8B', serial: '1699', year: 2017, mtom: 950, mopsc: 4, tcds: 'EASA.BA.016', registered: '2017-04-11', arcUntil: '2027-01-12' },
+  'HB-QWZ': { manufacturer: 'Balóny Kubíček spol. s r.o.', model: 'BB26E', type: 'hab', hex: '4B2C95', serial: '1630', year: 2019, mtom: 730, mopsc: 2, tcds: 'EASA.BA.003', registered: '2019-12-23', arcUntil: '2027-01-12' },
+  'HB-QPJ': { manufacturer: 'Ballonbau Wörner GmbH', model: 'NL-STU/1000', type: 'gas', hex: '4B2BCF', serial: '1097', year: 2011, mtom: 1160, mopsc: 6, tcds: 'EASA.BA.009', registered: '2012-02-27', arcUntil: '2027-03-30' },
+  'HB-QWV': { manufacturer: 'Ballonbau Wörner GmbH', model: 'NL-STU/1000', type: 'gas', hex: '4B2C91', serial: '1117', year: 2023, mtom: 1160, mopsc: 2, tcds: 'EASA.BA.009', registered: '2023-06-26', arcUntil: '2027-07-01' },
+};
+/** Registerdaten in einen Ballon/eine Hülle übernehmen: Hexcode, Muster (falls Platzhalter/alt), Register-Block, ARC-Dokument. */
+export function applyRegister(x) {
+  const r = BAZL_REGISTER[x?.id]; if (!r) return x;
+  if (!x.hex || !/^[0-9A-F]{6}$/i.test(x.hex)) x.hex = r.hex;
+  if (!x.model || /^Heissluft|^BB34Z$|^NL\/STU-1000$/.test(x.model)) x.model = r.model;
+  x.register = { ...r };
+  x.docs = Array.isArray(x.docs) ? x.docs : [];
+  const arc = x.docs.find((d) => /ARC|Lufttüchtigkeit/i.test(d.type || '') || /ARC/i.test(d.name || ''));
+  if (arc) { if (!arc.validTo) arc.validTo = r.arcUntil; } else x.docs.push({ type: 'Lufttüchtigkeitszeugnis (ARC)', name: '', validTo: r.arcUntil, url: '' });
+  return x;
+}
 
 /** Standardballon-Kombination für ein neues Briefing. */
 export function defaultBalloon(settings) {
@@ -184,11 +203,12 @@ export function mergeSettings(saved) {
   // 0.10.2: Standardradien Beobachtungen 50 → 75 km, Sonden 150 → 250 km (nur wenn noch die alten Standards gespeichert sind)
   if (out.obsRadiusKm === 50) out.obsRadiusKm = 75;
   if (out.sondeKm === 150) out.sondeKm = 250;
-  // 0.7: Beispielballone «Heissluft NNNN m³» → Muster (Beispiel) + Transponder-Hexcode
+  // 0.7: Beispielballone «Heissluft NNNN m³» → Muster + Transponder-Hexcode; 0.11.0: BAZL-Registerdaten (Hex 24-bit, Muster, ARC)
   for (const x of out.balloons?.hab || []) {
-    if (x.id === 'HB-QWZ' && /^Heissluft/.test(x.model || '')) { x.model = 'BB26E'; if (!x.hex) x.hex = '4c4b4'; }
-    if (x.id === 'HB-QWP' && /^Heissluft/.test(x.model || '')) x.model = 'BB34Z';
     if (x.hex == null) x.hex = '';
+    if (x.id === 'HB-QWZ' && x.hex.toLowerCase() === '4c4b4') x.hex = '';   // alter, unvollständiger Wert
+    applyRegister(x);
   }
+  for (const x of out.balloons?.envelopes || []) applyRegister(x);
   return out;
 }

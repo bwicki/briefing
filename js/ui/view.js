@@ -1,11 +1,11 @@
 /* Fahrtbriefing — Briefingsicht: das fertige Briefing, Grundlage für Druck und Leselink. */
-import { h, clear, fmt, fmtSigned, textToNodes } from '../util.js';
+import { h, clear, fmt, fmtSigned, textToNodes, dialog, toast } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunRows, twilightClass } from './parts.js';
-import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage } from '../model.js';
+import { massPerf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine } from '../model.js';
 import { fplView } from './fplpanel.js';
 import { docsLine } from '../stamm.js';
 import { placeLine } from './place.js';
@@ -25,8 +25,15 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const S = ctx.settings, z = b.site.tz || 'Europe/Zurich', lang = getLang();
   const foreign = !shared && b.access === 'read';   // Briefing eines anderen Benutzers (Super / Materialeigner): nur lesen
   const canEdit = !foreign && (!shared || shared.role === 'edit');
+  const locked = isLocked(b);
+  /** Fahrt vorbei: Hinweis mit «Kopieren und neu anlegen» (nur Eigner); das Briefing selbst bleibt unverändert. */
+  const lockDialog = async () => {
+    const copyBtn = !shared && !foreign;
+    const r = await dialog(`🔒 ${t('locked_title')}`, h('p', t('locked_text', { d: fmtDate(z, b.time.startMs, lang) })), [{ label: t('close'), value: false }, copyBtn ? { label: t('locked_copy'), value: true, primary: true } : null].filter(Boolean));
+    if (r === true) { const c = duplicateBriefing(b, S); await ctx.store.saveBriefing(c, ctx.who); toast(`${c.no || ''} ✓`); ctx.navigate(`#/new/${c.id}`); }
+  };
   const tools = [];
-  const toggle = h('div.viewtoggle', [canEdit ? h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}` : `#/b/${b.id}`) }, t('view_edit')) : null, h('button.on', { type: 'button' }, t('view_brief'))]);
+  const toggle = h('div.viewtoggle', [canEdit ? h('button', { type: 'button', onclick: () => (locked ? lockDialog() : ctx.navigate(shared ? `#/s/${shared.token}` : `#/b/${b.id}`)) }, t('view_edit')) : null, h('button.on', { type: 'button' }, t('view_brief'))]);
   const paxHash = shared?.material ? `#/m/${shared.token}/${b.id}/p` : shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`;
   if (shared?.material) tools.push(h('button.btn', { type: 'button', onclick: () => ctx.navigate(`#/m/${shared.token}`) }, `← ${t('ml_title')}`));
   // Druckteile aus dem Hash (?parts=brief,dabs,notam,pax) oder aus dem Druckdialog; Standard: Briefing + DABS-Beilage + NOTAM
@@ -44,7 +51,8 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   tools.push(toggle, printButton(() => printDialog(b, ctx, shared, (p) => { applyParts(p.split(',')); setTimeout(() => window.print(), 150); })));
   const menu = [{ label: t('more'), items: [{ label: paxCardTitle(S), fn: () => ctx.navigate(paxHash) }] }];
   const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
-  setHeader({ title: `${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${ownerNote}`, tools, menu });
+  setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${locked ? ' · 🔒 ' + t('locked') : ''}${ownerNote}`, tools, menu });
+  if (locked) view.appendChild(h('div.card.lockbar.no-print', h('div.card-body.row-actions', [h('span', `🔒 ${t('locked_title')}`), h('span.note.small', t('locked_text', { d: fmtDate(z, b.time.startMs, lang) })), !shared && !foreign ? h('button.btn.small.primary', { type: 'button', onclick: lockDialog }, t('locked_copy')) : null])));
   view.appendChild(brief);
   const attachments = [];   // [{ title, images }] → Beilagen am Schluss
   const sun = sunFor(b, S, ctx.racTable);
@@ -52,9 +60,15 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const mp = massPerf(b, S);
   const sched = scheduleFor(b, sun);
 
+  // Kopf: links Datum/Ort und Ballon; rechts Logo, darunter Titelzeile «Fahrtbriefing · Nr · Kennzeichen · Start: …», letzte Änderung, Status
   brief.appendChild(h('div.bh', [
-    h('div', [h('h1', `${t('appName')} · ${fmtDate(z, b.time.startMs, lang)} · ${b.site.name}`), h('div', `${b.balloon.label} · ${t('kind_' + b.flight.kind)} · LTF ${b.flight.operatorName}`)]),
-    h('div.r', [h('div', `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'} LT (${b.updatedAt ? hhmm('UTC', b.updatedAt) : ''} UTC)`), h('div', `${b.status === 'final' ? t('released', { n: b.finalNo }) : t('status_draft')} v${b.revision || 0} · PIC ${b.persons.pic}`), h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' })]),
+    h('div.l', [h('h1', `${fmtDate(z, b.time.startMs, lang)} · ${b.site.name}`), h('div', `${b.balloon.label} · ${t('kind_' + b.flight.kind)} · LTF ${b.flight.operatorName}`)]),
+    h('div.r', [
+      h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' }),
+      h('div.tl', titleLine(b, lang, t('appName'))),
+      h('div', lastChangeLine(b, lang, t('lastChange'))),
+      h('div', `${b.status === 'final' ? t('released', { n: b.finalNo }) : b.progress == null ? t('status_inwork') : t('status_progress', { p: b.progress })} · v${b.revision || 0} · PIC ${b.persons.pic}${locked ? ' · 🔒' : ''}`),
+    ]),
   ]));
 
   const gn = goNoGo(b, S);
@@ -129,10 +143,10 @@ export async function renderBrief(view, ctx, id, opts = {}) {
 
   function coreRows() {
     return h('div.kv', [
-      [t('core_reg'), b.balloon.label], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
+      [t('core_no'), b.no || '–'], [t('core_reg'), b.balloon.label], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
       [t('core_kind'), ['private', 'commercial', 'training', 'exam'].map((k) => `${b.flight.kind === k ? '☑' : '☐'} ${t('kind_' + k)}`).join('  ') + ` · LTF: ${b.flight.operatorName}`],
       [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('core_pic'), b.persons.pic],
-      [t('core_pax'), `${b.persons.pax.length}: ${b.persons.pax.map((x, i) => x.name || t('paxPlaceholder', { n: i + 1 })).join(', ') || '–'}`], [t('core_retrieve'), b.persons.retrieve || '–'],
+      [t('core_pax'), paxLine(b, S, (i) => t('paxPlaceholder', { n: i + 1 }))], [t('core_retrieve'), b.persons.retrieve || '–'],
       [t('core_site'), placeLine(b.site)],
       [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}${b.intent.remark ? ' · ' + b.intent.remark : ''}`],
       ...(docsLine(b.balloon.docs) ? [[t('docs'), docsLine(b.balloon.docs)]] : []),
