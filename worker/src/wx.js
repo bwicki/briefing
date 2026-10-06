@@ -456,7 +456,9 @@ async function notamAutorouter(env, decrypt, ctx, lat, lon, radiusNm, cc) {
   });
   const items = rows.map((r) => {
     const num = `${r.series || ''}${String(r.number ?? '').padStart(4, '0')}/${String(r.year ?? '').slice(-2)}`;
-    const plat = r.lat != null ? +r.lat : null, plon = r.lon != null ? +r.lon : null;
+    // Koordinaten: Dezimalgrad; die Doku nennt «Garmin format» – kommen Halbkreis-Einheiten (|Wert| > 180), umrechnen (× 180 / 2³¹)
+    const deg = (v) => { if (v == null || v === '') return null; const n = +v; if (!Number.isFinite(n)) return null; return Math.abs(n) > 180 ? n * 180 / 2147483648 : n; };
+    const plat = deg(r.lat), plon = deg(r.lon);
     const iso = (v) => (v ? new Date(+v * 1000).toISOString() : null);
     const formatted = `Q) ${r.fir || ''}/Q${r.code23 || ''}${r.code45 || ''}/${r.traffic || ''}/${r.purpose || ''}/${r.scope || ''}/${String(r.lower ?? '000').padStart(3, '0')}/${String(r.upper ?? '999').padStart(3, '0')}/\nA) ${r.itema || ''} B) ${iso(r.startvalidity) || ''} C) ${r.endvalidity ? iso(r.endvalidity) : 'PERM'}${r.estimation ? ' EST' : ''}\n${r.itemd ? 'D) ' + r.itemd + '\n' : ''}E) ${r.iteme || ''}${r.itemf ? '\nF) ' + r.itemf : ''}${r.itemg ? ' G) ' + r.itemg : ''}`;
     return { id: `${r.itema}-${num}`, number: num, type: r.type, location: r.itema, icao: r.itema, start: iso(r.startvalidity), end: r.endvalidity ? iso(r.endvalidity) : 'PERM', text: r.iteme || '', formatted, minFL: r.lower ?? null, maxFL: r.upper ?? null, radius: r.radius ?? null, lat: plat, lon: plon, scope: r.scope, code: `${r.code23 || ''}${r.code45 || ''}` };
