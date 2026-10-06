@@ -125,8 +125,8 @@ funktioniert genauso.
 
 1. https://briefing.wicki.aero öffnen — die Kopfzeile zeigt jetzt **nicht** mehr
    «Lokaler Modus».
-2. Benutzer `bwicki`, Kennwort `1234` (bei einer bestehenden Installation das
-   bisherige Kennwort — es wird beim ersten Start in den Supermaster-Benutzer
+2. Nutzer `bwicki`, Kennwort `1234` (bei einer bestehenden Installation das
+   bisherige Kennwort — es wird beim ersten Start in den Supermaster-Nutzer
    übernommen), dann **Einstellungen → Experte → Kennwort ändern** (längeres
    Kennwort wählen).
 3. Einstellungen → Zugänge: API-Schlüssel und Logins eintragen; sie werden
@@ -155,7 +155,7 @@ funktioniert genauso.
         account (client_credentials) – private use, balloon flight briefing
         tool.» Die Freischaltung kommt per E-Mail (meist innert Tagen).
      3. Nach der Freischaltung in der App unter Einstellungen → Zugänge
-        «autorouter Benutzer» = E-Mail des Kontos, «autorouter Kennwort» =
+        «autorouter Nutzer» = E-Mail des Kontos, «autorouter Kennwort» =
         Kennwort des Kontos eintragen (die App holt damit ein einstündiges
         Token über `api.autorouter.aero/v1.0/oauth2/token`).
      Das NOTAM-Panel fragt dann je FIR der Fahrt (Startort, Landeraum,
@@ -194,11 +194,11 @@ funktioniert genauso.
    speichern.
 5. Daten aus dem lokalen Modus werden nicht automatisch übernommen — Briefings dort
    neu anlegen (Phase 1 ist dafür gedacht, mit dem Server zu beginnen).
-6. Weitere Benutzer: **Einstellungen → Benutzer & Freigaben → Neuer Benutzer**
+6. Weitere Nutzer: **Einstellungen → Nutzer & Freigaben → Neuer Nutzer**
    (Anmeldename, Anzeigename, Startkennwort, Rolle, «Stamm kopieren von» oder
-   Beispiel-Stamm, KI/NOTAM/PDF freischalten). Der neue Benutzer ändert sein
+   Beispiel-Stamm, KI/NOTAM/PDF freischalten). Der neue Nutzer ändert sein
    Kennwort selbst unter Experte.
-7. Externe Materialeigner ohne Konto: Einstellungen → Benutzer & Freigaben →
+7. Externe Materialeigner ohne Konto: Einstellungen → Nutzer & Freigaben →
    *Fahrten mit meinem Material* → Name, Kennungen, Gültigkeit → Link weitergeben.
 
 ## 7b Bestehende Datenbank auf 0.5.0 heben (Mehrbenutzer)
@@ -231,7 +231,7 @@ die App automatisch die Kopie von gafor.wicki.aero.
 * **RAC 4-4:** jedes Jahr das neue PDF aus dem eVFR-Manual unter
   Einstellungen → Sonne / RAC 4-4 hochladen.
 * **Sicherung:** Einstellungen → Experte → *Alle Briefings exportieren* (eigene)
-  bzw. *Alle Benutzer exportieren* (Supermaster; `GET /api/export?all=1`).
+  bzw. *Alle Nutzer exportieren* (Supermaster; `GET /api/export?all=1`).
 * **Nutzungsstatistik:** Einstellungen → Statistik (Supermaster), CSV-Export; die
   Tabelle `usage` wächst mit jedem Abruf (ein paar hundert Zeilen je Briefing) und
   kann bei Bedarf mit `DELETE FROM usage WHERE ts < …` gekürzt werden.

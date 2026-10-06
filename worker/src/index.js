@@ -307,9 +307,9 @@ async function route(req, env, url, ctx) {
       if (row && !user) owner = await getUser(env, row.owner_id);
       if (row && user) acc = (await briefingAccess(env, user, bid)).access;
     }
-    if (kind === 'ai' && !can(owner, 'ai')) return err('KI für diesen Benutzer nicht freigeschaltet', 403);
-    if (kind === 'notam' && !can(owner, 'notam')) return err('NOTAM für diesen Benutzer nicht freigeschaltet', 403);
-    if (kind === 'pdf' && !can(owner, 'pdf')) return err('PDF für diesen Benutzer nicht freigeschaltet', 403);
+    if (kind === 'ai' && !can(owner, 'ai')) return err('KI für diesen Nutzer nicht freigeschaltet', 403);
+    if (kind === 'notam' && !can(owner, 'notam')) return err('NOTAM für diesen Nutzer nicht freigeschaltet', 403);
+    if (kind === 'pdf' && !can(owner, 'pdf')) return err('PDF für diesen Nutzer nicht freigeschaltet', 403);
     // Schreibende Abrufe (Dateien ins Briefing) nur für den Eigner
     if (user && bid && ['dabs', 'snapshot', 'pdf'].includes(kind) && acc !== 'write') return err('read only', 403);
     const res = await handleWx(kind, req, env, ctx, url.searchParams, b, { owner: !!user && acc !== 'read', link, user }, decrypt);

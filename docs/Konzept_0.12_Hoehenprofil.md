@@ -1,6 +1,6 @@
 # Konzept 0.12 – Etappenmodell und Höhenprofil-Werkzeug (Gasfahrt)
 
-Stand 05.10.2026, nach den Antworten von B. Wicki auf die Fragen zu 0.11.3. Dieses Dokument ist die Startvorlage für die Umsetzungssitzung 0.12. Grundlagen der Aerostatik: `docs/Aerostatik_Gasballon.md`. Interaktive Skizze: `00_Konzept/Hoehenprofil_Werkzeug_Skizze.html` (Stand 6, 06.10.2026).
+Stand 05.10.2026, nach den Antworten von B. Wicki auf die Fragen zu 0.11.3. Dieses Dokument ist die Startvorlage für die Umsetzungssitzung 0.12. Grundlagen der Aerostatik: `docs/Aerostatik_Gasballon.md`. Interaktive Skizze: `00_Konzept/Hoehenprofil_Werkzeug_Skizze.html` (Stand 7, 06.10.2026).
 
 ## 1 Ziel
 
@@ -50,6 +50,8 @@ Ergänzungen vom 06.10.2026, nachmittags (Stand 6 der Skizze):
 | 23 | Luftraum-Layer (Frage h) | Durchfahrene **und nahe** Lufträume zeichnen – dieselbe Auswahl wie im Luftraum-Panel (Korridor aus den Einstellungen). |
 | 24 | Zeitzone (Frage i) | Im Werkzeug, im Briefing und im Druck **einheitlich die Zeitzone des Briefings** (LT oder UTC); der LT/UTC-Schalter im Werkzeug ist der Briefing-Schalter, kein Durchmischen von UTC und LT. Vorgabe wie bisher LT; Flugplan-Zeiten bleiben UTC (ICAO). |
 | 25 | Sonnenzeiten | Unter der Zeitzeile Kürzel (SS, ECET, BCMT, SR) und darunter die Uhrzeit, links- oder rechtsbündig zur Marke (SS/BCMT rechtsbündig, ECET/SR linksbündig), eine Stufe kleiner als die Stundenmarken; der Strich reicht von der horizontalen Zeitlinie bis unter die Zeitangabe. |
+| 27 | Nullgradgrenze | Teil des Wetter-Layers: 0-°C-Höhe aus dem Modellprofil je Stunde am Bahnpunkt (Interpolation zwischen den Druckflächen), als gepunktete Linie mit Beschriftung «0 °C». |
+| 28 | Wording | In der App heisst es durchgehend «Nutzer» (nicht «Benutzer»); Datenzugänge bleiben zentral, keine Klickboxen je Nutzer. |
 | 26 | Achtung-Zeichen | Symbol zeigt den Grund: Wind (Windlinien), Scherung/Turbulenz (Zickzack), Gewitterneigung (Blitz), Nebel (≡), Niederschlag (Tropfen), Vereisung (Schneeflocke); Kurztext darunter («Wind 35 kt», «Scherung», «CB-Neigung» …), Tooltip mit Einzelheiten. Quellen: Modellprofil (Wind/Scherung je Schicht), Thermik/CAPE, RH/T (Nebel, Vereisung), Niederschlag. |
 
 Noch offen (in der Umsetzung klären):
@@ -82,7 +84,7 @@ Etappen sind Teilintervalle der Distanz (`km` der Grenze). Jede Etappe hat Zeitf
 
 **Sonne.** BCMT/ECET am jeweiligen Bahnpunkt der Stunde (RAC 4-4 CH, DWD-Bericht DE, sonst astronomisch) → Zeit → über die Kopplung auf die Distanzachse.
 
-**Wolken/Inversionen.** Modellprofil je Stunde am Bahnpunkt (RH ≥ 95 % je Druckfläche), zusammenhängende Schichten als Decken mit Mächtigkeit in m; Inversionen als Linie; signifikantes Wetter als Achtung-Zeichen mit Grund-Symbol (Wind ≥ Grenzwert der Ampel, Scherung = Windsprung zwischen benachbarten Schichten, CB-Neigung aus CAPE/Thermik, Nebel RH/T-Td, Niederschlag, Vereisung T < 0 °C in Wolken).
+**Wolken/Inversionen.** Modellprofil je Stunde am Bahnpunkt (RH ≥ 95 % je Druckfläche), zusammenhängende Schichten als Decken mit Mächtigkeit in m; Inversionen als Linie; Nullgradgrenze (0 °C) als gepunktete Linie; signifikantes Wetter als Achtung-Zeichen mit Grund-Symbol (Wind ≥ Grenzwert der Ampel, Scherung = Windsprung zwischen benachbarten Schichten, CB-Neigung aus CAPE/Thermik, Nebel RH/T-Td, Niederschlag, Vereisung T < 0 °C in Wolken).
 
 **Raten.** Je Teilstück `r = Δalt / Δt` in m/s (eine Dezimale). Farben: |r| < 0.5 grau (Höhe halten), 0.5–1.75 grün, bis 3 gelb, darüber rot.
 

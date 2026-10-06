@@ -120,8 +120,8 @@ with sync_playwright() as p:
     # ---- Mehrbenutzer: Super legt Master «mtest» an (Stamm kopiert, ohne KI) und gibt Ballone + Startplätze frei
     pg.goto(BASE + '#/settings?users'); pg.wait_for_timeout(1200)
     pg.screenshot(path=f'{OUT}/remote_users_empty.png', full_page=True)
-    assert 'Neuer Benutzer' in pg.inner_text('#view'), 'Admin-Formular sichtbar'
-    box = pg.query_selector('.item-box:has-text("Neuer Benutzer")')
+    assert 'Neuer Nutzer' in pg.inner_text('#view'), 'Admin-Formular sichtbar'
+    box = pg.query_selector('.item-box:has-text("Neuer Nutzer")')
     inputs = box.query_selector_all('input')
     inputs[0].fill('mtest'); inputs[1].fill('Max Test'); inputs[2].fill('abcd')
     box.query_selector_all('select')[1].select_option('bwicki')
@@ -147,7 +147,7 @@ with sync_playwright() as p:
     pg.goto(BASE + '#/list'); pg.wait_for_timeout(800)
     lst = pg.inner_text('#view')
     assert 'Keine Briefings' in lst or 'test0000' not in lst, 'mtest sieht keine fremden Briefings'
-    assert 'Alle Benutzer' not in lst, 'Master hat keine Sicht «Alle Benutzer»'
+    assert 'Alle Nutzer' not in lst, 'Master hat keine Sicht «Alle Benutzer»'
     assert 'Ballone' in lst and 'Von anderen erhalten' in lst, 'erhaltene Freigabe in Stammkarte: ' + lst[-300:]
     # Zugänge nur lesend
     pg.goto(BASE + '#/settings?access'); pg.wait_for_timeout(900)
@@ -171,7 +171,7 @@ with sync_playwright() as p:
     pg.goto(BASE + '#/list?scope=material'); pg.wait_for_timeout(1000)
     assert 'Max Test' in pg.inner_text('#view'), 'Material-Sicht zeigt Briefing von Max Test: ' + pg.inner_text('#view')[:300]
     pg.screenshot(path=f'{OUT}/remote_list_material.png')
-    pg.click('button.chip:has-text("Alle Benutzer")'); pg.wait_for_timeout(900)
+    pg.click('button.chip:has-text("Alle Nutzer")'); pg.wait_for_timeout(900)
     assert 'Max Test' in pg.inner_text('table') and 'B. Wicki' in pg.inner_text('table'), 'Alle-Sicht'
     pg.goto(BASE + f'#/b/{bid2}'); pg.wait_for_timeout(1200)
     assert pg.evaluate('location.hash').startswith('#/v/'), 'fremdes Briefing wird zur Briefingsicht umgeleitet: ' + pg.evaluate('location.hash')

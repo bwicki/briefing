@@ -22,47 +22,47 @@ die KI-Hinweise folgen in Phase 2 (siehe Konzept v0.4 im Projektordner).
 
 ### Anmeldeseite
 
-Beim ersten Laden fragt die App Benutzer und Kennwort. Im **Server-Modus** prüft
+Beim ersten Laden fragt die App Nutzer und Kennwort. Im **Server-Modus** prüft
 sie der Worker (Hash in der Datenbank, Fehlversuche werden gebremst); nach zwei
 Stunden ohne Benutzung wird wieder gefragt, Menü → *Sperren* sofort. Der zuletzt
 benutzte Anmeldename wird vorgeschlagen. Das eigene Kennwort wird in
 **Einstellungen → Experte** geändert — nach der Inbetriebnahme bitte ein längeres
 setzen, weil die Briefings Pax-Namen enthalten.
 
-### Benutzer, Rollen und Freigaben (ab 0.5.0)
+### Nutzer, Rollen und Freigaben (ab 0.5.0)
 
 Die App kennt zwei Rollen. Der **Supermaster** (Startbenutzer `bwicki`) verwaltet
-Benutzer, die zentralen Zugänge (API-Schlüssel) und sieht die Nutzungsstatistik;
-er hat lesende Einsicht in alle Briefings (Sicht *Alle Benutzer*) und in den Stamm
-jedes Benutzers (*Stamm ansehen*), ändert fremde Briefings aber nicht. Ein
+Nutzer, die zentralen Zugänge (API-Schlüssel) und sieht die Nutzungsstatistik;
+er hat lesende Einsicht in alle Briefings (Sicht *Alle Nutzer*) und in den Stamm
+jedes Nutzers (*Stamm ansehen*), ändert fremde Briefings aber nicht. Ein
 **Master** hat eigenen Stamm (Ballone, Personen, Startplätze, Treffpunkte,
 Betreiber), eigene Briefings und eigenes Kennwort; Master sehen einander nicht.
-Beim Anlegen kann der Supermaster den Stamm eines bestehenden Benutzers kopieren
-(sonst beginnt der neue Benutzer mit dem Beispiel-Stamm der App) und je Benutzer
+Beim Anlegen kann der Supermaster den Stamm eines bestehenden Nutzers kopieren
+(sonst beginnt der neue Nutzer mit dem Beispiel-Stamm der App) und je Nutzer
 KI, NOTAM und Final-PDF freischalten.
 
-**Freigaben** (Einstellungen → Benutzer & Freigaben): jeder Benutzer gibt per
-Klickbox je Kategorie Teile seines Stamms einem anderen Benutzer zur Auswahl frei
+**Freigaben** (Einstellungen → Nutzer & Freigaben): jeder Nutzer gibt per
+Klickbox je Kategorie Teile seines Stamms einem anderen Nutzer zur Auswahl frei
 — etwa die Ballone, wenn jemand das eigene Material mitbenützt. Freigegebene
 Einträge erscheinen im Ablauf mit dem Namen des Gebers in Klammern und bleiben
-dessen Eigentum (der Empfänger ändert sie nicht). Verwendet ein Benutzer einen
+dessen Eigentum (der Empfänger ändert sie nicht). Verwendet ein Nutzer einen
 freigegebenen Ballon, sieht der Eigner das Briefing lesend unter *Fahrten mit
 meinem Material* — die Grundlage für das Ballonbuch. Persönliche Links (Mitarbeit,
 Nur lesen) bleiben wie bisher je Briefing.
 
-**Material-Links für Externe** (Einstellungen → Benutzer & Freigaben → *Fahrten mit
-meinem Material*): für Materialeigner ohne Benutzerkonto, etwa den Halter eines
-mitbenützten Ballons. Der Benutzer wählt Name und Kennungen aus seinem Stamm;
+**Material-Links für Externe** (Einstellungen → Nutzer & Freigaben → *Fahrten mit
+meinem Material*): für Materialeigner ohne Nutzerkonto, etwa den Halter eines
+mitbenützten Ballons. Der Nutzer wählt Name und Kennungen aus seinem Stamm;
 der Link (`#/m/<token>`, Standard 1 Jahr gültig, widerrufbar, QR/WhatsApp/E-Mail)
 zeigt ohne Kennwort die Liste aller Briefings mit diesen Kennungen — eigene und
-solche anderer Benutzer, die den Ballon über eine Freigabe verwenden — und jedes
+solche anderer Nutzer, die den Ballon über eine Freigabe verwenden — und jedes
 davon in der Briefingsicht samt Pax-Karte, nur lesen. Jedes Öffnen zählt in der
 Statistik als Link-Öffnung des Erstellers.
 
-**Nutzungsstatistik** (Supermaster, Einstellungen → Statistik): je Benutzer und
+**Nutzungsstatistik** (Supermaster, Einstellungen → Statistik): je Nutzer und
 Monat Anmeldungen, neue Briefings, Freigaben als Final, Datenabrufe je Quelle,
 KI-Aufrufe und Tokens, PDFs, Dateien/Bytes, Links; Fahrten je Ballon (Eigner,
-Material von), Speicher je Benutzer; Export als CSV.
+Material von), Speicher je Nutzer; Export als CSV.
 
 Ist der Worker nicht erreichbar (oder in `js/config.js` keine Adresse eingetragen),
 läuft die App im **lokalen Modus**: Daten bleiben im Browser dieses Geräts,
@@ -78,7 +78,7 @@ NN %» oder «Final vN», darunter die Phase Vorplanung > 72 h / Planung 24–72
 Aktionen als Symbole: ✎ Bearbeiten (gesperrt: 👁 Briefingsicht), ⧉ Duplizieren, 🗑 Löschen.
 Sortierung über die Spaltenköpfe (Standard: Nummer absteigend, jüngste zuoberst); Doppelklick auf
 eine Zeile öffnet die Briefingsicht. Filter *Geplant / Alle / Archiv*, Suche; Sichten *Meine Briefings*,
-*Alle Benutzer* (Supermaster) und *Fahrten mit meinem Material* (wenn Ballone
+*Alle Nutzer* (Supermaster) und *Fahrten mit meinem Material* (wenn Ballone
 freigegeben sind; fremde Briefings öffnen sich nur in der Briefingsicht). Rechts
 die nächste Fahrt mit Sonnenzeiten. **⧉** dupliziert ein Briefing als Vorlage (Ballon, Startort, PIC,
 Pax, Nachfahrer, Absicht, Ausrüstung, Absprachen bleiben; Datum morgen 06:30, Anlass, Startplatzwerte,
@@ -210,7 +210,7 @@ kurz danach).
 | Radar | Live-Radar (RainViewer) auf der Karte (weit genug für die Niederschlagsgebiete), Startort und Landeraum markiert, **Webcams im Umkreis automatisch aus öffentlichen Quellen** (europaweit: Windy Webcams API mit Schlüssel, OpenStreetMap ohne; Umkreis in Einstellungen → Meteo, Standard 40 km um Start und Landeraum) plus eigene Liste, als Kamera-Symbol mit Popup (Vorschaubild, Link) und aufklappbarer Liste; Klickboxen Regen/Webcams/Sonden; **Klick auf eine Sonde** verkleinert die Karte und öffnet daneben Emagramm + Daten der Sonde; Links Windy/MeteoSchweiz/Blitzortung/Sat24 — nur am Bildschirm | RainViewer, Windy, OSM/Overpass; über Worker (`/api/wx/webcams`) |
 | Luftraum entlang des Fahrtwegs | **Luftraumanalyse** aus openAIP für die berechneten Trajektorien: je Luftraum *durchfahren* (Bahn innerhalb, Untergrenze unter der geplanten Maximalhöhe; km ab Start, ETA je Bahn), *nahe* (im Korridor, Standard 5 km, Einstellungen → Meteo) oder *oberhalb der Maximalhöhe* (eingeklappt); Typ (CTR, TMA, TMZ, RMZ, R/D/P, TRA/TSA, ATZ …), ICAO-Klasse, Unter-/Obergrenze, Zusatzcodes (NOTAM/REQ/AGRMT, Squawk, Frequenz); reine Klasse-E/G-Lufträume werden nicht gelistet; **Warnungen** Startort in CTR/ATZ und TMA/CTA tiefer als 900 ft über dem Startort (Experte); **FIR-Folge** je Bahn mit Wechselpunkt (km, LT, +h:mm ab Start); Karte mit Polygonen und Bahnen (Bildschirm), Nord-oben-Skizze (Druck). Braucht die Trajektorien (werden sonst mitberechnet) und den openAIP-Schlüssel («Zugänge: openaip» oder der Kachel-Schlüssel der Overlay-URL) | openAIP Core API über Worker `/api/wx/airspace` (6 h Cache je Ausschnitt) |
 | DABS | DABS-PDF (heute/morgen) automatisch holen; Seiten im kleinen Viewer mit Blättern (‹ ›, Pfeiltasten, Link zum PDF), im Druck alle Seiten bzw. als Beilage | skybriefing über Worker, R2 |
-| NOTAM | **autorouter** (wenn «autorouter Benutzer/Kennwort» hinterlegt; NOTAM je FIR der Fahrt – Startort, Landeraum, Lufträume – auf den Umkreis gefiltert) oder FAA-NOTAM-API (Rückfall, ein Wiederholungsversuch), wahlweise **Strecke** (Startort → Landeraum → Trajektorien-Endpunkte, Radius einstellbar) oder **Umkreis um Orte** (Ortswahl, Standard Startort, Radius 200 km); **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | autorouter NOTAM API (`api.autorouter.aero`, OAuth2 mit E-Mail/Kennwort, API-Freischaltung per Support-Ticket) · FAA NOTAM API (Zugänge in Einstellungen → Zugänge) |
+| NOTAM | **autorouter** (wenn «autorouter Nutzer/Kennwort» hinterlegt; NOTAM je FIR der Fahrt – Startort, Landeraum, Lufträume – auf den Umkreis gefiltert) oder FAA-NOTAM-API (Rückfall, ein Wiederholungsversuch), wahlweise **Strecke** (Startort → Landeraum → Trajektorien-Endpunkte, Radius einstellbar) oder **Umkreis um Orte** (Ortswahl, Standard Startort, Radius 200 km); **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | autorouter NOTAM API (`api.autorouter.aero`, OAuth2 mit E-Mail/Kennwort, API-Freischaltung per Support-Ticket) · FAA NOTAM API (Zugänge in Einstellungen → Zugänge) |
 
 **KI-Hinweis:** Knopf im Panel öffnet den Prompt (Fahrtkontext + Panel-Inhalt +
 Bilder, ohne Pax-Namen) zur Kontrolle, sendet ihn über den Worker an die
@@ -236,7 +236,7 @@ Ballonprognose geladen ist.
 
 Jedes Briefing erhält beim ersten Speichern eine **Ordnungsnummer `JJJJ-NNN`**
 (Jahr des Fahrtdatums, laufende Nummer je Jahr, z. B. `2026-017`); sie wird im
-Server-Modus zentral vergeben (eindeutig über alle Benutzer), im lokalen Modus im
+Server-Modus zentral vergeben (eindeutig über alle Nutzer), im lokalen Modus im
 Browser. Sie steht in der Liste, in den Stammdaten, in der Kopfzeile und auf allen
 Ausdrucken rechtsbündig als Titelzeile `Fahrtbriefing · 2026-017 · HB-QWZ · Start:
 Di 06.10.2026, 06:30 – Oberlunkhofen AG`, darunter `Letzte Änderung: Datum Zeit ·
@@ -342,7 +342,7 @@ NOTAM-Radius, KI-Modell, Karten für «Allgemeine Lage»)
 (Anhänger-Faktor, Zuschlag, Puffer, Bergezeit), Sonne/RAC 4-4 (PDF-Upload, siehe
 unten), Übergangshöhen, Go/No-Go-Kriterien (Ampel ab Phase 3), Panels & Pflicht
 (Tabelle je Abschnitt mit der Panel-Nummer wie im Briefing, ausblenden/Pflicht),
-Freigabe-Links, Benutzer & Freigaben (Stamm-Freigaben; Supermaster: Benutzer
+Freigabe-Links, Nutzer & Freigaben (Stamm-Freigaben; Supermaster: Nutzer
 anlegen, Kennwort setzen, Freischaltungen, Stamm ansehen), Statistik (Supermaster),
 Zugänge (API-Schlüssel und Logins, zentral, verschlüsselt; nur der Supermaster
 ändert sie; das Auge zeigt die Eingabe im Klartext und lädt bei leerem Feld den

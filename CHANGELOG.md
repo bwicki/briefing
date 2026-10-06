@@ -21,6 +21,7 @@
   gekoppelt, 300-m-Reliefband mit Warnung, Etappenmarker auf der Karte deutlich anders als
   Zeitmarken, Ballastmodell mit 100 % Füllung).
 * Tests: calc 197, Smoke (Lightbox im Editor, Aerostatik-Karte), Gasballon-Prüfung A3.
+* **Wording:** in der App heisst es durchgehend «Nutzer» statt «Benutzer» (Einstellungen, Liste, Meldungen, Doku).
 
 ## 0.11.3 — 2026-10-05 · Kopie ab Schritt 1 · NVFR-Schalter · Niveauliste · Sortierung · Tragkraft-Grafik
 
