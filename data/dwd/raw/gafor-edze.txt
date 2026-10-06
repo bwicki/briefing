@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edze_node.html
 
-484
-FBEU40 EDZE 060300
+673
+FBEU40 EDZE 060600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich West
-gültig vom 06.10.2026, 03.00 UTC bis 07.10.2026, 00.00 UTC
+gültig vom 06.10.2026, 06.00 UTC bis 07.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 31 bis 39
 
@@ -16,59 +16,53 @@ Grundschicht, die sich vormittags auflöst und in der Nacht zum
 Mittwoch erneut bildet.
 
 Wettergeschehen:
-Ausgangs der Nacht gebietsweise Nebel, vor allem entlang der Nord-
-und Nordwestgrenze sowie im Bergland. Stellenweise Verdichtung des
-Nebels zu OVC ST unterhalb von 500 FT AGL. Vom nördlichen Niederrhein
-bis zur Nordkante des Münsterlandes gebietsweise Aufzug von
-hochnebelartigem OVC ST/SC mit Untergrenzen unterhalb 500 FT AGL und
-Obergrenzen bis FL065; oberhalb 1000 FT AGL LYR. Am Morgen kann
-dieser das nördliche Ruhrgebiet erreichen. Dazu Durchzug von SCT/BKN
-CI oberhalb von FL245.
+Zu Beginn gebietsweise flacher Nebel, vor allem in den südlichen
+Flussniederungen zu OVC ST unterhalb von 500 FT AGL verdichtend. Im
+Nordwesten SCT/BKN SC ab 4500-5000 FT AMSL mit Obergrenzen FL060-070.
+Dazu Durchzug von SCT/BKN CI oberhalb von FL245.
 
-Am Vormittag Auflösung des Nebels und ST und meist SKC. Allenfalls
-entlang Mosel, Lahn und Rhein halten sich bis zum Mittag Dunstfelder
-oder flacher SCT ST zwischen 300 und 1000 FT AGL. Im Norden zieht
-sich der BKN/OVC ST/SC bei auf 2000 bis 3000 FT AMSL ansteigenden
-Untergrenzen Richtung Niederlande zurück und betrifft bis zum Mittag
-wahrscheinlich lediglich Gebiete nördlich der Lippe.
+Am Vormittag verbreitet Nebelfelder, nur an der Mosel, Lahn und am
+Mittelrhein teilweise bis in die Mittagsstunden anhaltend. Im
+Bergland bildet sich örtlich FEW/SCT CU mit Basis 3000-3500 FT AMSL,
+im Norden und Nordwesten neben zögernd auflösender SC-Bewölkung wenig
+Änderungen.
 
-Am Mittag vorwiegend über dem Bergland Bildung von FEW/SCT CU mit
-Anfangsbasis um 4000 FT AMSL, im Nachmittagsverlauf bis FL060
-steigend. Tops bis FL075. Vom nördlichen Niederrhein bis zum
-Münsterland am Nachmittag Übergang des SC in meist BKN CU/SC mit
-Untergrenzen in 2500 bis 4000 FT AMSL und Obergrenzen in FL065-FL080.
-Niederschlagsfrei.
-Am Abend allmähliche Auslösung der CU/SC. In der Nacht zum Mittwoch
-erneut gebietsweise Nebelbildung, meist in Münsterland, in Tälern des
-Berglandes und entlang der Flüsse.
+Am Nachmittag Anstieg der CU-Basis auf um 5000 FT AMSL, vom
+nördlichen Niederrhein bis zum Münsterland bilden sich unterhalb der
+dünnen SC-Schicht ab 5000 FT AMSL örtlich CU ab 3500-4000 FT AMSL.
+Darüber ziehen von Nordwesten vermehrt CI-Felder oberhalb FL180 auf.
+
+Am Abend bis auf im Münsterland zumeist auflösende CU/SC und
+nachfolgend neben CI-Feldern verbreitet wolkenlos. Nachfolgend wieder
+Bildung von flachen Nebel- und Dunstfeldern.
 
 Sichtweite:
-Anfangs im Dunst 2-7 km, örtlich auch Nebel mit Sichten unter 1 km,
-hauptsächlich im Norden und in Flusstälern des Berglandes.
-Am Vormittag Besserung auf 20-50 km. Allenfalls entlang Mosel, Lahn
-und Rhein Dunstfelder örtlich bis zum Mittag Dunstfelder anhaltend.
-Am Nachmittag verbreitet wieder 20-50 km. In der Nacht zum Mittwoch
-erneut 2-8 km im Dunst und unter 1 km im Nebel.
+10-20 km. Anfangs im Dunst 2-7 km, örtlich auch Nebel mit Sichten
+unter 1 km, hauptsächlich im Norden und in Flusstälern des
+Berglandes. Am Vormittag Besserung auf 20-50 km. Allenfalls entlang
+Mosel, Lahn und Rhein Dunstfelder örtlich bis zum Mittag Dunstfelder
+anhaltend. Kommende Nacht erneut ähnliche Sichten wie anfangs
+beschrieben.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 31 - 34:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 180/05KT  14C | 080/05KT  20C |
-1000FT | 230/05KT  14C | 080/10KT  19C |
-1500FT | 260/05KT  14C | 090/10KT  17C |
-2000FT | 270/05KT  13C | 090/05KT  16C |
-3000FT | 280/05KT  12C | 090/05KT  14C |
-5000FT | 280/10KT  10C | 010/05KT  09C |
-FL100  | 270/10KT  04C | 260/05KT  03C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 170/05KT  14C | 090/10KT  18C |
+1000FT | 180/05KT  15C | 100/10KT  19C |
+1500FT | 220/05KT  14C | 100/05KT  17C |
+2000FT | 230/05KT  14C | 110/05KT  17C |
+3000FT | 340/05KT  13C | 130/05KT  13C |
+5000FT | 290/05KT  09C | 060/05KT  09C |
+FL100  | 270/10KT  04C | 270/05KT  03C |
 
 GAFOR-Gebiete 35 - 39:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 090/05KT  10C | 050/05KT  18C |
-1500FT | 280/05KT  14C | 060/05KT  17C |
-2000FT | 280/05KT  14C | 070/05KT  17C |
-3000FT | 290/05KT  12C | 090/05KT  13C |
-5000FT | 280/10KT  10C | 160/05KT  10C |
-FL100  | 260/10KT  05C | 250/05KT  04C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 120/05KT  14C | 070/05KT  17C |
+1500FT | 110/05KT  14C | 100/05KT  17C |
+2000FT | 160/05KT  14C | 110/05KT  16C |
+3000FT | 240/05KT  12C | 150/05KT  13C |
+5000FT | 270/05KT  10C | 200/05KT  10C |
+FL100  | 260/10KT  05C | 220/05KT  03C |
 
 Turbulenz:
 Nicht signifikant.
@@ -91,6 +85,6 @@ Düsseldorf  05.07 | 05.41 | 17.00 | 17.32
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
-Regionale Wetterberatungszentrale Essen/ld
+Regionale Wetterberatungszentrale Essen/JK

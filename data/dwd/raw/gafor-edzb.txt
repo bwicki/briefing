@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-651
-FBEU40 EDZB 060300
+909
+FBEU40 EDZB 060600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 06.10.2026, 03.00 UTC bis 07.10.2026, 00.00 UTC
+gültig vom 06.10.2026, 06.00 UTC bis 07.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
@@ -17,57 +17,57 @@ sich von den Britischen Inseln bis ins Baltikum erstreckt, mit
 feuchterer Luft beeinflusst.
 
 Wettergeschehen:
-Anfangs SCT/BKN CI oberhalb FL280.
+SCT/BKN CI oberhalb FL280.
 
-In Mecklenburg-Vorpommern SCT/BKN SC in 2500 bis 3000 FT AMSL, von
-der Küste her allmählich absinkend auf 1000 FT AGL bis 2000 FT AMSL.
-Obergrenze bei FL060. Darüber BKN/OVC CS oberhalb FL200.
+In Mecklenburg-Vorpommern und im Norden Brandenburgs SCT/BKN SC in
+2500 bis 3000 FT AMSL, von der Küste her lokal absinkend auf 1000 FT
+AGL bis 2000 FT AMSL, in Küstennähe tritt regional SCT/BKN ST in 500
+bis 1000 FT AGL auf. Obergrenze bei FL060. Darüber BKN/OVC CS
+oberhalb FL200.
 
-In den übrigen Regionen sind flache Nebelfelder möglich, die sich im
-Verlauf des Morgens auslösen.
+In den übrigen Regionen sind anfangs noch flache Nebelfelder möglich,
+die sich im Verlauf des Morgens auslösen.
 Bis zum Vormittag langsames Vorankommen der kompakten SC-Bewölkung
-bis auf eine Linie Altmark - Berlin. Dabei besonders in Küstennähe
-und auf der Ostsee Untergrenzen in 500 bis 1000 FT AGL, sonst bei
-1500 bis 2500 FT AMSL. Tops bei FL060.
+bis auf eine Linie Altmark - Berlin mit Untergrenzen bei 1500 bis
+2500 FT AMSL. Tops bei FL060.
 
-Tagsüber nur wenig Änderung. Von der Altmark bis nach Berlin
-weiterhin BKN SC in 2000 bis 3000 FT AMSL, in Richtung Norden in 1500
-bis 2500 FT AMSL, in Küstennähe und auf der Ostsee teils unter 1000
-FT AGL und dort vereinzelt einige Regentropfen, sonst allgemein
-niederschlagsfrei.
+Tagsüber nur wenig Änderung. Von der Altmark bis nach Berlin BKN SC
+mit auf 2000 bis 3000 FT AMSL ansteigender Basis, in Richtung Norden
+liegt die Wolkenbasis in 1500 bis 2500 FT AMSL, in Küstennähe und auf
+der Ostsee teils weiterhin in 500 bis 1000 FT AGL und dort vereinzelt
+einige Regentropfen, sonst allgemein niederschlagsfrei.
 
 In der Nacht lockert der SC im Norden lokal auf, hier kann sich dann
 Dunst oder Nebel mit SCT/BKN ST in 100 bis 500 FT AGL bilden.
-Nach Süden hin keine Änderung.
+Nach Süden in der 2. Nachthälfte lokal flache Nebelfelder möglich.
 
 Sichtweite:
-In der Nacht im flachen Nebel unter 1 km, sonst meist 5 bis 15 km.
+Im flachen Nebel unter 1 km, sonst meist 5 bis 15 km.
 Am Dienstagvormittag nach Nebelauflösung 30 bis 60 km, im
 Küstenbereich mit Regen um 10 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 250/10KT  12C | 280/05KT  18C |
-1000FT | 270/15KT  13C | 260/05KT  17C |
-1500FT | 280/15KT  13C | 250/05KT  15C |
-2000FT | 280/15KT  13C | 250/05KT  15C |
-3000FT | 290/15KT  11C | 260/05KT  12C |
-5000FT | 290/20KT  08C | 280/05KT  08C |
-FL100  | 270/25KT  04C | 270/10KT  03C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 240/05KT  14C | 130/05KT  17C |
+1000FT | 260/10KT  13C | 200/05KT  17C |
+1500FT | 280/10KT  13C | 240/05KT  15C |
+2000FT | 280/10KT  13C | 240/05KT  15C |
+3000FT | 290/10KT  11C | 250/05KT  11C |
+5000FT | 290/15KT  08C | 170/05KT  08C |
+FL100  | 260/20KT  04C | 250/10KT  03C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 250/10KT  15C | 110/05KT  19C |
-1500FT | 280/10KT  15C | 110/05KT  18C |
-2000FT | 280/05KT  14C | 120/05KT  16C |
-3000FT | 270/10KT  12C | 060/05KT  13C |
-5000FT | 260/10KT  10C | 180/05KT  10C |
-FL100  | 260/05KT  03C | 230/05KT  03C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 240/05KT  14C | 080/05KT  18C |
+1500FT | 260/05KT  14C | 080/05KT  17C |
+2000FT | 240/05KT  14C | 090/05KT  16C |
+3000FT | 240/05KT  11C | 140/05KT  13C |
+5000FT | 260/10KT  10C | 200/05KT  10C |
+FL100  | 250/05KT  03C | 200/05KT  03C |
 
 Turbulenz:
-In der Nacht im Küstenbereich leicht bis mäßig unterhalb 2000 FT AGL,
-Dienstagfrüh nachlassend.
+Nicht signifikant.
 
 Vereisung:
 Nicht signifikant.
@@ -85,6 +85,6 @@ Leipzig  04.45 | 05.19 | 16.38 | 17.10
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Luftfahrtberatungszentrale Berlin/Wo

@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-552
-FBEU40 EDZF 060300
+910
+FBEU40 EDZF 060600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 06.10.2026, 03.00 UTC bis 07.10.2026, 00.00 UTC
+gültig vom 06.10.2026, 06.00 UTC bis 07.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
@@ -39,22 +39,22 @@ Sichtweite:
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 020/05KT  05C | 050/05KT  19C |
-1500FT | 230/05KT  14C | 070/05KT  18C |
-2000FT | 260/05KT  14C | 070/05KT  17C |
-3000FT | 270/05KT  12C | 120/05KT  14C |
-5000FT | 290/05KT  10C | 140/05KT  10C |
-FL100  | 240/05KT  05C | 220/05KT  04C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 360/05KT  08C | 020/05KT  15C |
+1500FT | 200/05KT  13C | 090/10KT  17C |
+2000FT | 210/05KT  14C | 090/10KT  16C |
+3000FT | 250/05KT  13C | 130/05KT  13C |
+5000FT | 260/05KT  10C | 160/05KT  09C |
+FL100  | 230/05KT  04C | 200/05KT  03C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 050/05KT  13C | 050/10KT  20C |
-1500FT | 080/05KT  15C | 060/10KT  19C |
-2000FT | 080/05KT  16C | 070/10KT  18C |
-3000FT | 200/05KT  14C | 110/10KT  15C |
-5000FT | 210/05KT  10C | 160/05KT  11C |
-FL100  | 030/10KT  03C | 030/05KT  01C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 030/05KT  13C | 050/10KT  19C |
+1500FT | 050/05KT  16C | 090/10KT  19C |
+2000FT | 070/05KT  16C | 110/10KT  19C |
+3000FT | 140/05KT  14C | 150/10KT  16C |
+5000FT | 180/05KT  10C | 190/05KT  11C |
+FL100  | 060/10KT  03C | 350/05KT  02C |
 
 Turbulenz:
 Nicht signifikant.
@@ -76,6 +76,6 @@ Karlsruhe  05.00 | 05.33 | 16.55 | 17.27
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Flugwetterzentrale Frankfurt/mb

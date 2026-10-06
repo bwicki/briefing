@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzh_node.html
 
-245
-FBEU40 EDZH 060300
+441
+FBEU40 EDZH 060600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Nord
-gültig vom 06.10.2026, 03.00 UTC bis 07.10.2026, 00.00 UTC
+gültig vom 06.10.2026, 06.00 UTC bis 07.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 00 bis 10
 
@@ -12,99 +12,105 @@ Wetterlage und -entwicklung:
 Zwischen einem Hoch über Südosteuropa und einem Tief über
 Nordskandinavien fließt aus Westen eher trockene, sehr milde Luft
 ein. Dennoch konnte sich in der Nacht gebietsweise eine feuchte
-Grundschicht ausbilde, die sich am Vormittag wieder auflöst und in
-der Nacht zum Mittwoch erneut bildet.
+Grundschicht ausbilden, die sich am Vormittag wieder auflöst und in
+der Nacht zum Mittwoch erneut bildet. Über dem Norden
+Schleswig-Holsteins liegt ein schwacher Tiefausläufer, der sich kaum
+nah Nordosten verlagert.
 
 Wettergeschehen:
-Im südlichen Niedersachsen verbreitet dunstig/neblig, gebietsweise
-hat sich OVC ST unterhalb von 500 FT AGL gebildet oder es zieht
-BKN/OVC ST/SC mit Untergrenzen in 1300-2000 FT AMSL und Obergrenzen
-in etwa 2500-3000 FT AMSL durch. Das Bergland kann kurzzeitig in
-Wolken liegen. Nach Norden bis zur deutsch-dänischen Grenze hin
-dominiert BKN/OVC SC mit Untergrenzen in 2500-3500 FT AMSL und
-Obergrenzen um FL070 das Bild. In Schleswig-Holstein fällt aus der
-Bewölkung lokal Sprühregen leichter bis mäßiger Intensität und die
-Wolkenuntergrenzen sinken auf 500-1000 FT AGL ab. Bis Sonnenaufgang
-kann sich auch unter dem SC das eine oder andere Dunst-, Nebel- oder
-Stratusfeld ausbilden. Oberhalb von FL150-180 zieht ganztägig SCT/BKN
-AC/CI, zeit und gebietsweise LYR, durch.
+Unterhalb von ganztägig durchziehenden Schichten von SCT/BKN AC/CI
+oberhalb FL150-180 zu Beginn über dem westlichen Niedersachsen,
+abgesehen vom Bergland und Ostfriesland, verbreitet neblig, dabei
+auch BKN/OVC ST vom Boden bis 800 FT AGL, mit Tops zwischen 500 und
+1500 FT AGL. Über dem Teutoburger Wald und dem östlichen
+Niedersachsen häufig dunstig mit Durchzug von SCT/BKN SC in 1500-4500
+mit Tops um 5000 FT AMSL, stellenweise aber auch über dem Südosten
+Nebel und ST mit ähnlichen Bedingungen wie über dem Westen. Das
+Bergland kann kurzzeitig in Wolken liegen.
+Über Ostfriesland und dem südlichen Schleswig-Holstein häufig auch
+dunstig, sowie verbreitet BKN/OVC ST in 500-1200 FT AGL mit Tops um
+FL060. Weiter nach Norden bis zur deutsch-dänischen Grenze hin im
+Bereich des schwachen Tiefausläufers BKN/OVC SC in 2500-4500 FT AMSL
+mit Tops um FL070, daraus lokal leichter bis mäßiger Sprühregen mit
+auf 400-900 FT AGL absinkenden Wolkenuntergrenzen. Unter dem SC
+stellenweise auch Dunst- oder Nebelfelder möglich.
 
-Am Vormittag erfolgt rasch ein Übergang in SCT/BKN CU bei
-gleichbleibenden Untergrenzen. Die Obergrenzen steigen von Norden her
-auf FL100 an, einzelne in die Bewölkung eingebettete TCU können FL120
-erreichen. Der Sprühregen dehnt sich auf die Bereiche zwischen Ems-
-und Wendland aus, im schauerartig verstärkten Niederschlag sinken die
-Untergrenzen auf 500-1000 FT AGL ab. Bei mäßigen bis starken
-Sprühregen können auch Untergrenzen um 300 FT AGL auftreten. Die
-Dunst- und Nebelfelder im Süden lösen sich zögerlich auf und halten
-sich in der Nähe von Niederungen und Feuchtequellen am längsten, ehe
-auch dort die Sonne scheint.
+Am Vormittag allgemein mehr oder weniger rascher Übergang des ST zu
+SCT/BKN CU anfangs gleichbleibenden Untergrenzen, dabei von Norden
+her im Bereich des Tiefausläufers ansteigende Tops auf FL100,
+einzelne in die Bewölkung eingebettete TCU können FL120 erreichen.
+Der Sprühregen dehnt sich auf die Bereiche zwischen Ems- und Wendland
+aus, im schauerartig verstärkten Niederschlag sinken die Untergrenzen
+auf 500-1000 FT AGL ab. Bei mäßigen bis starken Sprühregen können
+auch Untergrenzen um 300 FT AGL auftreten.
+Die Dunst- und Nebelfelder über dem restlichen Bereich lösen sich
+zögerlich auf und halten sich in der Nähe von Niederungen und
+Feuchtequellen am längsten.
 
 Über den Nachmittag steigen die Untergrenzen noch leicht auf
-3000-4000 FT AMSL an bei Obergrenzen zwischen FL070 im Süden und
-FL110 im Norden sowie FL120 über der Deutschen Bucht. Die Bewölkung
-lockert über der südlichen Hälfte Niedersachsens vermehrt zu FEW/SCT
-auf. Im Norden treten anhaltend Niederschläge auf, die sich am
-häufigsten entlang eines Bandes vom Emsland über Hamburg bis in die
-Lübecker Bucht zeigen. Der Niederschlag ist dabei vor allem durch
-Sprühregen geprägt.
+3000-4000 FT AMSL an, mit Tops zwischen FL070 über dem Süden und
+FL110 über dem Norden, sowie FL120 über der Deutschen Bucht. Die
+Bewölkung lockert über der südlichen Hälfte Niedersachsens vermehrt
+zu FEW/SCT auf. Über dem Norden treten anhaltend Niederschläge,
+überwiegend als Sprühregen, auf, am häufigsten entlang eines Bandes
+vom Emsland über Hamburg bis in die Lübecker Bucht.
 
 Am frühen Abend geht die CU-Bewölkung über Land in SCT/BKN SC,
-nördlich der Elbe in BKN/OVC SC über. Die Untergrenzen pendeln sich
-bei 2500-3500 FT AMSL ein, die Obergrenzen variieren wie am Tage
-zwischen FL070 im Süden und FL120 im Norden, im äußersten Süden ist
-es wolkenlos. Dort sowie in den Gebieten, die am Tag vermehrt
-Niederschläge abbekommen haben, bildet sich rasch Dunst und Nebel
-aus, welcher in der zweiten Nachthälfte zu OVC ST unterhalb von 1000
-FT AGL anwachsen kann. Im äußersten Norden sorgt die etwas kompaktere
-SC-Bewölkung dafür, dass sich nur wenige Dunst- und Nebelfelder
-ausbilden. Über der See dominiert weiterhin SCT/BKN CU/TCU das Bild.
-Die Untergrenzen liegen in 2000-3000 FT AMSL bei Obergrenzen in
-FL110-120. Bei Sprühregen sinken die Untergrenzen auf 500-1000 FT AGL
-ab.
+nördlich der Elbe in BKN/OVC SC in 2500-3500 FT AMSL über, mit
+ähnlichen Tops wie am Tag. Über dem äußersten Süden wird es wolkenlos
+werden. Dort, sowie in den Gebieten, mit am Tag vermehrten
+Niederschlägen, rasch Ausbildung von Dunst oder Nebel aus, welcher in
+der zweiten Nachthälfte zu OVC ST unterhalb von 1000 FT AGL anwachsen
+kann. Über dem äußersten Norden aufgrund der kompakteren SC-Bewölkung
+nur zögerliche Ausbildung von Dunst- oder Nebelfeldern. Über der See
+weiterhin SCT/BKN CU/TCU in 2000-3000 FT AMSL mit Tops in FL110-120,
+daraus  Sprühregen mit bis auf  500-1000 FT AGL absinkenden
+Untergrenzen.
 
 Sichtweite:
-Zwischen 30 und 60 km. Im Nebel und Dunst zwischen 500-5000 m. Im
-Sprühregen bei 2-6 km.
+Bei Nebel oder Dunst zwischen 0,5 und 5, im Sprühregen 2-6, sonst
+30-60 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 00-04:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 240/10KT  15C | 360/05KT  16C |
-1000FT | 270/15KT  15C | 010/05KT  15C |
-1500FT | 270/15KT  14C | 020/05KT  13C |
-2000FT | 280/15KT  13C | 350/05KT  13C |
-3000FT | 280/20KT  10C | 270/10KT  11C |
-5000FT | 280/20KT  08C | 260/15KT  08C |
-FL100  | 270/25KT  04C | 270/15KT M01C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 280/10KT  16C | 090/05KT  15C |
+1000FT | 290/10KT  15C | 110/05KT  14C |
+1500FT | 290/10KT  13C | 140/05KT  13C |
+2000FT | 280/10KT  13C | 180/05KT  12C |
+3000FT | 260/15KT  10C | 250/10KT  10C |
+5000FT | 270/15KT  08C | 250/10KT  07C |
+FL100  | 280/20KT M01C | 250/10KT M02C |
 
 GAFOR-Gebiete 05-10:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 250/10KT  13C | 090/05KT  19C |
-1000FT | 260/15KT  13C | 120/05KT  17C |
-1500FT | 270/15KT  13C | 160/05KT  16C |
-2000FT | 270/10KT  13C | 180/05KT  15C |
-3000FT | 280/10KT  12C | 230/05KT  13C |
-5000FT | 300/15KT  08C | 290/05KT  09C |
-FL100  | 260/20KT  04C | 250/10KT  03C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 240/05KT  15C | 130/05KT  17C |
+1000FT | 250/10KT  14C | 130/05KT  17C |
+1500FT | 270/10KT  14C | 140/05KT  15C |
+2000FT | 280/05KT  14C | 140/05KT  15C |
+3000FT | 270/05KT  12C | 180/05KT  12C |
+5000FT | 300/10KT  08C | 140/05KT  08C |
+FL100  | 260/15KT  04C | 260/10KT  03C |
 
 Turbulenz:
-Mäßig in TCUs und Umgebung. Über Schleswig-Holstein bis zum
-Nachmittag mäßig unterhalb von 2000 FT AMSL
+Mäßig bis stark in TCU und Umgebung.
+Über Schleswig-Holstein bis zum Nachmittag teils mäßig unterhalb von
+2000 FT AMSL
 
 Vereisung:
 Vereinzelt mäßig zwischen FZLVL und FL110. Außerdem mäßig bis stark
-in TCUs.
+in TCU.
 
 Nullgradgrenze:
-Bei FL120 bis FL130. Am Morgen von Nordwesten herabsinkend, dann
-mehrfach zwischen FL090 und FL115.
+Über dem Norden meist mehrfach zwischen FL090 und FL115, sonst um
+FL120-130, ab dem Nachmittag auf FL110-115 absinkend.
 
 Inversionen:
-Verbreitet zeigt sich eine Bodeninversion unterhalb 1500 FT AMSL, die
-sich im Vormittagsverlauf langsam wieder auflöst. Darüber zeigt sich
-eine Absinkinversion zwischen FL070 und FL080 im Süden und FL100 und
-FL110 im Norden.
+Zu Beginn verbreitet Bodeninversion unterhalb 1000-1500 FT AMSL, im
+Vormittagsverlauf langsam auflösend und am Abend wieder ausbildend.
+Darüber Absinkinversion zwischen FL065-070 und FL090, die tagsüber
+über dem Norden auf oberhalb FL100 ansteigt über dem Süden und FL100
+und FL110 im Norden.
 
 Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
 Schleswig  04.56 | 05.33 | 16.46 | 17.21
@@ -112,6 +118,6 @@ Hannover  04.56 | 05.31 | 16.47 | 17.21
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
-Luftfahrtberatungszentrale Hamburg/Zd
+Luftfahrtberatungszentrale Hamburg/Kr

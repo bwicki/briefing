@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-338
-FBEU40 EDZM 060300
+911
+FBEU40 EDZM 060600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 06.10.2026, 03.00 UTC bis 07.10.2026, 00.00 UTC
+gültig vom 06.10.2026, 06.00 UTC bis 07.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
@@ -18,18 +18,12 @@ wetterbestimmend und zieht entweder nach Tschechien oder Richtung
 Sachsen weiter nordwärts.
 
 Wettergeschehen:
-Heute Früh ist es verbreitet wolkenlos und sternenklar. In Fluss- und
-Tallagen liegen in den meisten Regionen vereinzelt flache
-Nebelfelder, vor allem von der Donau zu den Alpen hat sich hingegen
-auch gebietsweise dichter Bodennebel mit starken Sichteinschränkungen
-gebildet. In den Alpen liegt unterhalb etwa 3500 FT AMSL Talbewölkung
-in Form von BKN ST.
-
-Heute Vormittag löst sich der Nebel in den überwiegenden Regionen
-rasch auf und es ist sonnig bei tiefblauem Himmel und klarer
-Luftmasse. Einzig in der westlichen Donauniederung kann sich der
-Nebel bis etwa Mittag halten, ebenso bleibt die Talbewölkung
-inneralpin in den östlichen Alpen vormittags noch erhalten.
+Heute Vormittag ist es sonnig bei tiefblauem Himmel und klarer
+Luftmasse. Einzig in der westlichen Donauniederung kann sich Nebel
+mit starken Sichteinschränkungen bis etwa Mittag halten. In den
+östlichen Alpen liegt noch Talbewölkung unterhalb von 3500 FT AMSL
+samt starken Dunst, diese löst sich im Laufe des Vormittages aber
+vollständig auf.
 
 Am Mittag vorherrschend flache FEW CU bei etwa 5000 FT AMSL. In den
 Alpen und im westlichen Alpenvorland hingegen bilden sich rasch
@@ -52,38 +46,34 @@ SC/AC-Felder sowie BKN CI/CS-Felder über Süddeutschland hinweg.
 Untergrenzen bei etwa 8000 FT AMSL. Stellenweise kann daraus nördlich
 der Donau geringer Regen fallen, überwiegend ist es aber trocken. In
 Niederungen, sehr wahrscheinlich der Schwäbischen Hochebene,
-westlichen Donauniederungen und vom Südbayerischen Hügelland bis zum
+westlichen Donauniederung und vom Südbayerischen Hügelland bis zum
 Chiemgau, bildet sich allmählich dichter werdender Bodennebel aus.
 
 Sichtweite:
-Heute vorherrschend Flugsichten 50 bis 80 km. In den Morgenstunden
-jedoch vor allem von der westlichen Donauniederung bis zu den Alpen
-dichter Bodennebel mit Bodensichten 100 m bis 500 m. Am Morgen rasch
-verbessernd, einzig in der westlichen Donauniederung bis Mittag
-anhaltend. In den Alpen und hier in den östlichen Alpen am Morgen
-ebenso Nebel mit Sichten 100 m bis 500 m, am Vormittag unterhalb der
-Talbewölkung 2 bis 5 km, am Mittag vorübergehend Sichten um 20 km. Am
-Nachmittag bei Schauern oder Gewittern örtlich starke
-Sichteinschränkung auf 1 bis 3 km, vorherrschende Sichten aber 20 bis
-40 km.
+Heute vorherrschend Flugsichten 50 bis 80 km. In der westlichen
+Donauniederung vereinzelt noch auflösender Nebel mit Bodensichten um
+500 m. In den östlichen Alpen unterhalb der Talbewölkung 2 bis 5 km,
+am Mittag vorübergehend Sichten um 20 km. Am Nachmittag bei Schauern
+oder Gewittern örtlich starke Sichteinschränkung auf 1 bis 3 km,
+vorherrschende Sichten aber 20 bis 40 km.
 In der Nacht zum Mittwoch 50 bis 80 km, allerdings wieder
 gebietsweise ausbreitendender Bodennebel mit Sichten unter 500 m.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  06 UTC  |  18 UTC  |
-1500FT | 150/05KT  14C | 060/05KT  19C |
-2000FT | 180/05KT  15C | 070/05KT  19C |
-3000FT | 230/05KT  13C | 110/05KT  15C |
-5000FT | 240/05KT  09C | 120/05KT  10C |
-FL100  | 210/05KT  03C | 170/05KT  02C |
+AMSL  |  09 UTC  |  21 UTC  |
+1500FT | 140/05KT  14C | 100/05KT  18C |
+2000FT | 160/05KT  14C | 110/05KT  18C |
+3000FT | 210/05KT  13C | 130/05KT  14C |
+5000FT | 230/05KT  09C | 140/05KT  11C |
+FL100  | 120/05KT  03C | 170/05KT  02C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  06 UTC  |  18 UTC  |
-2000FT | 120/05KT  12C | 110/05KT  18C |
-3000FT | 120/05KT  13C | 090/05KT  15C |
-5000FT | 130/05KT  10C | 100/05KT  12C |
-FL100  | 170/05KT  02C | 200/05KT  01C |
+AMSL  |  09 UTC  |  21 UTC  |
+2000FT | 090/05KT  12C | 160/05KT  17C |
+3000FT | 110/10KT  13C | 130/05KT  14C |
+5000FT | 130/05KT  10C | 140/05KT  12C |
+FL100  | 130/05KT  02C | 210/10KT  01C |
 
 Turbulenz:
 Abgesehen von TCU/CB keine signifikante Turbulenz.
@@ -95,14 +85,12 @@ Alpenvorland über Baden-Württemberg bis in das nördliche Franken
 oberhalb FL100.
 
 Nullgradgrenze:
-Heute Früh bei FL120, im Laufe des Vormittages von den Alpen her auf
-FL095 absinkend. In der Nacht zum Mittwoch bei FL100.
+In Nordbayern und dem nördlichen Baden-Württemberg bei FL120, im
+Laufe des Vormittages von den Alpen her auf FL095 absinkend. In der
+Nacht zum Mittwoch bei FL100.
 
 Inversionen:
-Heute Früh ausgeprägte, in Niederungen und Tallagen auch markante
-Bodeninversion mit Obergrenze bei etwa 600 FT AMSL. Am Morgen mit
-Sonnenaufgang und Erwärmung rasch auflösend. Darüber bei 5000 FT AMSL
-schwache Absinkinversion.
+Schwache Absinkinversion bei 5000 FT AMSL.
 In den Alpen bis Mittag Talinversion bei etwa 3500 FT AMSL,
 anschließend hier keine wetterwirksame Sperrschicht. In der Nacht zum
 Mittwoch lediglich schwach ausgeprägte Bodeninversion.
@@ -113,7 +101,7 @@ München  04.47 | 05.19 | 16.42 | 17.12
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Regionale Wetterberatung Süd, München-Flughafen/Jens Kühne, M.Sc.
 Meteorology
