@@ -422,12 +422,18 @@ async function sonde(ctx, q) {
 const FIRS = { CH: ['LSAS'], LI: ['LSAS'], DE: ['EDMM', 'EDGG', 'EDWW'], AT: ['LOVV'], FR: ['LFMM', 'LFFF', 'LFEE', 'LFBB', 'LFRR'], IT: ['LIMM', 'LIRR', 'LIBB'], SI: ['LJLA'], HR: ['LDZO'], HU: ['LHCC'], CZ: ['LKAA'], SK: ['LZBB'], PL: ['EPWW'], BE: ['EBBU'], NL: ['EHAA'], LU: ['ELLX'], DK: ['EKDK'], ES: ['LECM', 'LECB'], PT: ['LPPC'], GB: ['EGTT', 'EGPX'], IE: ['EISN'] };
 /** autorouter: OAuth2 client_credentials (E-Mail/Kennwort), Token 1 h – im Cache. */
 async function autorouterToken(env, decrypt, ctx) {
-  const user = await getSecret(env, decrypt, 'autorouter_user'), pass = await getSecret(env, decrypt, 'autorouter_pass');
+  const user = (await getSecret(env, decrypt, 'autorouter_user') || '').trim(), pass = (await getSecret(env, decrypt, 'autorouter_pass') || '').trim();
   if (!user || !pass) return null;
   const j = await cached(ctx, `autorouter/token/${user.length}`, 3000, async () => {
     const body = new URLSearchParams({ grant_type: 'client_credentials', client_id: user, client_secret: pass });
-    const r = await get('https://api.autorouter.aero/v1.0/oauth2/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() }, 15000);
-    return r.json();
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 15000);
+    try {
+      const r = await fetch('https://api.autorouter.aero/v1.0/oauth2/token', { method: 'POST', headers: { 'User-Agent': UA, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString(), signal: ctl.signal });
+      const txt = await r.text();
+      // Fehler mit Antworttext melden (z. B. invalid_client = Zugangsdaten, access_denied = API-Freigabe fehlt)
+      if (!r.ok) throw new Error(`HTTP ${r.status} oauth2/token: ${txt.replace(/\s+/g, ' ').slice(0, 160) || 'ohne Antworttext'}`);
+      return JSON.parse(txt);
+    } finally { clearTimeout(t); }
   });
   return j?.access_token || null;
 }
