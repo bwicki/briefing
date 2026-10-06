@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.12.1 — 2026-10-06 · Höhenprofil-Werkzeug: Rückmeldungen Stand 10
+
+* **Grafik:** Pfeil «Ende Prognosemodell» zeigt auf die Prognosegrenze; Höhenlinien über die ganze Breite vor
+  Nacht/Dämmerung und Relief (Geländehöhe ablesbar); Regen-Symbol neu (drei Tropfen im Warnkreis);
+  Raten-Pillen mittig auf dem Teilstück mit kleinem «m/s»; Punktbeschriftung kompakt «2300m·19:30»;
+  Achtung-Zeichen durchscheinend; alte ECET/BCMT-Kürzel im Grafikfeld und die Beschriftung
+  «Nullgradgrenze» entfernt; Achsenhinweis als erster Legendeneintrag statt über der Grafik.
+* **Wetter-Layer:** Inversionen als Band mit gestrichelter Mittellinie und **Isothermieschichten** (Gradient
+  zwischen −0,2 und +0,1 K/100 m) als helles Band aus dem Modellprofil je Stunde (`layersOf`, `inv[].kind`).
+* **Werkzeugleiste einzeilig:** Profil/Karte · LT/UTC · Rückgängig · **Modell als Pille mit ⋯** (öffnet die
+  Liste mit Horizont-Warnung) · **Beispiel** · Wetter/Lufträume; Hinweis und Modellwarnung darunter.
+* **Beispiel:** synthetische Fahrt (180 km, Abendübergang, See, Decken, Inversion/Isothermie, Lufträume mit HX,
+  alle Achtung-Zeichen) mit nummerierten Erklärungen in der Grafik und darunter, dazu «Woher die Daten
+  kommen»; zum Üben, Änderungen werden nicht gespeichert; «Beispiel schliessen» führt zur Planung zurück
+  (`js/ui/profile_sample.js`).
+* **Ballasttabelle** unter der Grafik, läuft bei jeder Änderung mit; ab 7 Teilstücken zwei, ab 13 drei
+  Spalten; Zeiten und Höhen brechen nicht um (auch Panel, Briefingsicht, Druck).
+* Konzept: Entscheide 41–55 (Stand 10), Skizze Stand 10 mit Regen-Optionen A/B/C.
+* Tests: calc 222, Smoke «gas» (Modell-Pille, Beispiel mit Erklärungen, Spalten), API, Remote.
+
 ## 0.12.0 — 2026-10-06 · Höhenprofil-Werkzeug, Etappen und Ballastmodell (Gasfahrt)
 
 * **Neues Panel A «Fahrtprofil: Höhen, Etappen, Ballast»** (nur Gasballon): «Daten aufbereiten» holt

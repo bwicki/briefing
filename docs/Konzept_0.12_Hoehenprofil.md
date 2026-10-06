@@ -76,6 +76,26 @@ Ergänzungen vom 06.10.2026, 16 Uhr (Stand 9 der Skizze):
 | 39 | Modellwahl | Im Werkzeug Liste der Modelle mit Druckflächen, deren Horizont den Fahrtbeginn erreicht; deckt eines die Fahrt nur teilweise ab: «⚠ bis +X h» in der Liste, Warnung unter der Layer-Box, Marker «← Ende Prognosemodell» über der Grafik auf Höhe der Etappennamen; Bahn, Relief und Lufträume enden am Modellhorizont (`p.model`, `data.cut`). |
 | 40 | Wasserflächen | Blaue Einsätze im Geländeprofil. Quelle: ebene Läufe ≥ 3 km (±1 m) im Höhenmodell (Copernicus DEM zeigt Seen eben); Heuristik, in der Legende so benannt; Abgleich mit OSM-Wasserflächen in 0.12.x. |
 
+Ergänzungen vom 06.10.2026, 16:47 (Stand 10 der Skizze, Version 0.12.1):
+
+| Nr. | Punkt | Entscheid |
+|---|---|---|
+| 41 | Modellmarker | Pfeil «Ende Prognosemodell» zeigt auf die Prognosegrenze. |
+| 42 | Höhenlinien | Über die ganze Breite, vor Nacht/Dämmerung und vor dem Relief, damit die Geländehöhe ablesbar ist. |
+| 43 | Regen-Symbol | Drei Tropfen im Warnkreis (Option A, verwendet); Optionen B (Wolke mit Tropfen) und C (Striche mit Bodenlinie) in der Skizze gezeigt. |
+| 44 | Pillen und Beschriftungen | «m/s» in den Raten-Pillen deutlich kleiner; Punktbeschriftung kompakt «2300m·19:30» mit kleinem «m». |
+| 45 | Alte Sonnenkürzel | ECET/BCMT-Texte am unteren Grafikrand entfernt (die Sonnenzeile trägt Kürzel und Zeiten); feine Linien bleiben. |
+| 46 | Achtung-Zeichen | Durchscheinend (Kreis mit 35 % Deckung), nicht auf deckendem weissem Grund. |
+| 47 | Nullgradgrenze | Beschriftung entfällt; «0 °C» links an der Linie genügt. |
+| 48 | Pillen-Position | Mittig auf dem Teilstück, horizontal und vertikal (bei Fahrt im Ausgleich also auf der Linie). |
+| 49 | Inversion/Isothermie | Aus dem Modellprofil je Stunde: Inversion (Gradient > +0,1 K/100 m) als Band mit gestrichelter Mittellinie, Isothermie (−0,2 … +0,1 K/100 m) als helleres Band; zusammenhängende Flächen werden verbunden. |
+| 50 | Modellwahl | Pille «Modell GFS ⋯» in der Werkzeugleiste; Klick öffnet die Liste (⚠ bei Teilabdeckung); kein separates Kästchen. |
+| 51 | Werkzeugleiste | Alle Schalter auf einer Zeile (Profil/Karte, LT/UTC, Rückgängig, Modell, Beispiel, Wetter, Lufträume); Hinweis und Modellwarnung darunter. |
+| 52 | Achsenhinweis | Nicht mehr über der Grafik; erster Eintrag der Legende. |
+| 53 | Beispiel | Knopf «Beispiel» zeigt eine synthetische Beispielfahrt (wie die Skizze) mit nummerierten Erklärungen in der Grafik und darunter sowie «Woher die Daten kommen»; dort kann geübt werden, nichts wird gespeichert; «Beispiel schliessen» führt zur aktuellen Planung zurück. |
+| 54 | Ballasttabelle | Unter der Grafik, dynamisch nachgeführt; ab 7 Teilstücken zwei, ab 13 drei Spalten; Zeiten/Höhen ohne Umbruch. |
+| 55 | Legende | Inversion und Isothermie als eigene Einträge. |
+
 Noch offen (in der Umsetzung klären):
 - f) Wind je Fahrthöhe aus den Open-Meteo-Druckflächen interpoliert – Stundenauflösung ausreichend, oder Unsicherheit (±) auf der Zeitzeile zeigen?
 - g) Beim Ziehen eines Punkts ändert sich die Bahn (andere Niveaus = andere Richtung) – Karte und Relief sofort nachrechnen oder erst beim Loslassen? (Vorschlag: Profil sofort, Karte/Relief beim Loslassen, mit Fortschrittsanzeige.)
@@ -93,7 +113,7 @@ b.profile = {
     track: { points: [{ ms, km, lat, lon, alt, spdKt, dir }] },   // zusammengesetzte Bahn, 10-min-Schritte
     waypoints: [{ lat, lon, km }],                             // Prognoseorte (alle 40 km, max. 7)
     relief: [{ km, m }],                                       // Open-Meteo Elevation je km
-    hours: [{ ms, km, lat, lon, alt, ground, clouds: [{ lo, hi, label }], inv: [{ lo, hi }], fzl, windKt, shearKt, tempAtAlt, rhAtAlt, cape, fogRisk, precip, cloud, temp2m, dew2m }],
+    hours: [{ ms, km, lat, lon, alt, ground, clouds: [{ lo, hi, label }], inv: [{ lo, hi, kind: 'inv'|'iso' }], fzl, windKt, shearKt, tempAtAlt, rhAtAlt, cape, fogRisk, precip, cloud, temp2m, dew2m }],
     sun: [{ kind: 'ss'|'ecet'|'bcmt'|'sr', ms, km }],           // astronomisch am Bahnpunkt
     airspaces: [{ name, typeKey, cls, country, status: 'cross'|'near', km0, km1, lo, hi, lowerTxt, upperTxt, tmp, freqs }],
     water: [{ km0, km1, m }], cut, plannedEndMs, modelHours,                 // Wasserflächen (Heuristik), Modellhorizont vor Fahrtende
@@ -148,7 +168,7 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 ### Umgesetzt in 0.12.0 / offen
 
 Umgesetzt: Panel A «Fahrtprofil» mit Datenaufbereitung, Grafik als Bild und Werkzeug (alle Punkte
-der Skizze Stand 9), Kartenansicht mit Grundkarten, Ballastschätzung, Etappenübersicht mit Kontakten,
+der Skizze Stand 10, inkl. Beispiel mit Erklärungen), Kartenansicht mit Grundkarten, Ballastschätzung, Etappenübersicht mit Kontakten,
 NOTAM-Orte aus Etappen, Nachfahrer-Panel ab 12 h, Druck, Zeitzone einheitlich. Offen (0.12.x):
 Abschnitte B/C je Etappe (Akkordeon, Pflichtpanels je Land), Kalibrierung über Inventurpunkte und
 Barogramm, Unsicherheit auf der Zeitzeile (Frage f), Nachrechnen beim Ziehen statt beim Loslassen
@@ -167,6 +187,6 @@ Barogramm, Unsicherheit auf der Zeitzeile (Frage f), Nachrechnen beim Ziehen sta
 
 ## 7 Startprompt für die neue Sitzung
 
-«0.12 beginnen: Etappenmodell und Höhenprofil-Werkzeug gemäss docs/Konzept_0.12_Hoehenprofil.md und docs/Aerostatik_Gasballon.md; Skizze Stand 9 als Vorlage. Zuerst Datenmodell + Kopplung Distanz/Zeit + Ballastmodell mit Tests (calc), dann Werkzeug-UI, dann Etappen im Editor/Karte, dann Druck. Lieferung wie üblich nach Dropbox v0.12.0 und Push.»
+«0.12 beginnen: Etappenmodell und Höhenprofil-Werkzeug gemäss docs/Konzept_0.12_Hoehenprofil.md und docs/Aerostatik_Gasballon.md; Skizze Stand 10 als Vorlage. Zuerst Datenmodell + Kopplung Distanz/Zeit + Ballastmodell mit Tests (calc), dann Werkzeug-UI, dann Etappen im Editor/Karte, dann Druck. Lieferung wie üblich nach Dropbox v0.12.0 und Push.»
 
 Empfehlung Modell/Aufwand: Fable 5.1 oder Opus 5.5, Aufwand hoch; Rückfragen und kleine Korrekturen mit Sonnet 5.5, Aufwand mittel.

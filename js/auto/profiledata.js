@@ -57,7 +57,7 @@ export function integrate(fcs, altFn, o) {
   return { points, totalKm: Math.round(km * 10) / 10, ok };
 }
 
-/** Wolkendecken (RH ≥ 95 % je Druckfläche, zusammenhängend) und Inversionen (T steigt mit der Höhe) aus einem Stundenprofil. */
+/** Wolkendecken (RH ≥ 95 % je Druckfläche, zusammenhängend), Inversionen und Isothermieschichten aus einem Stundenprofil. */
 export function layersOf(prof, ground) {
   const lv = prof.filter((l) => l.hPa != null && l.rh != null).sort((a, b) => a.m - b.m);
   const clouds = [], inv = [];
@@ -69,9 +69,18 @@ export function layersOf(prof, ground) {
     if (!wet && run) { clouds.push(run); run = null; }
   }
   if (run) clouds.push(run);
-  for (let i = 1; i < lv.length; i++) if (lv[i].temp != null && lv[i - 1].temp != null && lv[i].temp > lv[i - 1].temp + 0.2) inv.push({ lo: lv[i - 1].m, hi: lv[i].m });
+  // Inversionen (T nimmt mit der Höhe zu: Gradient > +0.1 K/100 m) und Isothermieschichten (Gradient zwischen −0.2 und +0.1 K/100 m)
+  // zwischen benachbarten Flächen; zusammenhängende Schichten gleicher Art werden verbunden
+  const tl = prof.filter((l) => l.temp != null).sort((a, b) => a.m - b.m);
+  for (let i = 1; i < tl.length; i++) {
+    const dz = tl[i].m - tl[i - 1].m; if (dz < 50) continue;
+    const g = (tl[i].temp - tl[i - 1].temp) / dz * 100;
+    const kind = g > 0.1 ? 'inv' : g > -0.2 ? 'iso' : null; if (!kind) continue;
+    const last = inv[inv.length - 1];
+    if (last && last.kind === kind && Math.abs(last.hi - tl[i - 1].m) < 1) last.hi = tl[i].m; else inv.push({ lo: tl[i - 1].m, hi: tl[i].m, kind });
+  }
   const label = (c) => (c.lo < ground + 400 ? 'Nebel/St' : c.lo < 2000 ? 'St/Sc' : c.lo < 5000 ? 'Ac/As' : 'Ci/Cs');
-  return { clouds: clouds.map((c) => ({ lo: Math.round(c.lo), hi: Math.round(c.hi), label: label(c) })), inv: inv.map((x) => ({ lo: Math.round(x.lo), hi: Math.round(x.hi) })) };
+  return { clouds: clouds.map((c) => ({ lo: Math.round(c.lo), hi: Math.round(c.hi), label: label(c) })), inv: inv.map((x) => ({ lo: Math.round(x.lo), hi: Math.round(x.hi), kind: x.kind })) };
 }
 
 /** Wert einer Profilgrösse in Höhe alt (linear zwischen den Flächen). */

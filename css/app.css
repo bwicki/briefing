@@ -810,3 +810,24 @@ table.pf-ballast tr.total td{font-weight:600;border-top:2px solid var(--line)}
 .pf-right{margin-left:auto;display:grid;gap:4px;justify-items:end}
 .pf-layers select.pf-model{min-height:0;height:26px;padding:0 6px;font-size:12px;width:auto}
 .pf-modelwarn{font-size:12px;color:var(--pf-bad);max-width:520px;text-align:right}
+/* 0.12.1: Werkzeugleiste einzeilig, Modell-Pille, Beispiel, Erklärungen, Ballast in Spalten */
+:root{ --pf-grid:#6b7788; }
+:root[data-theme="light"]{ --pf-grid:#9aa3ad; }
+.brief{ --pf-grid:#9aa3ad; }
+.pf-toolbar2{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;margin:-2px 0 6px}
+.pf-toolbar{position:relative}
+.pf-toolbar .pf-layers{margin-left:auto}
+.pf-modelbtn{gap:6px}
+.pf-modelbtn:disabled{opacity:.5}
+.pf-sample.on{background:var(--pf-stage);color:#fff;border-color:var(--pf-stage)}
+.pf-callouts{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:10px 18px;margin:8px 0 4px;font-size:12.5px}
+.pf-callouts ol{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.pf-callouts li{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start}
+.pf-callouts b.k{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--pf-pt);color:#fff;font-family:var(--mono);font-size:11px}
+.pf-callouts .pf-sources ul{margin:4px 0 0;padding-left:16px;display:grid;gap:4px}
+.pf-legend .pf-legaxis{color:var(--text-dim);font-style:italic}
+.pf-ballast-grid{display:grid;gap:4px 12px;align-items:start}
+.pf-ballast-grid table.pf-ballast td,.pf-ballast-grid table.pf-ballast th{white-space:nowrap}
+@media (max-width:900px){ .pf-callouts{grid-template-columns:1fr} .pf-ballast-grid{grid-template-columns:1fr !important} }
+.pf-ballast-grid.cols2 table.pf-ballast{font-size:11px}.pf-ballast-grid.cols3 table.pf-ballast{font-size:10.5px}
+.pf-ballast-grid.cols2 table.pf-ballast td,.pf-ballast-grid.cols2 table.pf-ballast th,.pf-ballast-grid.cols3 table.pf-ballast td,.pf-ballast-grid.cols3 table.pf-ballast th{padding:2px 4px}

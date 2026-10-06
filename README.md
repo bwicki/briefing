@@ -188,7 +188,8 @@ Panel-Arten:
   Prognosen entlang der Bahn, Relief, Stundenprofile, Sonne und Lufträume; die Grafik (Distanz × Höhe,
   Zeilen km · Zeit LT/UTC mit Sonnenzeiten · Tag) steht als Bild im Panel, «Werkzeug öffnen» startet
   das Vollbild-Werkzeug: Punkte ziehen/setzen/löschen (≡), Etappen nummeriert mit Griff ⋮ und Menü
-  (umbenennen, mit Vorgänger/Nachfolger zusammenlegen), Rückgängig (Ctrl+Z), Layer Wetter/Lufträume,
+  (umbenennen, mit Vorgänger/Nachfolger zusammenlegen), Rückgängig (Ctrl+Z), Modell-Pille ⋯ (Horizont-
+  Warnung), «Beispiel» (synthetische Fahrt mit nummerierten Erklärungen zum Üben), Layer Wetter/Lufträume,
   Kartenansicht mit wählbarer Grundkarte. Darunter die **Etappenübersicht** (Zeit, km, Höhenband, Ort,
   Land/FIR, Lufträume, Achtung, FIS-Kontakte) und die **Ballastschätzung nach der Aerostatik**
   (Manöver, Abblasen, Temperatur, Adiabatik; Balken gegen den Vorrat aus A3). Im NOTAM-Panel
@@ -374,7 +375,7 @@ die Einstellungen (ohne Zugänge).
   schnellen Steigen. `js/auto/profiledata.js` setzt die Bahn aus Wegpunkt-Prognosen zusammen (Luftpaket
   im Modellwind der jeweils geplanten Höhe, 10-min-Schritte; Wegpunkte alle 40 km, Modell mit
   ausreichendem Horizont), holt Relief (Open-Meteo Elevation über `/api/wx/elevation`), Stundenprofile
-  (Decken RH ≥ 95 %, Inversionen, Nullgradgrenze, Wind/Scherung), Sonnenereignisse entlang der Bahn
+  (Decken RH ≥ 95 %, Inversionen und Isothermieschichten, Nullgradgrenze, Wind/Scherung), Sonnenereignisse entlang der Bahn
   (astronomisch am Bahnpunkt) und Lufträume (openAIP, durchfahren/nahe, HX-Status). Werkzeug und
   Darstellung in `js/ui/profile.js` (Skizze Stand 8: `docs/Hoehenprofil_Werkzeug_Skizze.html`,
   Entscheide in `docs/Konzept_0.12_Hoehenprofil.md`). Zeitzone einheitlich die des Briefings (LT/UTC).
@@ -466,7 +467,7 @@ js/panels.js               Panel-Register A–D
 js/i18n.js                 Oberflächentexte DE/EN
 js/net.js                  Open-Meteo, Nominatim, OSRM
 js/calc/*.js               Sonne/Mond, RAC-Parser, Aerostatik, Zeitplan, Geo, Zeit, Flugplan (fpl.js), Höhenprofil/Etappen/Ballast (profile.js)
-js/ui/*.js                 Liste, Ablauf, Erarbeitung, Briefingsicht, Einstellungen, Links, Flugplan-Panel (fplpanel.js), Höhenprofil-Werkzeug (profile.js)
+js/ui/*.js                 Liste, Ablauf, Erarbeitung, Briefingsicht, Einstellungen, Links, Flugplan-Panel (fplpanel.js), Höhenprofil-Werkzeug (profile.js, Beispiel profile_sample.js)
 js/vendor/                 Leaflet (BSD-2), qrcode-generator (MIT)
 data/rac/rac-ch.json       RAC 4-4 OCT 2026 – DEC 2027
 worker/                    Cloudflare Worker (src/index.js, schema.sql, wrangler.toml)

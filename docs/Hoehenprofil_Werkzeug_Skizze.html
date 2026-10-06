@@ -3,12 +3,13 @@
 <style>
 /* Layout: eine Spalte, 65 Zeichen Lauftext; die Grafik darf breiter sein und scrollt in ihrem Rahmen. */
 :root{
+  --grid:#9aa3ad;
   --bg:#f6f4ef; --panel:#ffffff; --fg:#1d2126; --dim:#5d646d; --line:#d9d4c9;
   --accent:#b8640f; --accent-2:#2f6f9f; --night:#1f2a44; --relief:#8a7a5d; --cloud:#9fb3c8; --inv:#d9822b; --ok:#2e8b57; --warn:#c0392b; --water:#c9dcea; --land:#eef0e6; --as-c:#2f6f9f; --as-d:#7a3fa0; --as-ctr:#c0392b; --zero:#1f7a8c; --water-ins:#5b9bd5;
   --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#15181c; --panel:#1e2228; --fg:#e8e6e1; --dim:#a4a9b1; --line:#333a43; --accent:#e0923c; --accent-2:#6aa6d6; --night:#0b1020; --relief:#a28f6c; --cloud:#5c6e82; --inv:#f0a04b; --ok:#5cc08a; --warn:#e06c5c; --water:#223548; --land:#262b2a; --as-c:#6aa6d6; --as-d:#b784d8; --as-ctr:#e06c5c; --zero:#5fc3d6; --water-ins:#4f86c6; color-scheme:dark } }
-:root[data-theme="dark"]{ --bg:#15181c; --panel:#1e2228; --fg:#e8e6e1; --dim:#a4a9b1; --line:#333a43; --accent:#e0923c; --accent-2:#6aa6d6; --night:#0b1020; --relief:#a28f6c; --cloud:#5c6e82; --inv:#f0a04b; --ok:#5cc08a; --warn:#e06c5c; --water:#223548; --land:#262b2a; --as-c:#6aa6d6; --as-d:#b784d8; --as-ctr:#e06c5c; --zero:#5fc3d6; --water-ins:#4f86c6; color-scheme:dark }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#15181c; --panel:#1e2228; --fg:#e8e6e1; --dim:#a4a9b1; --line:#333a43; --accent:#e0923c; --accent-2:#6aa6d6; --night:#0b1020; --relief:#a28f6c; --cloud:#5c6e82; --inv:#f0a04b; --ok:#5cc08a; --warn:#e06c5c; --water:#223548; --land:#262b2a; --as-c:#6aa6d6; --as-d:#b784d8; --as-ctr:#e06c5c; --zero:#5fc3d6; --water-ins:#4f86c6; --grid:#6b7788; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#15181c; --panel:#1e2228; --fg:#e8e6e1; --dim:#a4a9b1; --line:#333a43; --accent:#e0923c; --accent-2:#6aa6d6; --night:#0b1020; --relief:#a28f6c; --cloud:#5c6e82; --inv:#f0a04b; --ok:#5cc08a; --warn:#e06c5c; --water:#223548; --land:#262b2a; --as-c:#6aa6d6; --as-d:#b784d8; --as-ctr:#e06c5c; --zero:#5fc3d6; --water-ins:#4f86c6; --grid:#6b7788; color-scheme:dark }
 body{background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.5;margin:0}
 [hidden]{display:none!important}
 .wrap{max-width:1100px;margin:0 auto;padding-inline:16px;padding-block:24px 48px}
@@ -58,10 +59,18 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{background:var(--panel);color:var(--fg);border:0;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
 .seg button.on{background:var(--accent-2);color:#fff}
-.right{margin-left:auto;display:grid;gap:4px;justify-items:end}
-.layers{display:flex;gap:14px;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--bg)}
-.layers select{font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);padding:2px 6px}
-.modelwarn{font-size:12px;color:var(--warn);max-width:520px;text-align:right}
+.toolbar2{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;margin:-2px 0 8px}
+.layers{margin-left:auto;display:flex;gap:14px;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--bg)}
+.modelbtn .dim{color:var(--dim)}
+.modelbtn .dots{font-weight:700;letter-spacing:.05em;margin-left:4px}
+.btn.on{background:var(--accent-2);color:#fff;border-color:var(--accent-2)}
+.modelwarn{font-size:12px;color:var(--warn);max-width:560px;text-align:right}
+.ballast-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 14px;align-items:start}
+.ballast-grid td,.ballast-grid th{white-space:nowrap;padding:3px 5px}
+.ballast-grid table{font-size:11px}
+@media (max-width:760px){.ballast-grid{grid-template-columns:1fr}}
+.rainopts{display:flex;flex-wrap:wrap;gap:16px;align-items:center;font-size:12.5px;margin:6px 0 2px}
+.rainopts span{display:inline-flex;align-items:center;gap:6px}
 .layers label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .layers input{accent-color:var(--accent-2)}
 .seg button:disabled{opacity:.45;cursor:default}
@@ -76,7 +85,7 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Fahrtbriefing · Konzeptskizze 0.12 · Gasfahrt · Stand 9 (06.10.2026)</div>
+  <div class="eyebrow">Fahrtbriefing · Konzeptskizze 0.12 · Gasfahrt · Stand 10 (06.10.2026)</div>
   <h1>Höhenprofil-Werkzeug</h1>
   <p class="lead">Eine Grafik gefahrene Distanz gegen Höhe, in der die geplanten Fahrthöhen als Punkte gesetzt und gezogen werden. Unten drei Beschriftungszeilen: Distanz entlang der Trajektorie, Zeit (Lokalzeit oder UTC, umschaltbar, mit den genauen Zeiten SS · ECET · BCMT · SR) und bei Fahrten über Mitternacht Tag und Datum. Relief, Wolken, Inversionen, Lufträume und Dämmerung kommen aus Trajektorie, Modell und openAIP; aus dem Profil entstehen Steig-/Sinkraten, die Ballastschätzung nach der Aerostatik (Emden, «Gone with the Wind») und die nummerierten Etappen. Punkte ziehen, Doppelklick setzt einen Punkt, ≡ öffnet das Menü, Griffe am unteren Rand verschieben Etappengrenzen, «Rückgängig» nimmt den letzten Schritt zurück.</p>
 
@@ -85,8 +94,12 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
       <div class="seg" role="tablist"><button id="vProfile" class="on" type="button">Profil</button><button id="vMap" type="button">Karte (Ansicht)</button></div>
       <div class="seg" title="Zeitskala"><button id="tzLT" class="on" type="button">LT</button><button id="tzUTC" type="button">UTC</button></div>
       <button class="btn" id="undoBtn" type="button" disabled title="Letzten Schritt zurücknehmen (Ctrl+Z)">↶ Rückgängig</button>
-      <span class="note" id="viewNote">Profil: Punkte ziehen, Doppelklick setzt, ≡ Menü, Griff ⋮ am unteren Rand verschiebt eine Etappengrenze, Klick auf die Zeitzeile setzt eine neue</span>
-      <div class="right"><div class="layers"><label>Modell <select id="model"><option value="gfs">GFS (384 h)</option><option value="icon_eu">ICON-EU (120 h)</option><option value="icon_d2">ICON-D2 ⚠ bis +12 h</option></select></label><label><input type="checkbox" id="lyWx" checked> Wetter</label><label><input type="checkbox" id="lyAs" checked> Lufträume</label></div><div class="modelwarn" id="modelWarn" hidden>⚠ ICON-D2 reicht bis Mi 03:40 LT; geplantes Fahrtende Mi 07:01 LT – Bahn, Relief und Lufträume enden am Modellhorizont. Modell mit längerem Horizont wählen.</div></div>
+      <span style="position:relative"><button class="btn modelbtn" id="modelBtn" type="button" title="Wettermodell wählen"><span class="dim">Modell</span> <span id="modelName">GFS</span> <span class="dots">⋯</span></button><div class="menu" id="modelMenu" hidden><div class="ttl">Modell</div><button type="button" data-m="gfs">✓ GFS (384 h)</button><button type="button" data-m="icon_eu">ICON-EU (120 h)</button><button type="button" data-m="icon_d2">ICON-D2 ⚠ bis +12 h</button></div></span>
+      <button class="btn on" type="button" title="Im Werkzeug: schaltet zwischen der aktuellen Planung und dieser Beispielfahrt um">Beispiel schliessen</button>
+      <div class="layers"><label><input type="checkbox" id="lyWx" checked> Wetter</label><label><input type="checkbox" id="lyAs" checked> Lufträume</label></div>
+    </div>
+    <div class="toolbar2"><span class="note" id="viewNote">Profil: Punkte ziehen, Doppelklick setzt, ≡ Menü, Griff ⋮ am unteren Rand verschiebt eine Etappengrenze, Klick auf die Zeitzeile setzt eine neue</span>
+      <div class="modelwarn" id="modelWarn" hidden>⚠ ICON-D2 reicht bis Mi 03:40 LT; geplantes Fahrtende Mi 07:01 LT – Bahn, Relief und Lufträume enden am Modellhorizont. Modell mit längerem Horizont wählen.</div>
     </div>
     <div class="chart-wrap"><svg id="chart" viewBox="0 0 1040 540" width="1040" height="540" aria-label="Höhenprofil: Distanz und Zeit gegen Höhe"></svg></div>
     <div id="mapWrap" hidden>
@@ -94,6 +107,13 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
       <div class="chart-wrap"><svg id="map" viewBox="0 0 1040 300" width="1040" height="300" aria-label="Karte: Bahn mit Zeitmarken, Punkten und Etappenmarkern (nur Ansicht)"></svg></div>
     </div>
     <div class="legend" id="legProfile"></div>
+    <div class="ballast-wrap" id="ballastWrap" style="margin-top:10px">
+      <h3>Ballastschätzung nach der Aerostatik (kg) – unter der Grafik, zwei Spalten, läuft bei jeder Änderung mit</h3>
+      <div class="ballast-grid" id="ballast"></div>
+      <div class="bar"><i id="bar" style="width:0"></i></div>
+      <div class="note" id="barNote"></div>
+      <p class="note" style="margin-top:6px" id="modelNote"></p>
+    </div>
     <div class="legend" id="legMap" hidden>
       <span><svg width="18" height="12" viewBox="0 0 18 12"><circle cx="9" cy="6" r="3" fill="#fff" stroke="#666" stroke-width="1.2"/></svg>Zeitmarke der Trajektorie (jede volle Stunde, wie bisher)</span>
       <span><svg width="18" height="12" viewBox="0 0 18 12"><circle cx="9" cy="6" r="4.5" fill="var(--accent)" stroke="#fff" stroke-width="1.5"/></svg>Höhenpunkt des Profils mit Höhe (nur Ansicht)</span>
@@ -113,17 +133,17 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
         <li><b class="k">4</b><span><b>Tag/Dämmerung/Nacht</b> als senkrechte Schattierung, aus BCMT/ECET am jeweiligen Ort der Fahrt gerechnet (RAC 4-4 in CH, DWD in DE, sonst astronomisch).</span></li>
         <li><b class="k">5</b><span><b>Fahrthöhen:</b> Punkte setzen (Doppelklick), ziehen, über das Menü <b>≡</b> löschen oder davor/danach einfügen. Auf jedem Teilstück die <b>Steig-/Sinkrate in m/s</b> als Pille, immer zuoberst: grau unter 0,5, grün bis 1,75, gelb bis 3, rot darüber.</span></li>
         <li><b class="k">6</b><span><b>Etappen</b> werden vom Start her <b>automatisch nummeriert</b> (1, 2, 3 …; eine dazwischen gesetzte Etappe nummeriert neu). Grenze setzen: Klick auf die Zeitzeile; <b>verschieben: Griff ⋮ am unteren Rand</b> ziehen (zwischen Vorgänger und Nachfolger). Menü ≡: Umbenennen, löschen mit Vorgänger oder mit Nachfolger zusammenlegen. <b>Rückgängig</b> (Knopf oder Ctrl+Z) nimmt jeden Schritt zurück – Löschen, Zusammenlegen, Ziehen, Setzen.</span></li>
-        <li><b class="k">7</b><span><b>Ballast nach der Aerostatik:</b> Tabelle rechts – Manöver, Abblasen über der Prallhöhe, Temperatur Gas–Luft, Adiabatik. Faktoren im Expertenmenü, Füllungsgrad in A3.</span></li>
+        <li><b class="k">7</b><span><b>Ballast nach der Aerostatik:</b> Tabelle unter der Grafik – Manöver, Abblasen über der Prallhöhe, Temperatur Gas–Luft, Adiabatik. Faktoren im Expertenmenü, Füllungsgrad in A3.</span></li>
         <li><b class="k">8</b><span><b>Luftraum-Layer:</b> Lufträume A–D, TMA und CTR aus der Luftraumanalyse (openAIP entlang der Bahn) als Flächen mit Unter-/Obergrenze und Beschriftung Name · Klasse · Grenzen – ohne Warnhinweis. Ist der Luftraum nur zeitweise aktiv (<b>HX</b> oder anderer temporärer Status), steht das in Klammern unter der Bezeichnung. Klasse E/G nicht gezeichnet. Schalter rechts oben, Vorgabe ein.</span></li>
         <li><b class="k">9</b><span><b>Umschalter Profil / Karte:</b> die Karte zeigt Bahn, Stundenmarken, Höhenpunkte und Etappenmarker als <b>reine Ansicht</b>. <b>Grundkarte</b> wählbar: neutral (Vorgabe), OpenStreetMap, Topo, Luftfahrtkarte (openAIP), Satellit; Wetter- und Luftraum-Layer gelten auch hier.</span></li>
       </ol>
     </div>
     <div class="panel">
-      <h2 style="margin-top:0">Ballastschätzung (kg)</h2>
-      <table id="ballast"></table>
-      <div class="bar"><i id="bar" style="width:0"></i></div>
-      <div class="note" id="barNote"></div>
-      <p class="note" style="margin-top:10px" id="modelNote"></p>
+      <h3>Regen-Symbol – Optionen</h3>
+      <div class="rainopts" id="rainOpts"></div>
+      <p class="note">A ist in der Grafik verwendet (drei Tropfen im Warnkreis); B Wolke mit Tropfen, C schräge Striche mit Bodenlinie.</p>
+      <h3 style="margin-top:14px">Beispiel-Knopf</h3>
+      <p class="note">Im Werkzeug schaltet «Beispiel» von der aktuellen Planung auf diese synthetische Fahrt mit den nummerierten Erklärungen und «Woher die Daten kommen»; «Beispiel schliessen» führt zur Planung zurück. Änderungen im Beispiel werden nicht gespeichert.</p>
     </div>
   </div>
 
@@ -186,13 +206,30 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     <div><b>28</b><span>Modellwahl im Werkzeug: Modelle, die den Fahrtbeginn erreichen; ein Modell, das nur einen Teil der Fahrt abdeckt, trägt ⚠ in der Liste, eine Warnung unter der Layer-Box und den Marker «← Ende Prognosemodell» über der Grafik auf Höhe der Etappennamen (Skizze: ICON-D2 wählen).</span></div>
     <div><b>29</b><span>Wasserflächen im Geländeprofil als blaue Einsätze (ebene Läufe im Höhenmodell; Abgleich mit OSM-Wasserflächen später).</span></div>
   </div>
+  <h2>Ergänzungen Stand 10 (06.10.2026, 16:47)</h2>
+  <div class="dec">
+    <div><b>30</b><span>Pfeil «Ende Prognosemodell» zeigt auf die Prognosegrenze.</span></div>
+    <div><b>31</b><span>Höhenlinien über die ganze Breite, vor Nacht/Dämmerung und vor dem Relief (Geländehöhe ablesbar).</span></div>
+    <div><b>32</b><span>Regen-Symbol neu: Option A drei Tropfen im Warnkreis (verwendet); Optionen B/C unten gezeigt.</span></div>
+    <div><b>33</b><span>Raten-Pillen: «m/s» kleiner; Punktbeschriftung kompakt «2300m·19:30» mit kleinem «m».</span></div>
+    <div><b>34</b><span>Alte Sonnenkürzel am unteren Grafikrand entfernt (Sonnenzeile genügt); die feinen ECET/BCMT-Linien bleiben.</span></div>
+    <div><b>35</b><span>Achtung-Zeichen durchscheinend (kein deckender weisser Grund).</span></div>
+    <div><b>36</b><span>Beschriftung «Nullgradgrenze» entfällt; «0 °C» links genügt.</span></div>
+    <div><b>37</b><span>Raten-Pillen mittig auf dem Teilstück (horizontal und vertikal).</span></div>
+    <div><b>38</b><span>Inversionen (Band mit Linie) und Isothermieschichten (helles Band) aus dem Modellprofil im Wetter-Layer.</span></div>
+    <div><b>39</b><span>Modellwahl als Pille mit ⋯ (öffnet die Liste), kein separates Kästchen.</span></div>
+    <div><b>40</b><span>Alle Schalter (Profil/Karte, LT/UTC, Rückgängig, Modell, Beispiel, Wetter, Lufträume) auf einer Zeile; Hinweis darunter.</span></div>
+    <div><b>41</b><span>Achsenhinweis nicht mehr über der Grafik, sondern als erster Eintrag der Legende.</span></div>
+    <div><b>42</b><span>«Beispiel»-Knopf: zeigt diese Beispielfahrt mit nummerierten Erklärungen und «Woher die Daten kommen» zum Üben; Schliessen führt zur Planung zurück.</span></div>
+    <div><b>43</b><span>Ballasttabelle unter der Grafik, dynamisch, ab 7 Teilstücken zwei und ab 13 drei Spalten; Zeiten/Höhen brechen nicht um.</span></div>
+  </div>
   <p class="note" style="margin-top:12px">Noch offen: f) Wind je Fahrthöhe aus den Open-Meteo-Druckflächen – reicht die Stundenauflösung, oder Unsicherheit (±) auf der Zeitzeile? · g) Beim Ziehen eines Punkts Karte und Relief sofort nachrechnen oder erst beim Loslassen?</p>
 </div>
 
 <script>
 (() => {
   // --- Beispielfahrt (Skizze): 180 km gefahrene Strecke, Start Di 06.10.2026 16:00 LT (CEST = UTC+2); die Zeit folgt aus Distanz und Wind je Höhe
-  const W = 1040, H = 550, L = 58, R = 24, T = 52, B = 120;   /* oberhalb T: Achsenhinweis, Modellmarker, Etappennamen */
+  const W = 1040, H = 550, L = 58, R = 24, T = 44, B = 120;   /* oberhalb T: Achsenhinweis, Modellmarker, Etappennamen */
   const KM = 180, startH = 16, startDay = new Date(2026, 9, 6), UTC_OFF = 2;
   const yMin = 0, yMax = 4500;
   const relief = [[0,450],[10,480],[20,520],[35,600],[50,700],[60,900],[70,1200],[80,1500],[90,1750],[100,1900],[108,1700],[115,1400],[125,1100],[135,900],[145,600],[155,450],[158,420],[164,420],[168,320],[180,280]];
@@ -202,7 +239,7 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
   const zeroIso = [[0,2750],[40,2700],[90,2500],[130,2350],[180,2450]];   // Nullgradgrenze m AMSL entlang der Bahn (Modellprofil je Stunde)
   const wx = [{k:168,h:1250,type:'fog',lbl:'Nebel',t:'BR/FG Po-Ebene 06–09 LT'},{k:152,h:3800,type:'wind',lbl:'Wind 35 kt',t:'Wind 35 kt in 4000 m'},{k:118,h:3300,type:'shear',lbl:'Scherung',t:'Scherturbulenz an der Inversion / Windsprung 2500–3500 m'},{k:45,h:3600,type:'cb',lbl:'CB-Neigung',t:'Gewitterneigung ab 15 LT (CAPE 600 J/kg)'},{k:108,h:2750,type:'ice',lbl:'Vereisung',t:'Vereisung in Wolken über 2500 m (T < 0 °C, RH > 90 %)'},{k:28,h:2150,type:'rain',lbl:'Niederschlag',t:'Niederschlag 0.8 mm/h, 19–21 LT'}];
   // Symbole für das Achtung-Zeichen: Grund auf einen Blick (Pfad im 24-px-Raster, Mittelpunkt 0/0)
-  const WX_ICON = { wind: 'M-7 -3 H3 a2.2 2.2 0 1 0 -2.2 -2.2 M-7 1 H6 a2.2 2.2 0 1 1 -2.2 2.2 M-7 5 H1', shear: 'M-8 -1 l3 -4 l3 4 l3 -4 l3 4 l3 -4 M-8 4 l3 -4 l3 4 l3 -4 l3 4 l3 -4', cb: 'M1.5 -8 L-5 1 H0 L-2 8 L5 -2 H0 Z', fog: 'M-7 -4 H7 M-7 0 H7 M-7 4 H5', rain: 'M-5 -2 l2 7 M0 -5 l2 7 M5 -2 l2 7 M-6 -6 H6', ice: 'M0 0 L7 0 M4.2 0 L5.4 2.1 M4.2 0 L5.4 -2.1 M0 0 L3.5 6.1 M2.1 3.6 L0.9 5.7 M2.1 3.6 L4.5 3.6 M0 0 L-3.5 6.1 M-2.1 3.6 L-4.5 3.6 M-2.1 3.6 L-0.9 5.7 M0 0 L-7 0 M-4.2 0 L-5.4 -2.1 M-4.2 0 L-5.4 2.1 M0 0 L-3.5 -6.1 M-2.1 -3.6 L-0.9 -5.7 M-2.1 -3.6 L-4.5 -3.6 M0 0 L3.5 -6.1 M2.1 -3.6 L4.5 -3.6 M2.1 -3.6 L0.9 -5.7' };   /* Vereisung: Schneestern */
+  const WX_ICON = { wind: 'M-7 -3 H3 a2.2 2.2 0 1 0 -2.2 -2.2 M-7 1 H6 a2.2 2.2 0 1 1 -2.2 2.2 M-7 5 H1', shear: 'M-8 -1 l3 -4 l3 4 l3 -4 l3 4 l3 -4 M-8 4 l3 -4 l3 4 l3 -4 l3 4 l3 -4', cb: 'M1.5 -8 L-5 1 H0 L-2 8 L5 -2 H0 Z', fog: 'M-7 -4 H7 M-7 0 H7 M-7 4 H5', rain: 'M-4.6 -4.6 C-2.5999999999999996 -2.2 -1.9999999999999996 -0.3999999999999999 -2.9999999999999996 1.0000000000000002 C-3.8 2.2 -5.3999999999999995 2.2 -6.199999999999999 1.0000000000000002 C-7.199999999999999 -0.3999999999999999 -6.6 -2.2 -4.6 -4.6 Z M0 -1.5999999999999999 C2 0.8 2.6 2.6 1.6 4.0 C0.8 5.2 -0.8 5.2 -1.6 4.0 C-2.6 2.6 -2 0.8 0 -1.5999999999999999 Z M4.6 -4.6 C6.6 -2.2 7.199999999999999 -0.3999999999999999 6.199999999999999 1.0000000000000002 C5.3999999999999995 2.2 3.8 2.2 2.9999999999999996 1.0000000000000002 C1.9999999999999996 -0.3999999999999999 2.5999999999999996 -2.2 4.6 -4.6 Z',   /* Option A: drei Tropfen */ ice: 'M0 0 L7 0 M4.2 0 L5.4 2.1 M4.2 0 L5.4 -2.1 M0 0 L3.5 6.1 M2.1 3.6 L0.9 5.7 M2.1 3.6 L4.5 3.6 M0 0 L-3.5 6.1 M-2.1 3.6 L-4.5 3.6 M-2.1 3.6 L-0.9 5.7 M0 0 L-7 0 M-4.2 0 L-5.4 -2.1 M-4.2 0 L-5.4 2.1 M0 0 L-3.5 -6.1 M-2.1 -3.6 L-0.9 -5.7 M-2.1 -3.6 L-4.5 -3.6 M0 0 L3.5 -6.1 M2.1 -3.6 L4.5 -3.6 M2.1 -3.6 L0.9 -5.7' };   /* Vereisung: Schneestern */
   // Lufträume entlang der Bahn (Skizze; im Werkzeug aus der openAIP-Analyse): Klasse, Unter-/Obergrenze m AMSL, km-Abschnitt, temporärer Status
   const airspaces = [
     { k0: 6, k1: 46, lo: 1370, hi: 4500, cls: 'C', name: 'TMA Zürich 2 · C · 4500 ft – FL195' },
@@ -210,6 +247,7 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     { k0: 92, k1: 136, lo: 2130, hi: 4500, cls: 'D', name: 'TMA Alpnach · D · 7000 ft – FL130', tmp: 'HX' },
   ];
   const AS_COL = { C: '--as-c', D: '--as-d', CTR: '--as-ctr' };
+  const RAIN_B = 'M-5 1 a4 4 0 0 1 1 -7.5 a4.5 4.5 0 0 1 8.5 1 a3 3 0 0 1 0.5 6 Z M-2.5 1.6 C-0.5 4 0.10000000000000009 5.8 -0.8999999999999999 7.2 C-1.7 8.4 -3.3 8.4 -4.1 7.2 C-5.1 5.8 -4.5 4 -2.5 1.6 Z M2.5 1.6 C4.5 4 5.1 5.8 4.1 7.2 C3.3 8.4 1.7 8.4 0.8999999999999999 7.2 C-0.10000000000000009 5.8 0.5 4 2.5 1.6 Z', RAIN_C = 'M-6 -1 l-2 6 M-1 -3 l-2 6 M4 -1 l-2 6 M-7 7 H7';   /* Regen-Optionen B und C */
   // Sonne in Lokalzeit (Oktober): SS 18:40, ECET 19:15, BCMT 06:50, SR 07:25
   const sunT = { ss: 18.67, ecet: 19.25, bcmt: 6.83 + 24, sr: 7.42 + 24 };
   let stages = [{k:0,name:'Start'},{k:30,name:'Enroute · Mittelland'},{k:75,name:'Voralpen'},{k:140,name:'Landung'}];
@@ -274,14 +312,15 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     // ---- Ebene 0 (zuhinterst): Nacht/Dämmerung, Gitter, Relief mit 300-m-Band, Unterschreitungen
     const band = (t0, t1, op) => { const k0 = kOfLT(t0), k1 = kOfLT(t1); if (k1 > k0) svg.appendChild(el('rect', { x: x(k0), y: T, width: x(k1) - x(k0), height: H - T - B, fill: css('--night'), opacity: op })); };
     band(sunT.ss, sunT.ecet, .12); band(sunT.ecet, sunT.bcmt, .22); band(sunT.bcmt, sunT.sr, .12);
-    for (let m = 0; m <= yMax; m += 500) { svg.appendChild(el('line', { x1: L, x2: W - R, y1: y(m), y2: y(m), stroke: line, 'stroke-width': m % 1000 ? .5 : 1 })); if (m % 1000 === 0) svg.appendChild(el('text', { x: L - 6, y: y(m) + 4, 'text-anchor': 'end', 'font-size': 11, fill: dim, 'font-family': MONO }, m)); }
-    svg.appendChild(el('text', { x: L - 6, y: 12, 'text-anchor': 'end', 'font-size': 10, fill: dim }, 'm AMSL'));
-    svg.appendChild(el('text', { x: L, y: 12, 'font-size': 10, fill: dim }, `Zeile 1: gefahrene Distanz entlang der Trajektorie · Zeile 2: ${tz === 'UTC' ? 'UTC' : 'Lokalzeit'} aus Distanz ÷ Wind der Fahrthöhe, darunter SS · ECET · BCMT · SR · Zeile 3: Tag und Datum`));
+    for (let m = 0; m <= yMax; m += 1000) svg.appendChild(el('text', { x: L - 6, y: y(m) + 4, 'text-anchor': 'end', 'font-size': 11, fill: dim, 'font-family': MONO }, m));
+    svg.appendChild(el('text', { x: L - 6, y: T - 8, 'text-anchor': 'end', 'font-size': 9, fill: dim }, 'm AMSL'));
     const base0 = `${x(KM)},${y(0)} ${x(0)},${y(0)}`;
     svg.appendChild(el('polygon', { points: relief.map(([k, m]) => `${x(k)},${y(m + 300)}`).join(' ') + ' ' + base0, fill: css('--relief'), opacity: .18 }));
     svg.appendChild(el('polygon', { points: relief.map(([k, m]) => `${x(k)},${y(m)}`).join(' ') + ' ' + base0, fill: css('--relief'), opacity: .75 }));
     svg.appendChild(el('text', { x: x(100) + 4, y: y(1900) + 14, 'font-size': 10, fill: '#fff' }, 'Relief · Band = 300 m Mindestabstand'));
     for (const w of water) { svg.appendChild(el('rect', { x: x(w.k0), y: y(w.m), width: x(w.k1) - x(w.k0), height: 8, fill: css('--water-ins') })); used.add('water'); }
+    /* Höhenlinien über die ganze Breite, vor Nacht und Relief */
+    for (let m = 0; m <= yMax; m += 500) svg.appendChild(el('line', { x1: L, x2: W - R, y1: y(m), y2: y(m), stroke: css('--grid'), 'stroke-width': m % 1000 ? .6 : 1, opacity: m % 1000 ? .5 : .7 }));
     let lowRun = null; const lows = [];
     for (let k = 4; k < KM - 5; k++) { const low = hAt(k) < reliefAt(k) + 300; if (low && lowRun == null) lowRun = k; if (!low && lowRun != null) { lows.push([lowRun, k]); lowRun = null; } }
     if (lowRun != null) lows.push([lowRun, KM]);
@@ -333,15 +372,15 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     if (layers.wx) {
       for (const c of clouds) { svg.appendChild(el('polygon', { points: clipPoly(c.k0, c.k1, c.h0, c.h1), fill: css('--cloud'), opacity: .55 })); used.add('cloud'); /* Nebel/Stratus enden an der Reliefline */ const lx = x(c.k0) + (c.k0 === 0 ? 40 : 4); svg.appendChild(el('text', { x: lx, y: y(c.h1) + 12, 'font-size': 10, fill: fg, 'font-weight': 600 }, `${c.label} ${c.h1 - c.h0} m`)); svg.appendChild(el('text', { x: lx, y: y(c.h1) + 23, 'font-size': 9, fill: fg }, `${c.h0}–${c.h1} m`)); }
       used.add('inv'); used.add('zero');
-      svg.appendChild(el('polyline', { points: inversion.map(([k, m]) => `${x(k)},${y(m)}`).join(' '), fill: 'none', stroke: css('--inv'), 'stroke-width': 2, 'stroke-dasharray': '6 4' }));
-      svg.appendChild(el('text', { x: x(82), y: y(1650) - 4, 'font-size': 10, fill: css('--inv') }, 'Inversion'));
+      /* Inversion als Band mit gestrichelter Mittellinie, Isothermie als helleres Band (aus dem Modellprofil je Stunde) */
+      svg.appendChild(el('rect', { x: x(0), y: y(1850), width: x(80) - x(0), height: y(1650) - y(1850), fill: css('--inv'), opacity: .26 })); svg.appendChild(el('polyline', { points: inversion.map(([k, m]) => `${x(k)},${y(m)}`).join(' '), fill: 'none', stroke: css('--inv'), 'stroke-width': 1.6, 'stroke-dasharray': '6 4' })); svg.appendChild(el('text', { x: x(1), y: y(1850) - 3, 'font-size': 9.5, fill: css('--inv') }, 'Inversion'));
+      svg.appendChild(el('rect', { x: x(100), y: y(2500), width: x(140) - x(100), height: y(2200) - y(2500), fill: css('--inv'), opacity: .14 })); svg.appendChild(el('text', { x: x(101), y: y(2500) - 3, 'font-size': 9.5, fill: css('--inv') }, 'Isothermie')); used.add('iso');
       svg.appendChild(el('polyline', { points: zeroIso.map(([k, m]) => `${x(k)},${y(m)}`).join(' '), fill: 'none', stroke: css('--zero'), 'stroke-width': 1.8, 'stroke-dasharray': '2 4', 'stroke-linecap': 'round' }));
       svg.appendChild(el('text', { x: x(2), y: y(2750) - 4, 'font-size': 10, fill: css('--zero'), 'font-weight': 600 }, '0 °C'));
-      svg.appendChild(el('text', { x: x(132), y: y(2350) - 4, 'font-size': 9, fill: css('--zero') }, 'Nullgradgrenze'));
-      for (const w of wx) { used.add('hz-' + w.type); const g = el('g', {}); g.appendChild(el('circle', { cx: x(w.k), cy: y(w.h), r: 11, fill: css('--panel'), stroke: css('--warn'), 'stroke-width': 1.6 })); g.appendChild(el('path', { d: WX_ICON[w.type] || WX_ICON.wind, transform: `translate(${x(w.k)} ${y(w.h)})`, fill: w.type === 'cb' ? css('--warn') : 'none', stroke: css('--warn'), 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })); if (w.type === 'wind') g.appendChild(el('text', { x: x(w.k), y: y(w.h) + 23, 'text-anchor': 'middle', 'font-size': 9, fill: css('--warn'), 'font-weight': 600 }, w.lbl.replace(/^\S+\s*/, '')));   /* nur beim Wind «35 kt», Rest im Tooltip */ g.appendChild(el('title', {}, w.t)); svg.appendChild(g); }
+      for (const w of wx) { used.add('hz-' + w.type); const g = el('g', {}); g.appendChild(el('circle', { cx: x(w.k), cy: y(w.h), r: 11, fill: css('--panel'), 'fill-opacity': .35, stroke: css('--warn'), 'stroke-width': 1.6 })); g.appendChild(el('path', { d: WX_ICON[w.type] || WX_ICON.wind, transform: `translate(${x(w.k)} ${y(w.h)})`, fill: w.type === 'cb' ? css('--warn') : 'none', stroke: css('--warn'), 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })); if (w.type === 'wind') g.appendChild(el('text', { x: x(w.k), y: y(w.h) + 23, 'text-anchor': 'middle', 'font-size': 9, fill: css('--warn'), 'font-weight': 600 }, w.lbl.replace(/^\S+\s*/, '')));   /* nur beim Wind «35 kt», Rest im Tooltip */ g.appendChild(el('title', {}, w.t)); svg.appendChild(g); }
     }
     // ---- Ebene 3: Sonne, Etappen (nummeriert) mit Griff am unteren Rand
-    const mark = (t, lbl) => { const k = kOfLT(t); svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: T, y2: H - B, stroke: dim, 'stroke-dasharray': '2 3' })); svg.appendChild(el('text', { x: x(k) + 3, y: H - B - 6, 'font-size': 10, fill: dim }, lbl)); };
+    const mark = (t, lbl) => { const k = kOfLT(t); svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: T, y2: H - B, stroke: dim, 'stroke-dasharray': '2 3', opacity: .7 })); };   /* Kürzel stehen in der Sonnenzeile */
     mark(sunT.ecet, 'ECET'); mark(sunT.bcmt, 'BCMT');
     stages.forEach((s, i) => {
       svg.appendChild(el('line', { x1: x(s.k), x2: x(s.k), y1: T - 18, y2: H - B, stroke: css('--accent-2'), 'stroke-width': 1.5 }));   /* Strich bis über die Grafik hinaus */
@@ -355,13 +394,13 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1], b = pts[i], r = rate(a, b), col = rateColor(r);
       svg.appendChild(el('line', { x1: x(a[0]), y1: y(a[1]), x2: x(b[0]), y2: y(b[1]), stroke: col, 'stroke-width': 3.5, 'stroke-linecap': 'round' }));
-      pills.push({ mx: (x(a[0]) + x(b[0])) / 2, mY: (y(a[1]) + y(b[1])) / 2, col, lbl: `${r >= 0 ? '+' : '−'}${Math.abs(r).toFixed(1)} m/s` });
+      pills.push({ mx: (x(a[0]) + x(b[0])) / 2, mY: (y(a[1]) + y(b[1])) / 2, col, lbl: `${r >= 0 ? '+' : '−'}${Math.abs(r).toFixed(1)}` });
     }
     pts.forEach(([k, m], i) => {
       const c = el('circle', { cx: x(k), cy: y(m), r: 6, fill: css('--accent'), stroke: css('--panel'), 'stroke-width': 2, class: 'pt', 'data-i': i });
       c.appendChild(el('title', {}, `${m} m AMSL · ${hhmmD(k)} ${tz} · ${k} km · Wind ${vWind(m).toFixed(0)} km/h`));
       svg.appendChild(c);
-      svg.appendChild(el('text', { x: x(k), y: y(m) + 20, 'text-anchor': i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle', 'font-size': 10, fill: fg, 'font-family': MONO }, `${m} · ${hhmmD(k)}`));
+      const lb = el('text', { x: x(k), y: y(m) + 20, 'text-anchor': i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle', 'font-size': 10, fill: fg, 'font-family': MONO }, String(m)); lb.appendChild(el('tspan', { 'font-size': 6.5 }, 'm')); lb.appendChild(el('tspan', {}, `·${hhmmD(k)}`)); svg.appendChild(lb);
       menuIcon(svg, x(k) + 9, y(m) - 22, 'pt', i);
     });
     const no = (k, m, n) => { const g = el('g', {}); g.appendChild(el('circle', { cx: x(k), cy: y(m), r: 9, fill: css('--accent') })); g.appendChild(el('text', { x: x(k), y: y(m) + 4, 'text-anchor': 'middle', 'font-size': 11, fill: '#fff', 'font-weight': 600 }, n)); svg.appendChild(g); };
@@ -372,8 +411,9 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     // AGL-Warnung: rot, zweizeilig, in der Schriftgrösse der Sonnenzeiten auf Höhe der Distanzskala, hinterlegt (überdeckt die km-Beschriftung)
     for (const [k0, k1] of lows) { const cx = (x(k0) + x(k1)) / 2, l1 = '<300m AGL', l2 = `${k0}–${k1} km`, w = Math.max(l1.length, l2.length) * 4.6 + 8; svg.appendChild(el('rect', { x: cx - w / 2, y: yAx1 - 9, width: w, height: 20, rx: 2, fill: css('--panel') })); svg.appendChild(el('text', { x: cx, y: yAx1 - 1, 'text-anchor': 'middle', 'font-size': 8, fill: css('--warn'), 'font-weight': 600, 'font-family': MONO }, l1)); svg.appendChild(el('text', { x: cx, y: yAx1 + 8, 'text-anchor': 'middle', 'font-size': 7.5, fill: css('--warn'), 'font-family': MONO }, l2)); }
     /* Modellhorizont vor dem Fahrtende: Marker mit Pfeil «Ende Prognosemodell» (Skizze: Modell ICON-D2 reicht bis km 150) */
-    if (modelEndKm != null) { const xe = x(modelEndKm); const g = el('g', {}); g.appendChild(el('line', { x1: xe, x2: xe, y1: T - 30, y2: H - B, stroke: css('--warn'), 'stroke-width': 1.5, 'stroke-dasharray': '4 3' })); g.appendChild(el('path', { d: `M${xe - 2} ${T - 26} h-22 m4 -4 l-4 4 l4 4`, fill: 'none', stroke: css('--warn'), 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })); g.appendChild(el('text', { x: xe - 28, y: T - 22, 'text-anchor': 'end', 'font-size': 10, fill: css('--warn'), 'font-weight': 600 }, 'Ende Prognosemodell')); g.appendChild(el('title', {}, 'ICON-D2 reicht bis Mi 03:40 LT; geplantes Fahrtende Mi 07:01 LT – Bahn, Relief und Lufträume enden am Modellhorizont')); svg.appendChild(g); used.add('cut'); }
-    for (const p of pills) { const g = el('g', { class: 'pill' }); g.appendChild(el('rect', { x: p.mx - 26, y: p.mY - 18, width: 52, height: 14, rx: 7, fill: css('--panel'), stroke: p.col, 'stroke-width': 1 })); g.appendChild(el('text', { x: p.mx, y: p.mY - 7.5, 'text-anchor': 'middle', 'font-size': 10, fill: p.col, 'font-family': MONO, 'font-weight': 600 }, p.lbl)); svg.appendChild(g); }
+    if (modelEndKm != null) { const xe = x(modelEndKm); const g = el('g', {}); g.appendChild(el('line', { x1: xe, x2: xe, y1: T - 30, y2: H - B, stroke: css('--warn'), 'stroke-width': 1.5, 'stroke-dasharray': '4 3' })); g.appendChild(el('path', { d: `M${xe - 26} ${T - 26} h22 m-4 -4 l4 4 l-4 4`, fill: 'none', stroke: css('--warn'), 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })); g.appendChild(el('text', { x: xe - 30, y: T - 22, 'text-anchor': 'end', 'font-size': 10, fill: css('--warn'), 'font-weight': 600 }, 'Ende Prognosemodell')); g.appendChild(el('title', {}, 'ICON-D2 reicht bis Mi 03:40 LT; geplantes Fahrtende Mi 07:01 LT – Bahn, Relief und Lufträume enden am Modellhorizont')); svg.appendChild(g); used.add('cut'); }
+    /* Raten-Pillen mittig auf dem Teilstück, «m/s» kleiner */
+    for (const p of pills) { const g = el('g', { class: 'pill' }); g.appendChild(el('rect', { x: p.mx - 22, y: p.mY - 7, width: 44, height: 14, rx: 7, fill: css('--panel'), stroke: p.col, 'stroke-width': 1 })); const tx = el('text', { x: p.mx, y: p.mY + 3.5, 'text-anchor': 'middle', 'font-size': 10, fill: p.col, 'font-family': MONO, 'font-weight': 600 }, p.lbl); tx.appendChild(el('tspan', { 'font-size': 6.5, 'font-weight': 400 }, ' m/s')); g.appendChild(tx); svg.appendChild(g); }
     document.getElementById('undoBtn').disabled = !history.length;
     legend(used);
     drawMap();
@@ -384,9 +424,11 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     const hz = { wind: 'Wind', shear: 'Scherung/Turbulenz', cb: 'Gewitterneigung', fog: 'Nebel', rain: 'Niederschlag', ice: 'Vereisung' };
     const ic = (k) => `<svg width="14" height="14" viewBox="-9 -9 18 18"><circle r="8" fill="none" stroke="var(--warn)" stroke-width="1.3"/><path d="${WX_ICON[k]}" fill="${k === 'cb' ? 'var(--warn)' : 'none'}" stroke="var(--warn)" stroke-width="1.3" stroke-linecap="round"/></svg>`;
     const items = [
+      '<i>Achsen: Distanz entlang der Bahn (Zwischenstriche 25/50/75 %) · Zeit LT/UTC aus Distanz ÷ Wind der Fahrthöhe (30′) · darunter SS · ECET · BCMT · SR · Tag/Datum über Mitternacht</i>',
       used.has('relief') && '<i class="sw" style="background:var(--relief)"></i>Relief · helles Band = 300 m Mindestabstand',
       used.has('cloud') && '<i class="sw" style="background:var(--cloud)"></i>Wolken-/Nebeldecke (RH ≥ 95 %) mit Mächtigkeit',
-      used.has('inv') && '<i class="sw" style="background:var(--inv);height:2px"></i>Inversion',
+      used.has('inv') && '<i class="sw" style="background:var(--inv);opacity:.5"></i>Inversion (Band mit Linie)',
+      used.has('iso') && '<i class="sw" style="background:var(--inv);opacity:.25"></i>Isothermieschicht',
       used.has('zero') && '<i class="sw" style="background:var(--zero);height:2px"></i>Nullgradgrenze (0 °C)',
       used.has('night') && '<i class="sw" style="background:var(--night);opacity:.35"></i>Nacht (ECET–BCMT), Dämmerung heller',
       used.has('water') && '<i class="sw" style="background:var(--water-ins)"></i>Wasserfläche (ebener Lauf im Höhenmodell, Heuristik)',
@@ -401,6 +443,8 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
       '<i class="sw" style="background:var(--ok)"></i>Rate: grau < 0,5 m/s · grün ≤ 1,75 · gelb ≤ 3 · rot darüber' + (used.has('low') ? ' · rot schraffiert = <300m AGL' : ''),
     ].filter(Boolean);
     document.getElementById('legProfile').innerHTML = items.map((x) => `<span>${x}</span>`).join('');
+    const opt = (d, lbl, fill) => `<span><svg width="26" height="26" viewBox="-11 -11 22 22"><circle r="10" fill="var(--panel)" fill-opacity=".35" stroke="var(--warn)" stroke-width="1.5"/><path d="${d}" fill="${fill ? 'var(--warn)' : 'none'}" stroke="var(--warn)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${lbl}</span>`;
+    document.getElementById('rainOpts').innerHTML = opt(WX_ICON.rain, 'A · drei Tropfen (verwendet)', true) + opt(RAIN_B, 'B · Wolke mit Tropfen', false) + opt(RAIN_C, 'C · Striche mit Bodenlinie', false);
   }
   // kleines Hamburger-Symbol ≡ rechts oben neben Punkt/Etappe
   function menuIcon(root, px, py, kind, idx) {
@@ -468,7 +512,11 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
       rows.push(`<tr><td>${hhmmD(k0)}–${hhmmD(k1)}</td><td class="n">${k0}–${k1}</td><td class="n">${h0}→${h1}</td><td class="n" style="color:${rateColor(r)}">${r.toFixed(1)}</td><td class="n">${man ? man.toFixed(0) : '–'}</td><td class="n">${blow ? blow.toFixed(0) : '–'}</td><td class="n">${temp ? temp.toFixed(0) : d > 0 ? '▲ ' + d.toFixed(0) : '–'}</td><td class="n">${adia >= 0.5 ? adia.toFixed(0) : '–'}</td><td class="n"><b>${kg.toFixed(0)}</b></td></tr>`);
     }
     const total = sum + BAL.landing;
-    document.getElementById('ballast').innerHTML = `<thead><tr><th>Abschnitt ${tz}</th><th class="n">km</th><th class="n">Höhe m</th><th class="n">m/s</th><th class="n">Manöver ≥1 m/s</th><th class="n">Abblasen</th><th class="n">Temp.</th><th class="n">Adiab.</th><th class="n">kg</th></tr></thead><tbody>${rows.join('')}<tr><td colspan="8">Landeballast (Reserve 3 Sack + Bremsballast)</td><td class="n">${BAL.landing}</td></tr><tr class="total"><td colspan="8">Geplant · verfügbar ${BAL.avail} kg · Reserve</td><td class="n">${total.toFixed(0)} / ${(BAL.avail - total).toFixed(0)}</td></tr></tbody>`;
+    const head = `<thead><tr><th>Abschnitt ${tz}</th><th class="n">km</th><th class="n">Höhe m</th><th class="n">m/s</th><th class="n">Manöver</th><th class="n">Abblasen</th><th class="n">Temp.</th><th class="n">Adiab.</th><th class="n">kg</th></tr></thead>`;
+    const foot = `<tr><td colspan="8">Landeballast (Reserve 3 Sack + Bremsballast)</td><td class="n">${BAL.landing}</td></tr><tr class="total"><td colspan="8">Geplant · verfügbar ${BAL.avail} kg · Rest</td><td class="n">${total.toFixed(0)} / ${(BAL.avail - total).toFixed(0)}</td></tr>`;
+    const cols = rows.length <= 6 ? 1 : rows.length <= 12 ? 2 : 3, per = Math.ceil(rows.length / cols); const parts = [];
+    for (let c = 0; c < cols; c++) parts.push(`<table>${head}<tbody>${rows.slice(c * per, (c + 1) * per).join('')}${c === cols - 1 ? foot : ''}</tbody></table>`);
+    const grid = document.getElementById('ballast'); grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`; grid.innerHTML = parts.join('');
     const pct = Math.min(100, total / BAL.avail * 100);
     const bar = document.getElementById('bar'); bar.style.width = pct + '%'; bar.style.background = pct > 85 ? css('--warn') : css('--accent');
     document.getElementById('barNote').textContent = (pct > 85 ? `Ballast knapp: ${pct.toFixed(0)} % des Vorrats geplant – Profil flacher legen oder Reserve prüfen.` : `${pct.toFixed(0)} % des Ballastvorrats geplant, Reserve ${(BAL.avail - total).toFixed(0)} kg.`) + (gain ? ` Auftriebsgewinn durch Erwärmung ≈ ${gain.toFixed(0)} kg (Ventil oder Steigen bis Prallhöhe).` : '');
@@ -531,7 +579,9 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
   document.getElementById('tzLT').onclick = () => setTz('LT');
   document.getElementById('tzUTC').onclick = () => setTz('UTC');
   document.getElementById('mapBase').addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (!b) return; base = b.dataset.b; for (const x2 of ev.currentTarget.querySelectorAll('button')) x2.classList.toggle('on', x2 === b); drawMap(); });
-  document.getElementById('model').onchange = (e) => { modelEndKm = e.target.value === 'icon_d2' ? 150 : null; document.getElementById('modelWarn').hidden = modelEndKm == null; draw(); };
+  document.getElementById('modelBtn').onclick = (e) => { e.stopPropagation(); const m = document.getElementById('modelMenu'); m.hidden = !m.hidden; };
+  document.getElementById('modelMenu').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const names = { gfs: 'GFS', icon_eu: 'ICON-EU', icon_d2: 'ICON-D2' }; document.getElementById('modelName').textContent = names[b.dataset.m]; for (const x2 of e.currentTarget.querySelectorAll('button')) x2.textContent = (x2 === b ? '✓ ' : '') + x2.textContent.replace(/^✓ /, ''); modelEndKm = b.dataset.m === 'icon_d2' ? 150 : null; document.getElementById('modelWarn').hidden = modelEndKm == null; document.getElementById('modelMenu').hidden = true; draw(); });
+  document.addEventListener('click', () => { document.getElementById('modelMenu').hidden = true; });
   document.getElementById('lyWx').onchange = (e) => { layers.wx = e.target.checked; draw(); };
   document.getElementById('lyAs').onchange = (e) => { layers.as = e.target.checked; draw(); };
   document.getElementById('undoBtn').onclick = undo;

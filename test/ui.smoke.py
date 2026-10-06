@@ -314,13 +314,21 @@ def run_gas(name):
         assert pg.is_visible('.dialog.pf-tool'), 'Werkzeug geöffnet'
         pg.screenshot(path=f'{OUT}/{name}_02_tool.png')
         # Modellwahl: kurzes Modell → Warnung unter der Layer-Box und Marker «Ende Prognosemodell» über der Grafik; langes Modell → weg
-        opts = pg.eval_on_selector_all('.pf-tool select.pf-model option', 'els => els.map(e => e.textContent)')
-        assert any('ICON-D2' in o and '⚠' in o for o in opts) and any(o.startswith('GFS') for o in opts), 'Modellliste mit Horizont-Warnung: ' + str(opts)
-        pg.select_option('.pf-tool select.pf-model', 'icon_d2'); pg.wait_for_timeout(3500)
+        pg.click('.pf-tool .pf-modelbtn'); pg.wait_for_timeout(300)
+        opts = pg.eval_on_selector_all('.pf-tool .pf-menu button', 'els => els.map(e => e.textContent)')
+        assert any('ICON-D2' in o and '⚠' in o for o in opts) and any('GFS' in o for o in opts), 'Modell-Pille öffnet die Liste mit Horizont-Warnung: ' + str(opts)
+        pg.click('.pf-tool .pf-menu button:has-text("ICON-D2")'); pg.wait_for_timeout(3500)
         assert pg.is_visible('.pf-tool .pf-modelwarn') and 'Ende Prognosemodell' in pg.text_content('.pf-tool svg.pf-svg'), 'Modellhorizont-Warnung und Marker'
         pg.screenshot(path=f'{OUT}/{name}_02b_cut.png')
-        pg.select_option('.pf-tool select.pf-model', 'gfs_global'); pg.wait_for_timeout(3500)
+        pg.click('.pf-tool .pf-modelbtn'); pg.wait_for_timeout(300); pg.click('.pf-tool .pf-menu button:has-text("GFS")'); pg.wait_for_timeout(3500)
         assert not pg.is_visible('.pf-tool .pf-modelwarn'), 'Warnung weg mit GFS'
+        # 0.12.1: Beispiel (synthetische Fahrt mit Erklärungen), Schliessen führt zur Planung zurück; Inversion/Isothermie in der Legende
+        pg.click('.pf-tool button.pf-sample'); pg.wait_for_timeout(800)
+        assert len(pg.query_selector_all('.pf-tool svg .pf-callout')) >= 7 and len(pg.query_selector_all('.pf-tool .pf-callouts li')) >= 9 and 'Isothermie' in pg.inner_text('.pf-tool .pf-legend'), 'Beispiel mit nummerierten Erklärungen, Quellen und Isothermie'
+        assert len(pg.query_selector_all('.pf-tool .pf-ballast-grid table')) == 2, 'Ballasttabelle des Beispiels in zwei Spalten'
+        pg.query_selector('.pf-tool .pf-body').screenshot(path=f'{OUT}/{name}_02c_sample.png')
+        pg.click('.pf-tool button.pf-sample'); pg.wait_for_timeout(800)
+        assert len(pg.query_selector_all('.pf-tool svg .pf-callout')) == 0, 'Beispiel geschlossen → Planung ohne Erklärungen'
         idle = lambda: [pg.wait_for_timeout(300) for _ in range(40) if pg.inner_text('.pf-tool .pf-status').strip()]   # Nachrechnen abwarten (Statuszeile leer)
         idle()
         pts0 = pg.evaluate("() => [...document.querySelectorAll('.pf-tool svg .pf-pt')].map(c => [+c.getAttribute('cx'), +c.getAttribute('cy')])")
