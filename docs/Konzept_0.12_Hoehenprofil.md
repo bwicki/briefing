@@ -1,6 +1,6 @@
 # Konzept 0.12 – Etappenmodell und Höhenprofil-Werkzeug (Gasfahrt)
 
-Stand 05.10.2026, nach den Antworten von B. Wicki auf die Fragen zu 0.11.3. Dieses Dokument ist die Startvorlage für die Umsetzungssitzung 0.12. Grundlagen der Aerostatik: `docs/Aerostatik_Gasballon.md`. Interaktive Skizze: `00_Konzept/Hoehenprofil_Werkzeug_Skizze.html` (Stand 3).
+Stand 05.10.2026, nach den Antworten von B. Wicki auf die Fragen zu 0.11.3. Dieses Dokument ist die Startvorlage für die Umsetzungssitzung 0.12. Grundlagen der Aerostatik: `docs/Aerostatik_Gasballon.md`. Interaktive Skizze: `00_Konzept/Hoehenprofil_Werkzeug_Skizze.html` (Stand 4, 06.10.2026).
 
 ## 1 Ziel
 
@@ -21,14 +21,27 @@ Für Gasfahrten (typisch 10–20 h, über Nacht, mehrere Länder) soll das Brief
 | 9 | autorouter | Konto angelegt, Freischaltung durch autorouter-Admin ausstehend. Danach Secrets `autorouter_user` / `autorouter_pass` gemäss SETUP (Browser-Weg über GitHub Actions). |
 | 10 | Kontakte FIR/Land | Vorgabewerte aus dem AIP (CH/D/A/F/I) reichen. |
 
+Ergänzungen vom 06.10.2026 (Stand 4 der Skizze):
+
+| Nr. | Punkt | Entscheid |
+|---|---|---|
+| 11 | Zeichenreihenfolge | Raten-Pillen **immer zuoberst**; Nacht und Relief zuhinterst, dann Lufträume, Wetter (Decken, Inversion, Symbole), Sonne/Etappen, Profil, Punkte, Menüs, Pillen. |
+| 12 | Etappenmenü | Zusätzlich «Etappe löschen (mit Nachfolger zusammenlegen)»: der Nachfolger beginnt am Anfang der gelöschten Etappe; «mit Vorgänger»: der Vorgänger übernimmt den Abschnitt. |
+| 13 | Kartenansicht | Umschalter Profil / Karte im Werkzeug; die Karte ist **reine Ansicht** (Bahn, Stundenmarken, Höhenpunkte mit Höhe, Etappenmarker, Luftraumflächen) – kein Ziehen, kein Menü. |
+| 14 | Mehrtägige Fahrten | Dritte Achsenzeile «Tag» mit Wochentag und Datum («Di 06.10.2026», ab Mitternacht «Mi 07.10.2026»); Zeiten nach Mitternacht überall mit Wochentag («Mi 02:00»). |
+| 15 | Luftraum-Layer | Lufträume A–D, TMA, CTR aus der vorhandenen openAIP-Analyse als Flächen mit Unter-/Obergrenze im Profil und als Flächen auf der Karte; Beschriftung Name · Klasse · Grenzen; «durchfahren», wenn das Profil im Höhenband liegt. E/G nicht gezeichnet. |
+| 16 | Layer-Schalter | Kästchen rechts oben: «Wetter» und «Lufträume», Vorgabe beide ein; gelten für Profil und Karte. |
+
 Noch offen (in der Umsetzung klären):
 - f) Wind je Fahrthöhe aus den Open-Meteo-Druckflächen interpoliert – Stundenauflösung ausreichend, oder Unsicherheit (±) auf der Zeitzeile zeigen?
 - g) Beim Ziehen eines Punkts ändert sich die Bahn (andere Niveaus = andere Richtung) – Karte und Relief sofort nachrechnen oder erst beim Loslassen? (Vorschlag: Profil sofort, Karte/Relief beim Loslassen, mit Fortschrittsanzeige.)
+- h) Luftraum-Layer: nur durchfahrene und nahe Lufträume (wie im Luftraum-Panel) oder alle im Korridor zeichnen?
 
 ## 3 Datenmodell (Briefing)
 
 ```js
 b.profile = {
+  layers: { wx: true, as: true },                                           // Layer-Schalter (je Briefing gespeichert)
   points: [{ km: 0, alt: 450 }, { km: 2, alt: 1300 }, …],   // gefahrene Distanz entlang der Bahn, m AMSL; sortiert nach km
   stages: [{ id, km: 0, name: 'Start' }, { id, km: 30, name: 'Enroute · Mittelland' }, …],
   track: { stand, points: [{ km, lat, lon, alt, ms, windKmh, dir }] },   // zusammengesetzte Bahn (Ergebnis, 1-km-Schritte)
@@ -67,8 +80,8 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 ## 5 Oberfläche
 
 - Neues Panel **A «Fahrtprofil»** (nur Gas): Grafik als Bild im Briefing, Klick öffnet das Werkzeug (Vollbild-Dialog).
-- Werkzeug: SVG wie Skizze Stand 3. Punkte ziehen, Doppelklick setzt, ≡ rechts oben neben Punkt/Etappe (einfügen davor/danach, löschen; Etappe umbenennen/löschen). Klick auf die Zeitzeile setzt eine Etappengrenze. Jeder Punkt: Höhe, Zeit, km, Wind/Temperatur des Modells.
-- Karte (Trajektorien-Panel und Werkzeug): Bahn der gewählten Höhen in Akzentfarbe; Etappen als Raute + Fähnchen + Name; Zeitmarken unverändert klein.
+- Werkzeug: SVG wie Skizze Stand 4; Umschalter Profil / Karte (Karte nur Ansicht), Layer-Schalter Wetter / Lufträume rechts oben; Achsen km / Lokalzeit / Tag; Pillen zuoberst. Punkte ziehen, Doppelklick setzt, ≡ rechts oben neben Punkt/Etappe (einfügen davor/danach, löschen; Etappe umbenennen/löschen). Klick auf die Zeitzeile setzt eine Etappengrenze. Jeder Punkt: Höhe, Zeit, km, Wind/Temperatur des Modells.
+- Karte (Trajektorien-Panel und Werkzeug): Bahn der gewählten Höhen in Akzentfarbe; Etappen als Raute + Fähnchen + Name; Höhenpunkte als kleine Akzentpunkte mit Höhe; Zeitmarken unverändert klein; Luftraumflächen nach Layer.
 - Etappen im Editor: Abschnitte B/C je Etappe mit Zeitfenster und Ort (Akkordeon je Etappe), Pflichtpanels je Etappe nach Land.
 - Kontakte FIR/Land aus dem AIP (Vorgabe CH/D/A/F/I in den Einstellungen, Experten).
 - Nachfahrer-Abschnitt ab 12 h Fahrtdauer: Route, Maut/Vignetten, Übernachtung, Grenzdokumente.
