@@ -5,7 +5,7 @@
  * Kopplung km ↔ Zeit und Ort (aus den Trajektorien je Höhe, js/auto/profiledata.js). Das
  * Ballastmodell folgt der Aerostatik nach Emden (DFSV-Handbuch 2.10) und «Gone with the Wind»
  * Kap. 4 – Herleitung in docs/Aerostatik_Gasballon.md: Manöver (Widerstandszahl × Rate²),
- * Abblasen über der Prallhöhe (1 % je 80 m), Temperaturgesetz 4 (0,4 % des Auftriebs je K)
+ * Level-Out (Gasverlust über der Prallhöhe, 1 % je 80 m), Temperaturgesetz 4 (0,4 % des Auftriebs je K)
  * und Adiabatik beim schnellen Steigen.
  */
 
@@ -94,6 +94,25 @@ export function waterRuns(relief, minKm = 3) {
   }
   if (run && run.km1 - run.km0 >= minKm) out.push(run);
   return out.filter((w) => w.m > 0);
+}
+/**
+ * Wasserflächen aus OpenStreetMap (0.12.2): grid [{km}] mit items [{name,type}|null] je Punkt (Worker /api/wx/water, Overpass is_in)
+ * → Abschnitte [{km0, km1, m, name}]; jeder Wasserpunkt deckt ±½ Rasterweite, benachbarte werden verbunden; m = tiefste Reliefhöhe im Abschnitt
+ * (Seespiegel), name = erster benannter See des Abschnitts.
+ */
+export function waterFromItems(grid, items, relief) {
+  const out = []; let run = null;
+  const step = grid.length > 1 ? Math.max(0.5, (grid[grid.length - 1].km - grid[0].km) / (grid.length - 1)) : 1;
+  const relAt = (k) => { let best = null; for (const r of relief || []) if (best == null || Math.abs(r.km - k) < Math.abs(best.km - k)) best = r; return best?.m ?? 0; };
+  for (let i = 0; i < grid.length; i++) {
+    const it = items?.[i], k = grid[i].km;
+    if (!it) { if (run) { out.push(run); run = null; } continue; }
+    const km0 = Math.max(0, k - step / 2), km1 = k + step / 2, m = relAt(k);
+    if (run && km0 <= run.km1 + 1e-6) { run.km1 = km1; run.m = Math.min(run.m, m); if (!run.name && it.name) run.name = it.name; }
+    else { if (run) out.push(run); run = { km0, km1, m, name: it.name || null }; }
+  }
+  if (run) out.push(run);
+  return out.map((w) => ({ ...w, km0: Math.round(w.km0 * 10) / 10, km1: Math.round(w.km1 * 10) / 10 }));
 }
 
 // ---------------------------------------------------------------- Teilstücke, Raten

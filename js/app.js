@@ -91,6 +91,7 @@ function buildMenu() {
   item(t('nav_lang'), () => { setLang(getLang() === 'de' ? 'en' : 'de'); save('fb.lang', getLang()); buildMenu(); route(); });
   m.appendChild(h('div.sep'));
   if (ctx.user && !ctx.shared && store.mode === 'remote') { m.appendChild(h('div.menu-user', `${ctx.user.name} · ${ctx.user.id} · ${t(ctx.user.role === 'super' ? 'role_super' : 'role_master')}`)); m.appendChild(h('div.sep')); }
+  item(t('nav_demo'), () => window.open('demo/', '_blank', 'noopener'));   // Einführungsfilme (0.12.2)
   item(t('nav_about'), () => dialog(t('nav_about'), h('div.note', [h('p', `${APP.name} ${APP.version} · ${APP.date}`), h('p', t('about')), h('p', [h('a', { href: APP.repo, target: '_blank', rel: 'noopener' }, APP.repo)])]), [{ label: t('close'), primary: true }]));
   if (!ctx.shared) item(t('nav_lock'), () => lock());
 }
@@ -181,6 +182,9 @@ async function route() {
 // ---------------------------------------------------------------- Start
 async function main() {
   $('appVersion').textContent = APP.version;
+  // Höhe der Kopfzeile als CSS-Variable (haftende Zeile «Daten aktualisieren / Pflichtinhalte» darunter, 0.12.2)
+  const topbar = $('topbar'); const setTop = () => document.documentElement.style.setProperty('--topbar-h', topbar.offsetHeight + 'px');
+  setTop(); if (window.ResizeObserver) new ResizeObserver(setTop).observe(topbar); window.addEventListener('resize', setTop);
   $('appVersion').onclick = () => toast(`${APP.name} ${APP.version} · ${APP.date}`);
   setLang(load('fb.lang', 'de'));
   applyTheme(load('fb.theme', 'light'));
@@ -198,7 +202,8 @@ async function main() {
     $('gateOpen').disabled = true;
     try {
       const ok = await store.login(user, pw);
-      if (ok) { $('gatePw').value = ''; $('gateErr').hidden = true; await afterLogin(); }
+      // nach der Anmeldung immer die Übersicht «Meine Briefings» (0.12.2); Freigabe-Links (#/s, #/m) bleiben
+      if (ok) { $('gatePw').value = ''; $('gateErr').hidden = true; if (!/^#\/(s|m)\//.test(location.hash)) history.replaceState(null, '', location.pathname + location.search + '#/list'); await afterLogin(); }
       else { $('gateErr').hidden = false; $('gatePw').value = ''; $('gatePw').focus(); }
     } catch (err) { $('gateErr').hidden = false; $('gateErr').textContent = `${t('error')}: ${err.message}`; }
     finally { $('gateOpen').disabled = false; }

@@ -338,7 +338,7 @@ export function renderMetar(snap, b) {
   // kompakt: Rohtext links, Klartext rechts; erste Klartextzeile «METAR LSZH · … (vor 0:30 h)»; Änderungsgruppen («→») ohne Aufzählungspunkt
   const pair = (label, raw, lines, issuedMs) => h('div.metar-cols.compact', [
     h('div.raw', h('pre.report', rawNodes(raw))),
-    h('div.dec', h('ul.decoded', lines.map((x, i) => (i === 0 ? h('li.head', [h('b', label + ' '), ...marked(x), age(issuedMs)]) : h('li' + (x.startsWith('→') ? '.chg' : ''), marked(x)))))),
+    h('div.dec', h('ul.decoded', lines.map((x, i) => (i === 0 ? h('li.head', [label + ' ', ...marked(x), age(issuedMs)]) : h('li' + (x.startsWith('→') ? '.chg' : ''), marked(x)))))),
   ]);
   // Stationsnamen mit ICAO-Abkürzungen (AP = Airport, INTL, AB = Air Base, AFLD = Airfield)
   const stName = (n) => String(n || '').replace(/\b(Arpt|Airport|Aprt|Apt)\b\.?/gi, 'AP').replace(/\bIntl\b\.?/gi, 'INTL').replace(/\b(Air Base|Airbase|AFB|AB)\b/g, 'AB').replace(/\b(Airfield|Aerodrome)\b/gi, 'AFLD').replace(/\s+/g, ' ').trim();

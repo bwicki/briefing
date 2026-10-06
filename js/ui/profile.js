@@ -8,7 +8,7 @@
  */
 import { h, clear, toast, fmt } from '../util.js';
 import { t, getLang } from '../i18n.js';
-import { MODELS, modelHours } from '../auto/openmeteo.js';
+import { MODELS, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDate, isoDate, localParts, fmtDateTime } from '../calc/time.js';
 import { ensureProfile, altAt, msAtKm, kmAtMs, posAtKm, reliefAt, segments, rateClass, reliefBreaches, addStage, removeStage, moveStage, stageWindows, nightFraction, ballastPlan, fitPoints } from '../calc/profile.js';
 import { buildProfileData } from '../auto/profiledata.js';
@@ -107,7 +107,7 @@ export function drawChart(svg, st) {
     svg.appendChild(el('polygon', { points: relief.map((r) => `${x(r.km)},${yc(r.m + minAgl)}`).join(' ') + ' ' + base0, fill: C.relief, opacity: .18 }));
     svg.appendChild(el('polygon', { points: relief.map((r) => `${x(r.km)},${yc(r.m)}`).join(' ') + ' ' + base0, fill: C.relief, opacity: .75 }));
     // Wasserflächen (ebene Läufe im Höhenmodell) als blaue Einsätze an der Oberfläche
-    for (const w of D.water || []) { if (w.m < yMin || w.m > yMax) continue; const yw = yc(w.m); svg.appendChild(el('rect', { x: x(w.km0), y: yw, width: x(w.km1) - x(w.km0), height: Math.min(9, y(yMin) - yw), fill: C.water, opacity: .9 })); used.add('water'); }
+    for (const w of D.water || []) { if (w.m < yMin || w.m > yMax) continue; const yw = yc(w.m); svg.appendChild(el('rect', { x: x(w.km0), y: yw, width: x(w.km1) - x(w.km0), height: Math.min(9, y(yMin) - yw), fill: C.water, opacity: .9 })); used.add(D.waterSource === 'osm' ? 'water-osm' : 'water'); }
     const hi = relief.reduce((a, r) => (r.m > a.m ? r : a), relief[0]);
     svg.appendChild(el('text', { x: Math.max(x(0) + 110, Math.min(x(hi.km) + 4, W - R - 190)), y: Math.min(yc(hi.m) + 26, y(yMin) - 6), 'font-size': 10, fill: C.panel }, t('pf_reliefLbl', { m: minAgl })));
     used.add('relief');
@@ -140,12 +140,10 @@ export function drawChart(svg, st) {
     svg.appendChild(el('text', { x: x(k) + dx, y: ySun, 'text-anchor': anchor, 'font-size': 8, fill: C.night, opacity: .9, 'font-family': MONO, 'font-weight': 600 }, e.kind.toUpperCase()));
     svg.appendChild(el('text', { x: x(k) + dx, y: ySun2, 'text-anchor': anchor, 'font-size': 7.5, fill: C.night, opacity: .9, 'font-family': MONO }, hhmm(z, e.ms)));
   }
-  if (sunRow.length) svg.appendChild(el('text', { x: ML - 14, y: ySun + 4, 'text-anchor': 'end', 'font-size': 8, fill: C.dim }, t('pf_sun')));
-  // Tageszeile nur, wenn die Fahrt (in der gewählten Zone) über Mitternacht geht
+  // Tageszeile nur, wenn die Fahrt (in der gewählten Zone) über Mitternacht geht (ohne Zeilenbeschriftungen «Sonne»/«Tag» links, 0.12.2)
   const midnights = []; let lastDay = isoDate(z, startMs);
   for (let ms = firstHour; ms <= endMs; ms += hourMs) { const d = isoDate(z, ms); if (d !== lastDay) { midnights.push(ms); lastDay = d; } }
   if (midnights.length) {
-    svg.appendChild(el('text', { x: ML - 14, y: yAx3, 'text-anchor': 'end', 'font-size': 10, fill: C.dim }, t('pf_day')));
     svg.appendChild(el('text', { x: x(0), y: yAx3, 'font-size': 10.5, fill: C.fg, 'font-weight': 600 }, fmtDate(z, startMs, lang) + (tz === 'UTC' ? ' UTC' : '')));
     for (const ms of midnights) { const k = kmT(ms); svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: H - B, y2: yAx3 + 3, stroke: C.fg, 'stroke-width': 1.2, 'stroke-dasharray': '3 2' })); svg.appendChild(el('text', { x: x(k) + 4, y: yAx3, 'font-size': 10.5, fill: C.fg, 'font-weight': 600 }, fmtDate(z, ms, lang) + (tz === 'UTC' ? ' UTC' : ''))); }
   }
@@ -284,11 +282,28 @@ function stageHandle(root, px, idx) {
 }
 
 /** Legende: kompakt, nur die Symbole, die in der Grafik vorkommen (used aus drawChart). */
-export function legend(used, ctx) {
+/**
+ * Einklappbarer Block (Legende, Modell der Schätzung): Zustand je Briefing in p.fold[key] (Legende offen,
+ * Modell zu als Vorgabe). o.forceOpen = im Druck immer offen (Legende); o.onToggle speichert den Zustand.
+ */
+function fold(key, title, content, p, o = {}) {
+  const open = o.forceOpen ? true : (p?.fold?.[key] ?? o.defaultOpen ?? true);
+  const det = h('details.pf-fold.' + key, [h('summary', [h('span.caret'), title]), h('div.pf-fold-body', content)]);
+  det.open = open;
+  // «toggle» feuert auch für das programmatische Setzen – nur echte Änderungen speichern
+  let last = open;
+  if (!o.forceOpen) det.addEventListener('toggle', () => { if (det.open === last) return; last = det.open; if (p) { if (!p.fold) p.fold = {}; p.fold[key] = det.open; } o.onToggle?.(det.open); });
+  return det;
+}
+export const foldOpen = (p, key, dflt) => p?.fold?.[key] ?? dflt;
+
+/** Legende: nur die vorkommenden Symbole; o.hint = Bedienhinweis als erste Zeile (Werkzeug); o.p/o.onToggle = einklappbar. */
+export function legend(used, ctx, o = {}) {
   const sw = (style) => h('i.sw', { style });
   const ic = (type) => { const s = el('svg', { width: 14, height: 14, viewBox: '-9 -9 18 18' }); s.appendChild(el('circle', { r: 8, fill: 'none', stroke: C.bad, 'stroke-width': 1.3 })); s.appendChild(el('path', { d: WX_ICON[type], fill: type === 'cb' ? C.bad : 'none', stroke: C.bad, 'stroke-width': 1.3, 'stroke-linecap': 'round' })); return s; };
   const minAgl = minAglOf(ctx);
   const items = [
+    o.hint ? [h('span.pf-leghint', o.hint)] : null,
     [h('span.pf-legaxis', t('pf_axisNote', { tz: 'LT/UTC' }))],
     used.has('relief') ? [sw('background:var(--pf-relief)'), t('pf_legRelief', { m: minAgl })] : null,
     used.has('cloud') ? [sw('background:var(--pf-cloud)'), t('pf_legCloud')] : null,
@@ -296,7 +311,7 @@ export function legend(used, ctx) {
     used.has('iso') ? [sw('background:var(--pf-inv);opacity:.25'), t('pf_legIso')] : null,
     used.has('zero') ? [sw('background:var(--pf-zero);height:2px'), t('pf_legZero')] : null,
     used.has('night') ? [sw('background:var(--pf-night);opacity:.35'), t('pf_legNight')] : null,
-    used.has('water') ? [sw('background:var(--pf-water)'), t('pf_legWater')] : null,
+    used.has('water-osm') ? [sw('background:var(--pf-water)'), t('pf_legWaterOsm')] : used.has('water') ? [sw('background:var(--pf-water)'), t('pf_legWater')] : null,
     used.has('cut') ? [sw('border-top:2px dashed var(--pf-bad);background:transparent;height:0'), t('pf_modelEnd')] : null,
     [...used].some((k) => k.startsWith('hz-')) ? [...['wind', 'shear', 'cb', 'fog', 'rain', 'ice'].filter((k) => used.has('hz-' + k)).flatMap((k) => [ic(k), ` ${t(HZ_KEY[k])} `])] : null,
     used.has('as-c') ? [sw('border:1.5px solid var(--pf-as-c);background:transparent'), `${t('pf_layerAs')} A–C`] : null,
@@ -308,7 +323,8 @@ export function legend(used, ctx) {
     used.has('stage') ? [sw('background:var(--pf-stage);height:2px'), t('pf_legStage')] : null,
     [sw('background:var(--pf-ok)'), t('pf_legRate', { m: minAgl })],
   ].filter(Boolean);
-  return h('div.pf-legend', items.map((it) => h('span', it)));
+  const box = h('div.pf-legend', items.map((it) => h('span', it)));
+  return fold('legend', t('pf_legend'), box, o.p, { defaultOpen: true, forceOpen: !!o.print, onToggle: o.onToggle });
 }
 
 /** Erklärungen zur Beispielfahrt: nummerierte Liste und «Woher die Daten kommen». */
@@ -328,11 +344,17 @@ export function ballastFor(b, ctx) {
   const overcastAt = (ms) => { if (!hrs.length) return 0; const hr = hrs.reduce((a, x) => (Math.abs(x.ms - ms) < Math.abs(a.ms - ms) ? x : a), hrs[0]); return hr.cloud != null ? Math.max(0, Math.min(1, hr.cloud / 100)) : 0; };
   return ballastPlan(p.points, D.track, { volume: bal.volume, fillFraction: fillFractionOf(b), gas: bal.gas, siteAlt: b.site.elev || 0, wz: bal.wz || null, aero: S.aero, landingKg: r?.reserveKg || 0, availKg: r?.ballast ?? null, nightAt: (ms) => nightFraction(D.sun, ms), overcastAt });
 }
-export function ballastTable(b, ctx) {
+/**
+ * Schätzung Ballastverbrauch: Teilstücke in 1–3 Spalten, Balken, Hinweis; darunter «Modell der Schätzung» als
+ * einklappbarer Block über die ganze Breite (Zustand in p.fold.model; im Druck nur, wenn aufgeklappt: o.print).
+ */
+export function ballastTable(b, ctx, o = {}) {
   const bp = ballastFor(b, ctx); if (!bp) return null;
+  const p = ensureProfile(b);
   const tz = tzName(b), bal = b.balloon, S = ctx.settings;
   const n = (v, d = 0) => (v ? v.toFixed(d) : '–');
-  const head = () => h('thead', h('tr', [h('th', `${t('pf_bSeg')} ${tz}`), h('th.n', 'km'), h('th.n', t('pf_bAlt')), h('th.n', 'm/s'), h('th.n', t('pf_bMan')), h('th.n', t('pf_bBlow')), h('th.n', t('pf_bTemp')), h('th.n', t('pf_bAdia')), h('th.n', 'kg')]));
+  const th = (key, cls = '.n') => h('th' + cls, { title: t(key + 'Tip') }, t(key));
+  const head = () => h('thead', h('tr', [h('th', `${t('pf_bSeg')} ${tz}`), h('th.n', 'km'), h('th.n', t('pf_bAlt')), h('th.n', 'm/s'), th('pf_bMan'), th('pf_bBlow'), th('pf_bTemp'), th('pf_bAdia'), h('th.n', 'kg')]));
   const row = (r) => h('tr', [h('td', `${fmtTD(b, r.ms0)}–${fmtTD(b, r.ms1)}`), h('td.n', `${Math.round(r.km0)}–${Math.round(r.km1)}`), h('td.n', `${r.alt0}→${r.alt1}`), h('td.n', { style: { color: rateCol(r.rate) } }, r.rate.toFixed(1)), h('td.n', n(r.man)), h('td.n', n(r.blow)), h('td.n', r.temp ? n(r.temp) : r.gain ? `▲ ${n(r.gain)}` : '–'), h('td.n', r.adia >= 0.5 ? n(r.adia) : '–'), h('td.n', h('b', n(r.kg)))]);
   const foot = [
     h('tr', [h('td', { colspan: 8 }, t('pf_bLanding')), h('td.n', n(bp.landingKg))]),
@@ -347,7 +369,10 @@ export function ballastTable(b, ctx) {
   const bar = h('div.pf-bar', h('i', { style: { width: pct + '%', background: pct > 85 ? 'var(--pf-bad)' : 'var(--pf-pt)' } }));
   const note = h('div.note.small', (bp.availKg ? (pct > 85 ? t('pf_bTight', { p: pct.toFixed(0) }) : t('pf_bNote', { p: pct.toFixed(0), r: n(bp.availKg - bp.total) })) : '') + (bp.gain ? ' ' + t('pf_bGain', { g: n(bp.gain) }) : ''));
   const a = S.aero || {};
-  const model = h('div.note.small', t('pf_bModel', { v: fmt(bal.volume), g: bal.gas === 'He' ? 'He' : 'H₂', f: Math.round(fillFractionOf(b) * 100), p: bp.prallH, wz: bal.wz || ((bal.volume || 0) >= 1000 ? 3.8 : 3.5), k: bp.kgPerK1000, d: a.dtDayClear, n: a.dtNightClear, dc: a.dtDayOvercast, nc: a.dtNightOvercast }));
+  // Modell der Schätzung: Parameter und Bedeutung der Spalten – einklappbar, über die ganze Breite; im Druck nur, wenn aufgeklappt
+  const modelTxt = t('pf_bModel', { v: fmt(bal.volume), g: bal.gas === 'He' ? 'He' : 'H₂', f: Math.round(fillFractionOf(b) * 100), p: bp.prallH, wz: bal.wz || ((bal.volume || 0) >= 1000 ? 3.8 : 3.5), k: bp.kgPerK1000, d: a.dtDayClear, n: a.dtNightClear, dc: a.dtDayOvercast, nc: a.dtNightOvercast });
+  const modelBody = h('div.note.small', [h('div', modelTxt), h('ul.pf-cols', ['pf_bMan', 'pf_bBlow', 'pf_bTemp', 'pf_bAdia'].map((k) => h('li', [h('b', t(k)), ': ', t(k + 'Tip')])))]);
+  const model = o.print && !foldOpen(p, 'model', false) ? null : fold('model', t('pf_bModelTitle'), modelBody, p, { defaultOpen: false, forceOpen: !!o.print, onToggle: o.onToggle });
   return h('div.pf-ballast-wrap', [h('div.lbl', t('pf_ballast')), tbl, bar, note, model]);
 }
 /** Etappenübersicht: Nr., Name, Zeit (Briefing-Zone), km, Höhenband, Ort, Land/FIR, Lufträume, Achtung, Kontakte (AIP). */
@@ -359,7 +384,9 @@ export function stageRows(b, ctx) {
     const countries = [...new Set(firs.map((f) => f.country).filter(Boolean))];
     const as = (D.airspaces || []).filter((a) => a.km0 < w.km1 && a.km1 > w.km0);
     const hz = (D.hazards || []).filter((x) => x.km < w.km1 && (x.kmEnd ?? x.km) >= w.km0);
-    const contacts = (S.fisContacts || []).filter((c) => countries.includes(c.cc) && (c.freq || c.phone));
+    // Kontakte: FIS-Sektoren aus openAIP entlang der Etappe (Name · Frequenz), sonst die Kontakte je Land aus den Einstellungen
+    const secs = (D.fis || []).filter((f) => f.fromKm < w.km1 && f.toKm > w.km0 && f.freqs?.length);
+    const contacts = secs.length ? secs.map((f) => ({ cc: f.country, name: f.name, freq: f.freqs[0], phone: '' })) : (S.fisContacts || []).filter((c) => countries.includes(c.cc) && (c.freq || c.phone));
     return { ...w, firs, countries, as, hz, contacts };
   });
 }
@@ -399,7 +426,8 @@ export function profilePanel(b, ctx, o = {}) {
     const used = new Set();
     const svg = el('svg', { class: 'pf-svg', 'aria-label': t('pf_title') });
     drawChart(svg, { b, ctx, p, D, interactive: false, used });
-    box.append(h('div.pf-chart', svg), legend(used, ctx), h('div.note.small.stand', standLine(b, D)), stageTable(b, ctx), ballastTable(b, ctx));
+    const onToggle = () => { if (!o.readOnly) { p.updated = Date.now(); o.onChange?.(); } };
+    box.append(h('div.pf-chart', svg), legend(used, ctx, { p, onToggle }), h('div.note.small.stand', standLine(b, D)), stageTable(b, ctx), ballastTable(b, ctx, { onToggle }));
   };
   draw();
   return box;
@@ -411,7 +439,8 @@ export function profileView(b, ctx) {
   const used = new Set();
   const svg = el('svg', { class: 'pf-svg', 'aria-label': t('pf_title') });
   drawChart(svg, { b, ctx, p, D, interactive: false, used });
-  return h('div.pf-view', [h('div.pf-chart', svg), legend(used, ctx), h('div.mini', standLine(b, D)), stageTable(b, ctx), ballastTable(b, ctx)]);
+  // Briefingsicht/Druck: Legende immer offen, Modell der Schätzung nur, wenn im Panel/Werkzeug aufgeklappt
+  return h('div.pf-view', [h('div.pf-chart', svg), legend(used, ctx, { p, print: true }), h('div.mini', standLine(b, D)), stageTable(b, ctx), ballastTable(b, ctx, { print: true })]);
 }
 
 // ---------------------------------------------------------------- Werkzeug (Vollbild-Dialog)
@@ -446,25 +475,26 @@ export function openProfileTool(b0, ctx, o = {}) {
   const tzSeg = h('div.seg', { title: t('timeBase') }, ['LT', 'UTC'].map((k) => segBtn(k, (b.time.base || 'LT') === k, () => { b.time.base = k; tzSeg.querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', ['LT', 'UTC'][i] === k)); changed(); redraw(); })));
   const undoBtn = h('button.btn.small', { type: 'button', disabled: true, title: t('pf_undoTitle'), onclick: undo }, `↶ ${t('pf_undo')}`);
   const status = h('span.note.small.pf-status');
-  const hint = h('span.note.small.pf-hint', t('pf_hintProfile'));
   const layerBox = h('div.pf-layers', [['wx', 'pf_layerWx'], ['as', 'pf_layerAs']].map(([k, key]) => { const c = h('input', { type: 'checkbox' }); c.checked = p.layers[k] !== false; c.onchange = () => { p.layers[k] = c.checked; changed(); redraw(); }; return h('label', [c, ' ', t(key)]); }));
-  // Modellwahl: Modelle mit Druckflächen, deren Horizont wenigstens den Fahrtbeginn erreicht; deckt eines die Fahrt nur teilweise ab → ⚠
+  // Wettermodell: Modelle mit Druckflächen, deren Horizont wenigstens den Fahrtbeginn erreicht; Vorgabe = feinstes Modell, das die ganze
+  // Fahrt abdeckt (suggestModel); deckt eines die Fahrt nur teilweise ab → ⚠
   const hoursToStart = Math.max(0, (b.time.startMs - Date.now()) / 3600000), needH = hoursToStart + (b.intent.durationMin || 1440) / 60;
-  const modelOpts = MODELS.filter((m) => !m.noLevels && m.hours >= hoursToStart + 1).map((m) => ({ value: m.key, label: `${m.name}${m.hours < needH ? ` ⚠ ${t('pf_modelShort', { h: Math.round(m.hours - hoursToStart) })}` : ` (${m.hours} h)`}` }));
-  // Modell als Pille mit ⋯: Klick öffnet die Liste
-  const modelName = () => (MODELS.find((m) => m.key === (p.model ?? p.data?.model ?? '')) || MODELS[MODELS.length - 1]).name;
+  const dfltModel = suggestModel(needH);
+  const modelOpts = MODELS.filter((m) => m.key && !m.noLevels && m.hours >= hoursToStart + 1).map((m) => ({ value: m.key, label: `${m.name} · ${m.note}${m.hours < needH ? ` ⚠ ${t('pf_modelShort', { h: Math.round(m.hours - hoursToStart) })}` : ` (${m.hours} h)`}${m.key === dfltModel ? ` · ${t('pf_modelDefault')}` : ''}` }));
+  // Pille «Wettermodell <Name> ⋯»: zeigt das gewählte, sonst das tatsächlich verwendete Modell; Klick öffnet die Liste
+  const modelName = () => (MODELS.find((m) => m.key === (p.model || p.data?.model || dfltModel)) || MODELS[MODELS.length - 1]).name;
   const modelLbl = h('span', modelName());
-  const modelBtn = h('button.btn.small.pf-modelbtn', { type: 'button', title: t('pf_model'), onclick: (ev) => { ev.stopPropagation(); openModelMenu(); } }, [h('span.note.small', `${t('pf_model')} `), modelLbl, icon('more', 14)]);
+  const modelBtn = h('button.btn.small.pf-modelbtn', { type: 'button', title: t('pf_modelTip'), onclick: (ev) => { ev.stopPropagation(); openModelMenu(); } }, [h('span.note.small', `${t('pf_model')} `), modelLbl, icon('more', 14)]);
   const modelWarn = h('div.pf-modelwarn', { hidden: true });
   const sampleBtn = h('button.btn.small.pf-sample', { type: 'button', title: t('pf_sampleNote'), onclick: () => toggleSample() }, t('pf_sample'));
   const toolbar = h('div.pf-toolbar', [viewSeg, tzSeg, undoBtn, modelBtn, sampleBtn, status, layerBox]);
-  const toolbar2 = h('div.pf-toolbar2', [hint, modelWarn]);
+  const toolbar2 = h('div.pf-toolbar2', { hidden: true }, [modelWarn]);
   function openModelMenu() {
     closeMenu();
     menuEl = h('div.pf-menu');
     menuEl.style.left = modelBtn.offsetLeft + 'px'; menuEl.style.top = (modelBtn.offsetTop + modelBtn.offsetHeight + 4) + 'px';
     menuEl.appendChild(h('div.ttl', t('pf_model')));
-    const cur = p.model ?? p.data?.model ?? '';
+    const cur = p.model || p.data?.model || dfltModel;
     for (const m of modelOpts) menuEl.appendChild(h('button', { type: 'button', onclick: () => { p.model = m.value; modelLbl.textContent = modelName(); closeMenu(); changed(); recompute(); } }, `${m.value === cur ? '✓ ' : ''}${m.label}`));
     toolbar.appendChild(menuEl);
   }
@@ -499,13 +529,16 @@ export function openProfileTool(b0, ctx, o = {}) {
     const used = new Set();
     st = { b, ctx, p, D: p.data, interactive: true, used, callouts: sample?.callouts };
     drawChart(svg, st);
-    const D = p.data; modelWarn.hidden = !D.cut;
+    const D = p.data; modelWarn.hidden = toolbar2.hidden = !D.cut;
     if (D.cut) { clear(modelWarn); modelWarn.append('⚠ ', t('pf_modelEndHint', { m: D.modelName || '', t: fmtTD(b, D.endMs), tz: tzName(b), p: fmtTD(b, D.plannedEndMs) })); }
-    clear(legendBox); legendBox.appendChild(legend(used, ctx));
+    if (!sample) modelLbl.textContent = modelName();
+    renderLegend();
     clear(calloutBox); if (sample) calloutBox.appendChild(calloutList(sample.callouts));
-    clear(tables); tables.append(h('div.note.small', sample ? t('pf_sampleNote') : standLine(b, p.data)), ballastTable(b, ctx), stageTable(b, ctx));
+    clear(tables); tables.append(h('div.note.small', sample ? t('pf_sampleNote') : standLine(b, p.data)), ballastTable(b, ctx, { onToggle: changed }), stageTable(b, ctx));
     if (view === 'map') drawMap();
   }
+  // Legende mit dem Bedienhinweis (Profil/Karte) als erster Zeile; einklappbar, Zustand im Briefing
+  function renderLegend() { clear(legendBox); legendBox.appendChild(legend(st.used, ctx, { hint: view === 'profile' ? t('pf_hintProfile') : t('pf_hintMap'), p, onToggle: changed })); }
   // Menüs ≡ für Punkte und Etappen
   let menuEl = null;
   const closeMenu = () => { if (menuEl) { menuEl.remove(); menuEl = null; } };
@@ -581,7 +614,7 @@ export function openProfileTool(b0, ctx, o = {}) {
     const end = D.track.points[D.track.points.length - 1]; if (end) L.marker([end.lat, end.lon], { icon: L.divIcon({ className: 'land-dot', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(layerGroup).bindTooltip(t('pf_mapLanding'));
     setTimeout(() => { map.invalidateSize(); map.fitBounds(pts, { padding: [24, 24] }); }, 60);
   }
-  function setView(v) { view = v; viewSeg.querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', ['profile', 'map'][i] === v)); chartWrap.hidden = v !== 'profile'; mapWrap.hidden = v !== 'map'; hint.textContent = v === 'profile' ? t('pf_hintProfile') : t('pf_hintMap'); closeMenu(); if (v === 'map') drawMap(); }
+  function setView(v) { view = v; viewSeg.querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', ['profile', 'map'][i] === v)); chartWrap.hidden = v !== 'profile'; mapWrap.hidden = v !== 'map'; renderLegend(); closeMenu(); if (v === 'map') drawMap(); }
   redraw();
   return close;
 }

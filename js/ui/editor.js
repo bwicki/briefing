@@ -109,6 +109,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     }
     e.appendChild(h('div.note', { style: { marginTop: '8px' } }, t('navLegend')));
     applyNavOpen();
+    updateMustBtn();
     drawSide();
   }
   function setActive(key) {
@@ -345,12 +346,33 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     (b.meteo = b.meteo || {}).lastRefresh = { ts: Date.now(), n, total: keys.length };
     drawPanels(); ctx.autoLoad = true;
   }
-  /** Über dem ersten Abschnitt: alle automatischen Panels neu laden (ohne KI-Kommentare); Status daneben. */
+  /** Über dem ersten Abschnitt, bleibt beim Rollen unter der Kopfzeile stehen: alle automatischen Panels neu laden (ohne KI-Kommentare)
+   *  mit Status daneben, und «Pflichtinhalte ergänzen» – springt zum nächsten noch leeren Pflicht-Panel (zyklisch ab dem aktiven). */
+  let mustBtn = null;
+  const openMandatory = () => panels.filter((p) => panelStatus(p) === 'must');
+  function updateMustBtn() {
+    if (!mustBtn) return;
+    const n = openMandatory().length;
+    mustBtn.disabled = !n; mustBtn.classList.toggle('done', !n);
+    clear(mustBtn); mustBtn.append(icon(n ? 'edit' : 'check', 16), ` ${n ? `${t('fillMandatory')} (${n})` : t('fillMandatoryDone')}`);
+  }
+  function jumpMandatory() {
+    const open = openMandatory(); if (!open.length) return;
+    const i = open.findIndex((p) => p.key === activeKey);
+    const next = open[(i + 1) % open.length];
+    setActive(next.key);
+    document.getElementById('panel-' + next.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   function refreshRow() {
     const canEdit = canOwn || shared?.role === 'edit';
-    if (!canEdit || b.site.lat == null) return null;
+    if (!canEdit) return null;
     const st = h('span.note.small');
-    return h('div.row-actions.refresh-all', [h('button.btn.primary.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, [icon('refresh', 16), ` ${t('refreshAllData')}`]), st]);
+    mustBtn = h('button.btn.small.must-btn', { type: 'button', title: t('fillMandatoryHint'), onclick: jumpMandatory });
+    updateMustBtn();
+    return h('div.row-actions.refresh-all', [
+      b.site.lat != null ? h('button.btn.primary.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, [icon('refresh', 16), ` ${t('refreshAllData')}`]) : null,
+      mustBtn, st,
+    ]);
   }
   function drawPanels() {
     clear(mainCol);

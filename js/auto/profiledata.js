@@ -10,10 +10,10 @@
  */
 import * as OM from './openmeteo.js';
 import { getForecast, getForecastAt } from './data.js';
-import { ensureProfile, altAt, fitPoints, defaultPoints, defaultStages, posAtKm, hazards, kmAtMs, waterRuns } from '../calc/profile.js';
+import { ensureProfile, altAt, fitPoints, defaultPoints, defaultStages, posAtKm, hazards, kmAtMs, waterRuns, waterFromItems } from '../calc/profile.js';
 import { sunTimes } from '../calc/sun.js';
 import { destination, distKm } from '../calc/geo.js';
-import { normalizeAirspace, analyzeAirspaces, distToAirspaceKm } from '../calc/airspace.js';
+import { normalizeAirspace, analyzeAirspaces, distToAirspaceKm, inAirspace } from '../calc/airspace.js';
 import { t } from '../i18n.js';
 
 const M_TO_FT = 3.28084;
@@ -133,6 +133,23 @@ export function airspaceStatus(as) {
  * Daten für das Profil aufbereiten und in b.profile.data ablegen. onStep(text) für Fortschritt.
  * Liefert b.profile.data (auch bei Teilfehlern, mit `errors`).
  */
+/**
+ * FIS-Sektoren (openAIP Typ 33 «FIS Sector», Frequenzen aus der AIP) entlang der Bahn (0.12.2): Folge [{name, country, freqs[], fromKm, toKm}];
+ * Lücken (kein Sektor in den Daten) bleiben leer – dann gelten die Kontakte aus den Einstellungen (FIS-Kontakte je Land).
+ */
+export function fisSectors(items, pts) {
+  const secs = (items || []).filter((x) => x.typeKey === 'FIS' && x.polys?.length);
+  if (!secs.length) return [];
+  const out = []; let cur = null;
+  for (const q of pts || []) {
+    const hit = secs.find((x) => inAirspace(q.lat, q.lon, x)) || null;
+    if (cur && hit && cur.id === hit.id) { cur.toKm = q.km; continue; }
+    if (cur) out.push(cur);
+    cur = hit ? { id: hit.id, name: hit.name, country: hit.country || null, freqs: (hit.freqs || []).map((f) => f.value), fromKm: q.km, toKm: q.km } : null;
+  }
+  if (cur) out.push(cur);
+  return out.map(({ id, ...f }) => f);
+}
 export async function buildProfileData(ctx, b, onStep) {
   const p = ensureProfile(b);
   const errors = [];
@@ -141,11 +158,10 @@ export async function buildProfileData(ctx, b, onStep) {
   const stepMin = ctx.settings.trajDefaults?.stepMin || 10;
   const elev = b.site.elev ?? 0;
   step(t('pf_stepModel'));
-  // Modell: im Werkzeug gewählt (p.model), sonst das Briefing-Modell, wenn sein Horizont reicht, sonst das erste passende
+  // Modell: im Werkzeug gewählt (p.model), sonst die Vorgabe = feinstes Modell, das die ganze Fahrt (Start bis geplantes Ende) abdeckt
   // (Gasfahrten über 24 h brauchen ein globales Modell). Deckt das gewählte Modell die Fahrt nur teilweise ab, endet die Bahn dort.
   const hoursAhead = (b.time.startMs - Date.now()) / 3600000 + durationMin / 60;
-  const chosen = b.meteo?.model ?? '';
-  const model = p.model != null ? p.model : (chosen && OM.modelHours(chosen) < hoursAhead + 6 ? OM.suggestModel(hoursAhead) : chosen);
+  const model = p.model || OM.suggestModel(hoursAhead);
   const j0 = await getForecast(ctx, b, model, { allowShort: true });
   const cruise = ((b.intent.altMinFt || 0) + (b.intent.altMaxFt || 3000)) / 2 / M_TO_FT;
   const altFn = (pts) => (pts?.length ? (km) => altAt(pts, km) : () => Math.max(elev + 300, cruise));
@@ -179,6 +195,18 @@ export async function buildProfileData(ctx, b, onStep) {
       (j.elevation || []).forEach((m, k) => relief.push({ km: chunk[k].km, m: Math.round(m) }));
     }
   } catch (e) { errors.push(`Relief: ${e.message}`); }
+  // 4b) Wasserflächen (OpenStreetMap über Overpass, je km-Punkt); fällt die Abfrage aus → Heuristik aus dem Relief (ebene Abschnitte)
+  step(t('pf_stepWater'));
+  let water = null, waterSource = null;
+  try {
+    const items = [];
+    for (let i = 0; i < grid.length; i += 100) {
+      const chunk = grid.slice(i, i + 100);
+      const j = await ctx.store.data('water', { lat: chunk.map((g) => g.lat).join(','), lon: chunk.map((g) => g.lon).join(',') }, ctx.shared?.token);
+      items.push(...(j.items || chunk.map(() => null)));
+    }
+    water = waterFromItems(grid, items, relief); waterSource = 'osm';
+  } catch (e) { errors.push(`Wasser: ${e.message}`); }
   // 5) Stundenprofile am jeweiligen Ort (nächster Wegpunkt)
   step(t('pf_stepHours'));
   const hours = [];
@@ -200,7 +228,7 @@ export async function buildProfileData(ctx, b, onStep) {
   const sun = sunEvents(track);
   // 7) Lufträume (openAIP) entlang der Bahn: durchfahren und nahe, mit km-Abschnitt und Höhenband
   step(t('pf_stepAirspace'));
-  let airspaces = [], firs = [];
+  let airspaces = [], firs = [], fis = [];
   try {
     const pts = track.points;
     const corridorKm = +ctx.settings.airspaceCorridorKm || 5;
@@ -220,6 +248,7 @@ export async function buildProfileData(ctx, b, onStep) {
     };
     airspaces = [...a.crossed.map((x) => box(x, 'cross')), ...a.near.map((x) => box(x, 'near'))].filter(Boolean);
     firs = (a.firs[0]?.seq || []).map((f) => ({ name: f.name, country: f.country || null, fromKm: f.fromKm, toKm: f.toKm }));
+    fis = fisSectors(items, pts);
   } catch (e) { errors.push(`Lufträume: ${e.message}`); }
   // 8) Achtung-Zeichen
   const hz = hazards(hours, { windKt: ctx.settings.profileLimits?.windKt, shearKt: ctx.settings.profileLimits?.shearKt, cape: ctx.settings.profileLimits?.cape });
@@ -228,7 +257,7 @@ export async function buildProfileData(ctx, b, onStep) {
   const endMs = track.points[track.points.length - 1].ms, plannedEndMs = b.time.startMs + durationMin * 60000;
   p.data = {
     stand: Date.now(), model: j0._model, modelName: OM.modelName(j0._model), modelHours: OM.modelHours(j0._model), source: 'Open-Meteo · openAIP', fetched: j0._fetched,
-    totalKm: track.totalKm, ok: track.ok, cut: !track.ok && endMs < plannedEndMs - 15 * 60000, track: { points: track.points }, waypoints: wps, relief, water: waterRuns(relief), hours, sun, airspaces, firs, hazards: hz, errors,
+    totalKm: track.totalKm, ok: track.ok, cut: !track.ok && endMs < plannedEndMs - 15 * 60000, track: { points: track.points }, waypoints: wps, relief, water: water || waterRuns(relief), waterSource: waterSource || 'heuristic', hours, sun, airspaces, firs, fis, hazards: hz, errors,
     startMs: b.time.startMs, endMs, plannedEndMs, durationMin, tz: b.site.tz || 'Europe/Zurich',
   };
   return p.data;

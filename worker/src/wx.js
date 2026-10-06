@@ -75,6 +75,43 @@ async function elevation(ctx, q) {
   return json(data);
 }
 async function sha(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0, 16).map((x) => x.toString(16).padStart(2, '0')).join(''); }
+/**
+ * Wasserflächen (OpenStreetMap über Overpass, 0.12.2): je Koordinate, ob sie in einer Fläche natural=water liegt
+ * (is_in → Flächen; Flüsse, Bäche und Kanäle zählen nicht). Bis 100 Koordinaten je Abruf, 30 Tage im Cache.
+ * Antwort { items: [ { name, type } | null ] } in der Reihenfolge der Eingabe. Spiegel-Server als Rückfall.
+ */
+const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+const WATER_SKIP = /^(river|stream|canal|ditch|drain|wastewater|moat|fish_pass)$/;
+function waterQuery(lats, lons) {
+  const parts = lats.map((la, i) => `is_in(${la},${lons[i]})->.p${i};area.p${i}[natural=water]->.w${i};.w${i} make m i="${i}",id=w${i}.min(id()),nm=w${i}.set(t["name"]),wt=w${i}.set(t["water"]);out;`);
+  return `[out:json][timeout:90];${parts.join('')}`;
+}
+export function waterItems(j, n) {
+  const items = new Array(n).fill(null);
+  for (const e of j.elements || []) {
+    if (e.type !== 'm' || !e.tags) continue;
+    const i = +e.tags.i, id = e.tags.id || '', wt = (e.tags.wt || '').split(';')[0];
+    if (!(i >= 0 && i < n) || !id || WATER_SKIP.test(wt)) continue;
+    items[i] = { name: (e.tags.nm || '').split(';')[0] || null, type: wt || null };
+  }
+  return items;
+}
+async function water(ctx, q) {
+  const lat = q.get('lat') || '', lon = q.get('lon') || '';
+  if (!/^-?\d{1,2}(\.\d{1,5})?(,-?\d{1,2}(\.\d{1,5})?){0,99}$/.test(lat) || !/^-?\d{1,3}(\.\d{1,5})?(,-?\d{1,3}(\.\d{1,5})?){0,99}$/.test(lon)) return err('bad coords');
+  const lats = lat.split(','), lons = lon.split(',');
+  if (lats.length !== lons.length) return err('bad coords');
+  const data = await cached(ctx, `water/${await sha(lat + '|' + lon)}`, 30 * 86400, async () => {
+    const body = 'data=' + encodeURIComponent(waterQuery(lats, lons));
+    let last = null;
+    for (const u of OVERPASS) {
+      try { const j = await (await get(u, { method: 'POST', body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, 60000)).json(); return { items: waterItems(j, lats.length), source: 'OpenStreetMap · Overpass' }; }
+      catch (e) { last = e; }
+    }
+    throw last || new Error('overpass');
+  });
+  return json(data);
+}
 
 // ------------------------------------------------------------ METAR / TAF / SIGMET
 function pickNearest(list, lat, lon, km, limit) {
@@ -576,6 +613,7 @@ export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
     case 'stations': return stations(ctx, q);
     case 'sondes': return sondes(ctx, q);
     case 'elevation': return elevation(ctx, q);
+    case 'water': return water(ctx, q);
     case 'sonde': return sonde(ctx, q);
     case 'notam': return notam(env, decrypt, ctx, q);
     case 'ai': if (!canWrite) return err('forbidden', 403); return ai(env, decrypt, body);

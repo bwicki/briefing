@@ -19,7 +19,8 @@ import { goNoGo } from '../js/calc/gonogo.js';
 import { changesSinceFinal } from '../js/calc/diff.js';
 import { resolveBalloon, mergeSettings } from '../js/defaults.js';
 import { routeMatrix, countryInfo } from '../js/countries.js';
-import { altAt, msAtKm, kmAtMs, segments, rateClass, reliefBreaches, addStage, removeStage, moveStage, stageWindows, nightFraction, ballastPlan, fitPoints, defaultPoints, hazards, rhoAir, waterRuns } from '../js/calc/profile.js';
+import { altAt, msAtKm, kmAtMs, segments, rateClass, reliefBreaches, addStage, removeStage, moveStage, stageWindows, nightFraction, ballastPlan, fitPoints, defaultPoints, hazards, rhoAir, waterRuns, waterFromItems } from '../js/calc/profile.js';
+import { fisSectors } from '../js/auto/profiledata.js';
 import { parseDwdAstro } from '../js/calc/sun.js';
 import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing, ageRefMs, fillFractionOf, massPerf } from '../js/model.js';
 import { carCode } from '../js/net.js';
@@ -521,6 +522,12 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   const hz = hazards([{ ms: t0, km: 10, alt: 1300, windKt: 35, cape: 100 }, { ms: t0 + 3600000, km: 20, alt: 1300, windKt: 36 }, { ms: t0 + 2 * 3600000, km: 90, alt: 2300, tempAtAlt: -2, rhAtAlt: 95 }, { ms: t0 + 3 * 3600000, km: 120, alt: 2300, ground: 500, cape: 700, fogRisk: 2 }, { ms: t0 + 7 * 3600000, km: 200, alt: 1300, windKt: 40 }]);
   const wr = waterRuns([{ km: 0, m: 450 }, { km: 1, m: 452 }, { km: 2, m: 406 }, { km: 3, m: 406 }, { km: 4, m: 407 }, { km: 5, m: 406 }, { km: 6, m: 480 }, { km: 7, m: 500 }, { km: 8, m: 500 }, { km: 9, m: 520 }]);
   ok(wr.length === 1 && wr[0].km0 === 2 && wr[0].km1 === 5 && wr[0].m === 406, 'Wasserflächen: ebener Lauf ≥ 3 km (±1 m), kurze ebene Stücke nicht: ' + JSON.stringify(wr));
+  const wf = waterFromItems([0, 1, 2, 3, 4, 5, 6, 7].map((km) => ({ km })), [null, null, { name: 'Sempachersee', type: 'lake' }, { name: null, type: 'lake' }, null, null, { name: 'Baldeggersee', type: 'lake' }, null], [{ km: 2, m: 505 }, { km: 3, m: 504 }, { km: 6, m: 463 }]);
+  ok(wf.length === 2 && wf[0].km0 === 1.5 && wf[0].km1 === 3.5 && wf[0].m === 504 && wf[0].name === 'Sempachersee' && wf[1].km0 === 5.5 && wf[1].km1 === 6.5 && wf[1].name === 'Baldeggersee', 'Wasserflächen aus OSM: Punkte ±½ km, benachbarte verbunden, Seespiegel = tiefste Reliefhöhe, Name: ' + JSON.stringify(wf));
+  const sq = (lat0, lon0, lat1, lon1) => [[[lat0, lon0], [lat0, lon1], [lat1, lon1], [lat1, lon0], [lat0, lon0]]];
+  const fs = fisSectors([{ id: 'a', typeKey: 'FIS', name: 'A INFORMATION', country: 'CH', freqs: [{ value: '124.700' }], polys: [sq(47, 8, 48, 9)] }, { id: 'b', typeKey: 'FIS', name: 'B INFORMATION', country: 'DE', freqs: [{ value: '128.950' }], polys: [sq(48, 8, 49, 9)] }, { id: 'c', typeKey: 'CTR', name: 'x', polys: [sq(47, 8, 49, 9)] }], Array.from({ length: 21 }, (_, i) => ({ km: i * 10, lat: 47.2 + i * 0.1, lon: 8.5 })));
+  ok(fs.length === 2 && fs[0].name === 'A INFORMATION' && fs[0].toKm === 70 && fs[1].fromKm === 80 && fs[1].freqs[0] === '128.950' && fisSectors([], []).length === 0, 'FIS-Sektoren entlang der Bahn (openAIP Typ FIS): Folge mit km-Abschnitten und Frequenz: ' + JSON.stringify(fs));
+  ok(waterFromItems([], [], []).length === 0 && waterFromItems([{ km: 0 }, { km: 1 }], [null, null], []).length === 0, 'Wasserflächen aus OSM: leer ohne Treffer');
   ok(hz.map((x) => x.type).join(',') === 'wind,ice,cb,wind' && hz[0].kmEnd === 20, 'Achtung-Zeichen: Wind (anhaltend zusammengefasst, nach Pause neu), Vereisung, CB, kein Nebel in 1800 m über Grund: ' + hz.map((x) => x.type + '@' + x.km + '-' + x.kmEnd).join(','));
 }
 

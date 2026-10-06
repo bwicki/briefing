@@ -33,7 +33,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         b = p.chromium.launch()
         ctxb = b.new_context(viewport=viewport, device_scale_factor=scale, is_mobile=mobile, has_touch=mobile, locale='de-CH', timezone_id='Europe/Zurich')
         pg = ctxb.new_page()
-        pg.on('console', lambda m: errors.append(f'[{name}] console.{m.type}: {m.text}') if m.type in ('error',) else None)
+        pg.on('console', lambda m: errors.append(f'[{name}] console.{m.type}: {m.text}') if m.type in ('error',) and 'Failed to load resource' not in m.text else None)   # abgebrochene Kacheln sind kein Fehler
         pg.on('pageerror', lambda e: errors.append(f'[{name}] pageerror: {e}'))
         # lokaler Modus erzwingen: apiBase leer
         pg.route('**/js/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body="window.BRIEFING_CONFIG = { apiBase: '' };"))
@@ -281,6 +281,11 @@ def run_gas(name):
     def elev(r):
         q = parse_qs(urlparse(r.request.url).query); lats = q['latitude'][0].split(','); lons = q['longitude'][0].split(',')
         r.fulfill(status=200, content_type='application/json', body=json.dumps({'elevation': [round(450 + 900 * max(0, math.sin((float(lo) - 8.0) * 3.0)) + 200 * math.sin(float(la) * 40)) for la, lo in zip(lats, lons)]}))
+    def water(r):
+        # Overpass-Nachbildung (0.12.2): je is_in-Punkt ein abgeleitetes Element; Punkte 30–33 jedes Abrufs liegen im «Testsee»
+        n = r.request.post_data.count('is_in(')
+        els = [{'type': 'm', 'id': i + 1, 'tags': {'i': str(i), 'id': '2400000001' if 30 <= i <= 33 else '', 'nm': 'Testsee' if 30 <= i <= 33 else '', 'wt': 'lake' if 30 <= i <= 33 else ''}} for i in range(n)]
+        r.fulfill(status=200, content_type='application/json', body=json.dumps({'elements': els}))
     with sync_playwright() as p:
         b = p.chromium.launch()
         ctxb = b.new_context(viewport={'width': 1366, 'height': 900}, device_scale_factor=1.5, locale='de-CH', timezone_id='Europe/Zurich')
@@ -290,8 +295,11 @@ def run_gas(name):
         pg.route('**/js/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body="window.BRIEFING_CONFIG = { apiBase: '' };"))
         mock_external(pg)
         pg.route('**/api.open-meteo.com/v1/elevation**', elev)
+        pg.route('**/overpass-api.de/**', water)
         for pat in ['**/basemaps.cartocdn.com/**', '**/tile.opentopomap.org/**', '**/tile.openstreetmap.org/**', '**/server.arcgisonline.com/**']: pg.route(pat, lambda r: r.fulfill(status=200, content_type='image/png', body=PNG))
-        pg.goto(BASE + '#/list'); pg.wait_for_timeout(800); pg.fill('#gatePw', '1234'); pg.click('#gateOpen'); pg.wait_for_timeout(600)
+        # 0.12.2: nach der Anmeldung immer die Übersicht «Meine Briefings», auch wenn die Adresse anderswo zeigt
+        pg.goto(BASE + '#/settings'); pg.wait_for_timeout(800); pg.fill('#gatePw', '1234'); pg.click('#gateOpen'); pg.wait_for_timeout(900)
+        assert pg.evaluate('location.hash') == '#/list' and pg.query_selector('.chips.scopes, table.list, .note') is not None, 'Nach der Anmeldung: Liste «Meine Briefings»: ' + pg.evaluate('location.hash')
         pg.goto(BASE + '#/new'); pg.wait_for_timeout(700)
         pg.click('.wiz button.chip:has-text("Gas")'); pg.wait_for_timeout(500)
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(900)
@@ -301,14 +309,21 @@ def run_gas(name):
         bid = pg.evaluate('location.hash').split('/')[-1]
         assert pg.query_selector('#panel-A\\.profile') is not None and pg.query_selector('#panel-A\\.retrieve') is not None, 'Gas: Panels «Fahrtprofil» und «Nachfahrer» (≥ 12 h)'
         pg.query_selector('#panel-A\\.profile').scroll_into_view_if_needed(); pg.wait_for_timeout(300)
+        pg.screenshot(path=f'{OUT}/{name}_00_sticky.png')   # haftende Zeile mit «Alle verfügbaren Daten aktualisieren» und «Pflichtinhalte ergänzen»
         pg.click('#panel-A\\.profile button:has-text("Daten aufbereiten")')
         for i in range(40):
             pg.wait_for_timeout(500)
             if pg.query_selector('#panel-A\\.profile svg.pf-svg'): break
         assert pg.query_selector('#panel-A\\.profile svg.pf-svg') is not None, 'Fahrtprofil: Grafik nach «Daten aufbereiten»: ' + pg.inner_text('#panel-A\\.profile .row-actions')
         txt = pg.text_content('#panel-A\\.profile svg.pf-svg')
-        assert 'SS' in txt and 'ECET' in txt and 'BCMT' in txt and 'Tag' in txt and 'km' in txt, 'Zeitzeile mit Sonnenzeiten und Tageszeile: ' + txt[:200]
+        assert 'SS' in txt and 'ECET' in txt and 'BCMT' in txt and 'km' in txt and 'Sonne' not in txt and 'Tag' not in txt.replace('Tage', ''), 'Zeitzeile mit Sonnenzeiten, ohne Zeilenbeschriftungen «Sonne»/«Tag»: ' + txt[:200]
         assert len(pg.query_selector_all('#panel-A\\.profile table.pf-stages tbody tr')) >= 3 and len(pg.query_selector_all('#panel-A\\.profile table.pf-ballast tbody tr')) >= 4, 'Etappen- und Ballasttabelle im Panel'
+        # 0.12.2: Wasser aus OSM (Legende), Spalte «Level-Out», Titel, Legende offen und Modell der Schätzung zu (einklappbar)
+        assert 'OpenStreetMap' in pg.inner_text('#panel-A\\.profile .pf-legend') and 'Level-Out' in pg.inner_text('#panel-A\\.profile table.pf-ballast') and 'SCHÄTZUNG BALLASTVERBRAUCH' in pg.inner_text('#panel-A\\.profile .pf-ballast-wrap').upper(), 'Wasser aus OSM, Level-Out, Titel'
+        assert pg.evaluate("() => document.querySelector('[id=\"panel-A.profile\"] details.pf-fold.legend').open && !document.querySelector('[id=\"panel-A.profile\"] details.pf-fold.model').open"), 'Legende offen, Modell der Schätzung zu'
+        pg.click('#panel-A\\.profile details.pf-fold.model summary'); pg.wait_for_timeout(300)
+        assert 'Adiab.' in pg.inner_text('#panel-A\\.profile details.pf-fold.model') and pg.evaluate("() => document.querySelector('[id=\"panel-A.profile\"] details.pf-fold.model').open"), 'Modell der Schätzung aufgeklappt mit Spaltenerklärung'
+        assert 'Pflichtinhalte' in pg.inner_text('.refresh-all .must-btn') and pg.evaluate("() => getComputedStyle(document.querySelector('.refresh-all')).position") == 'sticky', 'Knopf «Pflichtinhalte ergänzen» in der haftenden Zeile'
         pg.query_selector('#panel-A\\.profile').screenshot(path=f'{OUT}/{name}_01_panel.png')
         pg.click('#panel-A\\.profile button:has-text("Werkzeug öffnen")'); pg.wait_for_timeout(800)
         assert pg.is_visible('.dialog.pf-tool'), 'Werkzeug geöffnet'
@@ -316,7 +331,8 @@ def run_gas(name):
         # Modellwahl: kurzes Modell → Warnung unter der Layer-Box und Marker «Ende Prognosemodell» über der Grafik; langes Modell → weg
         pg.click('.pf-tool .pf-modelbtn'); pg.wait_for_timeout(300)
         opts = pg.eval_on_selector_all('.pf-tool .pf-menu button', 'els => els.map(e => e.textContent)')
-        assert any('ICON-D2' in o and '⚠' in o for o in opts) and any('GFS' in o for o in opts), 'Modell-Pille öffnet die Liste mit Horizont-Warnung: ' + str(opts)
+        assert any('ICON-D2' in o and '⚠' in o for o in opts) and any('GFS' in o for o in opts) and any('ICON-EU' in o and 'Vorgabe' in o for o in opts) and not any('Auto' in o for o in opts), 'Modell-Pille öffnet die Liste mit Horizont-Warnung und Vorgabe (feinstes Modell über die ganze Fahrt): ' + str(opts)
+        assert 'Wettermodell' in pg.inner_text('.pf-tool .pf-modelbtn') and 'ICON-EU' in pg.inner_text('.pf-tool .pf-modelbtn') and 'Punkte ziehen' in pg.inner_text('.pf-tool .pf-legend'), 'Pille «Wettermodell ICON-EU», Bedienhinweis als erste Legendenzeile'
         pg.click('.pf-tool .pf-menu button:has-text("ICON-D2")'); pg.wait_for_timeout(3500)
         assert pg.is_visible('.pf-tool .pf-modelwarn') and 'Ende Prognosemodell' in pg.text_content('.pf-tool svg.pf-svg'), 'Modellhorizont-Warnung und Marker'
         pg.screenshot(path=f'{OUT}/{name}_02b_cut.png')
@@ -365,6 +381,7 @@ def run_gas(name):
         assert len(pg.query_selector_all('#panel-C\\.notam .np-row')) >= 3, 'NOTAM-Orte aus den Etappen'
         pg.goto(BASE + '#/v/' + bid); pg.wait_for_timeout(2500)
         assert pg.query_selector('.brief tr.row-A-profile svg.pf-svg') is not None and pg.query_selector('.brief tr.row-A-profile table.pf-ballast') is not None, 'Briefingsicht: Profil mit Ballasttabelle'
+        assert pg.evaluate("() => document.querySelector('.brief tr.row-A-profile details.pf-fold.legend').open") and pg.query_selector('.brief tr.row-A-profile details.pf-fold.model') is not None, 'Briefingsicht: Legende immer offen, Modell der Schätzung nur weil im Panel aufgeklappt'
         pg.query_selector('.brief tr.row-A-profile').screenshot(path=f'{OUT}/{name}_05_view.png')
         b.close()
 

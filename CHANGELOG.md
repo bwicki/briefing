@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.12.2 — 2026-10-06 · Höhenprofil Stand 11, App-Rückmeldungen, OSM-Wasser, Einführungsfilme
+
+* **Höhenprofil-Werkzeug (Stand 11):** Zeilenbeschriftungen «Sonne»/«Tag» links der Achsen entfernt;
+  **«Level-Out»** statt «Abblasen»; Spalten «Temp.» und «Adiab.» mit Tooltip erklärt; Titel **«Schätzung
+  Ballastverbrauch»**; darunter **«Modell der Schätzung»** als einklappbarer Block über die ganze Breite
+  (Parameter und Bedeutung der Spalten; Vorgabe zu; im Briefingdruck nur, wenn aufgeklappt); **Legende
+  einklappbar** (Vorgabe offen; im Briefingdruck immer) mit dem Bedienhinweis als erster Zeile statt über der
+  Grafik; Pille **«Wettermodell ‹Name› ⋯»** zeigt das gewählte bzw. verwendete Modell, Vorgabe = feinstes
+  Modell (Gitterweite), das die ganze Fahrt abdeckt (`suggestModel` wählt jetzt nach Gitterweite, gilt auch
+  für die Modell-Leiste in B); Zustand der Blöcke je Briefing in `profile.fold`.
+* **Wasserflächen aus OpenStreetMap:** Worker `/api/wx/water` (Overpass `is_in` je km-Punkt, Flüsse/Kanäle
+  ausgenommen, 30 Tage Cache, Spiegel-Server als Rückfall), lokaler Modus direkt; Legende «Wasserfläche
+  (OpenStreetMap)», Heuristik aus dem Relief nur noch als Rückfall (`waterFromItems`).
+* **FIS-Kontakte je Etappe:** FIS-Sektoren aus openAIP (Typ «FIS Sector», Frequenzen aus der AIP) entlang der
+  Bahn (`fisSectors`, `profile.data.fis`); die Kontakte je Land aus den Einstellungen gelten, wo keine
+  Sektoren vorliegen.
+* **App:** nach der Anmeldung immer die Übersicht «Meine Briefings»; METAR/TAF-Klartext ohne Fettschrift
+  bei «METAR»/«TAF»; neuer Knopf **«Pflichtinhalte ergänzen (n)»** neben «Alle verfügbaren Daten
+  aktualisieren» (springt zum nächsten leeren Pflicht-Panel), die Zeile bleibt beim Rollen unter der
+  Kopfzeile stehen.
+* **Einführungsfilme** (`demo/`): zwei Filme mit Sprecherstimme (Piper, lokal) – Heissluftfahrt HB-QWZ und
+  Gasfahrt HB-QPJ, je ≈ 2½ min, aufgenommen in der App mit Beispieldaten (Playwright); Player mit Kapiteln
+  und Sprechtext; Menü ≡ → «Einführung (Filme)». Konzept `docs/Konzept_Demo_Einfuehrung.md`, Pipeline
+  `demo/build/` (synth → record → assemble → player).
+* **Tests:** calc 225 (OSM-Wasser, FIS-Sektoren), Smoke «gas» (Anmeldung → Liste, Legende/Modell
+  einklappbar, Level-Out, Wettermodell-Pille mit Vorgabe, OSM-Wasser, Pflichtinhalte-Knopf, Briefingsicht),
+  API water 400/400/500. Skizze Stand 11 (Konzept 44–52).
+
 ## 0.12.1 — 2026-10-06 · Höhenprofil-Werkzeug: Rückmeldungen Stand 10
 
 * **Grafik:** Pfeil «Ende Prognosemodell» zeigt auf die Prognosegrenze; Höhenlinien über die ganze Breite vor

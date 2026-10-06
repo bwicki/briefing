@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Höhenprofil-Werkzeug</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -23,6 +24,9 @@ p{max-width:68ch;margin:0 0 10px}
 .chart-wrap{overflow-x:auto;position:relative}
 svg{display:block;max-width:100%;height:auto}
 .legend{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:11px;line-height:1.3;color:var(--dim);margin-top:6px}
+.legend .hint{flex-basis:100%;color:var(--text)}
+details.fold{margin-top:6px}details.fold>summary{cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--dim)}
+#modelFold ul.cols{margin:4px 0 0;padding-left:16px;display:grid;gap:2px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .sw{width:16px;height:9px;border-radius:2px;display:inline-block;box-sizing:border-box}
 .grid2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;margin-top:16px}
@@ -85,7 +89,7 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Fahrtbriefing · Konzeptskizze 0.12 · Gasfahrt · Stand 10 (06.10.2026)</div>
+  <div class="eyebrow">Fahrtbriefing · Konzeptskizze 0.12 · Gasfahrt · Stand 11 (06.10.2026)</div>
   <h1>Höhenprofil-Werkzeug</h1>
   <p class="lead">Eine Grafik gefahrene Distanz gegen Höhe, in der die geplanten Fahrthöhen als Punkte gesetzt und gezogen werden. Unten drei Beschriftungszeilen: Distanz entlang der Trajektorie, Zeit (Lokalzeit oder UTC, umschaltbar, mit den genauen Zeiten SS · ECET · BCMT · SR) und bei Fahrten über Mitternacht Tag und Datum. Relief, Wolken, Inversionen, Lufträume und Dämmerung kommen aus Trajektorie, Modell und openAIP; aus dem Profil entstehen Steig-/Sinkraten, die Ballastschätzung nach der Aerostatik (Emden, «Gone with the Wind») und die nummerierten Etappen. Punkte ziehen, Doppelklick setzt einen Punkt, ≡ öffnet das Menü, Griffe am unteren Rand verschieben Etappengrenzen, «Rückgängig» nimmt den letzten Schritt zurück.</p>
 
@@ -94,11 +98,11 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
       <div class="seg" role="tablist"><button id="vProfile" class="on" type="button">Profil</button><button id="vMap" type="button">Karte (Ansicht)</button></div>
       <div class="seg" title="Zeitskala"><button id="tzLT" class="on" type="button">LT</button><button id="tzUTC" type="button">UTC</button></div>
       <button class="btn" id="undoBtn" type="button" disabled title="Letzten Schritt zurücknehmen (Ctrl+Z)">↶ Rückgängig</button>
-      <span style="position:relative"><button class="btn modelbtn" id="modelBtn" type="button" title="Wettermodell wählen"><span class="dim">Modell</span> <span id="modelName">GFS</span> <span class="dots">⋯</span></button><div class="menu" id="modelMenu" hidden><div class="ttl">Modell</div><button type="button" data-m="gfs">✓ GFS (384 h)</button><button type="button" data-m="icon_eu">ICON-EU (120 h)</button><button type="button" data-m="icon_d2">ICON-D2 ⚠ bis +12 h</button></div></span>
+      <span style="position:relative"><button class="btn modelbtn" id="modelBtn" type="button" title="Wettermodell wählen"><span class="dim">Wettermodell</span> <span id="modelName">GFS</span> <span class="dots">⋯</span></button><div class="menu" id="modelMenu" hidden><div class="ttl">Wettermodell · Vorgabe: feinstes Modell, das die ganze Fahrt abdeckt</div><button type="button" data-m="gfs">✓ GFS (384 h)</button><button type="button" data-m="icon_eu">ICON-EU (120 h)</button><button type="button" data-m="icon_d2">ICON-D2 ⚠ bis +12 h</button></div></span>
       <button class="btn on" type="button" title="Im Werkzeug: schaltet zwischen der aktuellen Planung und dieser Beispielfahrt um">Beispiel schliessen</button>
       <div class="layers"><label><input type="checkbox" id="lyWx" checked> Wetter</label><label><input type="checkbox" id="lyAs" checked> Lufträume</label></div>
     </div>
-    <div class="toolbar2"><span class="note" id="viewNote">Profil: Punkte ziehen, Doppelklick setzt, ≡ Menü, Griff ⋮ am unteren Rand verschiebt eine Etappengrenze, Klick auf die Zeitzeile setzt eine neue</span>
+    <div class="toolbar2">
       <div class="modelwarn" id="modelWarn" hidden>⚠ ICON-D2 reicht bis Mi 03:40 LT; geplantes Fahrtende Mi 07:01 LT – Bahn, Relief und Lufträume enden am Modellhorizont. Modell mit längerem Horizont wählen.</div>
     </div>
     <div class="chart-wrap"><svg id="chart" viewBox="0 0 1040 540" width="1040" height="540" aria-label="Höhenprofil: Distanz und Zeit gegen Höhe"></svg></div>
@@ -106,13 +110,14 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
       <div class="maptools">Grundkarte: <div class="seg" id="mapBase"><button class="on" type="button" data-b="neutral">Neutral</button><button type="button" data-b="osm">OpenStreetMap</button><button type="button" data-b="topo">Topo</button><button type="button" data-b="icao">Luftfahrtkarte (openAIP)</button><button type="button" data-b="sat">Satellit</button></div><span>Vorgabe neutral; im Werkzeug Leaflet-Kacheln wie im Trajektorien-Panel, Luftfahrtkarte aus den Einstellungen (openAIP-Kachel-URL)</span></div>
       <div class="chart-wrap"><svg id="map" viewBox="0 0 1040 300" width="1040" height="300" aria-label="Karte: Bahn mit Zeitmarken, Punkten und Etappenmarkern (nur Ansicht)"></svg></div>
     </div>
-    <div class="legend" id="legProfile"></div>
+    <details class="fold" id="legFold" open><summary>Legende</summary><div class="legend" id="legProfile"></div></details>
     <div class="ballast-wrap" id="ballastWrap" style="margin-top:10px">
-      <h3>Ballastschätzung nach der Aerostatik (kg) – unter der Grafik, zwei Spalten, läuft bei jeder Änderung mit</h3>
+      <h3>Schätzung Ballastverbrauch</h3>
       <div class="ballast-grid" id="ballast"></div>
       <div class="bar"><i id="bar" style="width:0"></i></div>
       <div class="note" id="barNote"></div>
-      <p class="note" style="margin-top:6px" id="modelNote"></p>
+      <details class="fold" id="modelFold"><summary>Modell der Schätzung</summary><p class="note" style="margin:4px 0 0" id="modelNote"></p>
+      <ul class="note cols"><li><b>Manöver</b>: Ballast zum Einleiten des Steigens bzw. Abfangen des Sinkens – Widerstandszahl × Rate² (Abfangen +30 %).</li><li><b>Level-Out</b>: Gasverlust beim Steigen über die Prallhöhe, 1 % der Tragkraft je 80 m; die Prallhöhe liegt danach auf der erreichten Höhe.</li><li><b>Temp.</b>: Ballast für die Abkühlung des Gases gegenüber der Luft (Tag → Nacht, Bewölkung), 0,4 % des Auftriebs je K, halbstündlich entlang der Fahrt; ▲ = Auftriebsgewinn durch Erwärmung.</li><li><b>Adiab.</b>: zusätzliche Abkühlung des Gases beim schnellen Steigen (Gas 1,0 K/100 m, Luft 0,65 K/100 m), anteilig ab 0,3 m/s, voll ab 1,5 m/s.</li></ul></details>
     </div>
     <div class="legend" id="legMap" hidden>
       <span><svg width="18" height="12" viewBox="0 0 18 12"><circle cx="9" cy="6" r="3" fill="#fff" stroke="#666" stroke-width="1.2"/></svg>Zeitmarke der Trajektorie (jede volle Stunde, wie bisher)</span>
@@ -133,7 +138,7 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
         <li><b class="k">4</b><span><b>Tag/Dämmerung/Nacht</b> als senkrechte Schattierung, aus BCMT/ECET am jeweiligen Ort der Fahrt gerechnet (RAC 4-4 in CH, DWD in DE, sonst astronomisch).</span></li>
         <li><b class="k">5</b><span><b>Fahrthöhen:</b> Punkte setzen (Doppelklick), ziehen, über das Menü <b>≡</b> löschen oder davor/danach einfügen. Auf jedem Teilstück die <b>Steig-/Sinkrate in m/s</b> als Pille, immer zuoberst: grau unter 0,5, grün bis 1,75, gelb bis 3, rot darüber.</span></li>
         <li><b class="k">6</b><span><b>Etappen</b> werden vom Start her <b>automatisch nummeriert</b> (1, 2, 3 …; eine dazwischen gesetzte Etappe nummeriert neu). Grenze setzen: Klick auf die Zeitzeile; <b>verschieben: Griff ⋮ am unteren Rand</b> ziehen (zwischen Vorgänger und Nachfolger). Menü ≡: Umbenennen, löschen mit Vorgänger oder mit Nachfolger zusammenlegen. <b>Rückgängig</b> (Knopf oder Ctrl+Z) nimmt jeden Schritt zurück – Löschen, Zusammenlegen, Ziehen, Setzen.</span></li>
-        <li><b class="k">7</b><span><b>Ballast nach der Aerostatik:</b> Tabelle unter der Grafik – Manöver, Abblasen über der Prallhöhe, Temperatur Gas–Luft, Adiabatik. Faktoren im Expertenmenü, Füllungsgrad in A3.</span></li>
+        <li><b class="k">7</b><span><b>Ballast nach der Aerostatik:</b> Tabelle unter der Grafik – Manöver, Level-Out über der Prallhöhe, Temperatur Gas–Luft, Adiabatik; «Modell der Schätzung» darunter einklappbar. Faktoren im Expertenmenü, Füllungsgrad in A3.</span></li>
         <li><b class="k">8</b><span><b>Luftraum-Layer:</b> Lufträume A–D, TMA und CTR aus der Luftraumanalyse (openAIP entlang der Bahn) als Flächen mit Unter-/Obergrenze und Beschriftung Name · Klasse · Grenzen – ohne Warnhinweis. Ist der Luftraum nur zeitweise aktiv (<b>HX</b> oder anderer temporärer Status), steht das in Klammern unter der Bezeichnung. Klasse E/G nicht gezeichnet. Schalter rechts oben, Vorgabe ein.</span></li>
         <li><b class="k">9</b><span><b>Umschalter Profil / Karte:</b> die Karte zeigt Bahn, Stundenmarken, Höhenpunkte und Etappenmarker als <b>reine Ansicht</b>. <b>Grundkarte</b> wählbar: neutral (Vorgabe), OpenStreetMap, Topo, Luftfahrtkarte (openAIP), Satellit; Wetter- und Luftraum-Layer gelten auch hier.</span></li>
       </ol>
@@ -222,6 +227,18 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     <div><b>41</b><span>Achsenhinweis nicht mehr über der Grafik, sondern als erster Eintrag der Legende.</span></div>
     <div><b>42</b><span>«Beispiel»-Knopf: zeigt diese Beispielfahrt mit nummerierten Erklärungen und «Woher die Daten kommen» zum Üben; Schliessen führt zur Planung zurück.</span></div>
     <div><b>43</b><span>Ballasttabelle unter der Grafik, dynamisch, ab 7 Teilstücken zwei und ab 13 drei Spalten; Zeiten/Höhen brechen nicht um.</span></div>
+  </div>
+  <h2>Ergänzungen Stand 11 (06.10.2026, 18 Uhr)</h2>
+  <div class="dec">
+    <div><b>44</b><span>Zeilenbeschriftungen «Sonne» und «Tag» links der Achsen entfallen.</span></div>
+    <div><b>45</b><span>«Level-Out» statt «Abblasen» (Gasverlust über der Prallhöhe).</span></div>
+    <div><b>46</b><span>Spalten «Temp.» und «Adiab.» erklärt: Tooltip im Kopf und Liste im Block «Modell der Schätzung».</span></div>
+    <div><b>47</b><span>«Modell der Schätzung» über die ganze Breite, einklappbar (Vorgabe zu); im Briefingdruck nur, wenn aufgeklappt.</span></div>
+    <div><b>48</b><span>Legende einklappbar (Vorgabe offen); im Briefingdruck immer.</span></div>
+    <div><b>49</b><span>Titel «Schätzung Ballastverbrauch».</span></div>
+    <div><b>50</b><span>Bedienhinweis als erste Zeile der Legende, nicht mehr über der Grafik.</span></div>
+    <div><b>51</b><span>Pille «Wettermodell &lt;Name&gt; ⋯»; Vorgabe das feinste Modell, das die ganze Fahrt abdeckt.</span></div>
+    <div><b>52</b><span>Wasserflächen aus OpenStreetMap (Overpass) statt Heuristik; FIS-Sektoren aus openAIP als Kontakte je Etappe.</span></div>
   </div>
   <p class="note" style="margin-top:12px">Noch offen: f) Wind je Fahrthöhe aus den Open-Meteo-Druckflächen – reicht die Stundenauflösung, oder Unsicherheit (±) auf der Zeitzeile? · g) Beim Ziehen eines Punkts Karte und Relief sofort nachrechnen oder erst beim Loslassen?</p>
 </div>
@@ -345,10 +362,8 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
       svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: yAx2 - 12, y2: ySun2 + 1, stroke: css('--night'), opacity: .55, 'stroke-width': .8 }));   // Strich von der Zeitlinie bis unter die Zeitangabe
       svg.appendChild(el('text', { x: x(k) + dx, y: ySun, 'text-anchor': anchor, 'font-size': 8, fill: css('--night'), opacity: .9, 'font-family': MONO, 'font-weight': 600 }, lbl));
       svg.appendChild(el('text', { x: x(k) + dx, y: ySun2, 'text-anchor': anchor, 'font-size': 7.5, fill: css('--night'), opacity: .9, 'font-family': MONO }, fmtT(t - o))); }
-    svg.appendChild(el('text', { x: L - 14, y: ySun + 4, 'text-anchor': 'end', 'font-size': 8, fill: dim }, 'Sonne'));
     const days = Math.floor(tzEnd / 24);                                      // Tageszeile nur, wenn die Fahrt (in der gewählten Skala) über Mitternacht geht
     if (days >= 1) {
-      svg.appendChild(el('text', { x: L - 14, y: yAx3, 'text-anchor': 'end', 'font-size': 10, fill: dim }, 'Tag'));
       svg.appendChild(el('text', { x: x(0), y: yAx3, 'font-size': 10.5, fill: fg, 'font-weight': 600 }, dateLbl(0) + (tz === 'UTC' ? ' UTC' : '')));
       for (let d = 1; d <= days; d++) { const k = kOfLT(24 * d + o); svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: H - B, y2: yAx3 + 3, stroke: fg, 'stroke-width': 1.2, 'stroke-dasharray': '3 2' })); svg.appendChild(el('text', { x: x(k) + 4, y: yAx3, 'font-size': 10.5, fill: fg, 'font-weight': 600 }, dateLbl(d) + (tz === 'UTC' ? ' UTC' : ''))); }
     }
@@ -442,7 +457,7 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
       used.has('stage') && '<i class="sw" style="background:var(--accent-2);height:2px"></i>Etappengrenze (Griff ⋮ verschiebt, Klick auf die Zeitzeile setzt)',
       '<i class="sw" style="background:var(--ok)"></i>Rate: grau < 0,5 m/s · grün ≤ 1,75 · gelb ≤ 3 · rot darüber' + (used.has('low') ? ' · rot schraffiert = <300m AGL' : ''),
     ].filter(Boolean);
-    document.getElementById('legProfile').innerHTML = items.map((x) => `<span>${x}</span>`).join('');
+    document.getElementById('legProfile').innerHTML = `<span class="hint">${view === 'map' ? 'Karte: nur Ansicht – Punkte und Etappen werden im Profil bearbeitet' : 'Punkte ziehen · Doppelklick setzt einen Punkt · ≡ Menü · Griff ⋮ am unteren Rand verschiebt eine Etappengrenze · Klick auf die Zeitzeile setzt eine neue'}</span>` + items.map((x) => `<span>${x}</span>`).join('');
     const opt = (d, lbl, fill) => `<span><svg width="26" height="26" viewBox="-11 -11 22 22"><circle r="10" fill="var(--panel)" fill-opacity=".35" stroke="var(--warn)" stroke-width="1.5"/><path d="${d}" fill="${fill ? 'var(--warn)' : 'none'}" stroke="var(--warn)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${lbl}</span>`;
     document.getElementById('rainOpts').innerHTML = opt(WX_ICON.rain, 'A · drei Tropfen (verwendet)', true) + opt(RAIN_B, 'B · Wolke mit Tropfen', false) + opt(RAIN_C, 'C · Striche mit Bodenlinie', false);
   }
@@ -494,7 +509,7 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     map.appendChild(el('text', { x: sx - 4, y: sy + 26, 'font-size': 10, fill: dark ? '#fff' : css('--fg'), 'font-weight': 600 }, 'Start')); map.appendChild(el('text', { x: lx - 30, y: ly + 26, 'font-size': 10, fill: dark ? '#fff' : css('--fg'), 'font-weight': 600 }, 'Landung'));
   }
 
-  // --- Ballastmodell nach der Aerostatik (Emden / GWTW): je Teilstück Manöver, Abblasen, Temperatur, Adiabatik
+  // --- Ballastmodell nach der Aerostatik (Emden / GWTW): je Teilstück Manöver, Level-Out, Temperatur, Adiabatik
   function ballast() {
     const rows = []; let sum = 0, gain = 0;
     let pH = prallH(pts[0][1], BAL.fill0);
@@ -512,7 +527,7 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
       rows.push(`<tr><td>${hhmmD(k0)}–${hhmmD(k1)}</td><td class="n">${k0}–${k1}</td><td class="n">${h0}→${h1}</td><td class="n" style="color:${rateColor(r)}">${r.toFixed(1)}</td><td class="n">${man ? man.toFixed(0) : '–'}</td><td class="n">${blow ? blow.toFixed(0) : '–'}</td><td class="n">${temp ? temp.toFixed(0) : d > 0 ? '▲ ' + d.toFixed(0) : '–'}</td><td class="n">${adia >= 0.5 ? adia.toFixed(0) : '–'}</td><td class="n"><b>${kg.toFixed(0)}</b></td></tr>`);
     }
     const total = sum + BAL.landing;
-    const head = `<thead><tr><th>Abschnitt ${tz}</th><th class="n">km</th><th class="n">Höhe m</th><th class="n">m/s</th><th class="n">Manöver</th><th class="n">Abblasen</th><th class="n">Temp.</th><th class="n">Adiab.</th><th class="n">kg</th></tr></thead>`;
+    const head = `<thead><tr><th>Abschnitt ${tz}</th><th class="n">km</th><th class="n">Höhe m</th><th class="n">m/s</th><th class="n">Manöver</th><th class="n">Level-Out</th><th class="n">Temp.</th><th class="n">Adiab.</th><th class="n">kg</th></tr></thead>`;
     const foot = `<tr><td colspan="8">Landeballast (Reserve 3 Sack + Bremsballast)</td><td class="n">${BAL.landing}</td></tr><tr class="total"><td colspan="8">Geplant · verfügbar ${BAL.avail} kg · Rest</td><td class="n">${total.toFixed(0)} / ${(BAL.avail - total).toFixed(0)}</td></tr>`;
     const cols = rows.length <= 6 ? 1 : rows.length <= 12 ? 2 : 3, per = Math.ceil(rows.length / cols); const parts = [];
     for (let c = 0; c < cols; c++) parts.push(`<table>${head}<tbody>${rows.slice(c * per, (c + 1) * per).join('')}${c === cols - 1 ? foot : ''}</tbody></table>`);
@@ -572,7 +587,7 @@ kbd{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);bor
     const k = Math.round(kx(px)); if (stages.some((s) => Math.abs(s.k - k) < 4)) return; snapshot(); stages.push({ k, name: `Etappe ${hhmmD(k)}` }); stages.sort((a, b) => a.k - b.k); draw();
   });
   // --- Umschalter Profil / Karte, LT / UTC, Grundkarte, Layer, Rückgängig
-  const setView = (v) => { view = v; document.getElementById('vProfile').classList.toggle('on', v === 'profile'); document.getElementById('vMap').classList.toggle('on', v === 'map'); wrap.hidden = v !== 'profile'; document.getElementById('mapWrap').hidden = v !== 'map'; document.getElementById('legProfile').hidden = v !== 'profile'; document.getElementById('legMap').hidden = v !== 'map'; document.getElementById('viewNote').textContent = v === 'profile' ? 'Profil: Punkte ziehen, Doppelklick setzt, ≡ Menü, Griff ⋮ am unteren Rand verschiebt eine Etappengrenze, Klick auf die Zeitzeile setzt eine neue' : 'Karte: nur Ansicht – Punkte und Etappen werden im Profil bearbeitet'; closeMenu(); };
+  const setView = (v) => { view = v; document.getElementById('vProfile').classList.toggle('on', v === 'profile'); document.getElementById('vMap').classList.toggle('on', v === 'map'); wrap.hidden = v !== 'profile'; document.getElementById('mapWrap').hidden = v !== 'map'; document.getElementById('legMap').hidden = v !== 'map'; draw(); closeMenu(); };
   document.getElementById('vProfile').onclick = () => setView('profile');
   document.getElementById('vMap').onclick = () => setView('map');
   const setTz = (z) => { tz = z; document.getElementById('tzLT').classList.toggle('on', z === 'LT'); document.getElementById('tzUTC').classList.toggle('on', z === 'UTC'); draw(); };

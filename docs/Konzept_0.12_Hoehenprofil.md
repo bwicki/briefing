@@ -95,6 +95,16 @@ Ergänzungen vom 06.10.2026, 16:47 (Stand 10 der Skizze, Version 0.12.1):
 | 53 | Beispiel | Knopf «Beispiel» zeigt eine synthetische Beispielfahrt (wie die Skizze) mit nummerierten Erklärungen in der Grafik und darunter sowie «Woher die Daten kommen»; dort kann geübt werden, nichts wird gespeichert; «Beispiel schliessen» führt zur aktuellen Planung zurück. |
 | 54 | Ballasttabelle | Unter der Grafik, dynamisch nachgeführt; ab 7 Teilstücken zwei, ab 13 drei Spalten; Zeiten/Höhen ohne Umbruch. |
 | 55 | Legende | Inversion und Isothermie als eigene Einträge. |
+| 56 | Achsen (Stand 11) | Zeilenbeschriftungen «Sonne» und «Tag» links der Achsen entfallen. |
+| 57 | Wording | «Level-Out» statt «Abblasen» (Gasverlust über der Prallhöhe). |
+| 58 | Spalten | «Temp.» = Ballast für die Abkühlung Gas–Luft (Tag→Nacht, Bewölkung; 0,4 %/K, halbstündlich; ▲ = Gewinn), «Adiab.» = Abkühlung beim schnellen Steigen (1,0 gegen 0,65 K/100 m, anteilig ab 0,3 m/s); Tooltip im Kopf, Liste im Block «Modell der Schätzung». |
+| 59 | Modell der Schätzung | Einklappbarer Block über die ganze Breite unter der Tabelle (Vorgabe zu); im Briefingdruck nur, wenn aufgeklappt (Zustand `profile.fold.model`). |
+| 60 | Legende | Einklappbar (Vorgabe offen, `profile.fold.legend`); im Briefingdruck immer; erste Zeile = Bedienhinweis (Profil/Karte), nicht mehr über der Grafik. |
+| 61 | Titel | «Schätzung Ballastverbrauch». |
+| 62 | Wettermodell | Pille «Wettermodell ‹Name› ⋯»; Vorgabe das feinste Modell (Gitterweite), das die ganze Fahrt abdeckt (+6 h Reserve); kein «Auto» in der Liste; `suggestModel` wählt nach Gitterweite. |
+| 63 | Wasserflächen | OpenStreetMap über Overpass (`is_in` je km-Punkt, natural=water ohne Flüsse/Kanäle), Worker `/api/wx/water` mit 30-Tage-Cache, lokaler Modus direkt; Heuristik aus dem Relief nur als Rückfall (Legende nennt die Quelle). |
+| 64 | FIS-Kontakte | FIS-Sektoren aus openAIP (Typ 33) entlang der Bahn → Kontakte je Etappe (Name · Frequenz); sonst Kontakte je Land aus den Einstellungen. Statische Werte DE/FR/IT aus der AIP noch nicht verifiziert. |
+| 65 | Druck | Aufklappzustand gilt nur für den Block «Modell der Schätzung»; die Legende wird immer gedruckt. |
 
 Noch offen (in der Umsetzung klären):
 - f) Wind je Fahrthöhe aus den Open-Meteo-Druckflächen interpoliert – Stundenauflösung ausreichend, oder Unsicherheit (±) auf der Zeitzeile zeigen?
@@ -165,10 +175,10 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 - Nachfahrer-Abschnitt ab 12 h Fahrtdauer: Route, Maut/Vignetten, Übernachtung, Grenzdokumente.
 - Druck: Profil als Vollbreite-Grafik, Ballasttabelle in A3, Etappenübersicht als Tabelle.
 
-### Umgesetzt in 0.12.0 / offen
+### Umgesetzt in 0.12.0–0.12.2 / offen
 
 Umgesetzt: Panel A «Fahrtprofil» mit Datenaufbereitung, Grafik als Bild und Werkzeug (alle Punkte
-der Skizze Stand 10, inkl. Beispiel mit Erklärungen), Kartenansicht mit Grundkarten, Ballastschätzung, Etappenübersicht mit Kontakten,
+der Skizze Stand 11, inkl. Beispiel mit Erklärungen, OSM-Wasser, FIS-Sektoren), Kartenansicht mit Grundkarten, Ballastschätzung, Etappenübersicht mit Kontakten,
 NOTAM-Orte aus Etappen, Nachfahrer-Panel ab 12 h, Druck, Zeitzone einheitlich. Offen (0.12.x):
 Abschnitte B/C je Etappe (Akkordeon, Pflichtpanels je Land), Kalibrierung über Inventurpunkte und
 Barogramm, Unsicherheit auf der Zeitzeile (Frage f), Nachrechnen beim Ziehen statt beim Loslassen

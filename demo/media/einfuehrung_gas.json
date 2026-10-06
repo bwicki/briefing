@@ -1,0 +1,80 @@
+{
+ "version": "gas",
+ "title": "Einführung Gasfahrt · HB-QPJ",
+ "balloon": "HB-QPJ · NL-STU/1000, 1050 m³ H₂",
+ "duration": 157.7,
+ "chapters": [
+  {
+   "n": 1,
+   "key": "login",
+   "title": "Anmelden und Übersicht",
+   "start": 0.0,
+   "end": 16.52,
+   "text": "Willkommen beim Fahrtbriefing. Diese Einführung zeigt die Vorbereitung einer Gasfahrt. Nach der Anmeldung öffnet sich die Übersicht «Meine Briefings» mit allen Fahrten, ihrem Status und der Phase der Vorbereitung."
+  },
+  {
+   "n": 2,
+   "key": "wiz1",
+   "title": "Neues Briefing: Gasballon",
+   "start": 16.52,
+   "end": 36.04,
+   "text": "«Neues Briefing»: Ballonart Gas, Hülle H-B-Q-P-J mit tausendfünfzig Kubikmetern Wasserstoff, dazu der Korb. Startplatz Oberlunkhofen, Start am späten Nachmittag – die Fahrt geht über die Nacht."
+  },
+  {
+   "n": 3,
+   "key": "wiz3",
+   "title": "Fahrtabsicht über 24 Stunden",
+   "start": 36.04,
+   "end": 54.76,
+   "text": "Die Fahrtabsicht: Dauer vierundzwanzig Stunden, Höhenband und Zielrichtung. Dann die Personen mit der Ballastvorschau, die Tagesplanung und die Zusammenfassung – «Briefing anlegen»."
+  },
+  {
+   "n": 4,
+   "key": "editor",
+   "title": "Erarbeitung mit den Gas-Panels",
+   "start": 54.76,
+   "end": 70.48,
+   "text": "Für Gasfahrten kommen eigene Panels dazu: das Fahrtprofil mit Höhen, Etappen und Ballast, die Nachfahrer-Übersicht und der Flugplan. Die Navigation links zeigt, was noch offen ist."
+  },
+  {
+   "n": 5,
+   "key": "profile",
+   "title": "Fahrtprofil: Daten aufbereiten",
+   "start": 70.48,
+   "end": 88.72,
+   "text": "«Daten aufbereiten» rechnet die Bahn aus den Winden je Höhe, holt das Relief entlang der Bahn, die Stundenprofile, Sonnenzeiten und Lufträume. Die Grafik zeigt Distanz und Zeit gegen Höhe, mit Nacht, Dämmerung und Gelände."
+  },
+  {
+   "n": 6,
+   "key": "tool",
+   "title": "Werkzeug: Punkte und Etappen",
+   "start": 88.72,
+   "end": 108.64,
+   "text": "Im Werkzeug werden die geplanten Fahrthöhen als Punkte gezogen; ein Doppelklick setzt einen neuen Punkt. Die Bahn wird nachgerechnet, Zeiten und Lufträume folgen. Ein Klick auf die Zeitzeile setzt eine Etappengrenze, die Etappen lassen sich benennen."
+  },
+  {
+   "n": 7,
+   "key": "model",
+   "title": "Wettermodell und Beispiel",
+   "start": 108.64,
+   "end": 126.08,
+   "text": "Die Pille «Wettermodell» zeigt das Modell, das die ganze Fahrt abdeckt; die Liste warnt, wenn ein feineres Modell nur einen Teil reicht. «Beispiel» öffnet eine Übungsfahrt mit nummerierten Erklärungen zu jedem Element der Grafik."
+  },
+  {
+   "n": 8,
+   "key": "ballast",
+   "title": "Etappen, Ballast und Kontakte",
+   "start": 126.08,
+   "end": 144.96,
+   "text": "Unter der Grafik die Etappenübersicht mit Zeiten, Höhenband, Ort, Land, Lufträumen und Kontakten, und die Schätzung des Ballastverbrauchs je Teilstück: Manöver, Level-Out, Temperatur und Adiabatik gegen den Vorrat."
+  },
+  {
+   "n": 9,
+   "key": "release",
+   "title": "Briefingsicht",
+   "start": 144.96,
+   "end": 157.68,
+   "text": "In der Briefingsicht erscheint das Profil mit Etappen und Ballast als Teil des Briefings – druckbar und teilbar. Damit ist die Gasfahrt vorbereitet."
+  }
+ ]
+}

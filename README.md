@@ -25,9 +25,14 @@ die KI-Hinweise folgen in Phase 2 (siehe Konzept v0.4 im Projektordner).
 Beim ersten Laden fragt die App Nutzer und Kennwort. Im **Server-Modus** prüft
 sie der Worker (Hash in der Datenbank, Fehlversuche werden gebremst); nach zwei
 Stunden ohne Benutzung wird wieder gefragt, Menü → *Sperren* sofort. Der zuletzt
-benutzte Anmeldename wird vorgeschlagen. Das eigene Kennwort wird in
+benutzte Anmeldename wird vorgeschlagen. Nach der Anmeldung öffnet sich immer die Übersicht
+**«Meine Briefings»** (0.12.2; Freigabe-Links bleiben auf ihrer Seite). Das eigene Kennwort wird in
 **Einstellungen → Experte** geändert — nach der Inbetriebnahme bitte ein längeres
 setzen, weil die Briefings Pax-Namen enthalten.
+
+Menü ≡ → **«Einführung (Filme)»** öffnet `demo/`: zwei Filme mit Sprecherstimme (Heissluftfahrt HB-QWZ,
+Gasfahrt HB-QPJ, je rund zweieinhalb Minuten) mit Kapiteln und Sprechtext – Konzept und Pipeline in
+`docs/Konzept_Demo_Einfuehrung.md` und `demo/build/`.
 
 ### Nutzer, Rollen und Freigaben (ab 0.5.0)
 
@@ -152,8 +157,10 @@ in Druckreihenfolge, **nummeriert A1–An, B1–Bn, C1–Cn, D1–Dn** unter mar
 (A Operationelle, B Meteorologische, C Navigatorische Vorbereitung, D Crew-/Pax-Briefing), rechts
 Planungshorizont, Panel-Zähler, Protokoll und die KI-Zusammenfassung. Die Navigation links ist ein
 **Akkordeon**: offen ist nur der Abschnitt der gerade bearbeiteten Stelle (folgt dem Scrollen und dem
-Fokus); selbst geöffnete Abschnitte bleiben offen. Über dem Abschnitt A steht **«Alle verfügbaren
-Daten aktualisieren»** (lädt alle automatischen Panels neu, ohne KI-Kommentare). Im Kopf der
+Fokus); selbst geöffnete Abschnitte bleiben offen. Über dem Abschnitt A steht die Zeile **«Alle verfügbaren
+Daten aktualisieren»** (lädt alle automatischen Panels neu, ohne KI-Kommentare) und **«Pflichtinhalte
+ergänzen (n)»** (springt zum nächsten noch leeren Pflicht-Panel, zyklisch; zeigt die Zahl der offenen); die
+Zeile bleibt beim Rollen unter der Kopfzeile stehen (0.12.2). Im Kopf der
 **Bearbeitungsstand** («v12 · Datum Zeit · Name»; +1 je Bearbeitungssitzung: Öffnen der Erarbeitung,
 Weiterarbeit nach Freigabe oder Final-PDF), der Status und die Phase.
 
@@ -185,15 +192,20 @@ Panel-Arten:
 * **Text** — Landeorte, Bemerkungen, Flugplan, Absprachen, Briefingbedürfnisse; bei Gasfahrten ab
   12 h zusätzlich **Nachfahrer** (Route, Maut/Vignetten, Übernachtung, Grenzdokumente, Treffpunkt).
 * **Fahrtprofil: Höhen, Etappen, Ballast** (0.12, nur Gasballon) — «Daten aufbereiten» holt
-  Prognosen entlang der Bahn, Relief, Stundenprofile, Sonne und Lufträume; die Grafik (Distanz × Höhe,
-  Zeilen km · Zeit LT/UTC mit Sonnenzeiten · Tag) steht als Bild im Panel, «Werkzeug öffnen» startet
-  das Vollbild-Werkzeug: Punkte ziehen/setzen/löschen (≡), Etappen nummeriert mit Griff ⋮ und Menü
-  (umbenennen, mit Vorgänger/Nachfolger zusammenlegen), Rückgängig (Ctrl+Z), Modell-Pille ⋯ (Horizont-
-  Warnung), «Beispiel» (synthetische Fahrt mit nummerierten Erklärungen zum Üben), Layer Wetter/Lufträume,
-  Kartenansicht mit wählbarer Grundkarte. Darunter die **Etappenübersicht** (Zeit, km, Höhenband, Ort,
-  Land/FIR, Lufträume, Achtung, FIS-Kontakte) und die **Ballastschätzung nach der Aerostatik**
-  (Manöver, Abblasen, Temperatur, Adiabatik; Balken gegen den Vorrat aus A3). Im NOTAM-Panel
-  («Umkreis um Orte») übernimmt «Orte aus Etappen» die Etappenmitten.
+  Prognosen entlang der Bahn, Relief, **Wasserflächen aus OpenStreetMap** (Overpass, Rückfall Heuristik
+  aus dem Relief), Stundenprofile, Sonne und Lufträume; die Grafik (Distanz × Höhe, Zeilen km · Zeit LT/UTC
+  mit Sonnenzeiten · Datum) steht als Bild im Panel, «Werkzeug öffnen» startet das Vollbild-Werkzeug:
+  Punkte ziehen/setzen/löschen (≡), Etappen nummeriert mit Griff ⋮ und Menü (umbenennen, mit
+  Vorgänger/Nachfolger zusammenlegen), Rückgängig (Ctrl+Z), Pille **«Wettermodell ‹Name› ⋯»** (Vorgabe das
+  feinste Modell, das die ganze Fahrt abdeckt; Horizont-Warnung), «Beispiel» (synthetische Fahrt mit
+  nummerierten Erklärungen zum Üben), Layer Wetter/Lufträume, Kartenansicht mit wählbarer Grundkarte.
+  Die **Legende** (erste Zeile: Bedienhinweis) ist einklappbar und wird im Briefingdruck immer gedruckt.
+  Darunter die **Etappenübersicht** (Zeit, km, Höhenband, Ort, Land/FIR, Lufträume, Achtung, Kontakte:
+  FIS-Sektoren aus openAIP entlang der Etappe, sonst die FIS-Kontakte je Land aus den Einstellungen) und die
+  **Schätzung Ballastverbrauch** (Manöver, Level-Out, Temperatur, Adiabatik; Balken gegen den Vorrat aus A3)
+  mit dem einklappbaren Block **«Modell der Schätzung»** (Parameter und Bedeutung der Spalten; im
+  Briefingdruck nur, wenn aufgeklappt). Im NOTAM-Panel («Umkreis um Orte») übernimmt «Orte aus Etappen» die
+  Etappenmitten.
 
 ### Automatische Panels (Phase 2)
 
@@ -369,7 +381,7 @@ die Einstellungen (ohne Zugänge).
   aus der Bahn, Teilstücke mit Steig-/Sinkrate, Reliefabstand, Etappen (nummeriert, verschiebbar,
   zusammenlegbar), Nachtanteil aus ECET/BCMT, Achtung-Zeichen (Wind, Scherung, CAPE, Nebel nahe Grund,
   Niederschlag, Vereisung) und das **Ballastmodell nach der Aerostatik** (`docs/Aerostatik_Gasballon.md`,
-  Emden/DFSV-Handbuch 2.10, «Gone with the Wind» Kap. 4): Manöver WZ·v² (Abfangen × 1,3), Abblasen über
+  Emden/DFSV-Handbuch 2.10, «Gone with the Wind» Kap. 4): Manöver WZ·v² (Abfangen × 1,3), Level-Out über
   der Prallhöhe 1 % je 80 m (Prallhöhe aus dem Füllungsgrad), Temperaturgesetz 0,4 % je K mit den
   Überhitzungen Tag/Nacht klar/bedeckt aus Einstellungen → Experten → Aerostatik, Adiabatik beim
   schnellen Steigen. `js/auto/profiledata.js` setzt die Bahn aus Wegpunkt-Prognosen zusammen (Luftpaket

@@ -444,7 +444,7 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .metar-cols.compact ul.decoded{margin:0}
 .metar .mhead{font-size:12.5px}
 .metar-cols ul.decoded{margin:4px 0 0;padding-left:16px;font-size:12.5px;line-height:1.4}
-.metar-cols ul.decoded li:first-child,.metar-cols ul.decoded li.head{list-style:none;margin-left:-16px;font-weight:600}
+.metar-cols ul.decoded li:first-child,.metar-cols ul.decoded li.head{list-style:none;margin-left:-16px}   /* 0.12.2: ohne Fettschrift */
 .metar-cols ul.decoded li.chg{list-style:none;margin-left:-16px;padding-left:16px;text-indent:-10px;color:var(--text)}   /* Änderungsgruppe bezieht sich auf die Punkte davor */
 .metar .bad{color:var(--temp);font-weight:600}
 .th-sum{margin-bottom:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
@@ -669,7 +669,8 @@ table.panels-tbl input[type=checkbox]{width:16px;height:16px;margin:0;vertical-a
 .lock{font-size:12px}
 .card.summary .btn{margin-top:6px}
 /* 0.11.2: «Alle verfügbaren Daten aktualisieren» über dem Abschnitt A */
-.refresh-all{margin:0 0 12px;align-items:center}
+.refresh-all{margin:0 0 12px;align-items:center;position:sticky;top:var(--topbar-h, 70px);z-index:40;background:var(--bg);padding:6px 0;box-shadow:0 8px 8px -8px rgba(0,0,0,.18)}   /* 0.12.2: bleibt unter der Kopfzeile stehen */
+.refresh-all .must-btn.done{opacity:.6}
 .tbl td.mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
 @media (max-width:680px){ .panel-head{flex-wrap:wrap} .panel-head .rgt{max-width:100%;align-items:flex-start;width:100%} .panel-head .rrow{justify-content:flex-start} }
 
@@ -831,3 +832,15 @@ table.pf-ballast tr.total td{font-weight:600;border-top:2px solid var(--line)}
 @media (max-width:900px){ .pf-callouts{grid-template-columns:1fr} .pf-ballast-grid{grid-template-columns:1fr !important} }
 .pf-ballast-grid.cols2 table.pf-ballast{font-size:11px}.pf-ballast-grid.cols3 table.pf-ballast{font-size:10.5px}
 .pf-ballast-grid.cols2 table.pf-ballast td,.pf-ballast-grid.cols2 table.pf-ballast th,.pf-ballast-grid.cols3 table.pf-ballast td,.pf-ballast-grid.cols3 table.pf-ballast th{padding:2px 4px}
+/* 0.12.2: einklappbare Legende und Modell der Schätzung, Bedienhinweis in der Legende, Werkzeugleiste 2 nur mit Warnung */
+details.pf-fold{margin:4px 0 2px;width:100%}
+details.pf-fold>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim);padding:2px 0;user-select:none}
+details.pf-fold>summary::-webkit-details-marker{display:none}
+details.pf-fold>summary .caret{width:0;height:0;border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s}
+details.pf-fold[open]>summary .caret{transform:rotate(90deg)}
+details.pf-fold .pf-fold-body{margin-top:2px}
+details.pf-fold.model{grid-column:1 / -1;border-top:1px solid var(--line-soft);padding-top:4px;margin-top:6px}
+details.pf-fold.model .pf-cols{margin:4px 0 0;padding-left:16px;display:grid;gap:2px}
+.pf-legend .pf-leghint{color:var(--text);flex-basis:100%}
+.pf-toolbar2[hidden]{display:none}
+.brief details.pf-fold>summary{color:#444}

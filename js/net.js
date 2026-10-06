@@ -74,11 +74,24 @@ export async function dataFile(rel, ms = 12000) {
   catch { return getJson(`${GAFOR}/${rel}${bust}`, ms); }
 }
 
+/** Wasserflächen im lokalen Modus: Overpass direkt (CORS offen), gleiche Abfrage und Antwort wie der Worker (worker/src/wx.js). */
+const WATER_SKIP = /^(river|stream|canal|ditch|drain|wastewater|moat|fish_pass)$/;
+async function waterLocal(p) {
+  const lats = String(p.lat).split(','), lons = String(p.lon).split(',');
+  const query = `[out:json][timeout:90];${lats.map((la, i) => `is_in(${la},${lons[i]})->.p${i};area.p${i}[natural=water]->.w${i};.w${i} make m i="${i}",id=w${i}.min(id()),nm=w${i}.set(t["name"]),wt=w${i}.set(t["water"]);out;`).join('')}`;
+  const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(query), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: withTimeout(60000) });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = await r.json(), items = new Array(lats.length).fill(null);
+  for (const e of j.elements || []) { if (e.type !== 'm' || !e.tags) continue; const i = +e.tags.i, wt = (e.tags.wt || '').split(';')[0]; if (!(i >= 0 && i < items.length) || !e.tags.id || WATER_SKIP.test(wt)) continue; items[i] = { name: (e.tags.nm || '').split(';')[0] || null, type: wt || null }; }
+  return { items, source: 'OpenStreetMap · Overpass' };
+}
+
 /** Datenabrufe im lokalen Modus (ohne Worker): Open-Meteo direkt, METAR/TAF und DWD aus der eigenen Kopie. */
 export async function localData(kind, p = {}) {
   switch (kind) {
     case 'om': return getJson(`https://api.open-meteo.com/v1/forecast?${p.query}`, 15000);
     case 'elevation': return getJson(`https://api.open-meteo.com/v1/elevation?latitude=${p.lat}&longitude=${p.lon}`, 15000);
+    case 'water': return waterLocal(p);
     case 'metar': {
       const j = await dataFile('dwd/metar.json');
       const km = p.km || 150;

@@ -1,0 +1,80 @@
+{
+ "version": "hab",
+ "title": "Einführung Heissluftfahrt · HB-QWZ",
+ "balloon": "HB-QWZ · BB26E, 2600 m³",
+ "duration": 168.7,
+ "chapters": [
+  {
+   "n": 1,
+   "key": "login",
+   "title": "Anmelden und Übersicht",
+   "start": 0.0,
+   "end": 17.84,
+   "text": "Willkommen beim Fahrtbriefing. Nach der Anmeldung öffnet sich die Übersicht «Meine Briefings»: jede Fahrt mit Datum, Startort, Ballon, Status und Phase der Vorbereitung. Ein Klick auf eine Zeile öffnet die Erarbeitung."
+  },
+  {
+   "n": 2,
+   "key": "wiz1",
+   "title": "Neues Briefing: Ballon und Fahrt",
+   "start": 17.84,
+   "end": 38.52,
+   "text": "«Neues Briefing» führt in sechs Schritten durch die Fahrtabsicht. Zuerst Ballon und Art der Fahrt: hier die Heissluft-Hülle H-B-Q-W-Z, eine private Fahrt. Die Stammdaten des Ballons – Massen, Zylinder, Hüllentemperatur – sind hinterlegt."
+  },
+  {
+   "n": 3,
+   "key": "wiz2",
+   "title": "Ort und Zeit",
+   "start": 38.52,
+   "end": 58.16,
+   "text": "Dann Ort und Zeit: der Startplatz aus den Favoriten, hier Oberlunkhofen, dazu Datum und Startzeit. Die Dämmerungszeiten nach RAC 4-4 und der Zeitplan vom Treffpunkt bis zum Start werden sofort berechnet."
+  },
+  {
+   "n": 4,
+   "key": "wiz3",
+   "title": "Fahrtabsicht, Personen, Tagesplanung",
+   "start": 58.16,
+   "end": 78.32,
+   "text": "Es folgen die Fahrtabsicht mit Dauer, Höhenband und Zielrichtung, die Personen an Bord mit einer Vorschau der Tragkraft, und die Tagesplanung. Am Schluss die Zusammenfassung – «Briefing anlegen» öffnet die Erarbeitung."
+  },
+  {
+   "n": 5,
+   "key": "editor",
+   "title": "Erarbeitung: Abschnitte und Pflichtinhalte",
+   "start": 78.32,
+   "end": 102.76,
+   "text": "Die Erarbeitungssicht gliedert das Briefing in die Abschnitte A bis D: Fahrt, Meteo, Luftraum und Betrieb. Links die Navigation mit dem Stand jedes Panels, rechts Go/No-Go, Horizont und Protokoll. Pflichtinhalte sind markiert; «Pflichtinhalte ergänzen» springt zum nächsten offenen Panel."
+  },
+  {
+   "n": 6,
+   "key": "refresh",
+   "title": "Daten laden",
+   "start": 102.76,
+   "end": 123.48,
+   "text": "«Alle verfügbaren Daten aktualisieren» lädt die automatischen Panels: Meteogramm, Winde je Höhe, Temperaturprofil, Trajektorien, METAR und TAF sowie die Lufträume. Die Meteo-Leiste zeigt das gewählte Wettermodell und den Stand der Daten."
+  },
+  {
+   "n": 7,
+   "key": "airspace",
+   "title": "Luftraum und Tragkraft",
+   "start": 123.48,
+   "end": 141.4,
+   "text": "Abschnitt C zeigt die Lufträume entlang der Trajektorien mit Freigabestellen und Frequenzen. Die Tragkraft-Rechnung in Abschnitt A zeigt die Abflugmasse und den Spielraum zur maximalen Masse bei der erwarteten Temperatur."
+  },
+  {
+   "n": 8,
+   "key": "release",
+   "title": "Go/No-Go, Freigabe und Briefingsicht",
+   "start": 141.4,
+   "end": 157.28,
+   "text": "Die Go/No-Go-Karte fasst die Kriterien zusammen. «Freigeben» prüft die Pflichtinhalte und erstellt die finale Fassung. Die Briefingsicht ist druckbar und lässt sich per Link mit Crew und Passagieren teilen."
+  },
+  {
+   "n": 9,
+   "key": "end",
+   "title": "Ende",
+   "start": 157.28,
+   "end": 168.68,
+   "text": "Das war der Überblick für die Heissluftfahrt. Für Gasfahrten gibt es eine zweite Einführung mit Höhenprofil, Etappen und Ballastplanung."
+  }
+ ]
+}

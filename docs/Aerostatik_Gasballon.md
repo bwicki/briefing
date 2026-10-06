@@ -169,7 +169,7 @@ Posten; die Nacht ist kein Posten «pro Stunde» mehr:
    nach gewünschter Abfangstrecke); ein geplanter Höhenwechsel kostet also beide Enden.
    Sinken wird mit dem Ventil eingeleitet (Gasverlust = Tragfähigkeitsverlust, der am Ende
    mit Ballast abgefangen wird) – daher kostet auch ein geplanter Abstieg Ballast.
-2. **Prallhöhe/Abblasen**: Für den Teil eines Steigens oberhalb der aktuellen Prallhöhe −1 %
+2. **Prallhöhe/Level-Out (Abblasen)**: Für den Teil eines Steigens oberhalb der aktuellen Prallhöhe −1 %
    der Tragfähigkeit je 80 m (Gesetz der Ballastwirkung); die Prallhöhe wandert dabei mit
    (nach dem Abstieg ist der Ballon wieder unprall und die neue Prallhöhe liegt bei der
    früheren Maximalhöhe, korrigiert um 30 m je K Gastemperatur).

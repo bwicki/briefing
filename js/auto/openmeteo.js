@@ -23,23 +23,23 @@ const LEVEL_VARS = ['wind_speed', 'wind_direction', 'temperature', 'geopotential
 export const M_TO_FT = 3.280839895;
 export const MS_TO_KT = 1.943844;
 
-/** Modelle mit Druckflächen, nach Horizont sortiert. */
+/** Modelle mit Druckflächen, nach Horizont sortiert; km = Gitterweite (für die Vorgabe «feinstes Modell, das reicht»). */
 export const MODELS = [
-  { key: 'icon_d2', name: 'ICON-D2', note: 'DWD, 2 km', hours: 48 },
-  { key: 'meteofrance_arome_france_hd', name: 'AROME', note: 'Météo-France, 1.5 km', hours: 48, noLevels: true },
-  { key: 'meteofrance_arpege_europe', name: 'ARPEGE', note: 'Météo-France, 11 km', hours: 96 },
-  { key: 'icon_eu', name: 'ICON-EU', note: 'DWD, 7 km', hours: 120 },
-  { key: 'ecmwf_ifs025', name: 'ECMWF IFS', note: 'ECMWF, 25 km', hours: 144 },
-  { key: 'ukmo_global_deterministic_10km', name: 'UKMO', note: 'Met Office, 10 km', hours: 168 },
-  { key: 'icon_global', name: 'ICON global', note: 'DWD, 11 km', hours: 180 },
-  { key: 'gfs_global', name: 'GFS', note: 'NOAA, 13 km', hours: 384 },
-  { key: '', name: 'Auto (best match)', note: 'nahtloser Mix', hours: 384 },
+  { key: 'icon_d2', name: 'ICON-D2', note: 'DWD, 2 km', hours: 48, km: 2 },
+  { key: 'meteofrance_arome_france_hd', name: 'AROME', note: 'Météo-France, 1.5 km', hours: 48, km: 1.5, noLevels: true },
+  { key: 'meteofrance_arpege_europe', name: 'ARPEGE', note: 'Météo-France, 11 km', hours: 96, km: 11 },
+  { key: 'icon_eu', name: 'ICON-EU', note: 'DWD, 7 km', hours: 120, km: 7 },
+  { key: 'ecmwf_ifs025', name: 'ECMWF IFS', note: 'ECMWF, 25 km', hours: 144, km: 25 },
+  { key: 'ukmo_global_deterministic_10km', name: 'UKMO', note: 'Met Office, 10 km', hours: 168, km: 10 },
+  { key: 'icon_global', name: 'ICON global', note: 'DWD, 11 km', hours: 180, km: 11 },
+  { key: 'gfs_global', name: 'GFS', note: 'NOAA, 13 km', hours: 384, km: 13 },
+  { key: '', name: 'Auto (best match)', note: 'nahtloser Mix', hours: 384, km: 99 },
 ];
 export const modelName = (key) => (MODELS.find((m) => m.key === (key || '')) || MODELS[MODELS.length - 1]).name;
 export const modelHours = (key) => (MODELS.find((m) => m.key === (key || '')) || MODELS[MODELS.length - 1]).hours;
-/** Modelle, die den Horizont (h ab jetzt) noch abdecken; bestes zuerst. */
-export const modelsFor = (hours) => MODELS.filter((m) => m.hours >= Math.max(0, hours) + 6 && !m.noLevels);
-/** Vorschlag je Horizont: feinstes Modell, das reicht. */
+/** Modelle, die den Horizont (h ab jetzt, +6 h Reserve) noch abdecken; feinstes Gitter zuerst, bei gleichem Gitter das mit kürzerem Horizont. */
+export const modelsFor = (hours) => MODELS.filter((m) => m.hours >= Math.max(0, hours) + 6 && !m.noLevels).sort((a, b) => a.km - b.km || a.hours - b.hours);
+/** Vorgabe je Horizont: feinstes Modell, das die ganze Zeitspanne abdeckt (sonst Auto). */
 export const suggestModel = (hours) => (modelsFor(hours)[0] || MODELS[MODELS.length - 1]).key;
 
 export const levelsUpTo = (topHpa) => LEVELS.filter((p) => p >= (topHpa || 500));
