@@ -7,6 +7,7 @@ import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA 
 import { sunRows, twilightClass } from './parts.js';
 import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine } from '../model.js';
 import { fplView } from './fplpanel.js';
+import { profileView } from './profile.js';
 import { docsLine } from '../stamm.js';
 import { placeLine } from './place.js';
 import { renderSnapshot, standLine } from './autorender.js';
@@ -116,6 +117,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
         case 'transition': { const items = d.content.items || S.transitionDefaults[b.site.country] || []; cell.appendChild(h('div', S.transitionAltitudes.map((ta) => h('span.chk', `${items.includes(ta.id) ? '☑' : '☐'} ${ta.label}`)))); break; }
         case 'paxbriefing': cell.appendChild(h('div', [h('div', S.paxBriefingItems.map((it) => h('span.chk', `${(d.content.items || S.paxBriefingItems).includes(it) ? '☑' : '☐'} ${t('pb_' + it)}`))), b.balloon.type === 'gas' ? h('ul', { style: { margin: '4px 0', paddingLeft: '16px' } }, GAS_BRIEFING_EXTRA[lang].map((x) => h('li', x))) : null, h('div.mini', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, AMC1_BOP_BAS_115)])); break;
         case 'text': cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (p.defaultText ? tt(p.defaultText) : '–')))); break;
+        case 'profile': cell.appendChild(profileView(b, ctx)); break;
         case 'fpl': cell.appendChild(fplView(b, ctx)); if (d.content?.text) cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap', marginTop: '4px' } }, textToNodes(d.content.text))); break;
         case 'landing': cell.appendChild(h('div', [b.landing?.lat != null ? h('div', [h('b', `${t('landingSite')}: `), placeLine(b.landing), b.site.lat != null ? h('span.mini', ` · ${distKm(b.site.lat, b.site.lon, b.landing.lat, b.landing.lon).toFixed(1)} km · ${Math.round(bearing(b.site.lat, b.site.lon, b.landing.lat, b.landing.lon)).toString().padStart(3, '0')}°`) : null]) : null, h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (b.landing?.lat != null ? '' : '–')))])); break;
         case 'auto': {

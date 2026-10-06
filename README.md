@@ -182,7 +182,17 @@ Panel-Arten:
   dieser Panels hat *Aktualisieren*, *KI-Hinweis*, ✕ (Schnappschuss entfernen);
   eigener Text/Bilder gehören in die blaue Zusatzbox. Details im Abschnitt
   «Automatische Panels».
-* **Text** — Landeorte, Bemerkungen, Flugplan, Absprachen, Briefingbedürfnisse.
+* **Text** — Landeorte, Bemerkungen, Flugplan, Absprachen, Briefingbedürfnisse; bei Gasfahrten ab
+  12 h zusätzlich **Nachfahrer** (Route, Maut/Vignetten, Übernachtung, Grenzdokumente, Treffpunkt).
+* **Fahrtprofil: Höhen, Etappen, Ballast** (0.12, nur Gasballon) — «Daten aufbereiten» holt
+  Prognosen entlang der Bahn, Relief, Stundenprofile, Sonne und Lufträume; die Grafik (Distanz × Höhe,
+  Zeilen km · Zeit LT/UTC mit Sonnenzeiten · Tag) steht als Bild im Panel, «Werkzeug öffnen» startet
+  das Vollbild-Werkzeug: Punkte ziehen/setzen/löschen (≡), Etappen nummeriert mit Griff ⋮ und Menü
+  (umbenennen, mit Vorgänger/Nachfolger zusammenlegen), Rückgängig (Ctrl+Z), Layer Wetter/Lufträume,
+  Kartenansicht mit wählbarer Grundkarte. Darunter die **Etappenübersicht** (Zeit, km, Höhenband, Ort,
+  Land/FIR, Lufträume, Achtung, FIS-Kontakte) und die **Ballastschätzung nach der Aerostatik**
+  (Manöver, Abblasen, Temperatur, Adiabatik; Balken gegen den Vorrat aus A3). Im NOTAM-Panel
+  («Umkreis um Orte») übernimmt «Orte aus Etappen» die Etappenmitten.
 
 ### Automatische Panels (Phase 2)
 
@@ -346,21 +356,28 @@ Freigabe-Links, Nutzer & Freigaben (Stamm-Freigaben; Supermaster: Nutzer
 anlegen, Kennwort setzen, Freischaltungen, Stamm ansehen), Statistik (Supermaster),
 Zugänge (API-Schlüssel und Logins, zentral, verschlüsselt; nur der Supermaster
 ändert sie; das Auge zeigt die Eingabe im Klartext und lädt bei leerem Feld den
-gespeicherten Wert nach — protokolliert), Experte (Kennwort ändern, Reserve-Regel). *Export/Import JSON* sichert
+gespeicherten Wert nach — protokolliert), Experte (Kennwort ändern, Reserve-Regel, Aerostatik Gasballon, Achtung-Zeichen-Grenzen und Mindestabstand des Höhenprofils, FIS-Kontakte je Land für die Etappenübersicht; Gashüllen zusätzlich Widerstandszahl WZ). *Export/Import JSON* sichert
 die Einstellungen (ohne Zugänge).
 
 ---
 
 ## Rechenmodelle
 
-* **Aerostatik des Gasballons (0.12, Vorbereitung)** — `docs/Aerostatik_Gasballon.md` hält die
-  Gesetze fest, nach denen das Höhenprofil-Werkzeug den Ballast rechnet (Emden/DFSV-Handbuch
-  2.10, «Gone with the Wind» Kap. 4): Zustandsklassen prall/unprall, Fundamentalsatz 1 % je
-  80 m, Prallhöhe aus dem Füllungsgrad, Gesetz der Ballastwirkung, die vier Temperaturgesetze
-  (≈ 5 kg je K je 1000 m³), Widerstandszahl für Steigen/Abfangen, Tag-Nacht-Übergang.
-  Die Parameter (Überhitzung klar/bedeckt Tag/Nacht, % je K, % je 80 m) stehen seit 0.11.4 unter
-  Einstellungen → Experten → Aerostatik; der Umsetzungsplan mit allen Entscheiden in
-  `docs/Konzept_0.12_Hoehenprofil.md`.
+* **Höhenprofil, Etappen und Ballast der Gasfahrt (0.12)** — Panel A «Fahrtprofil» (nur Gas).
+  `js/calc/profile.js`: Punkte (km entlang der zusammengesetzten Bahn, m AMSL), Kopplung km ↔ Zeit ↔ Ort
+  aus der Bahn, Teilstücke mit Steig-/Sinkrate, Reliefabstand, Etappen (nummeriert, verschiebbar,
+  zusammenlegbar), Nachtanteil aus ECET/BCMT, Achtung-Zeichen (Wind, Scherung, CAPE, Nebel nahe Grund,
+  Niederschlag, Vereisung) und das **Ballastmodell nach der Aerostatik** (`docs/Aerostatik_Gasballon.md`,
+  Emden/DFSV-Handbuch 2.10, «Gone with the Wind» Kap. 4): Manöver WZ·v² (Abfangen × 1,3), Abblasen über
+  der Prallhöhe 1 % je 80 m (Prallhöhe aus dem Füllungsgrad), Temperaturgesetz 0,4 % je K mit den
+  Überhitzungen Tag/Nacht klar/bedeckt aus Einstellungen → Experten → Aerostatik, Adiabatik beim
+  schnellen Steigen. `js/auto/profiledata.js` setzt die Bahn aus Wegpunkt-Prognosen zusammen (Luftpaket
+  im Modellwind der jeweils geplanten Höhe, 10-min-Schritte; Wegpunkte alle 40 km, Modell mit
+  ausreichendem Horizont), holt Relief (Open-Meteo Elevation über `/api/wx/elevation`), Stundenprofile
+  (Decken RH ≥ 95 %, Inversionen, Nullgradgrenze, Wind/Scherung), Sonnenereignisse entlang der Bahn
+  (astronomisch am Bahnpunkt) und Lufträume (openAIP, durchfahren/nahe, HX-Status). Werkzeug und
+  Darstellung in `js/ui/profile.js` (Skizze Stand 8: `docs/Hoehenprofil_Werkzeug_Skizze.html`,
+  Entscheide in `docs/Konzept_0.12_Hoehenprofil.md`). Zeitzone einheitlich die des Briefings (LT/UTC).
 * **Sonne/Dämmerung** — Schweiz: RAC 4-4 (VFR Manual, skyguide): BCMT, SR, SS, ECET
   in Lokalzeit, Referenz Sternwarte Bern, gültig für die FIR. Die mitgelieferte
   Tabelle (`data/rac/rac-ch.json`) deckt OCT 2026 – DEC 2027 ab; ein neues PDF wird
@@ -448,13 +465,13 @@ js/defaults.js             Standard-Einstellungen und Stammdaten
 js/panels.js               Panel-Register A–D
 js/i18n.js                 Oberflächentexte DE/EN
 js/net.js                  Open-Meteo, Nominatim, OSRM
-js/calc/*.js               Sonne/Mond, RAC-Parser, Aerostatik, Zeitplan, Geo, Zeit, Flugplan (fpl.js)
-js/ui/*.js                 Liste, Ablauf, Erarbeitung, Briefingsicht, Einstellungen, Links, Flugplan-Panel (fplpanel.js)
+js/calc/*.js               Sonne/Mond, RAC-Parser, Aerostatik, Zeitplan, Geo, Zeit, Flugplan (fpl.js), Höhenprofil/Etappen/Ballast (profile.js)
+js/ui/*.js                 Liste, Ablauf, Erarbeitung, Briefingsicht, Einstellungen, Links, Flugplan-Panel (fplpanel.js), Höhenprofil-Werkzeug (profile.js)
 js/vendor/                 Leaflet (BSD-2), qrcode-generator (MIT)
 data/rac/rac-ch.json       RAC 4-4 OCT 2026 – DEC 2027
 worker/                    Cloudflare Worker (src/index.js, schema.sql, wrangler.toml)
 test/                      Rechentests (node, inkl. Trajektorien/Ampel/NOTAM-Filter), Oberflächen-Durchläufe (Playwright, Open-Meteo synthetisch über test/om_fixture.py)
-js/auto/                   Open-Meteo, Trajektorien, Grafiken (Stüve, Wind, Meteogramm), Datenbeschaffung, KI-Prompt
+js/auto/                   Open-Meteo, Trajektorien, Grafiken (Stüve, Wind, Meteogramm), Datenbeschaffung, KI-Prompt, Profildaten der Gasfahrt (profiledata.js)
 js/ui/autopanels.js, autorender.js  automatische Panels (Erarbeitung) und ihre Darstellung (beide Sichten)
 worker/src/wx.js           Datenabrufe im Worker (/api/wx/*)
 ```

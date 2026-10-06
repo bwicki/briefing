@@ -136,7 +136,7 @@ with sync_playwright() as p:
     # Statistik-Seite
     pg.goto(BASE + '#/settings?stats'); pg.wait_for_timeout(1500)
     st = pg.inner_text('#view').upper()
-    assert 'JE BENUTZER UND MONAT' in st and 'ANMELDUNGEN' in st, 'Statistik: ' + st[:200]
+    assert 'JE NUTZER UND MONAT' in st and 'ANMELDUNGEN' in st, 'Statistik: ' + st[:200]
     pg.screenshot(path=f'{OUT}/remote_stats.png', full_page=True)
     # Sperren → neuer Benutzer meldet sich an
     pg.click('#menuBtn'); pg.click('#menu button:has-text("Sperren")'); pg.wait_for_timeout(500)

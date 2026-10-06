@@ -71,3 +71,11 @@ img.bimg{width:2cm;height:2cm;object-fit:cover;border:1px solid #ccc;border-radi
 .brief .bh .r img{margin:0}
 .brief .bh .tline{font-weight:700;font-size:10.5pt;white-space:nowrap}
 .lockbar{display:none}
+@media print {
+  /* 0.12: Fahrtprofil – Grafik volle Breite, Tabellen klein, Werkzeug nie */
+  .brief .pf-chart{max-width:none;overflow:visible;break-inside:avoid}
+  .brief .pf-svg{width:100%;min-width:0}
+  .brief table.pf-ballast,.brief table.pf-stages{font-size:8pt}
+  .brief .pf-legend{font-size:7.5pt}
+  .pf-backdrop{display:none !important}
+}

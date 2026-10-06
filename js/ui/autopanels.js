@@ -3,6 +3,7 @@
  * Schnappschüsse, Radar (live), KI-Hinweis. Die Darstellung des Schnappschusses
  * selbst liegt in autorender.js (gemeinsam mit der Briefingsicht). */
 import { h, clear, toast, num, dialog } from '../util.js';
+import { stageWindows, posAtKm } from '../calc/profile.js';
 import { t, getLang } from '../i18n.js';
 import { field, input, select, textarea, check } from './widgets.js';
 import { renderSnapshot, setAirspaceUrl, renderSondeWindow } from './autorender.js';
@@ -134,7 +135,9 @@ function notamPlacesEditor(b, ctx, onChange, onRun) {
       placeRow(pl, { label: t('notam_place'), title: t('notam_place'), onPick: (q) => { Object.assign(pl, { name: q.name, lat: q.lat, lon: q.lon }); onChange(); draw(); } }),
       h('span.inline', [h('span.note', t('notam_radiusKm')), input('number', pl.km ?? 200, { step: 10, min: 10, max: 400, style: { width: '80px' }, onchange: (e) => { pl.km = Math.min(400, Math.max(10, num(e.target.value, 200))); onChange(); } }), h('button.btn.icon.small', { type: 'button', title: t('remove'), onclick: () => { b.notamPlaces.splice(i, 1); onChange(); draw(); } }, icon('close', 14))]),
     ])));
-    box.appendChild(h('div.row-actions', [h('button.btn.small', { type: 'button', onclick: () => { (b.notamPlaces = b.notamPlaces || []).push({ name: b.site.name, lat: b.site.lat, lon: b.site.lon, km: 200 }); onChange(); draw(); } }, `+ ${t('notam_addPlace')}`), h('button.btn.small.primary', { type: 'button', onclick: onRun }, t('auto_load'))]));
+    // 0.12: Orte aus den Etappen des Fahrtprofils (Mitte jeder Etappe, Radius halbe Etappenlänge + 40 km)
+    const fromStages = b.profile?.data?.track && (b.profile.stages || []).length ? h('button.btn.small', { type: 'button', onclick: () => { const D = b.profile.data; b.notamPlaces = stageWindows(b.profile.stages, D.track, b.profile.points, D.totalKm).map((w) => { const q = posAtKm(D.track, (w.km0 + w.km1) / 2) || { lat: b.site.lat, lon: b.site.lon }; return { name: `${w.no} · ${w.name || ''}`.trim(), lat: +q.lat.toFixed(4), lon: +q.lon.toFixed(4), km: Math.max(30, Math.min(400, Math.round((w.km1 - w.km0) / 2 + 40))) }; }); onChange(); draw(); } }, `+ ${t('notam_fromStages')}`) : null;
+    box.appendChild(h('div.row-actions', [h('button.btn.small', { type: 'button', onclick: () => { (b.notamPlaces = b.notamPlaces || []).push({ name: b.site.name, lat: b.site.lat, lon: b.site.lon, km: 200 }); onChange(); draw(); } }, `+ ${t('notam_addPlace')}`), fromStages, h('button.btn.small.primary', { type: 'button', onclick: onRun }, t('auto_load'))]));
   };
   draw();
   return box;

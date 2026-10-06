@@ -78,6 +78,7 @@ export async function dataFile(rel, ms = 12000) {
 export async function localData(kind, p = {}) {
   switch (kind) {
     case 'om': return getJson(`https://api.open-meteo.com/v1/forecast?${p.query}`, 15000);
+    case 'elevation': return getJson(`https://api.open-meteo.com/v1/elevation?latitude=${p.lat}&longitude=${p.lon}`, 15000);
     case 'metar': {
       const j = await dataFile('dwd/metar.json');
       const km = p.km || 150;

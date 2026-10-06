@@ -17,6 +17,7 @@ import { panelByKey } from '../panels.js';
 import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { openAccessDialog } from './access.js';
 import { fplPanel } from './fplpanel.js';
+import { profilePanel } from './profile.js';
 import { icon, iconSvg } from './icons.js';
 
 export async function renderEditor(view, ctx, id, opts = {}) {
@@ -252,6 +253,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         break;
       }
       case 'fpl': content = fplPanel(b, ctx, d, () => touched(p.key), shared?.role === 'read'); break;
+      case 'profile': content = profilePanel(b, ctx, { onChange: () => touched(p.key), readOnly: shared?.role === 'read' }); break;
       case 'landing': {
         const ro = shared?.role === 'read';
         const box = h('div');

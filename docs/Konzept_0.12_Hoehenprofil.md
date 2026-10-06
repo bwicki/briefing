@@ -54,27 +54,64 @@ Ergänzungen vom 06.10.2026, nachmittags (Stand 6 der Skizze):
 | 28 | Wording | In der App heisst es durchgehend «Nutzer» (nicht «Benutzer»); Datenzugänge bleiben zentral, keine Klickboxen je Nutzer. |
 | 26 | Achtung-Zeichen | Symbol zeigt den Grund: Wind (Windlinien), Scherung/Turbulenz (Zickzack), Gewitterneigung (Blitz), Nebel (≡), Niederschlag (Tropfen), Vereisung (Schneeflocke); Kurztext darunter («Wind 35 kt», «Scherung», «CB-Neigung» …), Tooltip mit Einzelheiten. Quellen: Modellprofil (Wind/Scherung je Schicht), Thermik/CAPE, RH/T (Nebel, Vereisung), Niederschlag. |
 
+Ergänzungen vom 06.10.2026, später Nachmittag (Stand 8 der Skizze, während der Umsetzung):
+
+| Nr. | Punkt | Entscheid |
+|---|---|---|
+| 29 | Lufträume ab GND, Nebel | Lufträume, die bis GND reichen (CTR u. a.), sowie Nebel-/Stratusdecken enden an der **Reliefline**, nicht an der 0-m-Linie (Fläche = Polygon mit Reliefunterkante). |
+| 30 | AGL-Warnung | Zweizeilig «< 300 m AGL» / «68–77 km», rot, in der Schriftgrösse der Sonnenzeiten, **auf Höhe der Distanzskala**, hinterlegt (überdeckt die km-Beschriftung); die Fläche bleibt rot schraffiert. Mindestabstand im Expertenmenü einstellbar. |
+| 31 | Zwischenstriche | Distanzskala: bei 25/50/75 % der Hauptteilung; Zeitskala: bei 30'. |
+| 32 | Legende | Kompakter (kleinerer Zeilenabstand) und **nur mit den Symbolen, die in der Grafik vorkommen**. |
+
+Ergänzungen vom 06.10.2026, 16 Uhr (Stand 9 der Skizze):
+
+| Nr. | Punkt | Entscheid |
+|---|---|---|
+| 33 | HX-Lufträume | Unter der Bezeichnung nur «HX»; feste Gültigkeitszeiten (openAIP «hours») werden angeführt und auf die Breite der Fläche umbrochen (max. 3 Zeilen). |
+| 34 | Lufträume bis GND | Keine Bodenlinie: Oberkante und senkrechte Grenzen bis auf den Boden; eine Unterkante nur dort, wo sie über dem Relief liegt. |
+| 35 | Achtung-Zeichen | Kein Text unter dem Symbol (Ausnahme Wind: «35 kt»); Einzelheiten (Zeit, km-Abschnitt, Werte) im Tooltip. Anhaltende Bedingungen werden zu einem Zeichen mit Abschnitt zusammengefasst; Nebel nur bei Fahrthöhe ≤ 600 m über Grund. |
+| 36 | Vereisung | Symbol Schneestern; Regen-Symbol (Tropfen) im Beispiel gezeigt. |
+| 37 | AGL-Warnung | Zusammengeschrieben «<300m AGL». |
+| 38 | Etappen | Namen oberhalb der Grafik (eigene Zeile), Etappenstriche reichen über die Grafik hinaus bis zum Namen; am rechten Rand links angeschrieben. |
+| 39 | Modellwahl | Im Werkzeug Liste der Modelle mit Druckflächen, deren Horizont den Fahrtbeginn erreicht; deckt eines die Fahrt nur teilweise ab: «⚠ bis +X h» in der Liste, Warnung unter der Layer-Box, Marker «← Ende Prognosemodell» über der Grafik auf Höhe der Etappennamen; Bahn, Relief und Lufträume enden am Modellhorizont (`p.model`, `data.cut`). |
+| 40 | Wasserflächen | Blaue Einsätze im Geländeprofil. Quelle: ebene Läufe ≥ 3 km (±1 m) im Höhenmodell (Copernicus DEM zeigt Seen eben); Heuristik, in der Legende so benannt; Abgleich mit OSM-Wasserflächen in 0.12.x. |
+
 Noch offen (in der Umsetzung klären):
 - f) Wind je Fahrthöhe aus den Open-Meteo-Druckflächen interpoliert – Stundenauflösung ausreichend, oder Unsicherheit (±) auf der Zeitzeile zeigen?
 - g) Beim Ziehen eines Punkts ändert sich die Bahn (andere Niveaus = andere Richtung) – Karte und Relief sofort nachrechnen oder erst beim Loslassen? (Vorschlag: Profil sofort, Karte/Relief beim Loslassen, mit Fortschrittsanzeige.)
 
-## 3 Datenmodell (Briefing)
+## 3 Datenmodell (Briefing) – Stand der Umsetzung 0.12.0
 
 ```js
 b.profile = {
-  layers: { wx: true, as: true }, tz: 'LT', base: 'neutral',                 // Layer-Schalter, Zeitskala, Grundkarte (je Briefing gespeichert)
-  points: [{ km: 0, alt: 450 }, { km: 2, alt: 1300 }, …],   // gefahrene Distanz entlang der Bahn, m AMSL; sortiert nach km
-  stages: [{ id, km: 0, name: 'Start' }, { id, km: 30, name: 'Enroute · Mittelland' }, …],
-  track: { stand, points: [{ km, lat, lon, alt, ms, windKmh, dir }] },   // zusammengesetzte Bahn (Ergebnis, 1-km-Schritte)
-  relief: { stand, m: [ … je km … ] },                                   // Open-Meteo Elevation
-  clouds: [{ km0, km1, h0, h1, label }], inversions: [[km, m], …],       // aus dem Modellprofil je Stunde/Ort
-  ballast: { rows: [ … je Teilstück … ], total, landing, avail, gain },  // Resultat
+  points: [{ km: 0, alt: 450 }, { km: 2, alt: 1300 }, …],   // gefahrene Distanz entlang der Bahn, m AMSL; sortiert, erster 0 km, letzter = Bahnlänge
+  stages: [{ id, km: 0, name: 'Start' }, { id, km: 30, name: 'Enroute' }, …],   // Grenzen; Nummerierung aus der Reihenfolge
+  layers: { wx: true, as: true }, base: 'neutral',             // Layer-Schalter, Grundkarte der Kartenansicht
+  updated, model,                                             // letzte Änderung im Werkzeug; gewähltes Modell (Werkzeug)
+  data: {                                                     // Schnappschuss «Daten aufbereiten» (js/auto/profiledata.js)
+    stand, model, modelName, source, fetched, totalKm, ok, startMs, endMs, durationMin, tz,
+    track: { points: [{ ms, km, lat, lon, alt, spdKt, dir }] },   // zusammengesetzte Bahn, 10-min-Schritte
+    waypoints: [{ lat, lon, km }],                             // Prognoseorte (alle 40 km, max. 7)
+    relief: [{ km, m }],                                       // Open-Meteo Elevation je km
+    hours: [{ ms, km, lat, lon, alt, ground, clouds: [{ lo, hi, label }], inv: [{ lo, hi }], fzl, windKt, shearKt, tempAtAlt, rhAtAlt, cape, fogRisk, precip, cloud, temp2m, dew2m }],
+    sun: [{ kind: 'ss'|'ecet'|'bcmt'|'sr', ms, km }],           // astronomisch am Bahnpunkt
+    airspaces: [{ name, typeKey, cls, country, status: 'cross'|'near', km0, km1, lo, hi, lowerTxt, upperTxt, tmp, freqs }],
+    water: [{ km0, km1, m }], cut, plannedEndMs, modelHours,                 // Wasserflächen (Heuristik), Modellhorizont vor Fahrtende
+    firs: [{ name, country, fromKm, toKm }], hazards: [{ type, km, kmEnd, alt, ms, msEnd, lbl, txt }], errors: [],
+  },
 };
+b.time.base         // 'LT' | 'UTC' – Zeitzone von Werkzeug, Tabellen und Druck
 b.weather.fillPct   // 0.11.4, Vorgabe 100
+b.balloon.wz        // Widerstandszahl aus den Stammdaten der Hülle (Experten), sonst 3,5 / 3,8 nach Volumen
 S.aero              // 0.11.4: dtDayClear, dtNightClear, dtDayOvercast, dtNightOvercast, liftPctPerK, fullLossPctPer80m
+S.profileLimits     // 0.12: windKt 30, shearKt 20, cape 500, minAgl 300
+S.fisContacts       // 0.12: [{ cc, name, freq, phone }] für die Etappenübersicht
 ```
 
-Etappen sind Teilintervalle der Distanz (`km` der Grenze). Jede Etappe hat Zeitfenster (aus der Kopplung), Ort (Bahnpunkt), Land/FIR (aus der Luftraumanalyse) und eigene Panels B/C (Meteo, Luftraum/NOTAM/DABS, Kontakte).
+Ballastplan und Etappenfenster werden nicht gespeichert, sondern aus `points`, `stages` und `data`
+gerechnet (`ballastPlan`, `stageWindows` in `js/calc/profile.js`). Etappen sind Teilintervalle der
+Distanz; jede Etappe hat Zeitfenster, Ort (Bahnpunkt), Land/FIR (aus der Luftraumanalyse), Lufträume,
+Achtung-Zeichen und FIS-Kontakte (Etappenübersicht). Eigene Panels B/C je Etappe: 0.12.x.
 
 ## 4 Algorithmen
 
@@ -108,6 +145,15 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 - Nachfahrer-Abschnitt ab 12 h Fahrtdauer: Route, Maut/Vignetten, Übernachtung, Grenzdokumente.
 - Druck: Profil als Vollbreite-Grafik, Ballasttabelle in A3, Etappenübersicht als Tabelle.
 
+### Umgesetzt in 0.12.0 / offen
+
+Umgesetzt: Panel A «Fahrtprofil» mit Datenaufbereitung, Grafik als Bild und Werkzeug (alle Punkte
+der Skizze Stand 9), Kartenansicht mit Grundkarten, Ballastschätzung, Etappenübersicht mit Kontakten,
+NOTAM-Orte aus Etappen, Nachfahrer-Panel ab 12 h, Druck, Zeitzone einheitlich. Offen (0.12.x):
+Abschnitte B/C je Etappe (Akkordeon, Pflichtpanels je Land), Kalibrierung über Inventurpunkte und
+Barogramm, Unsicherheit auf der Zeitzeile (Frage f), Nachrechnen beim Ziehen statt beim Loslassen
+(Frage g – umgesetzt ist: Profil sofort, Bahn/Relief/Lufträume beim Loslassen mit Statusanzeige).
+
 ## 6 Abnahmekriterien
 
 1. Beispielfahrt 1000 m³ H₂, Füllungsgrad 100 %, 180 km, Start 16:00: Zeitzeile ungleich verteilt, Landung vor/nach BCMT korrekt schattiert.
@@ -121,6 +167,6 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 
 ## 7 Startprompt für die neue Sitzung
 
-«0.12 beginnen: Etappenmodell und Höhenprofil-Werkzeug gemäss docs/Konzept_0.12_Hoehenprofil.md und docs/Aerostatik_Gasballon.md; Skizze Stand 3 als Vorlage. Zuerst Datenmodell + Kopplung Distanz/Zeit + Ballastmodell mit Tests (calc), dann Werkzeug-UI, dann Etappen im Editor/Karte, dann Druck. Lieferung wie üblich nach Dropbox v0.12.0 und Push.»
+«0.12 beginnen: Etappenmodell und Höhenprofil-Werkzeug gemäss docs/Konzept_0.12_Hoehenprofil.md und docs/Aerostatik_Gasballon.md; Skizze Stand 9 als Vorlage. Zuerst Datenmodell + Kopplung Distanz/Zeit + Ballastmodell mit Tests (calc), dann Werkzeug-UI, dann Etappen im Editor/Karte, dann Druck. Lieferung wie üblich nach Dropbox v0.12.0 und Push.»
 
 Empfehlung Modell/Aufwand: Fable 5.1 oder Opus 5.5, Aufwand hoch; Rückfragen und kleine Korrekturen mit Sonnet 5.5, Aufwand mittel.

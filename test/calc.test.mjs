@@ -19,6 +19,7 @@ import { goNoGo } from '../js/calc/gonogo.js';
 import { changesSinceFinal } from '../js/calc/diff.js';
 import { resolveBalloon, mergeSettings } from '../js/defaults.js';
 import { routeMatrix, countryInfo } from '../js/countries.js';
+import { altAt, msAtKm, kmAtMs, segments, rateClass, reliefBreaches, addStage, removeStage, moveStage, stageWindows, nightFraction, ballastPlan, fitPoints, defaultPoints, hazards, rhoAir, waterRuns } from '../js/calc/profile.js';
 import { parseDwdAstro } from '../js/calc/sun.js';
 import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing, ageRefMs, fillFractionOf, massPerf } from '../js/model.js';
 import { carCode } from '../js/net.js';
@@ -469,6 +470,58 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   upgradeBriefing(old);
   ok(old.weather.fillPct === 90, 'Bestand ohne Füllungsgrad: Stammwert der Hülle (90 %)');
   ok(S.aero.dtDayClear === 15 && S.aero.dtNightClear === -3 && S.aero.dtDayOvercast === 5 && S.aero.dtNightOvercast === -1, 'Aerostatik-Vorgaben im Expertenbereich');
+}
+
+// ---------------------------------------------------------------- 0.12 Höhenprofil, Etappen, Ballastmodell
+{
+  // Bahn: 180 km, 16:00 Start, Geschwindigkeit wächst mit der Höhe (Kopplung km ↔ Zeit)
+  const t0 = Date.UTC(2026, 9, 6, 14, 0);   // 16:00 LT
+  const track = { totalKm: 180, points: [] };
+  for (let k = 0; k <= 180; k += 10) track.points.push({ km: k, ms: t0 + k * 5 * 60000, lat: 47 + k * 0.004, lon: 8 + k * 0.01 });   // 12 km/h
+  const pts = [{ km: 0, alt: 450 }, { km: 2, alt: 1300 }, { km: 40, alt: 1300 }, { km: 42, alt: 1600 }, { km: 75, alt: 1600 }, { km: 80, alt: 2300 }, { km: 125, alt: 2300 }, { km: 128, alt: 1900 }, { km: 150, alt: 1900 }, { km: 156, alt: 900 }, { km: 176, alt: 900 }, { km: 180, alt: 280 }];
+  ok(altAt(pts, 1) === 875 && altAt(pts, 60) === 1600 && altAt(pts, 999) === 280, 'altAt: linear, geklemmt');
+  ok(msAtKm(track, 90) === t0 + 90 * 5 * 60000 && kmAtMs(track, t0 + 3600000) === 12, 'Kopplung km↔Zeit');
+  const seg = segments(pts, track);
+  ok(seg.length === 11 && Math.abs(seg[0].rate - 850 / 600) < 0.01, `Rate 0–2 km: 850 m in 10 min = ${seg[0].rate} m/s`);
+  ok(rateClass(0.2) === 'hold' && rateClass(1.0) === 'ok' && rateClass(2.5) === 'warn' && rateClass(4) === 'bad', 'Ratenklassen');
+  const relief = []; for (let k = 0; k <= 180; k += 10) relief.push({ km: k, m: k >= 60 && k <= 120 ? 1700 : 400 });
+  const br = reliefBreaches(pts, relief);
+  ok(br.length === 1 && br[0].km0 >= 55 && br[0].km0 <= 62 && br[0].km1 >= 76 && br[0].km1 <= 80, 'Relief: Unterschreitung 300 m am Anstieg (≈ 57–78 km): ' + JSON.stringify(br));
+  // Etappen
+  const st = [{ id: 'a', km: 0, name: 'Start' }, { id: 'b', km: 30, name: 'Enroute' }, { id: 'c', km: 140, name: 'Landung' }];
+  ok(addStage(st, 75, 'Voralpen') && st.map((x) => x.name).join(',') === 'Start,Enroute,Voralpen,Landung', 'Etappe einfügen → Reihenfolge/Nummerierung');
+  ok(addStage(st, 76) === null, 'Etappe zu nahe an bestehender Grenze → abgelehnt');
+  ok(moveStage(st, 1, 90, 180) === 73 && moveStage(st, 1, 10, 180) === 10, 'Verschieben zwischen Vorgänger/Nachfolger geklemmt (≥ 2 km)');
+  ok(moveStage(st, 0, 20, 180) === 0, 'Startgrenze bleibt bei 0');
+  ok(removeStage(st, 2, 'next') && st.length === 3 && st[2].km === 75 && st[2].name === 'Landung', 'Löschen mit Nachfolger: Nachfolger beginnt hier');
+  ok(removeStage(st, 1, 'prev') && st.length === 2 && st[1].km === 75, 'Löschen mit Vorgänger: Vorgänger übernimmt');
+  ok(!removeStage(st, 0, 'prev') && !removeStage(st, 1, 'next'), 'erste nur mit Nachfolger, letzte nur mit Vorgänger');
+  const win = stageWindows(st, track, pts, 180);
+  ok(win.length === 2 && win[0].no === 1 && win[0].km1 === 75 && win[1].km1 === 180 && win[1].altMax === 2300 && win[0].ms1 === msAtKm(track, 75), 'Etappenfenster mit Zeit und Höhenband');
+  // Sonne: Nachtanteil mit Übergang ±1 h
+  const ev = [{ kind: 'ecet', ms: t0 + 3 * 3600000 }, { kind: 'bcmt', ms: t0 + 14 * 3600000 }];
+  ok(nightFraction(ev, t0) === 0 && nightFraction(ev, t0 + 3 * 3600000) === 0.5 && nightFraction(ev, t0 + 8 * 3600000) === 1 && nightFraction(ev, t0 + 16 * 3600000) === 0, 'Nachtanteil Tag → Übergang → Nacht → Tag');
+  // Ballast: 1000 m³ H2, 100 % Füllung: Steigen 450 → 1300 m kostet ≈ 10–11 % der Tragfähigkeit (Abblasen) + Manöver
+  const plan = ballastPlan(pts, track, { volume: 1000, fillFraction: 1, gas: 'H2', siteAlt: 450, wz: 3.8, nightAt: (ms) => nightFraction(ev, ms), landingKg: 60, availKg: 550 });
+  const r0 = plan.rows[0];
+  ok(r0.blow > 100 && r0.blow < 125, `Abblasen 450→1300 m ≈ 10,6 % von ${plan.liftStart} kg: ${r0.blow} kg`);
+  ok(r0.man > 5 && r0.man < 15, `Manöver Steigen mit ${seg[0].rate} m/s: ${r0.man} kg`);
+  ok(plan.prallH === 450, 'Prallhöhe bei 100 % Füllung = Starthöhe');
+  const tempSum = plan.rows.reduce((a, r) => a + r.temp, 0);
+  ok(tempSum > 65 && tempSum < 95, `Abendübergang +15 → −3 K ≈ 18 K × 4.3 kg über die Teilstücke: ${tempSum.toFixed(0)} kg`);
+  ok(plan.total > 300 && plan.total < 550 && plan.pct === Math.round(plan.total / 550 * 100), `Summe plausibel: ${plan.total} kg (${plan.pct} %)`);
+  const plan85 = ballastPlan(pts, track, { volume: 1000, fillFraction: 0.85, gas: 'H2', siteAlt: 450, wz: 3.8, landingKg: 60 });
+  ok(plan85.prallH > 2000 && plan85.prallH < 2200 && plan85.rows[0].blow === 0, `85 % Füllung ab 450 m: Prallhöhe ≈ 2 100 m AMSL (ISA; ${plan85.prallH}), erster Aufstieg ohne Abblasen`);
+  ok(Math.abs(rhoAir(0) - 1.225) < 1e-9 && rhoAir(1000) < 1.12 && rhoAir(1000) > 1.11, 'ISA-Dichte');
+  // Punkte an die Bahnlänge anpassen
+  const fp = fitPoints([{ km: 5, alt: 1000 }, { km: 0, alt: 450 }, { km: 300, alt: 2000 }, { km: 190, alt: 300 }], 180);
+  ok(fp.length === 3 && fp[0].km === 0 && fp[fp.length - 1].km === 180 && fp[fp.length - 1].alt === 2000, 'fitPoints: sortiert, 0 km, letzter Punkt (Landung) bei Bahnlänge: ' + JSON.stringify(fp));
+  const dp = defaultPoints(450, 1500, 120);
+  ok(dp.length === 4 && dp[0].alt === 450 && dp[1].alt === 1500 && dp[3].km === 120, 'Standardprofil');
+  const hz = hazards([{ ms: t0, km: 10, alt: 1300, windKt: 35, cape: 100 }, { ms: t0 + 3600000, km: 20, alt: 1300, windKt: 36 }, { ms: t0 + 2 * 3600000, km: 90, alt: 2300, tempAtAlt: -2, rhAtAlt: 95 }, { ms: t0 + 3 * 3600000, km: 120, alt: 2300, ground: 500, cape: 700, fogRisk: 2 }, { ms: t0 + 7 * 3600000, km: 200, alt: 1300, windKt: 40 }]);
+  const wr = waterRuns([{ km: 0, m: 450 }, { km: 1, m: 452 }, { km: 2, m: 406 }, { km: 3, m: 406 }, { km: 4, m: 407 }, { km: 5, m: 406 }, { km: 6, m: 480 }, { km: 7, m: 500 }, { km: 8, m: 500 }, { km: 9, m: 520 }]);
+  ok(wr.length === 1 && wr[0].km0 === 2 && wr[0].km1 === 5 && wr[0].m === 406, 'Wasserflächen: ebener Lauf ≥ 3 km (±1 m), kurze ebene Stücke nicht: ' + JSON.stringify(wr));
+  ok(hz.map((x) => x.type).join(',') === 'wind,ice,cb,wind' && hz[0].kmEnd === 20, 'Achtung-Zeichen: Wind (anhaltend zusammengefasst, nach Pause neu), Vereisung, CB, kein Nebel in 1800 m über Grund: ' + hz.map((x) => x.type + '@' + x.km + '-' + x.kmEnd).join(','));
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

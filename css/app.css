@@ -748,3 +748,65 @@ table.tbl.list td.acts .btn.icon.small .ico{width:15px;height:15px}
 .leaflet-bar.fb-ctl a .ico{vertical-align:middle;margin-top:6px}
 .sarrow .ico{vertical-align:-1px;margin-left:2px}
 .handle .ico{color:var(--text-dim)}
+
+/* ---------- 0.12 Höhenprofil-Werkzeug (Gasfahrt) ---------- */
+:root{ --pf-fg:var(--text); --pf-dim:var(--text-dim); --pf-line:var(--line); --pf-panel:var(--panel); --pf-night:#9fb4d8; --pf-relief:#a28f6c; --pf-cloud:#5c6e82; --pf-inv:#f0a04b; --pf-zero:#5fc3d6; --pf-ok:#5cc08a; --pf-warn:#e0b23c; --pf-bad:#e06c5c; --pf-pt:#e0923c; --pf-stage:#6aa6d6; --pf-as-c:#6aa6d6; --pf-as-d:#b784d8; --pf-as-ctr:#e06c5c; --pf-as-sua:#f0a04b; }
+:root[data-theme="light"]{ --pf-night:#1f2a44; --pf-relief:#8a7a5d; --pf-cloud:#9fb3c8; --pf-inv:#d9822b; --pf-zero:#1f7a8c; --pf-ok:#2e8b57; --pf-warn:#c08a00; --pf-bad:#c0392b; --pf-pt:#b8640f; --pf-stage:#2f6f9f; --pf-as-c:#2f6f9f; --pf-as-d:#7a3fa0; --pf-as-ctr:#c0392b; --pf-as-sua:#d9822b; }
+.brief{ --pf-fg:#1d2126; --pf-dim:#5d646d; --pf-line:#d9d4c9; --pf-panel:#ffffff; --pf-night:#1f2a44; --pf-relief:#8a7a5d; --pf-cloud:#9fb3c8; --pf-inv:#d9822b; --pf-zero:#1f7a8c; --pf-ok:#2e8b57; --pf-warn:#c08a00; --pf-bad:#c0392b; --pf-pt:#b8640f; --pf-stage:#2f6f9f; --pf-as-c:#2f6f9f; --pf-as-d:#7a3fa0; --pf-as-ctr:#c0392b; --pf-as-sua:#d9822b; }
+.pf-chart{overflow-x:auto;position:relative;background:var(--pf-panel);border:1px solid var(--line);border-radius:8px;padding:6px}
+.pf-svg{display:block;width:100%;max-width:100%;height:auto;min-width:640px;font-family:var(--sans)}
+.pf-chart.tool .pf-svg{min-width:900px}
+.pf-pt{cursor:grab}.pf-pt:active{cursor:grabbing}.pf-mi{cursor:pointer}.pf-mi:hover rect{stroke:var(--pf-pt)}.pf-sh{cursor:ew-resize}.pf-sh:hover rect{stroke:var(--pf-pt)}.pf-axis{cursor:crosshair}
+.pf-legend{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:11px;line-height:1.3;color:var(--text-dim);margin:4px 0 2px}
+.pf-legend span{display:inline-flex;align-items:center;gap:5px}
+.pf-legend i.sw{width:16px;height:9px;border-radius:2px;display:inline-block;box-sizing:border-box}
+.pf-legend svg{flex:0 0 auto}
+.pf-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-bottom:6px}
+.pf-toolbar .seg,.pf-maptools .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.pf-toolbar .seg button,.pf-maptools .seg button{background:var(--panel);color:var(--text);border:0;padding:6px 11px;font:inherit;font-size:12.5px;cursor:pointer;min-height:32px}
+.pf-toolbar .seg button.on,.pf-maptools .seg button.on{background:var(--pf-stage);color:#fff}
+.pf-toolbar .pf-hint{flex:1 1 240px}
+.pf-layers{margin-left:auto;display:flex;gap:12px;font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--panel-2)}
+.pf-layers label{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.pf-layers input{accent-color:var(--pf-stage)}
+.pf-status{color:var(--pf-pt);min-width:0}
+.pf-menu{position:absolute;z-index:30;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);padding:4px;min-width:220px;font-size:13px}
+.pf-menu button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--text);padding:7px 10px;border-radius:6px;font:inherit;cursor:pointer}
+.pf-menu button:hover{background:var(--panel-2)}
+.pf-menu .ttl{font-family:var(--mono);font-size:11px;color:var(--text-dim);padding:4px 10px 2px}
+.pf-menu input{width:100%;box-sizing:border-box;margin:4px 0;padding:5px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:var(--panel-2);color:var(--text);min-height:0}
+.dialog.pf-tool{max-width:min(98vw,1480px);width:100%;max-height:96vh}
+.pf-backdrop{padding:8px}
+.pf-body{padding:10px 12px}
+.pf-map-wrap .pf-map{height:min(62vh,640px);border-radius:8px;border:1px solid var(--line)}
+.pf-maptools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 6px;font-size:12.5px}
+.pf-tip{background:rgba(255,255,255,.9);border:1px solid #999;color:#1d2126;font-size:10.5px;padding:1px 5px;box-shadow:none}
+.pf-tip.stage{border-color:#2f6f9f;color:#2f6f9f;font-weight:600}
+.pf-stage-icon{background:none;border:0}
+.pf-tables{display:grid;gap:10px;margin-top:8px}
+.pf-ballast-wrap,.pf-stages-wrap{margin-top:8px}
+table.pf-ballast,table.pf-stages{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums}
+table.pf-ballast th,table.pf-stages th{text-align:left;font-size:10.5px;color:var(--text-dim);font-weight:600;padding:3px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.pf-ballast td,table.pf-stages td{padding:3px 6px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+table.pf-ballast td.n,table.pf-ballast th.n,table.pf-stages td.n,table.pf-stages th.n{text-align:right;font-family:var(--mono);white-space:nowrap}
+table.pf-stages td.mono{font-family:var(--mono);white-space:nowrap}
+table.pf-ballast tr.total td{font-weight:600;border-top:2px solid var(--line)}
+.pf-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:6px}
+.pf-bar i{display:block;height:100%}
+.tscroll{overflow-x:auto}
+.brief .pf-svg{min-width:0}
+.brief .pf-chart{border:0;padding:0;background:#fff}
+.brief table.pf-ballast,.brief table.pf-stages{font-size:10.5px}
+.brief table.pf-ballast th,.brief table.pf-stages th{color:#444;border-bottom-color:#ccc}
+.brief table.pf-ballast td,.brief table.pf-stages td{border-bottom-color:#e4e4e4}
+.brief .pf-legend{color:#555}
+@media (max-width:599px){ .pf-layers{margin-left:0} .pf-toolbar .pf-hint{display:none} }
+.brief table.bp table.pf-ballast th,.brief table.bp table.pf-stages th{width:auto;background:none;border:0;border-bottom:1px solid #ccc;padding:2px 5px;font-size:10px;color:#444;vertical-align:bottom}
+.brief table.bp table.pf-ballast td,.brief table.bp table.pf-stages td{border:0;border-bottom:1px solid #e4e4e4;padding:2px 5px;font-size:10.5px;height:auto}
+.brief table.bp table.pf-ballast tr.total td{border-top:2px solid #ccc}
+:root{ --pf-water:#4f86c6; }
+:root[data-theme="light"]{ --pf-water:#5b9bd5; }
+.brief{ --pf-water:#5b9bd5; }
+.pf-right{margin-left:auto;display:grid;gap:4px;justify-items:end}
+.pf-layers select.pf-model{min-height:0;height:26px;padding:0 6px;font-size:12px;width:auto}
+.pf-modelwarn{font-size:12px;color:var(--pf-bad);max-width:520px;text-align:right}

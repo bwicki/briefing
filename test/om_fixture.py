@@ -56,6 +56,13 @@ def fixture(query, elev=461.0):
                 out[k] = series(lambda i, h, tp=tp: tp + 2 * math.sin((h - 9) / 24 * 2 * math.pi))
             elif var == 'geopotential_height': out[k] = series(lambda i, h, hgt=hgt: hgt)
             elif var == 'relative_humidity': out[k] = series(lambda i, h, p=p: 90 if p in (925, 900) else 55)
+    # Modellhorizont nachbilden (0.12): Stunden jenseits von jetzt + Horizont des Modells sind null (wie bei Open-Meteo)
+    HORIZON = {'icon_d2': 48, 'meteofrance_arome_france_hd': 48, 'meteofrance_arpege_europe': 96, 'icon_eu': 120, 'ecmwf_ifs025': 144, 'ukmo_global_deterministic_10km': 168, 'icon_global': 180, 'gfs_global': 384}
+    model = q.get('models', [''])[0]
+    if model in HORIZON:
+        limit = datetime.datetime.now(datetime.timezone.utc).timestamp() + HORIZON[model] * 3600
+        for k, v in out.items():
+            if k != 'time': out[k] = [x if t[i] <= limit else None for i, x in enumerate(v)]
     return {'latitude': lat, 'longitude': lon, 'elevation': elev, 'generationtime_ms': 1.2, 'utc_offset_seconds': 0, 'timezone': 'GMT', 'timezone_abbreviation': 'GMT', 'hourly': out}
 
 if __name__ == '__main__':

@@ -66,6 +66,14 @@ async function openMeteo(env, decrypt, ctx, q) {
   const data = await cached(ctx, `om/${await sha(query)}`, 900, async () => (await get(url, {}, 25000)).json());
   return json(data);
 }
+/** Geländehöhe (Open-Meteo Elevation API, Copernicus DEM 90 m): bis 100 Koordinaten je Abruf; 7 Tage im Cache. */
+async function elevation(ctx, q) {
+  const lat = q.get('lat') || '', lon = q.get('lon') || '';
+  if (!/^-?\d{1,2}(\.\d{1,5})?(,-?\d{1,2}(\.\d{1,5})?){0,99}$/.test(lat) || !/^-?\d{1,3}(\.\d{1,5})?(,-?\d{1,3}(\.\d{1,5})?){0,99}$/.test(lon)) return err('bad coords');
+  const url = `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`;
+  const data = await cached(ctx, `elev/${await sha(lat + '|' + lon)}`, 7 * 86400, async () => (await get(url, {}, 20000)).json());
+  return json(data);
+}
 async function sha(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0, 16).map((x) => x.toString(16).padStart(2, '0')).join(''); }
 
 // ------------------------------------------------------------ METAR / TAF / SIGMET
@@ -567,6 +575,7 @@ export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
     case 'sounding': return sounding(ctx, q);
     case 'stations': return stations(ctx, q);
     case 'sondes': return sondes(ctx, q);
+    case 'elevation': return elevation(ctx, q);
     case 'sonde': return sonde(ctx, q);
     case 'notam': return notam(env, decrypt, ctx, q);
     case 'ai': if (!canWrite) return err('forbidden', 403); return ai(env, decrypt, body);

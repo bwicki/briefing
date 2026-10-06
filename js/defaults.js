@@ -86,6 +86,17 @@ export const DEFAULT_SETTINGS = {
   // 0.11.4: Aerostatik Gasballon (Grundlage für das Höhenprofil-Werkzeug 0.12): Überhitzung des Traggases gegenüber der Luft in K
   // (Emden Tab. 9 / «Gone with the Wind» Kap. 4) – Tag/Nacht bei klarem Himmel und bei bedecktem Himmel; Kühlverlust ≈ 0.4 % Auftrieb je K
   aero: { dtDayClear: 15, dtNightClear: -3, dtDayOvercast: 5, dtNightOvercast: -1, liftPctPerK: 0.4, fullLossPctPer80m: 1 },
+  // 0.12: Grenzen für die Achtung-Zeichen im Höhenprofil (Wind in Fahrthöhe, Windsprung benachbarter Schichten, CAPE) und Mindestabstand über Grund
+  profileLimits: { windKt: 30, shearKt: 20, cape: 500, minAgl: 300 },
+  // 0.12: FIS-Kontakte je Land (AIP ENR 2.1 / GEN 3.3) für die Etappenübersicht – editierbar in Einstellungen → Experten;
+  // nur gesicherte Werte vorbelegt, übrige Länder als Platzhalter mit AIP-Verweis
+  fisContacts: [
+    { cc: 'CH', name: 'Zürich Information (FIS)', freq: '124.700', phone: '' }, { cc: 'CH', name: 'Geneva Information (FIS)', freq: '126.350', phone: '' },
+    { cc: 'AT', name: 'Wien Information (FIS)', freq: '124.400', phone: '' },
+    { cc: 'DE', name: 'FIS Langen / München / Bremen – Frequenz je Sektor gemäss AIP Germany ENR 2.1', freq: '', phone: '' },
+    { cc: 'FR', name: 'SIV (FIS) je Sektor gemäss AIP France ENR 2.1', freq: '', phone: '' },
+    { cc: 'IT', name: 'FIS Milano / Padova / Roma gemäss AIP Italia ENR 2.1', freq: '', phone: '' },
+  ],
   paxCardTitle: { de: 'Passagier Info-/Sicherheitskarte', en: 'Passenger info / safety card' },
   webcams: [{ id: 'uetliberg', name: 'Uetliberg (Roundshot)', lat: 47.3496, lon: 8.4913, url: 'https://uetliberg.roundshot.com/' }, { id: 'rigi', name: 'Rigi Kulm (Roundshot)', lat: 47.0569, lon: 8.4854, url: 'https://rigi.roundshot.com/' }],
   metarRadiusKm: 150, metarCount: 0, notamRadiusNm: 25, aiModel: 'claude-sonnet-5-5',
@@ -174,7 +185,7 @@ export function resolveBalloon(settings, sel) {
     if (!env || !bas) return null;
     return {
       type: 'gas', envelopeId: env.id, basketId: bas.id, reg: env.reg || env.id, ownerId: env.ownerId || bas.ownerId || null,
-      label: `${env.reg || env.id}${env.model ? ' · ' + env.model : ''}${env.hex ? ` (${env.hex})` : ''} × ${bas.name}`, hex: env.hex || '', docs: env.docs || [], volume: env.volume, gas: env.gas, purity: env.purity, fillFraction: env.fillFraction,
+      label: `${env.reg || env.id}${env.model ? ' · ' + env.model : ''}${env.hex ? ` (${env.hex})` : ''} × ${bas.name}`, hex: env.hex || '', docs: env.docs || [], volume: env.volume, gas: env.gas, purity: env.purity, fillFraction: env.fillFraction, wz: env.wz ?? null,
       masses: { envelope: env.mass, basket: bas.mass, equipment: bas.equipment, instruments: bas.instruments },
       personWeight: b.gasDefaults.personWeight, maxPersons: bas.maxPersons,
       ballastUnitKg: bas.ballastUnitKg, reserveUnits: bas.reserveUnits,

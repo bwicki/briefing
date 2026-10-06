@@ -270,8 +270,99 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.screenshot(path=f'{OUT}/{name}_17_locked.png')
         b.close()
 
+def run_gas(name):
+    """0.12: Gasfahrt – Panel A «Fahrtprofil», Höhenprofil-Werkzeug (Daten, Ziehen, Punkt setzen, Etappe setzen/umbenennen, Rückgängig,
+    LT/UTC, Karte), Etappen- und Ballasttabelle, NOTAM-Orte aus Etappen, Briefingsicht."""
+    import math
+    from urllib.parse import parse_qs
+    import zlib, struct
+    def chunk(tag, data): return struct.pack('>I', len(data)) + tag + data + struct.pack('>I', zlib.crc32(tag + data) & 0xffffffff)
+    PNG = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 6, 0, 0, 0)) + chunk(b'IDAT', zlib.compress(b'\x00\x00\x00\x00\x00')) + chunk(b'IEND', b'')
+    def elev(r):
+        q = parse_qs(urlparse(r.request.url).query); lats = q['latitude'][0].split(','); lons = q['longitude'][0].split(',')
+        r.fulfill(status=200, content_type='application/json', body=json.dumps({'elevation': [round(450 + 900 * max(0, math.sin((float(lo) - 8.0) * 3.0)) + 200 * math.sin(float(la) * 40)) for la, lo in zip(lats, lons)]}))
+    with sync_playwright() as p:
+        b = p.chromium.launch()
+        ctxb = b.new_context(viewport={'width': 1366, 'height': 900}, device_scale_factor=1.5, locale='de-CH', timezone_id='Europe/Zurich')
+        pg = ctxb.new_page()
+        pg.on('console', lambda m: errors.append(f'[{name}] console.{m.type}: {m.text}') if m.type in ('error',) and 'Failed to load resource' not in m.text else None)
+        pg.on('pageerror', lambda e: errors.append(f'[{name}] pageerror: {e}'))
+        pg.route('**/js/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body="window.BRIEFING_CONFIG = { apiBase: '' };"))
+        mock_external(pg)
+        pg.route('**/api.open-meteo.com/v1/elevation**', elev)
+        for pat in ['**/basemaps.cartocdn.com/**', '**/tile.opentopomap.org/**', '**/tile.openstreetmap.org/**', '**/server.arcgisonline.com/**']: pg.route(pat, lambda r: r.fulfill(status=200, content_type='image/png', body=PNG))
+        pg.goto(BASE + '#/list'); pg.wait_for_timeout(800); pg.fill('#gatePw', '1234'); pg.click('#gateOpen'); pg.wait_for_timeout(600)
+        pg.goto(BASE + '#/new'); pg.wait_for_timeout(700)
+        pg.click('.wiz button.chip:has-text("Gas")'); pg.wait_for_timeout(500)
+        pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(900)
+        pg.fill('input[type=time]', '20:00'); pg.dispatch_event('input[type=time]', 'change'); pg.wait_for_timeout(600)   # Start +28 h, 24 h Fahrt → ICON-D2 (48 h) deckt nur einen Teil ab
+        for i in range(4): pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1200)
+        pg.click('button:has-text("Briefing anlegen")'); pg.wait_for_timeout(3000)
+        bid = pg.evaluate('location.hash').split('/')[-1]
+        assert pg.query_selector('#panel-A\\.profile') is not None and pg.query_selector('#panel-A\\.retrieve') is not None, 'Gas: Panels «Fahrtprofil» und «Nachfahrer» (≥ 12 h)'
+        pg.query_selector('#panel-A\\.profile').scroll_into_view_if_needed(); pg.wait_for_timeout(300)
+        pg.click('#panel-A\\.profile button:has-text("Daten aufbereiten")')
+        for i in range(40):
+            pg.wait_for_timeout(500)
+            if pg.query_selector('#panel-A\\.profile svg.pf-svg'): break
+        assert pg.query_selector('#panel-A\\.profile svg.pf-svg') is not None, 'Fahrtprofil: Grafik nach «Daten aufbereiten»: ' + pg.inner_text('#panel-A\\.profile .row-actions')
+        txt = pg.text_content('#panel-A\\.profile svg.pf-svg')
+        assert 'SS' in txt and 'ECET' in txt and 'BCMT' in txt and 'Tag' in txt and 'km' in txt, 'Zeitzeile mit Sonnenzeiten und Tageszeile: ' + txt[:200]
+        assert len(pg.query_selector_all('#panel-A\\.profile table.pf-stages tbody tr')) >= 3 and len(pg.query_selector_all('#panel-A\\.profile table.pf-ballast tbody tr')) >= 4, 'Etappen- und Ballasttabelle im Panel'
+        pg.query_selector('#panel-A\\.profile').screenshot(path=f'{OUT}/{name}_01_panel.png')
+        pg.click('#panel-A\\.profile button:has-text("Werkzeug öffnen")'); pg.wait_for_timeout(800)
+        assert pg.is_visible('.dialog.pf-tool'), 'Werkzeug geöffnet'
+        pg.screenshot(path=f'{OUT}/{name}_02_tool.png')
+        # Modellwahl: kurzes Modell → Warnung unter der Layer-Box und Marker «Ende Prognosemodell» über der Grafik; langes Modell → weg
+        opts = pg.eval_on_selector_all('.pf-tool select.pf-model option', 'els => els.map(e => e.textContent)')
+        assert any('ICON-D2' in o and '⚠' in o for o in opts) and any(o.startswith('GFS') for o in opts), 'Modellliste mit Horizont-Warnung: ' + str(opts)
+        pg.select_option('.pf-tool select.pf-model', 'icon_d2'); pg.wait_for_timeout(3500)
+        assert pg.is_visible('.pf-tool .pf-modelwarn') and 'Ende Prognosemodell' in pg.text_content('.pf-tool svg.pf-svg'), 'Modellhorizont-Warnung und Marker'
+        pg.screenshot(path=f'{OUT}/{name}_02b_cut.png')
+        pg.select_option('.pf-tool select.pf-model', 'gfs_global'); pg.wait_for_timeout(3500)
+        assert not pg.is_visible('.pf-tool .pf-modelwarn'), 'Warnung weg mit GFS'
+        idle = lambda: [pg.wait_for_timeout(300) for _ in range(40) if pg.inner_text('.pf-tool .pf-status').strip()]   # Nachrechnen abwarten (Statuszeile leer)
+        idle()
+        pts0 = pg.evaluate("() => [...document.querySelectorAll('.pf-tool svg .pf-pt')].map(c => [+c.getAttribute('cx'), +c.getAttribute('cy')])")
+        a0 = pg.evaluate("() => [...document.querySelectorAll('.pf-tool svg .pf-pt')].map(c => parseInt(c.querySelector('title').textContent))")
+        svg = pg.query_selector('.pf-tool svg.pf-svg'); box = svg.bounding_box(); sx = box['width'] / 1040; sy = box['height'] / 550
+        x0, y0 = box['x'] + pts0[1][0] * sx, box['y'] + pts0[1][1] * sy
+        pg.mouse.move(x0, y0); pg.mouse.down(); pg.mouse.move(x0 + 20 * sx, y0 - 60 * sy, steps=8); pg.mouse.up(); pg.wait_for_timeout(2500); idle()
+        alts = lambda: pg.evaluate("() => [...document.querySelectorAll('.pf-tool svg .pf-pt')].map(c => parseInt(c.querySelector('title').textContent))")
+        a1 = alts()
+        assert a1[1] >= a0[1] + 200 and not pg.is_disabled('.pf-tool button:has-text("Rückgängig")'), f'Punkt gezogen ({a0[1]} → {a1[1]} m), Rückgängig aktiv'
+        n0 = len(pg.query_selector_all('.pf-tool svg .pf-pt')); pg.mouse.dblclick(box['x'] + 500 * sx, box['y'] + 200 * sy); pg.wait_for_timeout(2500); idle()
+        assert len(pg.query_selector_all('.pf-tool svg .pf-pt')) == n0 + 1, 'Doppelklick setzt einen Punkt'
+        s0 = len(pg.query_selector_all('.pf-tool svg .pf-sh')); ab = pg.query_selector('.pf-tool svg .pf-axis').bounding_box(); pg.mouse.click(ab['x'] + ab['width'] * 0.6, ab['y'] + ab['height'] / 2); pg.wait_for_timeout(600)
+        assert len(pg.query_selector_all('.pf-tool svg .pf-sh')) == s0 + 1, 'Klick auf die Zeitzeile setzt eine Etappengrenze (Griff)'
+        mi = pg.query_selector_all('.pf-tool svg .pf-mi[data-kind=stage]')[-1]; mb = mi.bounding_box(); pg.mouse.click(mb['x'] + mb['width'] / 2, mb['y'] + mb['height'] / 2); pg.wait_for_timeout(400)
+        assert pg.is_visible('.pf-menu') and 'zusammenlegen' in pg.inner_text('.pf-menu'), 'Etappenmenü mit Zusammenlegen'
+        pg.fill('.pf-menu input', 'Voralpen'); pg.click('.pf-menu button:has-text("Umbenennen")'); pg.wait_for_timeout(400)
+        assert 'Voralpen' in pg.text_content('.pf-tool svg.pf-svg'), 'Etappe umbenannt'
+        pg.screenshot(path=f'{OUT}/{name}_03_tool_edit.png')
+        pg.keyboard.press('Control+z'); pg.wait_for_timeout(1200)
+        assert 'Voralpen' not in pg.text_content('.pf-tool svg.pf-svg'), 'Ctrl+Z nimmt die Umbenennung zurück'
+        pg.click('.pf-tool .seg button:has-text("UTC")'); pg.wait_for_timeout(600)
+        assert 'UTC' in pg.text_content('.pf-tool svg.pf-svg') and 'Abschnitt UTC' in pg.inner_text('.pf-tool table.pf-ballast'), 'LT/UTC-Schalter wirkt auf Grafik und Ballasttabelle'
+        pg.click('.pf-tool .seg button:has-text("Karte")'); pg.wait_for_timeout(1200)
+        assert pg.is_visible('.pf-tool .pf-map') and len(pg.query_selector_all('.pf-tool .pf-stage-icon')) >= 3, 'Kartenansicht mit Etappenmarkern'
+        pg.click('.pf-tool .seg button:has-text("Satellit")'); pg.wait_for_timeout(600)
+        pg.screenshot(path=f'{OUT}/{name}_04_tool_map.png')
+        pg.keyboard.press('Escape'); pg.wait_for_timeout(800)
+        assert pg.query_selector('.dialog.pf-tool') is None, 'Werkzeug mit Escape geschlossen'
+        leg = pg.eval_on_selector_all('#panel-A\\.profile .pf-legend > span', 'els => els.map(e => e.textContent)')
+        assert any('Relief' in x for x in leg) and not any('CTR' in x for x in leg), 'Legende nur mit vorkommenden Symbolen: ' + str(leg)
+        pg.select_option('#panel-C\\.notam .ptools select', 'places'); pg.wait_for_timeout(500)
+        pg.click('#panel-C\\.notam button:has-text("Orte aus Etappen")'); pg.wait_for_timeout(500)
+        assert len(pg.query_selector_all('#panel-C\\.notam .np-row')) >= 3, 'NOTAM-Orte aus den Etappen'
+        pg.goto(BASE + '#/v/' + bid); pg.wait_for_timeout(2500)
+        assert pg.query_selector('.brief tr.row-A-profile svg.pf-svg') is not None and pg.query_selector('.brief tr.row-A-profile table.pf-ballast') is not None, 'Briefingsicht: Profil mit Ballasttabelle'
+        pg.query_selector('.brief tr.row-A-profile').screenshot(path=f'{OUT}/{name}_05_view.png')
+        b.close()
+
 run('desktop', {'width': 1366, 'height': 860})
 run('gladbeck', {'width': 1366, 'height': 860}, site_chip='Gladbeck')
 run('phone', {'width': 390, 'height': 844}, scale=2, mobile=True)
 run('ipad', {'width': 820, 'height': 1180}, scale=2, mobile=True)
+run_gas('gas')
 print('\n'.join(errors) if errors else 'keine Konsolenfehler')

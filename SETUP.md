@@ -251,6 +251,13 @@ aviationweather.gov blockiert (automatischer Rückfall auf die GaforCast-Kopie),
 Karten-URL geändert (Einstellungen → Meteo → Karten; Allowlist der Hosts in
 `worker/src/wx.js`), DABS-Download ohne PDF (skybriefing-Wartung).
 
+**Gasfahrt (0.12):** im Panel «Fahrtprofil» «Daten aufbereiten» drücken. Es braucht Open-Meteo
+(Prognosen an Wegpunkten, Relief über `/api/wx/elevation` – ohne Schlüssel, Cache 7 Tage) und für die
+Luftraum-Flächen den openAIP-Schlüssel (sonst meldet die Standzeile «Lufträume: …» als Teilfehler, der
+Rest funktioniert). Die Grenzen der Achtung-Zeichen, der Mindestabstand über Grund und die FIS-Kontakte
+je Land stehen unter Einstellungen → Experten; die Widerstandszahl WZ je Gashülle bei den Stammdaten
+(Experten). Zeitzone der Grafik = Zeitbasis des Briefings (Schritt «Wo und wann», LT/UTC).
+
 ## 9 Was im Dashboard noch sinnvoll ist
 
 * Workers & Pages → `briefing-api` → Observability: Logs bei Fehlern.

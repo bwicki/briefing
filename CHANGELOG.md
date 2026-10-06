@@ -1,5 +1,52 @@
 # Changelog
 
+## 0.12.0 — 2026-10-06 · Höhenprofil-Werkzeug, Etappen und Ballastmodell (Gasfahrt)
+
+* **Neues Panel A «Fahrtprofil: Höhen, Etappen, Ballast»** (nur Gasballon): «Daten aufbereiten» holt
+  die Modellprognosen entlang der Bahn (Startort + Wegpunkte alle 40 km, Modell mit ausreichendem
+  Horizont), das **Relief** (Open-Meteo Elevation über den Worker, `/api/wx/elevation`, 7 Tage Cache),
+  **Stundenprofile** am jeweiligen Ort (Wolken-/Nebeldecken RH ≥ 95 %, Inversionen, Nullgradgrenze,
+  Wind/Scherung in Fahrthöhe), die **Sonnenereignisse** SS · ECET · BCMT · SR entlang der Bahn und die
+  **Lufträume** (openAIP, durchfahren und nahe, HX-Status) → `b.profile.data`.
+* **Werkzeug (Vollbild):** Grafik Distanz × Höhe mit drei Beschriftungszeilen (km mit Zwischenstrichen
+  bei 25/50/75 %; Zeit LT/UTC – aus der Distanz über den Wind der Fahrthöhe – mit 30'-Strichen und den
+  Sonnenzeiten darunter; Tag/Datum bei Fahrten über Mitternacht). Punkte ziehen, Doppelklick setzt,
+  ≡ Menü (einfügen davor/danach, löschen); Etappen vom Start her nummeriert, Griff ⋮ am unteren Rand
+  verschiebt Grenzen, Klick auf die Zeitzeile setzt eine, Menü umbenennen/löschen (mit Vorgänger oder
+  Nachfolger zusammenlegen); **Rückgängig** (Knopf, Ctrl+Z, 50 Schritte). Layer «Wetter» und
+  «Lufträume», Raten-Pillen zuoberst (grau < 0,5 · grün ≤ 1,75 · gelb ≤ 3 · rot). Lufträume ab GND und
+  Nebeldecken enden an der Reliefline; Mindestabstand (300 m, Experten) rot schraffiert mit Warnung
+  «<300m AGL · km» auf der Distanzskala; Wasserflächen (ebene Läufe im Höhenmodell) als blaue Einsätze.
+  Achtung-Zeichen mit Grund-Symbol (Wind «35 kt», Scherung, CB-Neigung, Nebel nahe Grund, Niederschlag,
+  Vereisung als Schneestern; Einzelheiten im Tooltip; Grenzen unter Einstellungen → Experten). Lufträume
+  ab GND ohne Bodenlinie, HX/Betriebszeiten umbrochen unter der Bezeichnung; Etappennamen oberhalb der
+  Grafik. **Modellwahl** im Werkzeug: Modelle mit ausreichendem Horizont; ein Modell, das die Fahrt nur
+  teilweise abdeckt, zeigt «⚠ bis +X h», eine Warnung und den Marker «← Ende Prognosemodell».
+  **Kartenansicht** (nur Ansicht): Grundkarte Neutral/OSM/Topo/Luftfahrtkarte (openAIP)/Satellit,
+  Bahn, Stundenmarken, Höhenpunkte, Etappenmarker (Raute + Fähnchen), Luftraumflächen.
+  Nach jeder Profiländerung wird die Bahn nachgerechnet (Prognosen im Zwischenspeicher).
+* **Zeitzone:** LT/UTC-Schalter im Werkzeug ist der Briefing-Schalter (`b.time.base`); Grafik,
+  Tabellen und Druck folgen ihm einheitlich (Flugplan bleibt UTC).
+* **Ballastschätzung nach der Aerostatik** (`docs/Aerostatik_Gasballon.md`): je Teilstück Manöver
+  (WZ · v², Abfangen × 1,3), Abblasen über der Prallhöhe (1 % je 80 m, Prallhöhe aus dem Füllungsgrad),
+  Temperatur Gas–Luft (Tag/Nacht klar/bedeckt aus `S.aero`, Übergang ±1 h um ECET/BCMT, Bewölkung
+  aus dem Modell), Adiabatik; Summe + Landereserve gegen den Ballastvorrat aus A3 mit Balken (> 85 %
+  Warnung). **Widerstandszahl WZ** je Hülle in den Stammdaten (Experten; Vorgabe 3,5 / 3,8).
+* **Etappenübersicht** (Panel, Briefingsicht, Druck): Nr., Name, Zeitfenster, km, Höhenband, Ort
+  (ICAO-Kurzkoordinaten Beginn → Ende), Land/FIR (Luftraumanalyse), Lufträume, Achtung-Zeichen,
+  **FIS-Kontakte je Land** (Einstellungen → Experten, AIP; vorbelegt CH/AT, übrige mit AIP-Verweis).
+* **NOTAM «Umkreis um Orte»:** Knopf «Orte aus Etappen» übernimmt die Etappenmitten mit passendem Radius.
+* **Nachfahrer-Panel** (A, nur Gas ab 12 h Fahrtdauer): Route, Maut/Vignetten, Übernachtung,
+  Grenzdokumente, Treffpunkt als Textvorlage.
+* **Druck:** Profil als Vollbreite-Grafik, Etappenübersicht und Ballasttabelle im Briefing.
+* Noch nicht in 0.12.0 (geplant 0.12.x): eigene B/C-Abschnitte je Etappe; Kalibrierung über
+  Inventurpunkte/Barogramm; Unsicherheit der Zeitzeile (offene Fragen f/g im Konzept).
+* Konzept/Skizze: `docs/Konzept_0.12_Hoehenprofil.md` mit Entscheiden 1–40, Skizze Stand 9
+  (`docs/Hoehenprofil_Werkzeug_Skizze.html`).
+* Tests: calc 221 (Kopplung km/Zeit, Teilstücke, Relief, Etappen, Nachtanteil, Ballastmodell,
+  Achtung-Zeichen), Smoke-Lauf «gas» (Panel, Werkzeug: Ziehen, Punkt/Etappe setzen, umbenennen,
+  Ctrl+Z, LT/UTC, Modellwahl mit Horizont-Warnung, Karte; Legende; NOTAM-Orte; Briefingsicht), API (`elevation`).
+
 ## 0.11.4 — 2026-10-05 · Antworten zu 0.11.3 · Füllungsgrad · Aerostatik-Parameter · Konzept 0.12
 
 * **Vergrösserte Ansicht auch im Editor:** Klick auf Grafiken, Bilder und Datentabellen öffnet wie in

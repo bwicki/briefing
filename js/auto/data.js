@@ -18,7 +18,7 @@ const memo = new Map();
 const shareTok = (ctx) => ctx.shared?.token;
 
 /** Prognose für das Briefing (Fenster Start−6 h … Landung+6 h). */
-export async function getForecast(ctx, b, modelOverride) {
+export async function getForecast(ctx, b, modelOverride, opts = {}) {
   const model = modelOverride ?? b.meteo?.model ?? '';
   const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
   const from = b.time.startMs - 6 * 3600000, to = Math.max(landing, b.time.startMs + 3 * 3600000) + 6 * 3600000;
@@ -27,7 +27,7 @@ export async function getForecast(ctx, b, modelOverride) {
   const hit = memo.get(key);
   if (hit && Date.now() - hit.at < 15 * 60000) return hit.p;
   const hours = (b.time.startMs - Date.now()) / 3600000;
-  if (model && OM.modelHours(model) < hours + (b.intent.durationMin || 0) / 60) throw new Error(t('auto_horizon', { m: OM.modelName(model), h: OM.modelHours(model) }));
+  if (model && !opts.allowShort && OM.modelHours(model) < hours + (b.intent.durationMin || 0) / 60) throw new Error(t('auto_horizon', { m: OM.modelName(model), h: OM.modelHours(model) }));
   const fetcher = (query) => ctx.store.data('om', { query }, shareTok(ctx));
   const p = OM.forecast(fetcher, b.site.lat, b.site.lon, { model, topHpa: b.meteo?.topHpa || 500, startDate, endDate });
   memo.set(key, { p, at: Date.now() });
@@ -35,6 +35,21 @@ export async function getForecast(ctx, b, modelOverride) {
   return p;
 }
 export const clearMemo = () => memo.clear();
+/** Prognose an einem beliebigen Ort (für die Bahn der Gasfahrt: Wegpunkte), gleiches Fenster und Modell wie am Startort. */
+export async function getForecastAt(ctx, b, lat, lon, modelOverride) {
+  const model = modelOverride ?? b.meteo?.model ?? '';
+  const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
+  const from = b.time.startMs - 6 * 3600000, to = Math.max(landing, b.time.startMs + 3 * 3600000) + 6 * 3600000;
+  const startDate = isoDate('UTC', Math.min(from, Date.now())), endDate = isoDate('UTC', to);
+  const key = `${(+lat).toFixed(2)},${(+lon).toFixed(2)}|${model}|${startDate}|${endDate}|${b.meteo?.topHpa || 500}`;
+  const hit = memo.get(key);
+  if (hit && Date.now() - hit.at < 15 * 60000) return hit.p;
+  const fetcher = (query) => ctx.store.data('om', { query }, shareTok(ctx));
+  const p = OM.forecast(fetcher, lat, lon, { model, topHpa: b.meteo?.topHpa || 500, startDate, endDate });
+  memo.set(key, { p, at: Date.now() });
+  p.catch(() => memo.delete(key));
+  return p;
+}
 
 const standOf = (j, b) => ({ stand: Date.now(), model: j._model, modelName: OM.modelName(j._model), source: 'Open-Meteo', fetched: j._fetched, elevModel: j.elevation });
 const lightFn = (b, ctx) => { const sun = sunFor(b, ctx.settings, ctx.racTable); return (ms) => (sun ? ms >= sun.official.bcmt - 1800000 && ms <= sun.official.ecet + 1800000 : true); };
