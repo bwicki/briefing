@@ -1,6 +1,6 @@
 # Konzept 0.12 – Etappenmodell und Höhenprofil-Werkzeug (Gasfahrt)
 
-Stand 05.10.2026, nach den Antworten von B. Wicki auf die Fragen zu 0.11.3. Dieses Dokument ist die Startvorlage für die Umsetzungssitzung 0.12. Grundlagen der Aerostatik: `docs/Aerostatik_Gasballon.md`. Interaktive Skizze: `00_Konzept/Hoehenprofil_Werkzeug_Skizze.html` (Stand 4, 06.10.2026).
+Stand 05.10.2026, nach den Antworten von B. Wicki auf die Fragen zu 0.11.3. Dieses Dokument ist die Startvorlage für die Umsetzungssitzung 0.12. Grundlagen der Aerostatik: `docs/Aerostatik_Gasballon.md`. Interaktive Skizze: `00_Konzept/Hoehenprofil_Werkzeug_Skizze.html` (Stand 5, 06.10.2026).
 
 ## 1 Ziel
 
@@ -32,6 +32,17 @@ Ergänzungen vom 06.10.2026 (Stand 4 der Skizze):
 | 15 | Luftraum-Layer | Lufträume A–D, TMA, CTR aus der vorhandenen openAIP-Analyse als Flächen mit Unter-/Obergrenze im Profil und als Flächen auf der Karte; Beschriftung Name · Klasse · Grenzen; «durchfahren», wenn das Profil im Höhenband liegt. E/G nicht gezeichnet. |
 | 16 | Layer-Schalter | Kästchen rechts oben: «Wetter» und «Lufträume», Vorgabe beide ein; gelten für Profil und Karte. |
 
+Ergänzungen vom 06.10.2026, mittags (Stand 5 der Skizze):
+
+| Nr. | Punkt | Entscheid |
+|---|---|---|
+| 17 | Lufträume | Kein Hinweis «durchfahren» (Piloten kennen die Bedeutung). Temporärer Status – HX oder anderer – in Klammern **unter der Bezeichnung** («(HX · aktiv gemäss DABS/NOTAM, Mo–Fr 07:30–17:00 LT)»); Quelle: openAIP-Attribute + DABS/NOTAM-Aktivierungen. |
+| 18 | Etappengrenzen verschieben | Griff ⋮ an jeder Grenze am unteren Rand des Diagramms, horizontal ziehbar zwischen Vorgänger und Nachfolger (≥ 2 km Abstand); Startgrenze fest bei 0 km. |
+| 19 | Rückgängig | Stapel der letzten 50 Zustände (Punkte + Etappen); Knopf «↶ Rückgängig» in der Werkzeugleiste und Ctrl+Z; jede Änderung (Löschen, Zusammenlegen, Ziehen, Setzen, Umbenennen) ist ein Schritt. |
+| 20 | Nummerierung | Etappen werden vom Start her automatisch nummeriert (1, 2, 3 …) – im Profil, auf der Karte, im Menü und in den Etappen-Panels; eine dazwischen gesetzte Etappe nummeriert neu. Der Name bleibt frei wählbar. |
+| 21 | Kartenansicht | Neutrale Grundkarte (Carto Positron) als Vorgabe; umschaltbar auf OpenStreetMap, OpenTopoMap, Luftfahrtkarte (openAIP-Kachel-URL aus den Einstellungen) und Satellit (Esri). Wetter-/Luftraum-Layer gelten auch hier. |
+| 22 | Zeitskala | Genaue Zeiten SS · ECET · BCMT · SR in kleiner Schrift unter der Zeitzeile an ihrer Position (links/rechts der Marke, damit nahe Paare nicht überlappen). Schalter **LT / UTC** in der Werkzeugleiste: Stundenmarken, Sonnenzeiten, Tageszeile, Punkt- und Etappenzeiten und Ballasttabelle folgen der gewählten Skala (CEST = UTC+2, aus der Zeitzone des Startorts). |
+
 Noch offen (in der Umsetzung klären):
 - f) Wind je Fahrthöhe aus den Open-Meteo-Druckflächen interpoliert – Stundenauflösung ausreichend, oder Unsicherheit (±) auf der Zeitzeile zeigen?
 - g) Beim Ziehen eines Punkts ändert sich die Bahn (andere Niveaus = andere Richtung) – Karte und Relief sofort nachrechnen oder erst beim Loslassen? (Vorschlag: Profil sofort, Karte/Relief beim Loslassen, mit Fortschrittsanzeige.)
@@ -41,7 +52,7 @@ Noch offen (in der Umsetzung klären):
 
 ```js
 b.profile = {
-  layers: { wx: true, as: true },                                           // Layer-Schalter (je Briefing gespeichert)
+  layers: { wx: true, as: true }, tz: 'LT', base: 'neutral',                 // Layer-Schalter, Zeitskala, Grundkarte (je Briefing gespeichert)
   points: [{ km: 0, alt: 450 }, { km: 2, alt: 1300 }, …],   // gefahrene Distanz entlang der Bahn, m AMSL; sortiert nach km
   stages: [{ id, km: 0, name: 'Start' }, { id, km: 30, name: 'Enroute · Mittelland' }, …],
   track: { stand, points: [{ km, lat, lon, alt, ms, windKmh, dir }] },   // zusammengesetzte Bahn (Ergebnis, 1-km-Schritte)
@@ -80,7 +91,7 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 ## 5 Oberfläche
 
 - Neues Panel **A «Fahrtprofil»** (nur Gas): Grafik als Bild im Briefing, Klick öffnet das Werkzeug (Vollbild-Dialog).
-- Werkzeug: SVG wie Skizze Stand 4; Umschalter Profil / Karte (Karte nur Ansicht), Layer-Schalter Wetter / Lufträume rechts oben; Achsen km / Lokalzeit / Tag; Pillen zuoberst. Punkte ziehen, Doppelklick setzt, ≡ rechts oben neben Punkt/Etappe (einfügen davor/danach, löschen; Etappe umbenennen/löschen). Klick auf die Zeitzeile setzt eine Etappengrenze. Jeder Punkt: Höhe, Zeit, km, Wind/Temperatur des Modells.
+- Werkzeug: SVG wie Skizze Stand 5; Werkzeugleiste: Umschalter Profil / Karte (Karte nur Ansicht), LT / UTC, «↶ Rückgängig», Layer-Schalter Wetter / Lufträume rechts; Achsen km / Zeit (mit SS · ECET · BCMT · SR) / Tag; Etappengriffe am unteren Rand; Pillen zuoberst. Punkte ziehen, Doppelklick setzt, ≡ rechts oben neben Punkt/Etappe (einfügen davor/danach, löschen; Etappe umbenennen/löschen). Klick auf die Zeitzeile setzt eine Etappengrenze. Jeder Punkt: Höhe, Zeit, km, Wind/Temperatur des Modells.
 - Karte (Trajektorien-Panel und Werkzeug): Bahn der gewählten Höhen in Akzentfarbe; Etappen als Raute + Fähnchen + Name; Höhenpunkte als kleine Akzentpunkte mit Höhe; Zeitmarken unverändert klein; Luftraumflächen nach Layer.
 - Etappen im Editor: Abschnitte B/C je Etappe mit Zeitfenster und Ort (Akkordeon je Etappe), Pflichtpanels je Etappe nach Land.
 - Kontakte FIR/Land aus dem AIP (Vorgabe CH/D/A/F/I in den Einstellungen, Experten).
@@ -92,7 +103,9 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 1. Beispielfahrt 1000 m³ H₂, Füllungsgrad 100 %, 180 km, Start 16:00: Zeitzeile ungleich verteilt, Landung vor/nach BCMT korrekt schattiert.
 2. Punkt nach oben ziehen → Zeitzeile rechts davon rückt zusammen, Bahn auf der Karte dreht; Relief-Warnung erscheint bei < 300 m.
 3. Ballasttabelle: Steigen 450 → 1300 m bei 100 % Füllung kostet ≈ 10–11 % der Tragfähigkeit (≈ 110 kg je 1000 m³) als Abblasen + Manöver; Abendübergang +15 → −3 K ≈ 18 K × 4.5 kg ≈ 80 kg.
-4. Etappe setzen/umbenennen/löschen; Panels je Etappe erscheinen; Karte zeigt Rauten.
+4. Etappe setzen/umbenennen/löschen (Vorgänger/Nachfolger), Grenze mit dem Griff verschieben, Rückgängig (Knopf und Ctrl+Z) stellt den vorherigen Zustand her; Nummerierung folgt der Reihenfolge; Panels je Etappe erscheinen; Karte zeigt Rauten.
+7. LT/UTC-Schalter: alle Zeiten im Werkzeug und in der Ballasttabelle wechseln konsistent; SS/ECET/BCMT/SR an der richtigen Position.
+8. Luftraum mit HX-Status zeigt den Zusatz in Klammern; kein Warnhinweis.
 5. Druck (PDF) enthält Profil, Ballasttabelle, Etappenübersicht.
 6. Tests: calc (Kopplung, Prallhöhe, Ballastmodell gegen Zahlenbeispiel §9 der Aerostatik), Smoke (Werkzeug öffnen, ziehen, Etappe setzen), Remote.
 
