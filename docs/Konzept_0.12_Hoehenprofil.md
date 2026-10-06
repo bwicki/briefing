@@ -1,6 +1,6 @@
 # Konzept 0.12 – Etappenmodell und Höhenprofil-Werkzeug (Gasfahrt)
 
-Stand 05.10.2026, nach den Antworten von B. Wicki auf die Fragen zu 0.11.3. Dieses Dokument ist die Startvorlage für die Umsetzungssitzung 0.12. Grundlagen der Aerostatik: `docs/Aerostatik_Gasballon.md`. Interaktive Skizze: `00_Konzept/Hoehenprofil_Werkzeug_Skizze.html` (Stand 5, 06.10.2026).
+Stand 05.10.2026, nach den Antworten von B. Wicki auf die Fragen zu 0.11.3. Dieses Dokument ist die Startvorlage für die Umsetzungssitzung 0.12. Grundlagen der Aerostatik: `docs/Aerostatik_Gasballon.md`. Interaktive Skizze: `00_Konzept/Hoehenprofil_Werkzeug_Skizze.html` (Stand 6, 06.10.2026).
 
 ## 1 Ziel
 
@@ -43,10 +43,18 @@ Ergänzungen vom 06.10.2026, mittags (Stand 5 der Skizze):
 | 21 | Kartenansicht | Neutrale Grundkarte (Carto Positron) als Vorgabe; umschaltbar auf OpenStreetMap, OpenTopoMap, Luftfahrtkarte (openAIP-Kachel-URL aus den Einstellungen) und Satellit (Esri). Wetter-/Luftraum-Layer gelten auch hier. |
 | 22 | Zeitskala | Genaue Zeiten SS · ECET · BCMT · SR in kleiner Schrift unter der Zeitzeile an ihrer Position (links/rechts der Marke, damit nahe Paare nicht überlappen). Schalter **LT / UTC** in der Werkzeugleiste: Stundenmarken, Sonnenzeiten, Tageszeile, Punkt- und Etappenzeiten und Ballasttabelle folgen der gewählten Skala (CEST = UTC+2, aus der Zeitzone des Startorts). |
 
+Ergänzungen vom 06.10.2026, nachmittags (Stand 6 der Skizze):
+
+| Nr. | Punkt | Entscheid |
+|---|---|---|
+| 23 | Luftraum-Layer (Frage h) | Durchfahrene **und nahe** Lufträume zeichnen – dieselbe Auswahl wie im Luftraum-Panel (Korridor aus den Einstellungen). |
+| 24 | Zeitzone (Frage i) | Im Werkzeug, im Briefing und im Druck **einheitlich die Zeitzone des Briefings** (LT oder UTC); der LT/UTC-Schalter im Werkzeug ist der Briefing-Schalter, kein Durchmischen von UTC und LT. Vorgabe wie bisher LT; Flugplan-Zeiten bleiben UTC (ICAO). |
+| 25 | Sonnenzeiten | Unter der Zeitzeile Kürzel (SS, ECET, BCMT, SR) und darunter die Uhrzeit, links- oder rechtsbündig zur Marke (SS/BCMT rechtsbündig, ECET/SR linksbündig), eine Stufe kleiner als die Stundenmarken; der Strich reicht von der horizontalen Zeitlinie bis unter die Zeitangabe. |
+| 26 | Achtung-Zeichen | Symbol zeigt den Grund: Wind (Windlinien), Scherung/Turbulenz (Zickzack), Gewitterneigung (Blitz), Nebel (≡), Niederschlag (Tropfen), Vereisung (Schneeflocke); Kurztext darunter («Wind 35 kt», «Scherung», «CB-Neigung» …), Tooltip mit Einzelheiten. Quellen: Modellprofil (Wind/Scherung je Schicht), Thermik/CAPE, RH/T (Nebel, Vereisung), Niederschlag. |
+
 Noch offen (in der Umsetzung klären):
 - f) Wind je Fahrthöhe aus den Open-Meteo-Druckflächen interpoliert – Stundenauflösung ausreichend, oder Unsicherheit (±) auf der Zeitzeile zeigen?
 - g) Beim Ziehen eines Punkts ändert sich die Bahn (andere Niveaus = andere Richtung) – Karte und Relief sofort nachrechnen oder erst beim Loslassen? (Vorschlag: Profil sofort, Karte/Relief beim Loslassen, mit Fortschrittsanzeige.)
-- h) Luftraum-Layer: nur durchfahrene und nahe Lufträume (wie im Luftraum-Panel) oder alle im Korridor zeichnen?
 
 ## 3 Datenmodell (Briefing)
 
@@ -74,7 +82,7 @@ Etappen sind Teilintervalle der Distanz (`km` der Grenze). Jede Etappe hat Zeitf
 
 **Sonne.** BCMT/ECET am jeweiligen Bahnpunkt der Stunde (RAC 4-4 CH, DWD-Bericht DE, sonst astronomisch) → Zeit → über die Kopplung auf die Distanzachse.
 
-**Wolken/Inversionen.** Modellprofil je Stunde am Bahnpunkt (RH ≥ 95 % je Druckfläche), zusammenhängende Schichten als Decken mit Mächtigkeit in m; Inversionen als Linie; signifikantes Wetter als Symbol.
+**Wolken/Inversionen.** Modellprofil je Stunde am Bahnpunkt (RH ≥ 95 % je Druckfläche), zusammenhängende Schichten als Decken mit Mächtigkeit in m; Inversionen als Linie; signifikantes Wetter als Achtung-Zeichen mit Grund-Symbol (Wind ≥ Grenzwert der Ampel, Scherung = Windsprung zwischen benachbarten Schichten, CB-Neigung aus CAPE/Thermik, Nebel RH/T-Td, Niederschlag, Vereisung T < 0 °C in Wolken).
 
 **Raten.** Je Teilstück `r = Δalt / Δt` in m/s (eine Dezimale). Farben: |r| < 0.5 grau (Höhe halten), 0.5–1.75 grün, bis 3 gelb, darüber rot.
 
