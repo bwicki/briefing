@@ -1,68 +1,62 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edze_node.html
 
-673
-FBEU40 EDZE 060600
+743
+FBEU40 EDZE 061200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich West
-gültig vom 06.10.2026, 06.00 UTC bis 07.10.2026, 03.00 UTC
+gültig vom 06.10.2026, 12.00 UTC bis 07.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 31 bis 39
 
 Wetterlage und -entwicklung:
-Eine Hochdruckzone über Mitteleuropa bestimmt bei schwachen
-Strömungsverhältnissen mit einer sehr milden Luftmasse das Wetter im
-Vorhersagebereich. Anfangs hält sich örtlich noch eine feuchte
-Grundschicht, die sich vormittags auflöst und in der Nacht zum
-Mittwoch erneut bildet.
+Unter schwachen Luftdruckgegensätze bestimmt sehr milde Luft das
+Wetter in Westdeutschland. Kommende Nacht bildet sich teils eine
+feuchte Grundschicht, welche am Mittwochvormittag wieder abtrocknet.
 
 Wettergeschehen:
-Zu Beginn gebietsweise flacher Nebel, vor allem in den südlichen
-Flussniederungen zu OVC ST unterhalb von 500 FT AGL verdichtend. Im
-Nordwesten SCT/BKN SC ab 4500-5000 FT AMSL mit Obergrenzen FL060-070.
-Dazu Durchzug von SCT/BKN CI oberhalb von FL245.
+Im Norden verbreitet BKN/OVC SC mit Untergrenzen 5000-6000 FT AMSL
+und Obergrenzen bis FL070. Im Bergland sowie unterhalb des SC örtlich
+FEW/SCT CU mit Basis in 2500-3500 FT AMSL.
 
-Am Vormittag verbreitet Nebelfelder, nur an der Mosel, Lahn und am
-Mittelrhein teilweise bis in die Mittagsstunden anhaltend. Im
-Bergland bildet sich örtlich FEW/SCT CU mit Basis 3000-3500 FT AMSL,
-im Norden und Nordwesten neben zögernd auflösender SC-Bewölkung wenig
-Änderungen.
+Am Nachmittag zieht sich der SC langsam nach Norden zurück, die
+CU-Basis steigt auf 3500-4500 FT AMSL an. Darüber zieht im Nordwesten
+SCT/BKN CI oberhalb FL180 auf.
 
-Am Nachmittag Anstieg der CU-Basis auf um 5000 FT AMSL, vom
-nördlichen Niederrhein bis zum Münsterland bilden sich unterhalb der
-dünnen SC-Schicht ab 5000 FT AMSL örtlich CU ab 3500-4000 FT AMSL.
-Darüber ziehen von Nordwesten vermehrt CI-Felder oberhalb FL180 auf.
+Am Abend lösen sich die vereinzelten CU auf und im Verlauf der ersten
+Nachthälfte löst sich auch der SC im Norden zögerlich auf.
+Anschließend bilden sich gebietsweise flache Nebelfelder, die in
+Flussniederungen deutlich dichter ausfallen werden.
 
-Am Abend bis auf im Münsterland zumeist auflösende CU/SC und
-nachfolgend neben CI-Feldern verbreitet wolkenlos. Nachfolgend wieder
-Bildung von flachen Nebel- und Dunstfeldern.
+Am Vormittag lösen sich die Nebelfelder auf, in einzelnen
+Flussniederungen im Süden bleiben diese bis zum Mittag bestehen.
+Daneben ist es bis auf dünne CI-Felder oberhalb FL180 verbreitet
+wolkenlos.
 
 Sichtweite:
-10-20 km. Anfangs im Dunst 2-7 km, örtlich auch Nebel mit Sichten
-unter 1 km, hauptsächlich im Norden und in Flusstälern des
-Berglandes. Am Vormittag Besserung auf 20-50 km. Allenfalls entlang
-Mosel, Lahn und Rhein Dunstfelder örtlich bis zum Mittag Dunstfelder
-anhaltend. Kommende Nacht erneut ähnliche Sichten wie anfangs
-beschrieben.
+20-50 km, kommende Nacht auf 10-30 km fallend, bei Dunst 2-5 km und
+insbesondere in dichten Nebelfeldern unter 500 m. Am Vormittag meist
+auflösender Nebel, in einzelnen Flussniederungen im Süden bis
+Berichtsende nur zögerlich bessernd.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 31 - 34:
-AMSL  |  09 UTC  |  21 UTC  |
- 500FT | 170/05KT  14C | 090/10KT  18C |
-1000FT | 180/05KT  15C | 100/10KT  19C |
-1500FT | 220/05KT  14C | 100/05KT  17C |
-2000FT | 230/05KT  14C | 110/05KT  17C |
-3000FT | 340/05KT  13C | 130/05KT  13C |
-5000FT | 290/05KT  09C | 060/05KT  09C |
-FL100  | 270/10KT  04C | 270/05KT  03C |
+AMSL  |  15 UTC  |  06 UTC  |
+ 500FT | 040/05KT  20C | 130/05KT  17C |
+1000FT | 040/05KT  18C | 150/10KT  16C |
+1500FT | 050/05KT  16C | 150/10KT  16C |
+2000FT | 050/05KT  16C | 150/10KT  15C |
+3000FT | 110/05KT  13C | 150/05KT  13C |
+5000FT | 060/05KT  09C | 150/05KT  10C |
+FL100  | 280/05KT  03C | 200/05KT  02C |
 
 GAFOR-Gebiete 35 - 39:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 120/05KT  14C | 070/05KT  17C |
-1500FT | 110/05KT  14C | 100/05KT  17C |
-2000FT | 160/05KT  14C | 110/05KT  16C |
-3000FT | 240/05KT  12C | 150/05KT  13C |
-5000FT | 270/05KT  10C | 200/05KT  10C |
-FL100  | 260/10KT  05C | 220/05KT  03C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 170/05KT  19C | 090/05KT  14C |
+1500FT | 140/05KT  18C | 130/10KT  15C |
+2000FT | 130/05KT  17C | 150/10KT  15C |
+3000FT | 090/05KT  13C | 180/10KT  13C |
+5000FT | 080/05KT  09C | 190/10KT  10C |
+FL100  | 260/05KT  04C | 200/05KT  02C |
 
 Turbulenz:
 Nicht signifikant.
@@ -71,20 +65,20 @@ Vereisung:
 Keine.
 
 Nullgradgrenze:
-FL115-120.
+FL105-115.
 
 Inversionen:
-Bis zum frühen Vormittag Bodeninversion unterhalb 1000 FT AGL
-(anfangs teils markant). Ab dem Mittag Absinkinversion um 5000 FT
-AMSL, im Nachmittagsverlauf auf FL060-FL080 steigend, am Abend
-auflösend. In der Nacht zum Mittwoch erneut Bodeninversion unterhalb
-1000 FT AGL.
+Im Norden ausgeprägte Absinkinversion zwischen FL060 und FL070, im
+Süden schwächer oder nicht ausgeprägt. Kommende Nacht Bildung einer
+Bodeninversion unterhalb 1000 FT AGL, die Absinkinversion darüber
+löst sich auf.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Düsseldorf  05.07 | 05.41 | 17.00 | 17.32
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Düsseldorf  17.00 | 17.32 | 05.09 | 05.43
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
 Regionale Wetterberatungszentrale Essen/JK

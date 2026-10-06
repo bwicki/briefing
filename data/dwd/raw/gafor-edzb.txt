@@ -1,70 +1,60 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-909
-FBEU40 EDZB 060600
+030
+FBEU40 EDZB 061200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 06.10.2026, 06.00 UTC bis 07.10.2026, 03.00 UTC
+gültig vom 06.10.2026, 12.00 UTC bis 07.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Ein umfangreiches Hochdruckgebiet bestimmt mit mäßig warmer und
-stabiler Luft das Wettergeschehen in weiten Teilen des
-Vorhersagebereichs.
-Der Norden wird von den Wolkenfeldern einer wellenden Kaltfront, die
-sich von den Britischen Inseln bis ins Baltikum erstreckt, mit
-feuchterer Luft beeinflusst.
+Unter schwachen Luftdruckgegensätzen ist eine umfangreiche
+Hochdruckzone über Zentraleuropa mit mäßig warmer und stabil
+geschichtet Luft weitgehend wetterbestimmend.
+Lediglich der Norden wird von einer wellenden, kaum wetteraktiven
+Kaltfront eines Nordmeertiefs mit feuchterer Luft beeinflusst.
+In der Nacht kommt es zu gebietsweißer Ausbildung einer feuchten
+Grundschicht.
 
 Wettergeschehen:
-SCT/BKN CI oberhalb FL280.
-
-In Mecklenburg-Vorpommern und im Norden Brandenburgs SCT/BKN SC in
-2500 bis 3000 FT AMSL, von der Küste her lokal absinkend auf 1000 FT
-AGL bis 2000 FT AMSL, in Küstennähe tritt regional SCT/BKN ST in 500
-bis 1000 FT AGL auf. Obergrenze bei FL060. Darüber BKN/OVC CS
-oberhalb FL200.
-
-In den übrigen Regionen sind anfangs noch flache Nebelfelder möglich,
-die sich im Verlauf des Morgens auslösen.
-Bis zum Vormittag langsames Vorankommen der kompakten SC-Bewölkung
-bis auf eine Linie Altmark - Berlin mit Untergrenzen bei 1500 bis
-2500 FT AMSL. Tops bei FL060.
-
-Tagsüber nur wenig Änderung. Von der Altmark bis nach Berlin BKN SC
-mit auf 2000 bis 3000 FT AMSL ansteigender Basis, in Richtung Norden
-liegt die Wolkenbasis in 1500 bis 2500 FT AMSL, in Küstennähe und auf
-der Ostsee teils weiterhin in 500 bis 1000 FT AGL und dort vereinzelt
-einige Regentropfen, sonst allgemein niederschlagsfrei.
-
-In der Nacht lockert der SC im Norden lokal auf, hier kann sich dann
-Dunst oder Nebel mit SCT/BKN ST in 100 bis 500 FT AGL bilden.
-Nach Süden in der 2. Nachthälfte lokal flache Nebelfelder möglich.
+Über Teile Sachsen-Anhalts und Brandenburgs lokale SCT/BKN SC-Felder
+zwischen 2500 und 5000 FT AMSL, im Nachmittagsverlauf auf 3000 bis
+4000 FT AMSL anhebend, Obergrenzen dann bis FL060-070, am Abend
+auflockernd. Richtung Mecklenburg mit weiterem BKN, westwärts teils
+mit OVC ST bei 400 bis 800 FT AGL darunter, im Nachmittagsverlauf
+allmählich auf etwa 2000 FT AGL anhebend und ostwärts verlagernd.
+Hier Obergrenzen bis FL090, nur gelegentlich etwas Regen daraus.
+Weiter südwärts bis auf dünne Cirrusfelder oft wolkenlos,
+einhergehend mit erhöhtem Potential für bodennahe Dunst-/Nebelbildung
+im Nachtverlauf, insbesondere ausgangs der Nacht.
+Darüber hinaus in der zweiten Nachthälfte im Süden Aufzug von SCT/BKN
+AS/CI-Schichten oberhalb FL140, am Morgen zögerliche Dunst-
+Nebelauflösung.
 
 Sichtweite:
-Im flachen Nebel unter 1 km, sonst meist 5 bis 15 km.
-Am Dienstagvormittag nach Nebelauflösung 30 bis 60 km, im
-Küstenbereich mit Regen um 10 km.
+30-60 km, im Küstenbereich örtlich 15-30 km. In der Nacht im flachen
+Nebel teils unter 1 km, sonst meist 5 bis 15 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  09 UTC  |  21 UTC  |
- 500FT | 240/05KT  14C | 130/05KT  17C |
-1000FT | 260/10KT  13C | 200/05KT  17C |
-1500FT | 280/10KT  13C | 240/05KT  15C |
-2000FT | 280/10KT  13C | 240/05KT  15C |
-3000FT | 290/10KT  11C | 250/05KT  11C |
-5000FT | 290/15KT  08C | 170/05KT  08C |
-FL100  | 260/20KT  04C | 250/10KT  03C |
+AMSL  |  15 UTC  |  06 UTC  |
+ 500FT | 280/05KT  19C | 130/05KT  14C |
+1000FT | 280/05KT  17C | 150/10KT  16C |
+1500FT | 280/05KT  15C | 160/10KT  15C |
+2000FT | 270/05KT  15C | 160/10KT  14C |
+3000FT | 270/10KT  12C | 170/10KT  11C |
+5000FT | 270/05KT  08C | 160/05KT  07C |
+FL100  | 260/20KT  04C | 220/15KT  02C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 240/05KT  14C | 080/05KT  18C |
-1500FT | 260/05KT  14C | 080/05KT  17C |
-2000FT | 240/05KT  14C | 090/05KT  16C |
-3000FT | 240/05KT  11C | 140/05KT  13C |
-5000FT | 260/10KT  10C | 200/05KT  10C |
-FL100  | 250/05KT  03C | 200/05KT  03C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 250/05KT  19C | 130/05KT  14C |
+1500FT | 250/05KT  18C | 120/05KT  16C |
+2000FT | 250/05KT  16C | 120/10KT  16C |
+3000FT | 260/05KT  13C | 140/05KT  13C |
+5000FT | 270/05KT  11C | 210/10KT  09C |
+FL100  | 230/05KT  03C | 200/10KT  01C |
 
 Turbulenz:
 Nicht signifikant.
@@ -73,18 +63,20 @@ Vereisung:
 Nicht signifikant.
 
 Nullgradgrenze:
-Um FL120.
+Um FL115-120, im Norden teils mehrfach bis FL090. Auf FL090-105
+absinkend.
 
 Inversionen:
-Markante Bodeninversion unterhalb 1000 FT AGL, am Vormittag
-auflösend.
+In der Nacht Ausbildung einer markanten Bodeninversion unterhalb 1000
+FT AGL, am Vormittag auflösend.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Berlin  04.41 | 05.15 | 16.32 | 17.06
-Leipzig  04.45 | 05.19 | 16.38 | 17.10
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Berlin  16.32 | 17.06  | 04.42 | 05.17
+Leipzig  16.38 | 17.10  | 04.47 | 05.21
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Luftfahrtberatungszentrale Berlin/Wo
+Luftfahrtberatungszentrale Berlin/KS

@@ -1,81 +1,77 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-910
-FBEU40 EDZF 060600
+031
+FBEU40 EDZF 061200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 06.10.2026, 06.00 UTC bis 07.10.2026, 03.00 UTC
+gültig vom 06.10.2026, 12.00 UTC bis 07.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Hochdruckeinfluss ist mit einer sehr milden und tagsüber weitgehend
-trockenen Luftmasse wetterbestimmend. Zu Beginn liegt lokal eine
-feuchte Grundschicht vor, die vormittags zögerlich abtrocknet und
-kommende Nacht sich erneut ausbildet.
+Unter Einfluss eines Hochs über Mitteleuropa wird mit einer südlichen
+Strömung eine trockene, sehr milde und stabile Luftmasse
+wetterbestimmend. In der Nacht zum Mittwoch bildet sich lokal eine
+feuchte Grundschicht aus.
 
 Wettergeschehen:
-Es ist überwiegend wolkenlos. In Tallagen und Flussniederungen haben
-sich örtlich Dunst- und Nebelfelder gebildet. Teils mit BKN/OVC ST
-mit Untergrenzen in wenigen hundert Fuß AGL und maximalen Obergrenzen
-in 2000 FT AMSL.
+Im Mittagsverlauf haben sich vor allem über den Mittelgebirgen
+einzelne FEW/SCT CU um 4000 FT AMSL, im Schwarzwald Obergrenzen um
+FL080 ausgebildet. Im Laufe des Abends trocknen die FEW/SCT CU nach
+und nach ab.
 
-Am Vormittag lösen sich Dunst, Nebel und ST allmählich auf. Vor allem
-im Oberrheingraben, im Neckartal und in Flussniederungen Nordhessens
-kann dies zum Teil bis zum Mittag andauern.
-Vor allem über dem Bergland bilden sich am Nachmittag lokal flache
-FEW CU um 4000 FT AMSL aus, die abends wieder abtrocknen. Sonst
-ändert sich am vorherrschenden Wetter nicht viel.
+In der Nacht zum Mittwoch bilden sich vor allem in Nordhessen und im
+südlichen Oberreingraben Dunst- und Nebelfelder aus. Zudem zieht von
+Osten eine SCT/BKN AS/CI-Bewölkung oberhalb von FL160 in das
+Vorhersagegebiet. In der zweiten Nachthälfte kommt die Bewölkung bis
+östlich einer Linie zwischen Nordschwarzwald und Spessart voran.
 
-Dienstagabend und in der Nacht zum Mittwoch ziehen zwischen
-Schwarzwald und Unterfranken, sowie südöstlich davon SCT/BKN
-AC/CI-Felder oberhalb FL140-180 von Süd nach Nord durch.
-Sonst bilden sich wieder vornehmlich in Tallagen und Flussniederungen
-örtliche Dunst- und Nebelfelder aus, die teils auch wieder mit BKN ST
-mit Untergrenzen in wenigen hundert Fuß AGL einhergehen können.
+Im Laufe des Mittwochmorgens lösen sich die Dunst- und Nebelfelder
+auf und die SCT/BKN AS/CI-Bewölkung zieht nach Osten ab.
 
 Sichtweite:
 30-60 km. Im Dunst 1-5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 360/05KT  08C | 020/05KT  15C |
-1500FT | 200/05KT  13C | 090/10KT  17C |
-2000FT | 210/05KT  14C | 090/10KT  16C |
-3000FT | 250/05KT  13C | 130/05KT  13C |
-5000FT | 260/05KT  10C | 160/05KT  09C |
-FL100  | 230/05KT  04C | 200/05KT  03C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 100/05KT  20C | 020/05KT  05C |
+1500FT | 110/05KT  18C | 090/05KT  14C |
+2000FT | 120/05KT  17C | 140/05KT  15C |
+3000FT | 140/05KT  13C | 190/10KT  13C |
+5000FT | 240/05KT  10C | 210/10KT  10C |
+FL100  | 240/05KT  04C | 220/05KT  01C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 030/05KT  13C | 050/10KT  19C |
-1500FT | 050/05KT  16C | 090/10KT  19C |
-2000FT | 070/05KT  16C | 110/10KT  19C |
-3000FT | 140/05KT  14C | 150/10KT  16C |
-5000FT | 180/05KT  10C | 190/05KT  11C |
-FL100  | 060/10KT  03C | 350/05KT  02C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 030/05KT  21C | 220/05KT  15C |
+1500FT | 030/10KT  19C | 200/10KT  16C |
+2000FT | 030/10KT  18C | 210/10KT  17C |
+3000FT | 080/05KT  15C | 250/10KT  15C |
+5000FT | 140/10KT  11C | 250/10KT  11C |
+FL100  | 140/05KT  02C | 270/10KT  01C |
 
 Turbulenz:
 Nicht signifikant.
 
 Vereisung:
-In der AC/CI-Bewölkung lokal mäßig zwischen FL140 und FL220 nicht
-ausgeschlossen. Sonst nicht signifikant.
+In der AC/CI-Bewölkung lokal mäßig zwischen FL160 und FL220 nicht
+ausgeschlossen.
 
 Nullgradgrenze:
 FL105-115.
 
 Inversionen:
-Zu Beginn örtliche Bodeninversion unterhalb 1500 FT AMSL, die sich am
-Vormittag langsam auflöst und ab dem Abend erneut ausbildet.
+Absinkinversion um 5000 FT AMSL. In der Nacht zum Mittwoch lokale
+Bodeninversion unterhalb 1500 FT AMSL, am Morgen auflösend.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Gießen  05.00 | 05.33 | 16.53 | 17.25
-Karlsruhe  05.00 | 05.33 | 16.55 | 17.27
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Gießen  16.53 | 17.25 | 05.02 | 05.35
+Karlsruhe  16.55 | 17.27 | 05.02 | 05.35
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Flugwetterzentrale Frankfurt/mb
+Flugwetterzentrale Frankfurt/MJ
