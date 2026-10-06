@@ -158,11 +158,11 @@ Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
 76  Bayerischer Wald  C  C  C
 
-81  Westliches Alpenvorland  C  C  C
+81  Westliches Alpenvorland  C  C  O ISOL TSRA
 
 82  Östliches Alpenvorland  C  C  C
 
-83  Allgäuer Alpen  O ISOL SHRA  D1 ISOL TSRA  D1 ISOL SHRA
+83  Allgäuer Alpen  O ISOL SHRA  D1 ISOL TSRA  D1 ISOL TSRA
 
 84  Östliche Bayerische Alpen  O  O  O
 

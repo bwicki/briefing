@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-031
-FBEU40 EDZF 061200
+196
+FBEU40 EDZF 061800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 06.10.2026, 12.00 UTC bis 07.10.2026, 09.00 UTC
+gültig vom 06.10.2026, 18.00 UTC bis 07.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
@@ -15,41 +15,40 @@ wetterbestimmend. In der Nacht zum Mittwoch bildet sich lokal eine
 feuchte Grundschicht aus.
 
 Wettergeschehen:
-Im Mittagsverlauf haben sich vor allem über den Mittelgebirgen
-einzelne FEW/SCT CU um 4000 FT AMSL, im Schwarzwald Obergrenzen um
-FL080 ausgebildet. Im Laufe des Abends trocknen die FEW/SCT CU nach
-und nach ab.
-
+Es ist meist wolkenlos.
 In der Nacht zum Mittwoch bilden sich vor allem in Nordhessen und im
 südlichen Oberreingraben Dunst- und Nebelfelder aus. Zudem zieht von
-Osten eine SCT/BKN AS/CI-Bewölkung oberhalb von FL160 in das
+Südosten eine SCT/BKN AS/CI-Bewölkung oberhalb von FL160 in das
 Vorhersagegebiet. In der zweiten Nachthälfte kommt die Bewölkung bis
 östlich einer Linie zwischen Nordschwarzwald und Spessart voran.
 
 Im Laufe des Mittwochmorgens lösen sich die Dunst- und Nebelfelder
-auf und die SCT/BKN AS/CI-Bewölkung zieht nach Osten ab.
+auf und die SCT/BKN AS/CI-Bewölkung zieht nach Osten ab. Zum Mittag
+bilden sich über dem Bergland teils FEW/CT CU um FL050. Am Nachmittag
+zieht im Westen SCT BKN AC/CI ab FL180 auf. Es bleibt
+niederschlagsfrei.
 
 Sichtweite:
 30-60 km. Im Dunst 1-5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 100/05KT  20C | 020/05KT  05C |
-1500FT | 110/05KT  18C | 090/05KT  14C |
-2000FT | 120/05KT  17C | 140/05KT  15C |
-3000FT | 140/05KT  13C | 190/10KT  13C |
-5000FT | 240/05KT  10C | 210/10KT  10C |
-FL100  | 240/05KT  04C | 220/05KT  01C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 010/05KT  15C | 060/05KT  11C |
+1500FT | 080/10KT  16C | 130/05KT  14C |
+2000FT | 090/10KT  16C | 160/05KT  15C |
+3000FT | 120/05KT  13C | 180/10KT  13C |
+5000FT | 170/05KT  09C | 210/10KT  10C |
+FL100  | 200/05KT  04C | 230/05KT  02C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 030/05KT  21C | 220/05KT  15C |
-1500FT | 030/10KT  19C | 200/10KT  16C |
-2000FT | 030/10KT  18C | 210/10KT  17C |
-3000FT | 080/05KT  15C | 250/10KT  15C |
-5000FT | 140/10KT  11C | 250/10KT  11C |
-FL100  | 140/05KT  02C | 270/10KT  01C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 060/10KT  19C | 170/05KT  15C |
+1500FT | 100/10KT  19C | 200/05KT  17C |
+2000FT | 120/10KT  19C | 200/10KT  17C |
+3000FT | 150/10KT  15C | 220/10KT  15C |
+5000FT | 190/05KT  11C | 220/10KT  11C |
+FL100  | 010/05KT  01C | 240/10KT  02C |
 
 Turbulenz:
 Nicht signifikant.
@@ -62,16 +61,16 @@ Nullgradgrenze:
 FL105-115.
 
 Inversionen:
-Absinkinversion um 5000 FT AMSL. In der Nacht zum Mittwoch lokale
+Absinkinversion FL050-070. In der Nacht zum Mittwoch lokale
 Bodeninversion unterhalb 1500 FT AMSL, am Morgen auflösend.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Gießen  16.53 | 17.25 | 05.02 | 05.35
-Karlsruhe  16.55 | 17.27 | 05.02 | 05.35
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Gießen  05.02 | 05.35 | 16.51 | 17.23
+Karlsruhe  05.02 | 05.35 | 16.53 | 17.25
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 07.10.2026 um 02.00
+UTC
 
-Flugwetterzentrale Frankfurt/MJ
+Flugwetterzentrale Frankfurt/Hr
