@@ -1,81 +1,81 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-547
-FBEU40 EDZF 051800
+552
+FBEU40 EDZF 060300
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 05.10.2026, 18.00 UTC bis 06.10.2026, 15.00 UTC
+gültig vom 06.10.2026, 03.00 UTC bis 07.10.2026, 00.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
 Hochdruckeinfluss ist mit einer sehr milden und tagsüber weitgehend
-trockenen Luftmasse wetterbestimmend. Am Dienstagnachmittag lenkt ein
-Tief über dem Alpenbereich labilere Luft Richtung Schwarzwald und
-Breisgau.
+trockenen Luftmasse wetterbestimmend. Zu Beginn liegt lokal eine
+feuchte Grundschicht vor, die vormittags zögerlich abtrocknet und
+kommende Nacht sich erneut ausbildet.
 
 Wettergeschehen:
-Es ist weitgehend wolkenfrei. Gegen Ende der ersten und zu Beginn der
-zweiten Nachthälfte zum Dienstag bilden sich in Tallagen und
-Flussniederungen gebietsweise flache Nebelfelder aus. Bevorzugt
-entlang des Rheins, des südlichen Neckars sowie im Nordhessischen
-Bergland ist der Nebel örtlich dichter und kann in BKN/OVC ST bis
-2000 FT AMSL übergehen.
+Es ist überwiegend wolkenlos. In Tallagen und Flussniederungen haben
+sich örtlich Dunst- und Nebelfelder gebildet. Teils mit BKN/OVC ST
+mit Untergrenzen in wenigen hundert Fuß AGL und maximalen Obergrenzen
+in 2000 FT AMSL.
 
-Vormittags lösen sich die flachen Nebelfelder auf. Der dichtere Nebel
-hält sich örtlich noch bis zu den Mittagsstunden.
-Anschließend bildet sich vor allem über dem Bergland flacher FEW/SCT
-CU mit Basen in 3500-4500 FT AMSL, Obergrenzen um 5000 FT AMSL.
-Nachmittags ist die Quellbewölkung über dem südlichen Schwarzwald
-etwas höher reichend. Dabei sind einzelne CBs mit Tops um FL200 nicht
-gänzlich ausgeschlossen. Es bleibt bis zum Berichtsende
-niederschlagsfrei.
+Am Vormittag lösen sich Dunst, Nebel und ST allmählich auf. Vor allem
+im Oberrheingraben, im Neckartal und in Flussniederungen Nordhessens
+kann dies zum Teil bis zum Mittag andauern.
+Vor allem über dem Bergland bilden sich am Nachmittag lokal flache
+FEW CU um 4000 FT AMSL aus, die abends wieder abtrocknen. Sonst
+ändert sich am vorherrschenden Wetter nicht viel.
+
+Dienstagabend und in der Nacht zum Mittwoch ziehen zwischen
+Schwarzwald und Unterfranken, sowie südöstlich davon SCT/BKN
+AC/CI-Felder oberhalb FL140-180 von Süd nach Nord durch.
+Sonst bilden sich wieder vornehmlich in Tallagen und Flussniederungen
+örtliche Dunst- und Nebelfelder aus, die teils auch wieder mit BKN ST
+mit Untergrenzen in wenigen hundert Fuß AGL einhergehen können.
 
 Sichtweite:
-40-70 km. Im Dunst 1-5 km, im Nebel unter 1 km.
+30-60 km. Im Dunst 1-5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 230/05KT  14C | 360/05KT  09C |
-1500FT | 220/05KT  16C | 220/05KT  13C |
-2000FT | 230/05KT  16C | 230/05KT  14C |
-3000FT | 260/10KT  13C | 260/05KT  12C |
-5000FT | 290/15KT  10C | 240/05KT  10C |
-FL100  | 310/05KT  05C | 240/05KT  04C |
+AMSL  |  06 UTC  |  18 UTC  |
+1000FT | 020/05KT  05C | 050/05KT  19C |
+1500FT | 230/05KT  14C | 070/05KT  18C |
+2000FT | 260/05KT  14C | 070/05KT  17C |
+3000FT | 270/05KT  12C | 120/05KT  14C |
+5000FT | 290/05KT  10C | 140/05KT  10C |
+FL100  | 240/05KT  05C | 220/05KT  04C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 050/10KT  18C | 020/05KT  13C |
-1500FT | 060/05KT  17C | 060/05KT  15C |
-2000FT | 080/05KT  17C | 080/05KT  15C |
-3000FT | 150/05KT  14C | 110/05KT  14C |
-5000FT | 220/05KT  11C | 150/05KT  10C |
-FL100  | 030/05KT  03C | 060/10KT  02C |
+AMSL  |  06 UTC  |  18 UTC  |
+1000FT | 050/05KT  13C | 050/10KT  20C |
+1500FT | 080/05KT  15C | 060/10KT  19C |
+2000FT | 080/05KT  16C | 070/10KT  18C |
+3000FT | 200/05KT  14C | 110/10KT  15C |
+5000FT | 210/05KT  10C | 160/05KT  11C |
+FL100  | 030/10KT  03C | 030/05KT  01C |
 
 Turbulenz:
-Im eventuellen CB am Dienstagnachmittag über dem Südschwarzwald mäßig
-bis stark. Sonst nicht signifikant.
+Nicht signifikant.
 
 Vereisung:
-Im eventuellen CB am Dienstagnachmittag über dem Südschwarzwald mäßig
-bis stark, sonst keine.
+In der AC/CI-Bewölkung lokal mäßig zwischen FL140 und FL220 nicht
+ausgeschlossen. Sonst nicht signifikant.
 
 Nullgradgrenze:
-Zwischen FL110-120.
+FL105-115.
 
 Inversionen:
-In der Nacht auf Dienstag Ausbildung einer flachen Bodeninversion
-unterhalb 1500 FT AMSL, die lokal etwas stärker ausfallen kann.
-Vormittags auflösend.
+Zu Beginn örtliche Bodeninversion unterhalb 1500 FT AMSL, die sich am
+Vormittag langsam auflöst und ab dem Abend erneut ausbildet.
 
 Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
 Gießen  05.00 | 05.33 | 16.53 | 17.25
 Karlsruhe  05.00 | 05.33 | 16.55 | 17.27
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
-SA/SU   = Sonnenauf/untergang - morgen
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
+SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt am 06.10.2026 um 02.00
-UTC
+Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
 
-Flugwetterzentrale Frankfurt/St
+Flugwetterzentrale Frankfurt/mb
