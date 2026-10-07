@@ -1,5 +1,5 @@
 /* Fahrtbriefing — wiederverwendbare Oberflächenbausteine. */
-import { h, clear, uid, shrinkImage, toast, fmt } from '../util.js';
+import { h, clear, uid, shrinkImage, toast, fmt, confirmDialog } from '../util.js';
 import { t } from '../i18n.js';
 import { icon, iconSvg } from './icons.js';
 
@@ -71,7 +71,7 @@ export function pasteArea(value, onChange, upload, opts = {}) {
   const bar = h('div.row-actions.no-print', [
     h('button.btn', { type: 'button', onclick: () => fileIn.click() }, t('panel_file')),
     navigator.clipboard?.read ? h('button.btn', { type: 'button', onclick: readClipboard }, t('panel_pasteBtn')) : null,
-    (v.text || v.images.length) ? h('button.btn', { type: 'button', onclick: () => { if (confirm(t('panel_clear') + '?')) { v.text = ''; v.images = []; ta.value = ''; renderImgs(); onChange(v); } } }, t('panel_clear')) : null,
+    (v.text || v.images.length) ? h('button.btn', { type: 'button', onclick: async () => { if (await confirmDialog(t('panel_clear'), t('panel_clear') + '?', { yes: t('panel_clear'), no: t('cancel') })) { v.text = ''; v.images = []; ta.value = ''; renderImgs(); onChange(v); } } }, t('panel_clear')) : null,
   ]);
   async function readClipboard() {
     try {
@@ -195,7 +195,7 @@ export function docsEditor(owner, types, ctx, opts = {}) {
         input('date', doc.validTo || '', { title: t('doc_validTo'), class: exp ? 'neg' : soon ? 'half' : '', onchange: (e) => { doc.validTo = e.target.value; opts.onChange?.(); draw(); } }),
         doc.url ? h('a.btn.small', { href: doc.url, target: '_blank', rel: 'noopener', title: doc.key || '' }, t('doc_open')) : null,
         h('button.btn.small', { type: 'button', onclick: () => pick(doc) }, doc.url ? t('doc_replace') : t('doc_upload')),
-        h('button.btn.icon.small', { type: 'button', title: t('remove'), onclick: () => { if (confirm(t('remove') + '?')) { owner.docs.splice(i, 1); draw(); opts.onChange?.(); } } }, icon('close', 14)),
+        h('button.btn.icon.small', { type: 'button', title: t('remove'), onclick: async () => { if (await confirmDialog(t('remove'), t('remove') + '?', { yes: t('remove'), no: t('cancel') })) { owner.docs.splice(i, 1); draw(); opts.onChange?.(); } } }, icon('close', 14)),
         exp ? h('span.tag.neg', t('doc_expired')) : soon ? h('span.tag.half', t('doc_soon')) : null,
       ]));
     });

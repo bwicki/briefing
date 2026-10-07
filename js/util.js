@@ -66,6 +66,11 @@ export function dialog(title, content, buttons = [], opts = {}) {
   });
 }
 
+/** Bestätigung als Dialog der Anwendung (0.12.8: statt window.confirm): Promise<boolean>. */
+export function confirmDialog(title, text = '', labels = { yes: 'Ja', no: 'Abbrechen' }) {
+  return dialog(title, h('p', text || title), [{ label: labels.no, value: false }, { label: labels.yes, value: true, primary: true }]).then((v) => v === true);
+}
+
 /** Vergrösserte Ansicht (Grafik, Bild oder Tabelle) als Popup mit Schliessknopf; Escape/Klick daneben schliesst. */
 export function lightbox(node, title = '') {
   const back = h('div.backdrop.lightbox');

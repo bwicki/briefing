@@ -36,7 +36,7 @@ export async function pointInfo(lat, lon) {
 
 /** Länderkennzeichen für Ortsangaben im Ausland: ISO-2 («DE-Stuttgart»), einheitlich mit placeLabel() (0.12.5; vorher Kfz-Kennzeichen). */
 export const carCode = (iso) => String(iso || '').toUpperCase();
-/** Ortsname (Nominatim) mit Länderkennzeichen voran, wenn nicht im Heimatland: «DE-Stuttgart»; leer, wenn nichts gefunden. */
+/** Ortsname (Nominatim) mit Länderkennzeichen voran: «DE-Stuttgart», «CH-Aarau» (0.12.8: immer); leer, wenn nichts gefunden. */
 export async function placeName(lat, lon, homeCountry = 'CH', lang = 'de') {
   try {
     const n = await getJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${(+lat).toFixed(4)}&lon=${(+lon).toFixed(4)}&zoom=10&accept-language=${lang}`, 6000);
@@ -44,7 +44,7 @@ export async function placeName(lat, lon, homeCountry = 'CH', lang = 'de') {
     const name = a.town || a.city || a.village || a.municipality || a.county || n.name || '';
     const cc = (a.country_code || '').toUpperCase();
     if (!name) return '';
-    return cc && cc !== String(homeCountry || '').toUpperCase() ? `${carCode(cc)}-${name}` : name;
+    return cc ? `${carCode(cc)}-${name}` : name;   // 0.12.8: immer mit Länderkennzeichen (auch im Heimatland)
   } catch { return ''; }
 }
 

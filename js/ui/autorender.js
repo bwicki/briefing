@@ -1,6 +1,6 @@
 /* Fahrtbriefing — Darstellung der automatischen Schnappschüsse (Erarbeitungs-
  * und Briefingsicht teilen diese Funktionen; sie lesen nur den Schnappschuss). */
-import { h, fmt } from '../util.js';
+import { h, fmt, dialog } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { hhmm, fmtDateTime, fmtDate, fmtDur } from '../calc/time.js';
 import { MS_TO_KT, M_TO_FT } from '../auto/openmeteo.js';
@@ -19,10 +19,14 @@ const FLY = ['neg', 'half', 'pos'];
 const flyTxt = (lv) => (lv == null ? '–' : t('fly_' + lv));
 
 /** Kopfzeile Stand/Modell/Quelle. */
+/** 0.12.8: Quellen, die den gegenwärtigen Stand wiedergeben (nicht den Startzeitpunkt) – Warnsymbol, wenn der Start > 6 h entfernt ist. */
+export const NOW_KINDS = new Set(['metar', 'obs', 'sigmet', 'notam', 'synoptic']);
+export const staleNow = (snap, b) => NOW_KINDS.has(snap?.kind) && (b.time?.startMs || 0) - Date.now() > 6 * 3600000;
+export const nowWarn = (snap, b) => (staleNow(snap, b) ? h('span.now-warn', { title: t('now_warn') }, '⚠') : null);
 export function standLine(snap, b) {
   if (!snap) return null;
   const z = b.site.tz || 'Europe/Zurich';
-  return h('div.note.stand', `${t('stand')}: ${fmtDateTime(z, snap.stand, getLang())} LT · ${snap.modelName ? `${t('auto_model')}: ${snap.modelName} · ` : ''}${snap.source || ''}${snap.generated ? ` (${snap.generated.slice(0, 16).replace('T', ' ')} UTC)` : ''}`);
+  return h('div.note.stand', [nowWarn(snap, b), `${t('stand')}: ${fmtDateTime(z, snap.stand, getLang())} LT · ${snap.modelName ? `${t('auto_model')}: ${snap.modelName} · ` : ''}${snap.source || ''}${snap.generated ? ` (${snap.generated.slice(0, 16).replace('T', ' ')} UTC)` : ''}`]);
 }
 
 // ---------------------------------------------------------------- Meteogramm
@@ -321,10 +325,14 @@ export function renderPdiff(snap, b) {
   }));
 }
 
+/** 0.12.8: Schliess-Symbol rechts in der Kopfzeile einer Meldung – blendet sie ohne Rückfrage aus (Erarbeitung; opts.onHide). */
+const hideBtn = (opts, id) => (opts?.interactive && opts.onHide ? h('button.btn.icon.small.hide-x.no-print', { type: 'button', title: t('hide_msg'), onclick: (e) => { e.stopPropagation(); opts.onHide(id); } }, '✕') : null);
+
 // ---------------------------------------------------------------- METAR/TAF
-export function renderMetar(snap, b) {
-  const d = snap.data, lang = getLang();
-  if (!d.metar?.length) return h('div.note', t('auto_none'));
+export function renderMetar(snap, b, ctx, opts = {}) {
+  const d = snap.data, lang = getLang(), hidden = new Set(opts.hidden || []);
+  const list = (d.metar || []).filter((m) => !hidden.has(m.icaoId));   // 0.12.8: ausgeblendete Stationen
+  if (!list.length) return h('div.note', hidden.size ? t('hide_allHidden', { n: hidden.size }) : t('auto_none'));
   const tafFmt = (raw) => (raw || '').replace(/\s(PROB\d{2}\s+TEMPO|PROB\d{2}|TEMPO|BECMG|FM\d{6})/g, '\n  $1');
   // Rohtext: schlechte Gruppen rot
   const rawNodes = (raw) => raw.split(/(\s+)/).map((tk) => (/^\s+$/.test(tk) || !badToken(tk) ? tk : h('span.bad', tk)));
@@ -344,12 +352,12 @@ export function renderMetar(snap, b) {
   const stName = (n) => String(n || '').replace(/\b(Arpt|Airport|Aprt|Apt)\b\.?/gi, 'AP').replace(/\bIntl\b\.?/gi, 'INTL').replace(/\b(Air Base|Airbase|AFB|AB)\b/g, 'AB').replace(/\b(Airfield|Aerodrome)\b/gi, 'AFLD').replace(/\s+/g, ' ').trim();
   const arrow = (m) => { if (m.lat == null || b.site.lat == null) return null; const brg = bearing(b.site.lat, b.site.lon, m.lat, m.lon); return h('span.dirarrow', { title: `${Math.round(brg).toString().padStart(3, '0')}° ${compass(brg, lang)}`, style: { transform: `rotate(${Math.round(brg) - 90}deg)` } }, '➜'); };
   return h('div.auto-wrap', [
-    h('div.note', `${d.metar.length} ${t('auto_metarWithin')} ${d.radiusKm || ''} km · ${t('auto_badLegend')}`),
-    ...d.metar.map((m) => {
+    h('div.note', `${list.length} ${t('auto_metarWithin')} ${d.radiusKm || ''} km${hidden.size ? ` · ${t('hide_count', { n: hidden.size })}` : ''} · ${t('auto_badLegend')}`),
+    ...list.map((m) => {
       const taf = d.taf?.[m.icaoId];
       const obsMs = m.obsTime ? m.obsTime * 1000 : zMs(m.rawOb);
       return h('div.metar', [
-        h('div.mhead', [h('b', m.icaoId), ` ${stName(m.name)} · `, arrow(m), ` ${Math.round(m.distKm)} km`, obsMs ? h('span.muted.small', ` · ${new Date(obsMs).toISOString().slice(11, 16)} UTC${age(obsMs)}`) : null]),
+        h('div.mhead', [h('b', m.icaoId), ` ${stName(m.name)} · `, arrow(m), ` ${Math.round(m.distKm)} km`, obsMs ? h('span.muted.small', ` · ${new Date(obsMs).toISOString().slice(11, 16)} UTC${age(obsMs)}`) : null, hideBtn(opts, m.icaoId)]),
         pair('METAR', m.rawOb || '', decodeMetar(m.rawOb || '', lang), obsMs),
         taf ? pair('TAF', tafFmt(taf.rawTAF), decodeTaf(taf.rawTAF || '', lang), zMs(taf.rawTAF)) : h('div.note', `${t('auto_noTaf')}`),
       ]);
@@ -365,11 +373,48 @@ export function renderSigmet(snap) {
 }
 
 // ---------------------------------------------------------------- NOTAM
+/** 0.12.8: Lage eines NOTAM – Koordinaten/Radius aus den Feldern, sonst aus dem Text («0.54NM RADIUS CENTERED ON 491158N 0123224E», Q-Zeile «4723N00757E005»). */
+export function notamGeo(x) {
+  const txt = `${x.formatted || ''}\n${x.text || ''}`;
+  let lat = x.lat, lon = x.lon, radiusNm = x.radius;
+  if (lat == null || lon == null) {
+    const m = /(\d{2})(\d{2})(\d{2})\s*([NS])\s*(\d{3})(\d{2})(\d{2})\s*([EW])/.exec(txt) || null;
+    if (m) { lat = (+m[1] + m[2] / 60 + m[3] / 3600) * (m[4] === 'S' ? -1 : 1); lon = (+m[5] + m[6] / 60 + m[7] / 3600) * (m[8] === 'W' ? -1 : 1); }
+    else { const q = /(\d{2})(\d{2})([NS])(\d{3})(\d{2})([EW])(\d{3})?/.exec(txt); if (q) { lat = (+q[1] + q[2] / 60) * (q[3] === 'S' ? -1 : 1); lon = (+q[4] + q[5] / 60) * (q[6] === 'W' ? -1 : 1); if (q[7] && radiusNm == null) radiusNm = +q[7]; } }
+  }
+  if (lat == null || lon == null) return null;
+  if (radiusNm == null) { const r = /([\d.]+)\s*NM\s+RADIUS|RADIUS\s+(?:OF\s+)?([\d.]+)\s*NM|WI\s+([\d.]+)\s*NM/i.exec(txt); if (r) radiusNm = +(r[1] || r[2] || r[3]); }
+  return { lat, lon, radiusNm: radiusNm != null && radiusNm < 999 ? radiusNm : null };
+}
+/** Kartenfenster zu einem NOTAM: Kreis/Punkt des NOTAM, geplanter Fahrtweg (Profilbahn, sonst Trajektorien), Startort und Landeraum. */
+export async function notamMapDialog(x, b) {
+  const g = notamGeo(x); if (!g || typeof L === 'undefined') return;
+  const mapEl = h('div.map.notam-map');
+  const box = dialog(`${x.icao || x.location || ''} ${x.number || ''}`, h('div', [mapEl, h('pre.report.small', (x.text || '').trim().slice(0, 600))]), [{ label: t('close'), value: true }], { cls: 'wide' });
+  await new Promise((r) => setTimeout(r, 30));
+  const map = L.map(mapEl, { zoomControl: true });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, attribution: '© OpenStreetMap, © CARTO' }).addTo(map);
+  const pts = [[g.lat, g.lon]];
+  if (g.radiusNm) L.circle([g.lat, g.lon], { radius: g.radiusNm * 1852, color: '#c0392b', weight: 2, fillOpacity: .12 }).addTo(map).bindTooltip(`${x.number || ''} · ${g.radiusNm} NM`);
+  L.circleMarker([g.lat, g.lon], { radius: 5, color: '#c0392b', fillColor: '#fff', fillOpacity: 1, weight: 2 }).addTo(map);
+  const track = b.profile?.data?.track?.points;
+  if (track?.length) { const ll = track.map((q) => [q.lat, q.lon]); L.polyline(ll, { color: '#b8640f', weight: 3 }).addTo(map).bindTooltip(t('pf_title')); pts.push(...ll); }
+  else for (const tr of b.panels?.['B.traj']?.content?.auto?.data?.tracks || []) { if (tr.belowGround || !tr.points?.length) continue; const ll = tr.points.map((q) => [q.lat, q.lon]); L.polyline(ll, { color: '#2f6f9f', weight: 2, dashArray: '4 3' }).addTo(map).bindTooltip(`${tr.label} · ${tr.altFt} ft`); pts.push(...ll); }
+  if (b.site?.lat != null) { L.marker([b.site.lat, b.site.lon]).addTo(map).bindTooltip(`${t('site')}: ${b.site.name || ''}`); pts.push([b.site.lat, b.site.lon]); }
+  if (b.landing?.lat != null) { L.marker([b.landing.lat, b.landing.lon], { icon: L.divIcon({ className: 'land-dot', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(map).bindTooltip(`${t('landingSite')}: ${b.landing.name || ''}`); pts.push([b.landing.lat, b.landing.lon]); }
+  map.fitBounds(pts, { padding: [24, 24], maxZoom: 11 });
+  setTimeout(() => map.invalidateSize(), 150);
+  await box;
+  map.remove();
+}
 export function renderNotam(snap, b, ctx, opts = {}) {
-  const d = snap.data;
-  const rel = (d.items || []).filter((x) => x.vfr?.relevant), other = (d.items || []).filter((x) => !x.vfr?.relevant);
-  const item = (x) => h('div.metar', [h('div', [h('b', `${x.icao || x.location || ''} ${x.number || ''}`), h('span.muted.small', ` · ${(x.start || '').slice(0, 16)} – ${(x.end || '').slice(0, 16)}${x.minFL != null || x.maxFL != null ? ` · FL${x.minFL ?? '000'}–FL${x.maxFL ?? '?'}` : ''}`), x.vfr?.why?.length ? h('span.muted.small', ` · ${x.vfr.why.join(', ')}`) : null]), h('pre.report', (x.formatted || x.text || '').trim())]);
-  const parts = [h('div.note', d.mode === 'places' ? `${t('notam_places')}: ${(d.points || []).map((p) => `${p.name || ''} (${Math.round((p.nm || d.nm) * 1.852)} km)`).join(', ')} · ${rel.length} ${t('auto_notamRelevant')}, ${other.length} ${t('auto_notamOther')}` : `${t('auto_notamCorridor')}: ${(d.points || []).map((p) => p.name || '').filter(Boolean).join(' → ')} · ${d.nm} NM · ${rel.length} ${t('auto_notamRelevant')}, ${other.length} ${t('auto_notamOther')}`)];
+  const d = snap.data, hidden = new Set(opts.hidden || []);
+  const items = (d.items || []).filter((x) => !hidden.has(x.id));   // 0.12.8: ausgeblendete Meldungen
+  const rel = items.filter((x) => x.vfr?.relevant), other = items.filter((x) => !x.vfr?.relevant);
+  const mapBtn = (x) => (notamGeo(x) ? h('button.btn.icon.small.map-x.no-print', { type: 'button', title: t('notam_map'), onclick: (e) => { e.stopPropagation(); notamMapDialog(x, b); } }, icon('map', 14)) : null);
+  const item = (x) => h('div.metar', [h('div.mhead', [h('b', `${x.icao || x.location || ''} ${x.number || ''}`), h('span.muted.small', ` · ${(x.start || '').slice(0, 16)} – ${(x.end || '').slice(0, 16)}${x.minFL != null || x.maxFL != null ? ` · FL${x.minFL ?? '000'}–FL${x.maxFL ?? '?'}` : ''}`), x.vfr?.why?.length ? h('span.muted.small', ` · ${x.vfr.why.join(', ')}`) : null, h('span.mh-btns', [mapBtn(x), hideBtn(opts, x.id)])]), h('pre.report', (x.formatted || x.text || '').trim())]);
+  const hid = hidden.size ? ` · ${t('hide_count', { n: hidden.size })}` : '';
+  const parts = [h('div.note', (d.mode === 'places' ? `${t('notam_places')}: ${(d.points || []).map((p) => `${p.name || ''} (${Math.round((p.nm || d.nm) * 1.852)} km)`).join(', ')} · ${rel.length} ${t('auto_notamRelevant')}, ${other.length} ${t('auto_notamOther')}` : `${t('auto_notamCorridor')}: ${(d.points || []).map((p) => p.name || '').filter(Boolean).join(' → ')} · ${d.nm} NM · ${rel.length} ${t('auto_notamRelevant')}, ${other.length} ${t('auto_notamOther')}`) + hid)];
   if (d.errors?.length) parts.push(h('div.warn', d.errors.join(' · ')));
   parts.push(...rel.map(item));
   if (other.length && opts.interactive) parts.push(h('details', [h('summary.small', `${t('auto_notamOther')} (${other.length})`), ...other.map(item)]));

@@ -8,6 +8,7 @@
 @media (min-width:600px){ .main{padding:14px 16px 40px;} }
 
 /* ---------- header ---------- */
+header.topbar .btn.primary{font-weight:400;}   /* 0.12.8: «Freigeben als Final» nicht fett */
 header.topbar{position:sticky;top:0;z-index:60;background:var(--bg);
   padding:calc(8px + var(--safe-t)) 12px 8px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
@@ -22,7 +23,7 @@ header.topbar{position:sticky;top:0;z-index:60;background:var(--bg);
 .mainnav a{display:inline-block;padding:7px 12px;border-radius:999px;border:1px solid var(--line);color:var(--text);text-decoration:none;font-size:13px;font-family:var(--mono);letter-spacing:.02em;white-space:nowrap;background:var(--panel);}
 .mainnav a:hover{border-color:var(--amber);color:var(--amber);}
 .mainnav a.on{background:var(--text-strong);color:var(--bg);border-color:var(--text-strong);}
-.mainnav a.primary{background:var(--amber);color:#fff;border-color:var(--amber);font-weight:600;}
+.mainnav a.primary{background:var(--amber);color:#fff;border-color:var(--amber);font-weight:400;}   /* 0.12.8: nicht fett */
 .mainnav a.primary:hover{filter:brightness(1.08);color:#fff;}
 .header-logo{height:34px;width:auto;object-fit:contain;display:none;}
 @media (min-width:600px){ .header-logo{display:block;} .title-block h1{font-size:19px;} }
@@ -153,17 +154,22 @@ table.tbl td .sm,.item-box .sm{font-size:11.5px;color:var(--text-dim);font-famil
 .editor{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;}
 .editor>*{min-width:0;}
 .panel,.panel-body,.auto-wrap,.autoblock{min-width:0;max-width:100%;}
-@media (min-width:900px){ .editor{grid-template-columns:230px minmax(0,1fr);} }
-@media (min-width:1280px){ .editor{grid-template-columns:230px minmax(0,1fr) 260px;} }
+@media (min-width:900px){ .editor{grid-template-columns:236px minmax(0,1fr);} .editor > .emain{max-height:calc(100vh - var(--topbar-h, 70px) - 8px);overflow-y:auto;scrollbar-gutter:stable;padding-right:6px;overscroll-behavior:contain} .editor > .emain .refresh-all{top:0} }   /* 0.12.8: mittlere Spalte rollt selbst, Rollbalken sichtbar */
+@media (min-width:1280px){ .editor{grid-template-columns:236px minmax(0,1fr) 260px;} }
 .enav{font-size:13px;}
 .enav details{margin-bottom:6px;}
-.enav summary{cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);padding:6px 0;}
-.enav .it{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;color:var(--text);}
+.enav summary{cursor:pointer;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-strong);padding:7px 4px;border-bottom:1px solid var(--line);margin-bottom:2px;}   /* 0.12.8: Zwischentitel deutlicher */
+.enav details.stage>summary{color:var(--pf-stage)}
+/* 0.12.8: Zeile als Raster Punkt · Nummer · Titel – Nummer bricht nicht um, Titel linksbündig, alle gleich gross, weniger Einzug */
+.enav .it{display:grid;grid-template-columns:9px auto minmax(0,1fr);align-items:start;column-gap:6px;padding:4px 4px;border-radius:6px;cursor:pointer;color:var(--text);font-size:12.5px;line-height:1.3;}
+.enav .it .dot{margin-top:4px}
+.enav .it .pno{white-space:nowrap;font-size:12.5px;color:var(--text-dim);margin:0;letter-spacing:.02em}
+.enav .legend{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:8px;font-size:11.5px;color:var(--text-dim)} .enav .legend span{display:inline-flex;align-items:center;gap:4px}
 .enav .it:hover{background:var(--panel-2);}
 .enav .it.sel{background:var(--panel-2);color:var(--text-strong);font-weight:600;}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--gafor-none);flex:0 0 auto;}
 .dot.ok{background:var(--green);} .dot.auto{background:var(--dew);} .dot.man{background:var(--gafor-d);} .dot.must{background:var(--temp);} .dot.na{background:var(--gafor-none);}
-.enav-wrap{position:sticky;top:70px;max-height:calc(100vh - 80px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:4px}
+.enav-wrap{position:sticky;top:calc(var(--topbar-h, 70px) + 4px);max-height:calc(100vh - var(--topbar-h, 70px) - 10px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:4px}
 @media (max-width:899px){ .enav-wrap{position:static;} .enav{display:flex;flex-wrap:wrap;gap:4px 12px;} .enav details{margin:0;} .enav .note{flex-basis:100%;} }
 .sect-title{display:flex;align-items:baseline;gap:10px;font-family:var(--sans);font-size:15px;font-weight:700;color:var(--text-strong);margin:24px 0 10px;padding:7px 12px;border-left:4px solid var(--amber);background:var(--panel-2);border-radius:0 8px 8px 0;}
 .sect-title .id{font-family:var(--mono);font-size:13px;color:var(--amber);letter-spacing:.06em;}
@@ -209,8 +215,10 @@ details.sub.extra > summary{color:var(--dew);} details.sub.cmt > summary{color:v
 .content-text{white-space:pre-wrap;font-size:13.5px;line-height:1.5;}
 .side{font-size:13px;}
 .side .card-body{padding:10px 12px;}
-.side-wrap{position:sticky;top:70px;max-height:calc(100vh - 80px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
-.gonogo div{display:flex;justify-content:space-between;gap:8px;padding:3px 0;}
+.side-wrap{position:sticky;top:calc(var(--topbar-h, 70px) + 4px);max-height:calc(100vh - var(--topbar-h, 70px) - 10px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}   /* 0.12.8: unter der Kopfzeile, Titel bleibt sichtbar */
+.gonogo .card-body{display:block}   /* 0.12.8: Blöcke untereinander statt dreispaltig */
+.gonogo .gn-model{padding-top:4px;border-top:1px dashed var(--line);margin-top:4px}
+.side .basics .kv.small{font-size:12.5px;gap:2px 8px} .side .basics label.inline{display:inline-flex;align-items:center;gap:4px;white-space:nowrap} .side .basics .kv.small .v{min-width:0;overflow-wrap:anywhere}
 .editor-head{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
 .editor-head .spacer{flex:1;}
 .viewtoggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;}
@@ -386,6 +394,7 @@ details.exp summary{cursor:pointer;font-weight:600;padding:8px 0;}
 .pline .mono,.pline .maps,.pline .sep,.pline > span:not(.pname){font-size:11.5px;}
 @media (max-width:599px){ .prow{flex-wrap:wrap;} .prow .pline-wrap,.prow .pline{white-space:normal;} }
 .pline .pname{color:var(--text-strong);font-weight:600;}
+.kv .pline .pname{font-weight:400;color:inherit;}   /* 0.12.8: Stammdaten – Ortsname nicht fett */
 .pline .sep{color:var(--text-dim);}
 a.maps{color:var(--amber);text-decoration:none;font-weight:600;white-space:nowrap;}
 a.maps:hover{text-decoration:underline;}
@@ -445,10 +454,17 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .metar-cols.compact{margin-top:3px;gap:2px 12px}
 .metar-cols.compact pre.report{margin:0}
 .metar-cols.compact ul.decoded{margin:0}
-.metar .mhead{font-size:12.5px}
+.metar .mhead{font-size:12.5px;display:flex;align-items:center;flex-wrap:wrap;gap:0 2px}
+.metar .mhead .hide-x,.metar .mhead .mh-btns{margin-left:auto}   /* 0.12.8: Karte/Schliessen rechts in der Kopfzeile */
+.metar .mhead .mh-btns{display:inline-flex;gap:4px}
+.metar .mhead .btn.icon.small{width:24px;height:24px;min-height:24px;font-size:11px}
+.notam-map{height:420px}
+.astro-grid{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:flex-start} table.auto.astro{width:auto} table.auto.astro th:first-child{text-align:left;font-family:var(--mono);font-size:10.5px}   /* 0.12.8: A2 als Tabellen */
+.now-warn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:var(--amber);color:#1a1200;font-size:11px;margin-right:6px;cursor:help;vertical-align:-2px}   /* 0.12.8: Warnsymbol «gegenwärtiger Stand» */
+.pre.small,pre.report.small{font-size:11px}
 .metar-cols ul.decoded{margin:4px 0 0;padding-left:16px;font-size:12.5px;line-height:1.4}
 .metar-cols ul.decoded li:first-child,.metar-cols ul.decoded li.head{list-style:none;margin-left:-16px}   /* 0.12.2: ohne Fettschrift */
-.metar-cols ul.decoded li.chg{list-style:none;margin-left:-16px;padding-left:16px;text-indent:-10px;color:var(--text)}   /* Änderungsgruppe bezieht sich auf die Punkte davor */
+.metar-cols ul.decoded li.chg{list-style:none;margin-left:0;padding-left:1.3em;text-indent:-1.3em;color:var(--text)}   /* 0.12.8: Pfeil bündig mit dem Text der Punkte darüber, Umbruch rechts von der Pfeilspitze (hängender Einzug) */
 .metar .bad{color:var(--temp);font-weight:600}
 .th-sum{margin-bottom:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .side-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;align-items:start}
@@ -795,7 +811,6 @@ table.tbl.list td.acts .btn.icon.small .ico{width:15px;height:15px}
 /* 0.12.6: Untertitel B/C innerhalb einer Etappe, Etappen-Gruppen in der Navigation, Etappen-Knöpfe */
 .sect-title.sub{font-size:13.5px;margin:14px 0 8px;padding:5px 12px;border-left-width:3px;background:transparent;border-bottom:1px solid var(--line-soft);border-radius:0}
 .sect-title.sub .id{font-size:12px}
-.enav details.stage>summary{color:var(--pf-stage)}
 .enav .subhead{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--text-dim);margin:6px 0 2px 6px;text-transform:uppercase}
 .refresh-all .stage-btn{border-color:var(--pf-stage);color:var(--pf-stage)}
 .sect-sub{margin:-6px 0 10px;padding:0 12px;font-size:12.5px;color:var(--text-dim)}
@@ -815,6 +830,8 @@ table.pf-ballast th,table.pf-stages th{text-align:left;font-size:10.5px;color:va
 table.pf-ballast td,table.pf-stages td{padding:3px 6px;border-bottom:1px solid var(--line-soft);vertical-align:top}
 table.pf-ballast td.n,table.pf-ballast th.n,table.pf-stages td.n,table.pf-stages th.n{text-align:right;font-family:var(--mono);white-space:nowrap}
 table.pf-stages td.mono{font-family:var(--mono);white-space:nowrap}
+table.pf-stages td.ct{min-width:150px}
+.brief table.bp table.pf-stages{table-layout:auto;width:100%}   /* 0.12.8: Etappenübersicht in der Briefingsicht */
 table.pf-ballast tr.total td{font-weight:600;border-top:2px solid var(--line)}
 .pf-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:6px}
 .pf-bar i{display:block;height:100%}

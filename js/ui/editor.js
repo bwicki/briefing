@@ -6,7 +6,7 @@ import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems, applicableTransitions } from '../model.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems, applicableTransitions, intentLine } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock, askAi } from './autopanels.js';
@@ -59,7 +59,8 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   // ---------------------------------------------------------------- Kopf
   function drawHeader() {
     const tools = [];
-    const toggle = h('div.viewtoggle', [h('button.on', { type: 'button' }, t('view_edit')), h('button', { type: 'button', onclick: () => ctx.navigate(shared ? `#/s/${shared.token}/v` : `#/v/${b.id}`) }, t('view_brief'))]);
+    // 0.12.8: beim Wechsel die aktuelle Stelle merken – die Briefingsicht öffnet dort (und umgekehrt)
+    const toggle = h('div.viewtoggle', [h('button.on', { type: 'button' }, t('view_edit')), h('button', { type: 'button', onclick: () => { try { sessionStorage.setItem('fb.pos.' + b.id, activeKey || ''); } catch { /* ohne Speicher */ } ctx.navigate(shared ? `#/s/${shared.token}/v` : `#/v/${b.id}`); } }, t('view_brief'))]);
     tools.push(toggle);
     if (canOwn) tools.push(h('button.btn.primary', { type: 'button', onclick: release }, t('release')));
     tools.push(printButton(() => printDialog(b, ctx, shared)));   // Druckauswahl → Briefingsicht
@@ -80,7 +81,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
 
   // ---------------------------------------------------------------- Layout
   const nav = h('div.enav-wrap', h('div.enav'));
-  const mainCol = h('div');
+  const mainCol = h('div.emain');   // 0.12.8: eigener Rollbereich mit sichtbarem Rollbalken (≥ 900 px)
   const side = h('div.side-wrap');
   view.appendChild(h('div.editor', [h('div', nav), mainCol, h('div.side', side)]));
 
@@ -105,10 +106,13 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   // 0.12.6: mit Etappen-Briefings gliedert sich die Sicht in Etappen – die Abschnitte B/C des Hauptbriefings sind «E1 · ‹Startetappe›»
   const grouped = () => sets.length > 0;
   const stage1Name = () => b.profile?.stages?.[0]?.name || t('pf_stStart');
-  const sectOf = (it) => (it.X.sid ? it.X.sect : grouped() && (it.p.section === 'B' || it.p.section === 'C') ? 'E1' : it.p.section);
+  // 0.12.8: Panels für die ganze Fahrt (Allgemeine Lage) stehen bei Etappen-Briefings vor E1 im Abschnitt «W»
+  const WHOLE = new Set(['B.synoptic']);
+  const whole = (p) => grouped() && WHOLE.has(p.key);
+  const sectOf = (it) => (it.X.sid ? it.X.sect : whole(it.p) ? 'W' : grouped() && (it.p.section === 'B' || it.p.section === 'C') ? 'E1' : it.p.section);
   const sectLabel = (s) => `${s.id} · ${s[lang] || s.de}`;
   // 0.12.7: mit mehreren Etappen tragen die Panels der Etappen-Briefings die Etappe in der Nummer («E1-C3»)
-  const pno = (p, X) => panelNo(p, X.panels, grouped() && (X.sid || p.section === 'B' || p.section === 'C') ? `E${X.sid ? X.no : 1}-` : '');
+  const pno = (p, X) => panelNo(p, X.panels, grouped() && !whole(p) && (X.sid || p.section === 'B' || p.section === 'C') ? `E${X.sid ? X.no : 1}-` : '');
 
   function panelStatus(p, X = main) {
     if (panelFilled(p, X.b)) return 'ok';
@@ -135,18 +139,18 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       det.addEventListener('toggle', () => { if (det.dataset.auto) { delete det.dataset.auto; return; } if (det.open) { navOpen.add(id); if (closedActive === id) closedActive = null; } else { navOpen.delete(id); if (id === activeSect) closedActive = id; } });
       for (const part of parts) {
         if (part.sub) det.appendChild(h('div.subhead', part.sub));
-        for (const p of part.ps) { const key = part.X.id(p); det.appendChild(h('div.it', { 'data-key': key, onclick: () => { setActive(key); document.getElementById('panel-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p, part.X)), h('span.pno', pno(p, part.X)), ' ', tt(p), part.X.mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null])); }
+        for (const p of part.ps) { const key = part.X.id(p); det.appendChild(h('div.it', { 'data-key': key, onclick: () => { setActive(key); document.getElementById('panel-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p, part.X)), h('span.pno', pno(p, part.X)), h('span.nm', [tt(p), part.X.mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: '6px' } }, '!') : null])])); }
       }
       e.appendChild(det);
     };
-    const bySect = (X) => SECTIONS.filter((s) => s.id === 'B' || s.id === 'C').map((s) => ({ sub: sectLabel(s), ps: X.panels.filter((p) => p.section === s.id), X })).filter((x) => x.ps.length);
+    const bySect = (X) => SECTIONS.filter((s) => s.id === 'B' || s.id === 'C').map((s) => ({ sub: sectLabel(s), ps: X.panels.filter((p) => p.section === s.id && !whole(p)), X })).filter((x) => x.ps.length);
     for (const s of SECTIONS) {
       const ps = panels.filter((p) => p.section === s.id);
-      if (grouped() && s.id === 'B') { navSect('E1', t('sp_nav', { n: 1, name: stage1Name() }), bySect(main), '.stage'); continue; }   // E1 = Abschnitte B/C des Hauptbriefings
+      if (grouped() && s.id === 'B') { const wp = ps.filter(whole); if (wp.length) navSect('W', t('sp_whole'), [{ ps: wp, X: main }]); navSect('E1', t('sp_nav', { n: 1, name: stage1Name() }), bySect(main), '.stage'); continue; }   // E1 = Abschnitte B/C des Hauptbriefings
       if (grouped() && s.id === 'C') { for (const X of sets) navSect(X.sect, t('sp_nav', { n: X.no, name: X.name }), bySect(X), '.stage'); continue; }   // weitere Etappen-Briefings
       if (ps.length) navSect(s.id, sectLabel(s), [{ ps, X: main }]);
     }
-    e.appendChild(h('div.note', { style: { marginTop: '8px' } }, t('navLegend')));
+    e.appendChild(h('div.legend', ['ok', 'auto', 'man', 'must'].map((k) => h('span', [h('span.dot.' + k), t('navLeg_' + k)]))));   // 0.12.8: Legende mit eingefärbten Punkten
     applyNavOpen();
     updateMustBtn();
     drawSide();
@@ -171,6 +175,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     });
   };
   window.addEventListener('scroll', onScroll, { passive: true });
+  mainCol.addEventListener('scroll', onScroll, { passive: true });
   mainCol.addEventListener('focusin', (e) => { const el = e.target.closest('.panel'); if (el) setActive(el.id.replace(/^panel-/, '')); });
   // Grafiken, Bilder und Datentabellen: Klick öffnet die vergrösserte Ansicht (wie in der Briefingsicht; Eingabefelder, Karten und Symbole ausgenommen)
   mainCol.addEventListener('click', (e) => {
@@ -183,15 +188,19 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   function drawSide() {
     clear(side);
     const hrs = Math.round((b.time.startMs - Date.now()) / 3600000);
-    const counts = { ok: 0, must: 0, auto: 0, man: 0 };
-    for (const it of items()) counts[panelStatus(it.p, it.X)]++;
     const ch = changesSinceFinal(b);
+    // 0.12.8: Reihenfolge Planungshorizont · Grunddaten · Einschätzung (Modellsicht) · Zusammenfassung; ohne «Panels» und «Protokoll»
+    const canEdit = canOwn || shared?.role === 'edit';
+    const nvfr = h('input', { type: 'checkbox', checked: !!b.flight.nvfr, disabled: !canEdit, onchange: () => { b.flight.nvfr = nvfr.checked; touched(); drawPanels(); } });
+    const basics = h('div.card.basics', [h('div.card-head', h('div.section-title', t('side_basics'))), h('div.card-body', h('div.kv.small', [
+      [t('core_date'), `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT`], [t('site'), placeLabel(b.site)], [t('core_reg'), b.balloon.reg || b.balloon.label || '–'], [t('intent_dur'), fmtDur(b.intent.durationMin)],
+      [t('core_landing'), b.landing?.lat != null ? placeLabel(b.landing) : '–'], [t('side_rules'), h('label.inline', [h('span', 'VFR'), ' ', nvfr, ' NVFR'])],
+    ].map(([k, v]) => [h('div.k', k), h('div.v', v)])))]);
     side.append(...[
-      goNoGoCard(b, ctx),
-      ch ? h('div.card', [h('div.card-head', h('div.section-title', t('chg_title', { n: ch.since.no }))), h('div.card-body.note', ch.any ? [ch.fields.length ? h('div', `${t('chg_fields')}: ${ch.fields.map((f) => t('chg_' + f)).join(', ')}`) : null, ...ch.panels.map((p) => h('div', { onclick: () => document.getElementById('panel-' + p.key)?.scrollIntoView({ behavior: 'smooth' }), style: { cursor: 'pointer' } }, `• ${tt(panelByKey(p.key) || { de: p.key })} (${p.what.map((w) => t('chg_' + w)).join(', ')})`))] : t('chg_none'))]) : null,
       h('div.card', [h('div.card-head', h('div.section-title', t('horizon'))), h('div.card-body', [h('div', `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT · ${hhmm('UTC', b.time.startMs)} UTC`), h('div.note', `${hrs >= 0 ? '+' : ''}${hrs} h → ${t('phase_' + phaseOf(b.time.startMs))}`)])]),
-      h('div.card', [h('div.card-head', h('div.section-title', 'Panels')), h('div.card-body', [h('div', [h('span.dot.ok'), ` ${counts.ok} ✓`]), h('div', [h('span.dot.must'), ` ${counts.must} ${t('panel_mandatory')}`]), h('div', [h('span.dot.auto'), ` ${counts.auto} auto`]), h('div', [h('span.dot.man'), ` ${counts.man} ${t('panel_optional')}`])])]),
-      h('div.card', [h('div.card-head', h('div.section-title', t('log'))), h('div.card-body.note', (b.log || []).slice(-6).reverse().map((l) => h('div', `${fmtDateTime(z, l.ts, lang)} · ${l.who} · ${l.action}${l.panel ? ' · ' + l.panel : ''}${l.note ? ' · ' + l.note : ''}`)).concat((b.log || []).length ? [] : [h('div', '–')]))]),
+      basics,
+      ch ? h('div.card', [h('div.card-head', h('div.section-title', t('chg_title', { n: ch.since.no }))), h('div.card-body.note', ch.any ? [ch.fields.length ? h('div', `${t('chg_fields')}: ${ch.fields.map((f) => t('chg_' + f)).join(', ')}`) : null, ...ch.panels.map((p) => h('div', { onclick: () => document.getElementById('panel-' + p.key)?.scrollIntoView({ behavior: 'smooth' }), style: { cursor: 'pointer' } }, `• ${tt(panelByKey(p.key) || { de: p.key })} (${p.what.map((w) => t('chg_' + w)).join(', ')})`))] : t('chg_none'))]) : null,
+      goNoGoCard(b, ctx),
       summaryCard(),
     ].filter(Boolean));
   }
@@ -344,8 +353,9 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       [t('core_reg'), b.balloon.label], [t('core_countries'), countriesLine(b)], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
       [t('core_kind'), `${t('kind_' + b.flight.kind)} · LTF: ${b.flight.operatorName}`], [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`],
       [t('core_pic'), b.persons.pic], ...(hasCopilot(b) ? [[t('copilot'), b.persons.copilot]] : []), [t('core_pax'), paxLine(b, S)], [t('core_retrieve'), b.persons.retrieve || '–'],
-      [t('core_site'), h('span', [placeLine(b.site), ` · ${b.site.country || ''}`])],
-      [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}`],
+      [t('core_site'), placeLine(b.site)],
+      [t('core_landing'), b.landing?.lat != null ? placeLine(b.landing) : '–'],   // 0.12.8: Landeort (geplant) in gleicher Gliederung wie der Startort
+      [t('core_intent'), intentLine(b, t, z, { lang })],
       ...(docsLine(b.balloon.docs) ? [[t('docs'), docsLine(b.balloon.docs)]] : []),
       ...(docsLine(ctx.stamm?.persons?.find((x) => x.id === b.persons.picId)?.docs) ? [[`${t('docs')} PIC`, docsLine(ctx.stamm.persons.find((x) => x.id === b.persons.picId).docs)]] : []),
     ];
@@ -428,7 +438,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     // 0.12.6: Etappen-Knöpfe (E1 · Start, E3 · Nacht …) springen zum Etappenkopf
     const stageBtns = grouped() ? [{ sect: 'E1', no: 1, name: stage1Name() }, ...sets].map((X) => h('button.btn.small.stage-btn', { type: 'button', title: t('sp_jump'), onclick: () => { document.getElementById('sect-' + X.sect)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); activeSect = X.sect; closedActive = null; applyNavOpen(); } }, t('sp_nav', { n: X.no, name: X.name }))) : [];
     return h('div.row-actions.refresh-all', [
-      b.site.lat != null ? h('button.btn.primary.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, [icon('refresh', 16), ` ${t('refreshAllData')}`]) : null,
+      b.site.lat != null ? h('button.btn.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, [icon('refresh', 16), ` ${t('refreshAllData')}`]) : null,
       mustBtn, ...stageBtns, st,
     ]);
   }
@@ -440,11 +450,12 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       const ps = panels.filter((p) => p.section === s.id);
       if (ps.length) {
         // 0.12.6: mit Etappen-Briefings steht über B der Etappenkopf «E1 · Etappe 1 · ‹Start›» (Startort, ganze Fahrt); B/C werden Untertitel
+        if (g && s.id === 'B') for (const p of ps.filter(whole)) { if (p === ps.filter(whole)[0]) mainCol.appendChild(h('div.sect-title', { id: 'sect-W' }, [h('span.id', 'B'), h('span.nm', t('sp_whole'))])); mainCol.appendChild(renderPanel(p)); }   // 0.12.8: Allgemeine Lage vor der Startetappe
         if (g && s.id === 'B') { mainCol.appendChild(h('div.sect-title.stage', { id: 'sect-E1' }, [h('span.id', 'E1'), h('span.nm', t('sp_title', { n: 1, name: stage1Name() }))])); const sp1 = main.b.stagePlan; mainCol.appendChild(h('div.sect-sub', sp1 ? t('sp_subStart1', { site: placeLabel(b.site), d: fmtDate(z, sp1.ms0, lang), t0: hhmm(z, sp1.ms0), t1: hhmm(z, sp1.ms1), tz: 'LT', k1: Math.round(sp1.km1), len: Math.round(sp1.lenKm), b: sp1.to.name }) : t('sp_subStart', { site: placeLabel(b.site), d: fmtDate(z, b.time.startMs, lang), t0: hhmm(z, b.time.startMs), t1: hhmm(z, b.time.startMs + (b.intent.durationMin || 0) * 60000), tz: 'LT' }))); }
         mainCol.appendChild(h('div.sect-title' + (g && (s.id === 'B' || s.id === 'C') ? '.sub' : ''), [h('span.id', s.id), h('span.nm', s[lang] || s.de)]));
         if (s.id === 'B' && b.site.lat != null) mainCol.appendChild(meteoBar(b, ctx, { onChange: () => { dirty = true; saveSoon(); }, refreshAll, readOnly: shared?.role === 'read' }));
         if (s.id === 'B' && startPlanOff(b)) mainCol.appendChild(h('div.sect-sub', h('span.warn', t('sp_startOff'))));
-        for (const p of ps) mainCol.appendChild(renderPanel(p));
+        for (const p of ps) if (!whole(p)) mainCol.appendChild(renderPanel(p));
       }
       if (s.id === 'C') for (const X of sets) renderStageSet(X);   // Etappen-Briefings zwischen C und D (0.12.5)
     }
@@ -493,4 +504,6 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   }
 
   drawHeader(); drawNav(); drawPanels();
+  // 0.12.8: aus der Briefingsicht gemerkte Stelle wieder anzeigen
+  try { const pos = sessionStorage.getItem('fb.pos.' + b.id); sessionStorage.removeItem('fb.pos.' + b.id); if (pos) setTimeout(() => { const el = document.getElementById('panel-' + pos); if (el) { el.scrollIntoView({ block: 'start' }); setActive(pos); } }, 80); } catch { /* ohne Speicher */ }
 }

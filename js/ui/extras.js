@@ -130,9 +130,10 @@ export function goNoGoCard(b, ctx) {
   const g = goNoGo(b, ctx.settings);
   const cls = g.level == null ? '' : ['neg', 'half', 'pos'][g.level];
   return h('div.card.gonogo', [h('div.card-head', h('div.section-title', t('gn_title'))), h('div.card-body', [
-    h('div.gn-level', [h('span.dot.' + (g.level == null ? 'man' : ['must', 'auto', 'ok'][g.level])), ' ', h('b', g.level == null ? t('gn_nodata') : t('fly_' + g.level))]),
+    // 0.12.8: Blöcke untereinander – Gesamteinschätzung (kritisch/marginal/unkritisch), Gründe, Modellaussage
+    h('div.gn-level', [h('span.dot.' + (g.level == null ? 'man' : ['must', 'auto', 'ok'][g.level])), ' ', h('b', g.level == null ? t('gn_nodata') : t('gn_' + g.level))]),
     g.reasons.length ? h('ul.gn-why', g.reasons.map((r) => h('li', r))) : null,
-    g.level != null ? h('div.note', `${g.model || ''} · ${g.hours} h · ${t('auto_wind')} max ${g.maxWindKt} kt / ${t('auto_gust')} ${g.maxGustKt} kt · ${t('gn_disclaimer')}`) : h('div.note', t('gn_hint')),
+    g.level != null ? h('div.note.gn-model', `${g.model || ''} · ${g.hours} h · ${t('auto_wind')} max ${g.maxWindKt} kt / ${t('auto_gust')} ${g.maxGustKt} kt · ${t('gn_disclaimer')}`) : h('div.note', t('gn_hint')),
   ])]);
 }
 

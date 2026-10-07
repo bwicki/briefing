@@ -148,7 +148,7 @@ with sync_playwright() as p:
     lst = pg.inner_text('#view')
     assert 'Keine Briefings' in lst or 'test0000' not in lst, 'mtest sieht keine fremden Briefings'
     assert 'Alle Nutzer' not in lst, 'Master hat keine Sicht «Alle Benutzer»'
-    assert 'Ballone' in lst and 'Von anderen erhalten' in lst, 'erhaltene Freigabe in Stammkarte: ' + lst[-300:]
+    assert 'Einstellungen' in lst and 'Von anderen erhalten' not in lst, '0.12.8: Stammkarte nur noch mit Knopf «Einstellungen»: ' + lst[-300:]
     # Zugänge nur lesend
     pg.goto(BASE + '#/settings?access'); pg.wait_for_timeout(900)
     assert 'nur der Supermaster' in pg.inner_text('#view'), 'Zugänge read-only für Master'

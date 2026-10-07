@@ -4,7 +4,7 @@ import { t, getLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, kv, stats, fieldAdd } from './widgets.js';
 import { scheduleEditor } from './parts.js';
-import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan, directionText, isLocked, placeLabel, personsOnBoard, hasCopilot } from '../model.js';
+import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan, directionText, targetInfo, isLocked, placeLabel, personsOnBoard, hasCopilot } from '../model.js';
 import { placeRow, placeLine, pickPlace, mapsLink, typeToPick } from './place.js';
 import { stammLabel } from '../stamm.js';
 import { resolveBalloon } from '../defaults.js';
@@ -156,7 +156,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
         const r = await quickTraj(ctx, b, levels);
         if (!mapEl.isConnected) return;
         wrap.tracks = r.tracks;
-        if (b.landing?.lat != null) { const est = targetEstimate(r.tracks, b.site, b.landing); const nd = directionText(b, lang, est); if (nd !== b.intent.direction) { b.intent.direction = nd; wrap.onDirection?.(nd); } }
+        if (b.landing?.lat != null) { const est = targetEstimate(r.tracks, b.site, b.landing); const nd = directionText(b, lang, est); b.intent.target = targetInfo(b, est); if (nd !== b.intent.direction) { b.intent.direction = nd; wrap.onDirection?.(nd); } }
         note.textContent = `${t('trajprev_note', { d: fmtDur(r.durationMin), l: levels.join(', ') })} · ${r.modelName || ''}`;
         legend.append(h('span.muted.small', `${t('auto_legendAlt')}: `), ...r.tracks.filter((tr) => !tr.belowGround).map((tr) => h('span.item', [h('span.sw', { style: { background: TRAJ_COLORS[r.tracks.indexOf(tr) % TRAJ_COLORS.length] } }), ` ${tr.label} · ${tr.altFt} ft`])));
         if (typeof L === 'undefined') return;

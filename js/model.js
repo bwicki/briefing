@@ -6,7 +6,7 @@
  */
 import { uid, deepCopy } from './util.js';
 import { resolveBalloon, defaultBalloon } from './defaults.js';
-import { fromLocal, localParts, isoDate, hhmm, addMin, fmtDate, fmtDateTime } from './calc/time.js';
+import { fromLocal, localParts, isoDate, hhmm, addMin, fmtDate, fmtDateTime, fmtDur } from './calc/time.js';
 import { sunTimes, moonTimes, moonIllumination, parseDwdAstro } from './calc/sun.js';
 import { racLookup } from './calc/rac.js';
 import { hotAir, gasBalloon } from './calc/aero.js';
@@ -264,9 +264,38 @@ export function syncMeeting(s) {
 export function applyLanding(b, p, lang = 'de', est = null) {
   if (p) {
     Object.assign(b.landing, { name: p.name || '', lat: p.lat, lon: p.lon, elev: p.elev ?? null, icao: icao(p.lat, p.lon), address: p.address || '', country: p.country || countryGuess(p.lat, p.lon) || '' });
-    if (b.site.lat != null) b.intent.direction = directionText(b, lang, est);
-  } else Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' });
+    if (b.site.lat != null) { b.intent.direction = directionText(b, lang, est); b.intent.target = targetInfo(b, est); }
+  } else { Object.assign(b.landing, { name: '', lat: null, lon: null, elev: null, icao: '', address: '' }); b.intent.target = null; }
   return b.landing;
+}
+/** 0.12.8: strukturierte Zielangaben (Kurs, Distanz, Fahrzeit, mittlere Höhe) zum Landeraum – Grundlage der Zeile «Fahrtabsicht». */
+export function targetInfo(b, est = null) {
+  const p = b.landing; if (!p || p.lat == null || b.site?.lat == null) return null;
+  const brg = Math.round(bearing(b.site.lat, b.site.lon, p.lat, p.lon)), km = Math.round(distKm(b.site.lat, b.site.lon, p.lat, p.lon));
+  const o = { brg, km };
+  if (est && !est.unreliable) { o.min = est.min; o.altM = est.altM; o.beyond = !!est.beyond; }
+  return o;
+}
+/** Zeile «Fahrtabsicht» (0.12.8): Fahrtdauer · Fahrthöhen · Grobrichtung · Distanz · Ankunft · ⌀ Fahrthöhe · ⌀ Geschwindigkeit (ohne Landeort – eigene Zeile). */
+export function intentLine(b, tr, z, opts = {}) {
+  const parts = [`${tr('intent_dur')} ${fmtDur(b.intent.durationMin)}`, `${tr('intent_alts')} ${b.intent.altMinFt}–${b.intent.altMaxFt} ft AMSL`];
+  let g = b.intent.target;
+  if (!g && b.landing?.lat != null) {   // ältere Briefings: Kurs/Distanz aus dem Landeraum, Fahrzeit/Höhe aus der alten Richtungszeile («~20:55 h · ⌀ 2210 m»)
+    g = targetInfo(b);
+    const m = /([~>])(\d+):(\d\d) h/.exec(b.intent.direction || ''), a = /⌀ (\d+) m/.exec(b.intent.direction || '');
+    if (g && m) { g.min = +m[2] * 60 + +m[3]; g.beyond = m[1] === '>'; if (a) g.altM = +a[1]; }
+  }
+  if (g) {
+    parts.push(`${tr('intent_dir')} ~${String(g.brg).padStart(3, '0')}°`, `${tr('intent_dist')} ${g.km} km`);
+    if (g.min != null) {
+      const arr = b.time.startMs + g.min * 60000, wd = (ms) => new Intl.DateTimeFormat(opts.lang || 'de', { weekday: 'short', timeZone: z }).format(new Date(ms));
+      parts.push(`${tr('intent_arr')} ${g.beyond ? '>' : '~'}${wd(arr) !== wd(b.time.startMs) ? wd(arr) + ' ' : ''}${hhmm(z, arr)} LT (${tr('intent_travel')} ${fmtDur(g.min)})`);
+      if (g.altM != null) parts.push(`⌀ ${tr('intent_avgAlt')} ${g.altM} m AMSL`);
+      if (g.min > 0) parts.push(`⌀ ${tr('intent_avgSpd')} ${(g.km / (g.min / 60)).toFixed(1)} km/h`);
+    }
+  } else if (b.intent.direction) parts.push(`${tr('intent_dir')} ${b.intent.direction}`);
+  if (opts.remark && b.intent.remark) parts.push(b.intent.remark);
+  return parts.join(' · ');
 }
 /** «Ort · W266° · 25 km · ~1:30 h · ⌀ 1200 m AMSL» – Fahrzeit/Höhe aus der Trajektorienschar (est von targetEstimate), falls vorhanden. */
 export function directionText(b, lang = 'de', est = null) {
@@ -335,10 +364,10 @@ export function equipmentSuggest(b, sun) {
 }
 
 /** Ortsname mit Länderkennzeichen voran, wenn ausserhalb der Schweiz: «DE-Wolfegg» (0.12.4; ein vorhandenes « (DE)» am Ende entfällt). */
-export function placeLabel(p, home = 'CH') {
+export function placeLabel(p) {   // 0.12.8: immer mit Länderkennzeichen, auch CH («CH-Oberlunkhofen AG»)
   if (!p) return '';
   const name = String(p.name || '').trim(), cc = String(p.country || '').toUpperCase();
-  if (!name || !cc || cc === home) return name;
+  if (!name || !cc) return name;
   const bare = name.replace(new RegExp(`\\s*\\(${cc}\\)$`), '');
   return new RegExp(`^${cc}-`).test(bare) ? bare : `${cc}-${bare}`;
 }

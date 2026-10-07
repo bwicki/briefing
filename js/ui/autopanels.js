@@ -2,7 +2,7 @@
  * Aktualisieren je Panel, Trajektorien-Steuerung, DABS (PDF → Bilder), Karten-
  * Schnappschüsse, Radar (live), KI-Hinweis. Die Darstellung des Schnappschusses
  * selbst liegt in autorender.js (gemeinsam mit der Briefingsicht). */
-import { h, clear, toast, num, dialog } from '../util.js';
+import { h, clear, toast, num, dialog, confirmDialog } from '../util.js';
 import { stageWindows, posAtKm } from '../calc/profile.js';
 import { t, getLang } from '../i18n.js';
 import { field, input, select, textarea, check } from './widgets.js';
@@ -47,6 +47,12 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   const setSnap = (snap) => { d.content.auto = snap; onChange(); draw(); };
   async function run(auto = false) {
     if (auto && !wrap.isConnected) return;   // Sicht inzwischen verlassen (Timer) → nichts laden
+    // 0.12.8: einzelne Meldungen/Stationen wurden ausgeblendet → beim Aktualisieren fragen, ob die Auswahl bleibt
+    if (!auto && (d.content.hidden || []).length) {
+      const keep = await dialog(t('auto_refresh'), h('p', t('hide_refreshQ', { n: d.content.hidden.length })), [{ label: t('hide_refreshAll'), value: 'all' }, { label: t('hide_refreshKeep'), value: 'keep', primary: true }]);
+      if (keep == null) return;
+      if (keep === 'all') { d.content.hidden = []; onChange(); }
+    }
     status.textContent = t('loading'); toolbar.querySelectorAll('button').forEach((x) => { x.disabled = true; });
     try {
       let snap;
@@ -71,7 +77,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
         else toolbar.appendChild(select([{ value: 'route', label: `${t('notam_route')} · ${ctx.settings.notamRadiusNm || 25} NM` }, { value: 'places', label: t('notam_placesMode') }], b.notamMode === 'places' ? 'places' : 'route', { title: t('notam_mode'), onchange: (e) => { b.notamMode = e.target.value; if (b.notamMode === 'places' && !(b.notamPlaces || []).length) b.notamPlaces = [{ name: b.site.name, lat: b.site.lat, lon: b.site.lon, km: 200 }]; onChange(); draw(); } }));
       }
       if (p.auto === 'airspace') toolbar.appendChild(h('span.note', `${t('as_corridor')} ${ctx.settings.airspaceCorridorKm || 5} km · ${b.intent.altMinFt || 0}–${b.intent.altMaxFt || 6000} ft`));
-      if (d.content.auto) toolbar.appendChild(h('button.btn.icon.small', { type: 'button', title: t('auto_clear'), onclick: () => { if (confirm(t('auto_clear') + '?')) { d.content.auto = null; onChange(); draw(); } } }, icon('close', 14)));
+      if (d.content.auto) toolbar.appendChild(h('button.btn.icon.small', { type: 'button', title: t('auto_clear'), onclick: async () => { if (await confirmDialog(t('auto_clear'), t('auto_clearQ'), { yes: t('auto_clear'), no: t('cancel') })) { d.content.auto = null; onChange(); draw(); } } }, icon('close', 14)));
       toolbar.appendChild(status);
     }
     if (p.auto === 'radar') body.appendChild(radarLive(b, ctx));
@@ -84,7 +90,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
       onChange(); draw(); toast(`${t('landingSite')}: ${b.landing.name}`);
       document.dispatchEvent(new CustomEvent('fb:landing', { detail: { id: b.id } }));
     } : null;
-    if (snap) body.appendChild(renderSnapshot(snap, b, ctx, { interactive: !readOnly, onLanding }));
+    if (snap) body.appendChild(renderSnapshot(snap, b, ctx, { interactive: !readOnly, onLanding, hidden: d.content.hidden || [], onHide: readOnly ? null : (id) => { (d.content.hidden = d.content.hidden || []).push(id); onChange(); draw(); } }));   // 0.12.8: Meldung/Station ausblenden
     else if (p.auto !== 'radar') body.appendChild(h('div.note', readOnly ? t('auto_empty') : p.auto === 'airspace' && ctx.store.mode !== 'remote' ? t('auto_asLocal') : t('auto_hint_' + p.auto, { s: p.phase2 || '' })));
   }
   draw();

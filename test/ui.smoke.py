@@ -125,6 +125,16 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
             assert 'ED' in pg.inner_text('#panel-B\\.metar'), 'METAR eines deutschen Platzes'
         else:
             assert 'LSZH' in pg.inner_text('#panel-B\\.metar') or 'LSZB' in pg.inner_text('#panel-B\\.metar'), 'METAR eines Schweizer Platzes'
+            # 0.12.8: Station ausblenden (✕ ohne Rückfrage); «Aktualisieren» fragt «Alle Meldungen» / «Selektion beibehalten»; Warnsymbol «gegenwärtiger Stand» (Start > 6 h)
+            n_st = len(pg.query_selector_all('#panel-B\\.metar .metar')); first = pg.text_content('#panel-B\\.metar .metar .mhead b')
+            pg.click('#panel-B\\.metar .metar .mhead .hide-x >> nth=0'); pg.wait_for_timeout(500)
+            assert len(pg.query_selector_all('#panel-B\\.metar .metar')) == n_st - 1 and first not in pg.inner_text('#panel-B\\.metar') and '1 ausgeblendet' in pg.inner_text('#panel-B\\.metar'), 'Station ausgeblendet'
+            pg.click('#panel-B\\.metar .ptools button:has-text("Aktualisieren")'); pg.wait_for_timeout(400)
+            assert pg.is_visible('.dialog') and 'Selektion' in pg.inner_text('.dialog'), 'Rückfrage beim Aktualisieren mit ausgeblendeten Meldungen'
+            pg.click('.dialog-foot button:has-text("Selektion")'); pg.wait_for_timeout(2500)
+            assert first not in pg.inner_text('#panel-B\\.metar') and pg.query_selector('#panel-B\\.metar .now-warn') is not None, 'Selektion bleibt; Warnsymbol gegenwärtiger Stand'
+            pg.click('#panel-B\\.metar .ptools button:has-text("Aktualisieren")'); pg.wait_for_timeout(400); pg.click('.dialog-foot button:has-text("Alle Meldungen")'); pg.wait_for_timeout(2500)
+            assert len(pg.query_selector_all('#panel-B\\.metar .metar')) == n_st, 'Alle Meldungen wieder da'
             assert 'DWD' not in pg.inner_text('#panel-B\\.balloon').split('EIGENE')[0].split('Stand:')[-1][:60] or True
         pg.wait_for_timeout(1500)
         assert '4725N00816E' in pg.inner_text('#panel-A\\.landing'), 'Landeraum im Editor'
@@ -224,10 +234,20 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         assert hdr.startswith('Fahrtbriefing · 20') and 'Start:' in hdr and 'Letzte Änderung' in hdr, 'Titelzeile und letzte Änderung: ' + hdr[:80]
         assert pg.evaluate("(() => { const e = document.querySelector('.brief .bh .tline'); return e.getBoundingClientRect().height < 1.8 * parseFloat(getComputedStyle(e).fontSize); })()"), 'Titelzeile einzeilig'
         assert 'Ordnungsnummer' in pg.inner_text('.brief tr.row-A-core') and 'Pax:' in pg.inner_text('.brief tr.row-A-core'), 'Nummer und Pax-Zeile in den Stammdaten'
+        core = pg.inner_text('.brief tr.row-A-core'); assert 'Landeort (geplant)' in core and 'Fahrtdauer' in core and 'Fahrthöhen' in core and 'CH-' in core, '0.12.8: Landeort-Zeile, Fahrtabsicht neu gegliedert, Länderkennzeichen auch CH: ' + core[:300]
+        assert len(pg.query_selector_all('.brief tr.row-A-sun table.auto.astro')) == 2, 'A2 als zwei Tabellen (Sonne, Mond)'
         pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1200)
         assert pg.query_selector('.editor .refresh-all button') is not None and pg.query_selector('#panel-A\\.core .refresh-all') is None, 'Knopf «Alle verfügbaren Daten aktualisieren» über Abschnitt A'
         assert all(pg.query_selector(f'#panel-{k} .panel-head .lft .src') is not None for k in ['A\\.core', 'B\\.metar', 'C\\.fpl']), 'Stand-Zeile in jedem Panel-Kopf'
         assert 'modellsicht' in pg.inner_text('.side').lower() and 'zusammenfassung' in pg.inner_text('.side').lower(), 'rechte Spalte: Einschätzung/Modellsicht + Zusammenfassung'
+        # 0.12.8: Reihenfolge Planungshorizont · Grunddaten · Einschätzung · Zusammenfassung, ohne «Panels»/«Protokoll»; Einschätzung in Blöcken (kritisch/marginal/unkritisch)
+        heads = [e.inner_text().strip().lower() for e in pg.query_selector_all('.side .card .section-title')]
+        assert heads[:2] == ['planungshorizont', 'grunddaten'] and 'panels' not in heads and 'protokoll' not in heads and heads[-1] == 'zusammenfassung', 'rechte Spalte 0.12.8: ' + str(heads)
+        assert pg.evaluate("() => getComputedStyle(document.querySelector('.side .gonogo .card-body')).display") == 'block' and any(x in pg.inner_text('.side .gonogo .gn-level').lower() for x in ['kritisch', 'marginal', 'unkritisch', 'modellstunden']), 'Einschätzung als Blöcke mit neuer Wortwahl'
+        assert pg.query_selector('.side .basics input[type=checkbox]') is not None and 'NVFR' in pg.inner_text('.side .basics'), 'Grunddaten mit Klickbox NVFR'
+        assert len(pg.query_selector_all('.enav .legend .dot.ok')) == 1 and pg.evaluate("() => getComputedStyle(document.querySelector('.enav .legend .dot.must')).backgroundColor") != pg.evaluate("() => getComputedStyle(document.querySelector('.enav .legend .dot.ok')).backgroundColor"), 'Legende mit eingefärbten Punkten'
+        assert pg.evaluate("() => getComputedStyle(document.querySelector('.enav .it .pno')).whiteSpace") == 'nowrap' and not pg.query_selector('.refresh-all button.primary'), 'Nummern ohne Umbruch; «Alle verfügbaren Daten aktualisieren» nicht mehr braun'
+        if not mobile: assert pg.evaluate("() => getComputedStyle(document.querySelector('.editor > .emain')).overflowY") == 'auto', 'mittlere Spalte mit eigenem Rollbereich'
         pg.screenshot(path=f'{OUT}/{name}_16_editor_head.png')
         # 0.11.2: Abschnittstitel mit Kennbuchstabe, D = Crew-/Pax-Briefing, Akkordeon-Navigation, Zusatzboxen per Symbolknopf
         titles = [x.strip() for x in pg.eval_on_selector_all('.editor .sect-title', 'els => els.map(e => e.textContent)')]
@@ -397,10 +417,12 @@ def run_gas(name):
         # Modellwahl: kurzes Modell → Warnung unter der Layer-Box und Marker «Ende Prognosemodell» über der Grafik; langes Modell → weg
         pg.click('.pf-tool .pf-modelbtn'); pg.wait_for_timeout(300)
         opts = pg.eval_on_selector_all('.pf-tool .pf-menu button', 'els => els.map(e => e.textContent)')
-        assert any('ICON-D2' in o and '⚠' in o for o in opts) and any('GFS' in o for o in opts) and any('ICON-EU' in o and 'Vorgabe' in o for o in opts) and not any('Auto' in o for o in opts), 'Modell-Pille öffnet die Liste mit Horizont-Warnung und Vorgabe (feinstes Modell über die ganze Fahrt): ' + str(opts)
+        # Horizont-Warnung nur, wenn Start + 24 h Fahrt über 48 h hinausreichen (Start mehr als 24 h entfernt – hängt von der Tageszeit des Testlaufs ab)
+        import datetime as _dt; _m = re.search(r'Start \S+ (\d\d)\.(\d\d)\.(\d{4}) (\d\d):(\d\d)', pg.text_content('.pf-tool svg.pf-svg')); _st = _dt.datetime(int(_m.group(3)), int(_m.group(2)), int(_m.group(1)), int(_m.group(4)), int(_m.group(5))); far = (_st - _dt.datetime.now()).total_seconds() > 24.5 * 3600
+        assert any('ICON-D2' in o and (('⚠' in o) == far) for o in opts) and any('GFS' in o for o in opts) and any('ICON-EU' in o and 'Vorgabe' in o for o in opts) and not any('Auto' in o for o in opts), f'Modell-Pille öffnet die Liste mit Horizont-Warnung (far={far}) und Vorgabe: ' + str(opts)
         assert 'Wettermodell' in pg.inner_text('.pf-tool .pf-modelbtn') and 'ICON-EU' in pg.inner_text('.pf-tool .pf-modelbtn') and 'Punkte ziehen' in pg.inner_text('.pf-tool .pf-legend'), 'Pille «Wettermodell ICON-EU», Bedienhinweis als erste Legendenzeile'
         pg.click('.pf-tool .pf-menu button:has-text("ICON-D2")'); pg.wait_for_timeout(3500)
-        assert pg.is_visible('.pf-tool .pf-modelwarn') and 'Ende Prognosemodell' in pg.text_content('.pf-tool svg.pf-svg'), 'Modellhorizont-Warnung und Marker'
+        assert (pg.is_visible('.pf-tool .pf-modelwarn') and 'Ende Prognosemodell' in pg.text_content('.pf-tool svg.pf-svg')) == far, f'Modellhorizont-Warnung und Marker (far={far})'
         pg.screenshot(path=f'{OUT}/{name}_02b_cut.png')
         pg.click('.pf-tool .pf-modelbtn'); pg.wait_for_timeout(300); pg.click('.pf-tool .pf-menu button:has-text("GFS")'); pg.wait_for_timeout(3500)
         assert not pg.is_visible('.pf-tool .pf-modelwarn'), 'Warnung weg mit GFS'
@@ -483,7 +505,8 @@ def run_gas(name):
         es = heads[1].query_selector('.id').text_content()   # «Nacht» ist die dritte Etappe → E3
         assert es == 'E3' and pg.query_selector(f'.enav details[data-sect="{es}"]') is not None and 'Nacht' in pg.text_content(f'.enav details[data-sect="{es}"] summary'), 'Navigation mit Abschnitt ' + es
         order = pg.evaluate("() => [...document.querySelectorAll('.sect-title')].map(e => e.querySelector('.id').textContent)")
-        assert order == ['A', 'E1', 'B', 'C', 'E3', 'B', 'C', 'D'], 'Reihenfolge A · E1(B C) · E3(B C) · D: ' + str(order)
+        assert order == ['A', 'B', 'E1', 'B', 'C', 'E3', 'B', 'C', 'D'], 'Reihenfolge A · B(ganze Fahrt, 0.12.8) · E1(B C) · E3(B C) · D: ' + str(order)
+        assert pg.query_selector('#sect-W') is not None and 'Ganze Fahrt' in pg.inner_text('#sect-W') and pg.text_content('#panel-B\\.synoptic .pno') == 'B1' and pg.query_selector('.enav details[data-sect="W"]') is not None, '0.12.8: Allgemeine Lage vor der Startetappe (Abschnitt «Ganze Fahrt», Nummer ohne Etappe)'
         for _ in range(40):
             pg.wait_for_timeout(300)
             if pg.query_selector('.panel[id$="-B.meteogram"] svg, .panel[id$="-B.meteogram"] table'): break

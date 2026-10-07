@@ -4,7 +4,7 @@ import { t } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { fmtDate, hhmm, fmtDateTime } from '../calc/time.js';
 import { phaseOf, duplicateBriefing, sunFor, isLocked } from '../model.js';
-import { racValidity, racFmt, racLookup } from '../calc/rac.js';
+import { racFmt, racLookup } from '../calc/rac.js';
 import { isoDate } from '../calc/time.js';
 import { tag } from './widgets.js';
 import { icon, iconSvg } from './icons.js';
@@ -123,18 +123,15 @@ export async function renderList(view, ctx) {
     const sun = full ? sunFor(full, ctx.settings, ctx.racTable) : null;
     const tz = upcoming.tz || 'Europe/Zurich';
     sideCards.push(h('div.card', [h('div.card-head', h('div.section-title', t('nextFlight'))), h('div.card-body', [
-      h('div', { style: { fontWeight: 600 } }, `${fmtDate(tz, upcoming.startMs)} ${hhmm(tz, upcoming.startMs)} LT · ${upcoming.reg || ''}`),
-      h('div', upcoming.site || ''),
+      h('div.note', { style: { fontWeight: 600 } }, `${fmtDate(tz, upcoming.startMs)} ${hhmm(tz, upcoming.startMs)} LT · ${upcoming.reg || ''}`),   // 0.12.8: gleiche Grösse wie die zweite Zeile, nur fett
+      h('div.note', upcoming.site || ''),
       sun ? h('div.note', `BCMT ${hhmm(tz, sun.official.bcmt)} · SR ${hhmm(tz, sun.official.sr)} · SS ${hhmm(tz, sun.official.ss)} · ECET ${hhmm(tz, sun.official.ecet)}`) : null,
       h('div', { style: { marginTop: '8px' } }, h('button.btn', { type: 'button', onclick: () => ctx.navigate(`#/b/${upcoming.id}`) }, t('open'))),
     ])]));
   }
-  const s = ctx.settings;
-  sideCards.push(h('div.card', [h('div.card-head', h('div.section-title', t('masterData'))), h('div.card-body.note', [
-    h('div', `${t('set_balloons')}: ${s.balloons.hab.length + s.balloons.envelopes.length} · ${t('set_persons')}: ${s.persons.length} · ${t('set_sites')}: ${s.sites.length}`),
-    (ctx.sharedStamm || []).length ? h('div', `${t('sh_received')}: ${ctx.sharedStamm.map((x) => `${x.fromName} (${x.categories.map((c) => t('sh_cat_' + c)).join(', ')})`).join(' · ')}`) : null,
-    h('div', `${t('racValid')}: ${ctx.racTable ? racValidity(ctx.racTable).split('–')[1].trim() : '–'}`),
-    h('div', { style: { marginTop: '8px' } }, h('button.btn', { type: 'button', onclick: () => ctx.navigate('#/settings') }, t('nav_settings'))),
+  // 0.12.8: ohne Rekapitulation der Stammdaten – nur noch der Knopf «Einstellungen»
+  sideCards.push(h('div.card', [h('div.card-head', h('div.section-title', t('masterData'))), h('div.card-body', [
+    h('div', h('button.btn', { type: 'button', onclick: () => ctx.navigate('#/settings') }, t('nav_settings'))),
   ])]));
   side.append(...sideCards);
   draw();

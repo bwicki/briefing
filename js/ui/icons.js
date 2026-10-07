@@ -21,6 +21,7 @@ const P = {
   ext: 'M14 4h6v6M20 4L10 14 M18 13v7H4V6h7',
   night: 'M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z',
   more: 'M6 12h.01M12 12h.01M18 12h.01',
+  map: 'M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14',   // 0.12.8: Kartenfenster (NOTAM)
   plus: 'M12 5v14M5 12h14',
   grid: 'M4 4h5v5H4zM10 4h5v5h-5zM16 4h4v5h-4zM4 10h5v5H4zM10 10h5v5h-5zM16 10h4v5h-4zM4 16h5v4H4zM10 16h5v4h-5zM16 16h4v4h-4z',
   sort: 'M8 9l4-4 4 4M8 15l4 4 4-4',

@@ -4,8 +4,8 @@ import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { sunRows, twilightClass } from './parts.js';
-import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems } from '../model.js';
+import { sunTables, twilightClass } from './parts.js';
+import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems, intentLine } from '../model.js';
 import { fplView } from './fplpanel.js';
 import { profileView } from './profile.js';
 import { docsLine } from '../stamm.js';
@@ -36,7 +36,12 @@ export async function renderBrief(view, ctx, id, opts = {}) {
     if (r === true) { const c = duplicateBriefing(b, S); await ctx.store.saveBriefing(c, ctx.who); toast(`${c.no || ''} ✓`); ctx.navigate(`#/new/${c.id}`); }
   };
   const tools = [];
-  const toggle = h('div.viewtoggle', [canEdit ? h('button', { type: 'button', onclick: () => (locked ? lockDialog() : ctx.navigate(shared ? `#/s/${shared.token}` : `#/b/${b.id}`)) }, t('view_edit')) : null, h('button.on', { type: 'button' }, t('view_brief'))]);
+  // 0.12.8: Stelle merken (zuletzt gesehene Panelzeile) – «Erarbeitung» öffnet dort; beim ersten Öffnen in der Sitzung beginnt die Briefingsicht oben
+  const posKey = 'fb.pos.' + b.id, seenKey = 'fb.seen.' + b.id; let curPos = '';
+  const rowPos = (tr) => { const cls = [...tr.classList]; const m = cls.find((c) => /^row-[A-E]-/.test(c)); if (!m) return ''; const sid = cls.find((c) => /^row-st/.test(c))?.slice(4); return `${sid ? sid + '-' : ''}${m.slice(4).replace('-', '.')}`; };
+  const onScroll = () => { if (!view.isConnected) { window.removeEventListener('scroll', onScroll); return; } let cur = null; for (const tr of view.querySelectorAll('.brief tr[class*="row-"]')) { if (tr.getBoundingClientRect().top <= 140) cur = tr; else break; } if (cur) curPos = rowPos(cur); };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  const toggle = h('div.viewtoggle', [canEdit ? h('button', { type: 'button', onclick: () => { try { sessionStorage.setItem(posKey, curPos); } catch { /* ohne Speicher */ } return locked ? lockDialog() : ctx.navigate(shared ? `#/s/${shared.token}` : `#/b/${b.id}`); } }, t('view_edit')) : null, h('button.on', { type: 'button' }, t('view_brief'))]);
   const paxHash = shared?.material ? `#/m/${shared.token}/${b.id}/p` : shared ? `#/s/${shared.token}/p` : `#/pax/${b.id}`;
   if (shared?.material) tools.push(h('button.btn', { type: 'button', onclick: () => ctx.navigate(`#/m/${shared.token}`) }, `← ${t('ml_title')}`));
   // Druckteile aus dem Hash (?parts=brief,dabs,notam,pax) oder aus dem Druckdialog; Standard: Briefing + DABS-Beilage + NOTAM
@@ -59,7 +64,6 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   view.appendChild(brief);
   const attachments = [];   // [{ title, images }] → Beilagen am Schluss
   const sun = sunFor(b, S, ctx.racTable);
-  const { rows: sunR } = sunRows(b, ctx);
   const mp = massPerf(b, S);
   const sched = scheduleFor(b, sun);
 
@@ -89,19 +93,20 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const changed = new Set((ch?.panels || []).map((p) => p.key));
   const lastV = (b.versions || []).slice(-1)[0];
   if (gn.level != null || b.assessment?.text || lastV?.pdfUrl) brief.appendChild(h('div.bsum', [
-    gn.level != null ? h('div', [h('b', `${t('gn_title')}: `), h('span.tag.' + ['neg', 'half', 'pos'][gn.level], t('fly_' + gn.level)), gn.reasons.length ? ` – ${gn.reasons.join('; ')}` : '', h('span.mini', ` (${gn.model || ''}, ${t('gn_disclaimer')})`)]) : null,
+    gn.level != null ? h('div', [h('b', `${t('gn_title')}: `), h('span.tag.' + ['neg', 'half', 'pos'][gn.level], t('gn_' + gn.level)), gn.reasons.length ? ` – ${gn.reasons.join('; ')}` : '', h('span.mini', ` (${gn.model || ''}, ${t('gn_disclaimer')})`)]) : null,
     b.assessment?.text ? h('div', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, [h('b', `${t('ass_title')} (${t('ai')}, ${fmtDateTime(z, b.assessment.ts, lang)}): `), b.assessment.text]) : null,
     lastV?.pdfUrl ? h('div.mini.no-print', [h('a', { href: lastV.pdfUrl, target: '_blank', rel: 'noopener' }, `Final v${lastV.no} PDF ↗`)]) : null,
   ]));
   const panels = visiblePanels(S, b);
   /** Zeile eines Panels (th: Nummer/Titel, td: Inhalt); bb = Hauptbriefing oder abgeleitete Sicht einer Etappe (0.12.5). */
-  const setsV = stageSets(b), pfx = (p, bb) => (setsV.length && (bb !== b || p.section === 'B' || p.section === 'C') ? `E${bb !== b ? bb.stagePlan.no : 1}-` : '');   // 0.12.7: «E1-C3» mit mehreren Etappen
+  const WHOLE = new Set(['B.synoptic']), wholeP = (p) => setsV.length && WHOLE.has(p.key);   // 0.12.8: Allgemeine Lage gilt für die ganze Fahrt – vor E1
+  const setsV = stageSets(b), pfx = (p, bb) => (setsV.length && !wholeP(p) && (bb !== b || p.section === 'B' || p.section === 'C') ? `E${bb !== b ? bb.stagePlan.no : 1}-` : '');   // 0.12.7: «E1-C3» mit mehreren Etappen
   function panelRow(p, bb, list, rowClass = '') {
       const d = bb.panels[p.key] || { content: {}, extra: {}, comment: '' };
       const cell = h('td');
       switch (p.kind) {
         case 'core': cell.appendChild(h('div.core-grid', [coreRows(), balloonImage(b, S) ? h('img.bimg.core-img', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null])); break;
-        case 'sun': cell.appendChild(h('div', [h('div.kv', sunR.filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', v)])), sun?.nightStart ? h('div.ns', `⚠ ${t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })}`) : null, sun?.nightLanding ? h('div.ns', `⚠ ${t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })}`) : null])); break;
+        case 'sun': cell.appendChild(h('div', [sunTables(b, ctx) || h('div.note', '–'), sun?.nightStart ? h('div.ns', `⚠ ${t('nightWarn', { t: hhmm(z, b.time.startMs), b: hhmm(z, sun.official.bcmt) })}`) : null, sun?.nightLanding ? h('div.ns', `⚠ ${t('nightLandWarn', { e: hhmm(z, sun.official.ecet) })}`) : null])); break;
         case 'massperf': cell.appendChild(massBlock()); break;
         case 'schedule': {
           if (b.schedule.skip) { cell.appendChild(h('div', t('sch_skipped'))); break; }
@@ -123,10 +128,10 @@ export async function renderBrief(view, ctx, id, opts = {}) {
           if (snap && ['dabs', 'synoptic'].includes(snap.kind) && (snap.images || []).length) {
             // Bilder als Beilage (eigene Seiten), im Panel nur der Verweis
             attachments.push({ title: `${bb.stagePlan ? `E${bb.stagePlan.no} · ` : ''}${tt(p)}`, images: snap.images, stand: standLine(snap, bb) });
-            const viewer = renderSnapshot(snap, bb, ctx, { interactive: false }); viewer.classList.add('no-print');
+            const viewer = renderSnapshot(snap, bb, ctx, { interactive: false, hidden: d.content?.hidden || [] }); viewer.classList.add('no-print');
             cell.appendChild(h('div', [h('div.mini.attref', t('att_ref', { n: attachments.length, p: snap.images.length })), viewer]));
             for (const x of (snap.data?.texts || []).filter((y) => !y.linkOnly)) cell.appendChild(h('div.print-only', [h('div.mini', [h('b', x.name), x.fetched ? ` · ${new Date(x.fetched).toISOString().slice(0, 16).replace('T', ' ')} UTC` : '']), h('pre.report.wx', { style: { whiteSpace: 'pre-wrap', fontSize: '10px', fontFamily: 'inherit' } }, x.text)]));
-          } else if (snap) cell.appendChild(renderSnapshot(snap, bb, ctx, { interactive: false }));
+          } else if (snap) cell.appendChild(renderSnapshot(snap, bb, ctx, { interactive: false, hidden: d.content?.hidden || [] }));
           if (d.content?.text) cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap', marginTop: '4px' } }, textToNodes(d.content.text)));
           for (const im of d.content?.images || []) cell.appendChild(h('figure', { style: { margin: '4px 0' } }, [h('img.pimg', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]));
           if (!d.content?.auto && !d.content?.text && !(d.content?.images || []).length) cell.appendChild(h('span.mini', '–'));
@@ -151,11 +156,12 @@ export async function renderBrief(view, ctx, id, opts = {}) {
     const ps = panels.filter((p) => p.section === s.id);
     if (ps.length) {
       // 0.12.7: mit Etappen-Briefings steht über B der Etappenkopf «E1 · Etappe 1 · ‹Start›» mit dem Bereich der Startetappe
+      if (setsV.length && s.id === 'B' && ps.some(wholeP)) { brief.appendChild(h('div.bs', `B · ${t('sp_whole')}`)); const tw = h('table.bp'); for (const p of ps.filter(wholeP)) tw.appendChild(panelRow(p, b, panels)); brief.appendChild(tw); }
       if (setsV.length && s.id === 'B') { const sp1 = startPlanBriefing(b).stagePlan; brief.appendChild(h('div.bs.stage', `E1 · ${t('sp_title', { n: 1, name: b.profile?.stages?.[0]?.name || t('pf_stStart') })}`)); brief.appendChild(h('div.mini', sp1 ? t('sp_subStart1', { site: placeLabel(b.site), d: fmtDate(z, sp1.ms0, lang), t0: hhmm(z, sp1.ms0), t1: hhmm(z, sp1.ms1), tz: 'LT', k1: Math.round(sp1.km1), len: Math.round(sp1.lenKm), b: sp1.to.name }) : t('sp_subStart', { site: placeLabel(b.site), d: fmtDate(z, b.time.startMs, lang), t0: hhmm(z, b.time.startMs), t1: hhmm(z, b.time.startMs + (b.intent.durationMin || 0) * 60000), tz: 'LT' }))); }
       brief.appendChild(h('div.bs' + (setsV.length && (s.id === 'B' || s.id === 'C') ? '.sub' : ''), `${s.id} · ${s[lang] || s.de}`));
       if (s.id === 'B' && startPlanOff(b)) brief.appendChild(h('div.mini', t('sp_startOff')));
       const tbl = h('table.bp');
-      for (const p of ps) tbl.appendChild(panelRow(p, b, panels));
+      for (const p of ps) if (!wholeP(p)) tbl.appendChild(panelRow(p, b, panels));
       brief.appendChild(tbl);
     }
     // Etappen-Briefings (0.12.5) zwischen C und D: je Etappe mit Planung ein Abschnitt mit Zeitfenster/Ort und den B/C-Panels
@@ -168,6 +174,11 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       brief.appendChild(tbl);
     }
   }
+  try {
+    const pos = sessionStorage.getItem(posKey);
+    if (sessionStorage.getItem(seenKey) && pos) setTimeout(() => { const [sid, key] = pos.includes('-') && /^st/.test(pos) ? [pos.slice(0, pos.indexOf('-')), pos.slice(pos.indexOf('-') + 1)] : [null, pos]; const sel = `.brief tr.row-${key.replace('.', '-')}${sid ? '.row-' + sid : ''}`; const tr = view.querySelector(sel); if (tr) tr.scrollIntoView({ block: 'start' }); }, 80);
+    sessionStorage.setItem(seenKey, '1');
+  } catch { /* ohne Speicher */ }
   brief.appendChild(h('div.bf', [h('span', `${APP.name} ${APP.version} · Wicki Aero GmbH · ${t('printDisclaimer')}`), h('span', `${b.site.icao} · ${b.site.tz}`)]));
   if (attachments.length) brief.appendChild(h('div.appendix', attachments.map((a, i) => h('div.att', [h('div.bs', `${t('att_title', { n: i + 1 })} · ${a.title}`), a.stand, ...a.images.map((im) => h('figure', { style: { margin: '4px 0' } }, [h('img.pimg.att', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]))]))));
 
@@ -178,7 +189,8 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('core_pic'), b.persons.pic], ...(hasCopilot(b) ? [[t('copilot'), b.persons.copilot]] : []),
       [t('core_pax'), paxLine(b, S, (i) => t('paxPlaceholder', { n: i + 1 }))], [t('core_retrieve'), b.persons.retrieve || '–'],
       [t('core_site'), placeLine(b.site)],
-      [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}${b.intent.remark ? ' · ' + b.intent.remark : ''}`],
+      [t('core_landing'), b.landing?.lat != null ? placeLine(b.landing) : '–'],
+      [t('core_intent'), intentLine(b, t, z, { remark: true, lang })],
       ...(docsLine(b.balloon.docs) ? [[t('docs'), docsLine(b.balloon.docs)]] : []),
       ...(docsLine(ctx.stamm?.persons?.find((x) => x.id === b.persons.picId)?.docs) ? [[`${t('docs')} PIC`, docsLine(ctx.stamm.persons.find((x) => x.id === b.persons.picId).docs)]] : []),
     ].map(([k, v]) => [h('div.k', k), h('div.v', v)]));

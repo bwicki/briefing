@@ -76,8 +76,17 @@ das mit «Lokaler Modus» an.
 
 ### Übersicht «Briefings»
 
-Start- und Landeorte ausserhalb der Schweiz tragen das Länderkennzeichen voran («DE-Wolfegg»; in
-Liste, Kopfzeile, Tagesplanung, Kalender-Export, Briefingsicht; 0.12.4).
+Start- und Landeorte tragen das zweistellige Länderkennzeichen voran – seit 0.12.8 immer, auch in der
+Schweiz («CH-Oberlunkhofen AG», «DE-Wolfegg», «CZ-Falki»; Liste, Kopfzeile, Tagesplanung, Kalender-Export,
+Briefingsicht, Ortsnamen aus der Rückwärtssuche). **A1 Stammdaten** (0.12.8): Startort und darunter in
+gleicher Gliederung der **Landeort (geplant)** (Name, ICAO-Koordinaten, Höhe, Google-Maps-Link; nicht fett);
+die Zeile **Fahrtabsicht** lautet «Fahrtdauer 24:00 h · Fahrthöhen 500–10000 ft AMSL · Grobrichtung ~068° ·
+Distanz 755 km · Ankunft ~Do 19:25 LT (Fahrzeit 20:55 h) · ⌀ Fahrthöhe 2210 m AMSL · ⌀ Geschwindigkeit
+36.1 km/h» (Kurs/Distanz aus dem Landeraum, Fahrzeit und Höhe aus der Trajektorienschätzung; `intent.target`).
+**A2 Astronomische Daten** als zwei Tabellen: Sonne (BCMT · SR · SS · ECET; Zeilen LT, UTC, bei RAC
+astronomisch) und Mond (Aufgang · Untergang in LT/UTC, Phase); Quelle als Fussnote, ohne NVFR-Anmerkung.
+METAR-Klartext: Änderungsgruppen («→ BECMG …») stehen bündig unter dem Text, auf den sie sich beziehen, mit
+hängendem Einzug.
 
 Alle Briefings kompakt (zwei Zeilen je Zelle): **#** (Ordnungsnummer, 🔒 bei Sperre), Datum
 und Startzeit, Startort (ICAO-Kurzkoordinaten, Höhe), Ballon, Fahrttyp, **Status** («in Arbeit
@@ -88,7 +97,7 @@ Sortierung über die Spaltenköpfe (Standard: Nummer absteigend, jüngste zuober
 eine Zeile öffnet die Briefingsicht. Filter *Geplant / Alle / Archiv*, Suche; Sichten *Meine Briefings*,
 *Alle Nutzer* (Supermaster) und *Fahrten mit meinem Material* (wenn Ballone
 freigegeben sind; fremde Briefings öffnen sich nur in der Briefingsicht). Rechts
-die nächste Fahrt mit Sonnenzeiten. **⧉** dupliziert ein Briefing als Vorlage (Ballon, Startort, PIC,
+die nächste Fahrt mit Sonnenzeiten und der Knopf «Einstellungen» (0.12.8: ohne Rekapitulation der Stammdaten). **⧉** dupliziert ein Briefing als Vorlage (Ballon, Startort, PIC,
 Pax, Nachfahrer, Absicht, Ausrüstung, Absprachen bleiben; Datum morgen 06:30, Anlass, Startplatzwerte,
 Tagesplanung und Meteo-Panels neu) und öffnet den Ablauf bei Schritt 1 – ebenso «Kopieren und neu
 anlegen» bei gesperrten Briefings.
@@ -164,10 +173,16 @@ Ergebnis in allen Sichten: **Name · Kurzkoordinaten · Höhe · Google Maps ↗
 Oben in jeder Sicht die Hauptnavigation **Briefings · + Neues Briefing**; Einstellungen,
 JSON (Import/Export der Einstellungen), Berechtigungen und «Mehr» im Hamburger-Menü.
 Links die Navigation A–D mit Status-Punkt je Panel (grün erledigt, blau
-automatisch/noch nicht geladen, orange manuell offen, rot Pflicht offen), Mitte die Panels
-in Druckreihenfolge, **nummeriert A1–An, B1–Bn, C1–Cn, D1–Dn** unter markanten Abschnittstiteln
-(A Operationelle, B Meteorologische, C Navigatorische Vorbereitung, D Crew-/Pax-Briefing), rechts
-Planungshorizont, Panel-Zähler, Protokoll und die KI-Zusammenfassung. Die Navigation links ist ein
+automatisch/noch nicht geladen, orange manuell offen, rot Pflicht offen; Legende mit eingefärbten
+Punkten; Zeilen als Raster Punkt · Nummer · Titel in einer Schriftgrösse, Nummern ohne Umbruch, Zwischentitel
+hervorgehoben, 0.12.8), Mitte die Panels in Druckreihenfolge, **nummeriert A1–An, B1–Bn, C1–Cn, D1–Dn** unter
+markanten Abschnittstiteln (A Operationelle, B Meteorologische, C Navigatorische Vorbereitung, D
+Crew-/Pax-Briefing) in einem eigenen Rollbereich mit sichtbarem Rollbalken (0.12.8), rechts (0.12.8)
+**Planungshorizont**, **Grunddaten** (Datum/Zeit, Startort, Kennzeichen, Fahrtdauer, Landeort, Klickbox
+NVFR), **Einschätzung (Modellsicht)** in Blöcken untereinander (Gesamteinschätzung kritisch / marginal /
+unkritisch, Gründe, Modellaussage), bei Bedarf «Seit Final geändert» und die KI-**Zusammenfassung**; die
+Spalten links und rechts bleiben unter der Kopfzeile stehen. Beim Wechsel Erarbeitung ↔ Briefingsicht öffnet
+die andere Sicht an der zuletzt gesehenen Stelle (erstes Öffnen der Briefingsicht in einer Sitzung: oben). Die Navigation links ist ein
 **Akkordeon**: offen ist nur der Abschnitt der gerade bearbeiteten Stelle (folgt dem Scrollen und dem
 Fokus); selbst geöffnete Abschnitte bleiben offen. Über dem Abschnitt A steht die Zeile **«Alle verfügbaren
 Daten aktualisieren»** (lädt alle automatischen Panels neu, ohne KI-Kommentare) und **«Pflichtinhalte
@@ -265,7 +280,18 @@ ARPEGE, ICON-EU, ECMWF IFS, UKMO, ICON global, GFS, Auto) mit Vorschlag je
 Planungshorizont, **Alle aktualisieren** und der Stand der letzten Aktualisierung.
 Beim ersten Öffnen eines Briefings laden sich alle automatischen Panels von
 selbst (Modell-Panels sofort; DABS, Karten und NOTAM — soweit freigeschaltet —
-kurz danach).
+kurz danach). **0.12.8:** Schnappschüsse, die den gegenwärtigen Stand wiedergeben (METAR/TAF,
+Beobachtungen, SIGMET, NOTAM, Allgemeine Lage), tragen bei einem Start, der mehr als 6 h entfernt liegt,
+in der Stand-Zeile ein Warnsymbol ⚠ («Info gibt gegenwärtigen Stand wieder, muss auf den Startzeitpunkt hin
+aktualisiert werden»); Modelldaten zum Startzeitpunkt nicht. Bei **METAR/TAF** und **NOTAM** blendet ein ✕
+rechts in der Kopfzeile einer Station/Meldung diese ohne Rückfrage aus (`content.hidden`; gilt auch in der
+Briefingsicht, Zähler «n ausgeblendet»); «Aktualisieren» fragt dann «Alle Meldungen aktualisieren» oder
+«Selektion beim Aktualisieren beibehalten». NOTAM mit Lage (Koordinaten/Radius aus den Feldern oder aus dem
+Text «… 0.54NM RADIUS CENTERED ON 491158N 0123224E») haben links vom ✕ einen Karten-Knopf: Kartenfenster
+mit Kreis/Punkt des NOTAM, dem geplanten Fahrtweg (Profilbahn, sonst Trajektorien), Startort und Landeraum.
+«Schnappschuss entfernen» fragt im Dialog der Anwendung nach (statt Browser-Meldung). Im Radar-Panel heissen
+die Ebenen «Regen», «Webcams», «Wettersonden». Bei Gasfahrten mit Etappen-Briefings steht die **Allgemeine
+Lage** (ganze Fahrt) unter «B · Ganze Fahrt» vor der Startetappe E1 (Nummer B1 ohne Etappe).
 
 | Panel | Inhalt | Quelle |
 |---|---|---|
@@ -333,7 +359,8 @@ Freigabe wird als Final v1, v2 … mit Schnappschuss abgelegt.
 * **Einschätzung/Modellsicht** rechts im Editor und oben in der Briefingsicht: fasst die
   Stundenampel des Meteogramms im Fahrtfenster und die Go/No-Go-Kriterien
   (Trockenfenster, Gewitterabstand/CAPE, Mittelwind, Böen; Einstellungen →
-  Go/No-Go) zu fahrbar/grenzwertig/nein mit Gründen zusammen. Kein Startentscheid.
+  Go/No-Go) zu unkritisch / marginal / kritisch (0.12.8; Stundenampel weiterhin fahrbar/marginal/nein) mit
+  Gründen zusammen. Kein Startentscheid.
 * **Seit Final vN geändert**: nach einer Freigabe zeigt die Seitenleiste, welche
   Stammdaten und Panels sich seither geändert haben (klickbar); die Briefingsicht
   markiert geänderte Panels, die Freigabe-Checkliste listet sie.

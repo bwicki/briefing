@@ -36,9 +36,22 @@ export function sunRows(b, ctx) {
   return { sun, rows, warns };
 }
 
+/** 0.12.8: Astronomische Daten als zwei kleine Tabellen – Sonne (BCMT · SR · SS · ECET; Zeilen LT/UTC, bei RAC zusätzlich astronomisch)
+ *  und rechts der Mond (Aufgang · Untergang; LT/UTC, Phase); ohne NVFR-Anmerkung. Quelle als Fussnote. */
+export function sunTables(b, ctx) {
+  const sun = sunFor(b, ctx.settings, ctx.racTable);
+  if (!sun) return null;
+  const z = tzOf(b), lang = getLang();
+  const f = (zz, ms) => (ms ? hhmm(zz, ms) : '–');
+  const row = (lbl, zz, o) => h('tr', [h('th', lbl), ...['bcmt', 'sr', 'ss', 'ecet'].map((k) => h('td.mono', f(zz, o[k])))]);
+  const sunT = h('table.auto.astro', [h('thead', h('tr', [h('th', ''), ...['bcmt', 'sr', 'ss', 'ecet'].map((k) => h('th', t(k)))])), h('tbody', [row('LT', z, sun.official), row('UTC', 'UTC', sun.official), sun.source === 'rac' ? row(t('sun_astroShort'), z, sun.astro) : null])]);
+  const moonT = h('table.auto.astro', [h('thead', h('tr', [h('th', t('sun_moon')), h('th', t('sun_moonrise')), h('th', t('sun_moonset'))])), h('tbody', [h('tr', [h('th', 'LT'), h('td.mono', f(z, sun.moon.rise)), h('td.mono', f(z, sun.moon.set))]), h('tr', [h('th', 'UTC'), h('td.mono', f('UTC', sun.moon.rise)), h('td.mono', f('UTC', sun.moon.set))]), h('tr', [h('th', t('sun_phase')), h('td', { colspan: 2 }, `${moonPhaseName(sun.moon.phase, lang)} · ${Math.round(sun.moon.fraction * 100)} % ${t('sun_illum')}`)])])]);
+  const src = sun.source === 'rac' ? t('sun_rac') : sun.source === 'dwd' ? t('sun_dwd', { id: sun.dwdArea }) : t('sun_astro');
+  return h('div', [h('div.astro-grid', [sunT, moonT]), h('div.note.small', src)]);
+}
 export function sunBlock(b, ctx) {
-  const { rows, warns } = sunRows(b, ctx);
-  return h('div', [kv(rows), ...warns.map((w) => h('div.warn', '⚠ ' + w))]);
+  const { warns } = sunRows(b, ctx);
+  return h('div', [sunTables(b, ctx) || h('div.note', '–'), ...warns.map((w) => h('div.warn', '⚠ ' + w))]);
 }
 
 /** Tragkraft (Heissluft) / Ballast (Gas): Vorgaben (Eingaben) klar getrennt von Resultaten. onChange() nach Eingabe. */

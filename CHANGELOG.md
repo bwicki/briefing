@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.12.8 — 2026-10-08 · Rückmeldungen aus dem Test 0.12.7 (Oberfläche, A1/A2, Meldungen ausblenden, NOTAM-Karte, Warnsymbol)
+
+* **Oberfläche:** Briefings-Seite ohne Stammdaten-Rekapitulation (Knopf «Einstellungen» bleibt); «Nächste
+  Fahrt» in einheitlicher Schriftgrösse (erste Zeile fett); «Neues Briefing» und «Freigeben als Final» nicht
+  fett. Erarbeitung: linke Navigation als Raster Punkt · Nummer · Titel (eine Schriftgrösse, Nummern ohne
+  Umbruch, Titel linksbündig, weniger Einzug, Zwischentitel hervorgehoben, Legende mit eingefärbten Punkten);
+  mittlere Spalte mit eigenem Rollbereich und sichtbarem Rollbalken; «Alle verfügbaren Daten aktualisieren»
+  wie «Pflichtinhalte ergänzen» gestaltet; rechte Spalte neu geordnet: Planungshorizont · **Grunddaten**
+  (Datum/Zeit, Startort, Kennzeichen, Fahrtdauer, Landeort, Klickbox NVFR) · **Einschätzung (Modellsicht)**
+  in Blöcken (Gesamteinschätzung **kritisch / marginal / unkritisch**, Gründe, Modellaussage) · Zusammenfassung;
+  Kästchen «Panels» und «Protokoll» entfernt; Spalten bleiben unter der Kopfzeile stehen. Wechsel Erarbeitung ↔
+  Briefingsicht öffnet die andere Sicht an der zuletzt gesehenen Stelle (erstes Öffnen der Briefingsicht in
+  der Sitzung: oben).
+* **A1 Stammdaten:** Ortsname nicht fett; **Landeort (geplant)** als eigene Zeile wie der Startort
+  (Koordinaten, Höhe, Google Maps); Fahrtabsicht neu «Fahrtdauer · Fahrthöhen · Grobrichtung · Distanz ·
+  Ankunft (Fahrzeit) · ⌀ Fahrthöhe · ⌀ Geschwindigkeit» ohne Landeort (`intent.target`, ältere Briefings
+  aus der bisherigen Richtungszeile). **Alle Orte mit Länderkennzeichen**, auch CH («CH-Oberlunkhofen AG»).
+* **A2 Astronomische Daten:** Sonne und Mond als Tabellen (LT/UTC), ohne NVFR-Anmerkung.
+* **METAR-Klartext:** Änderungsgruppen bündig unter dem Bezugstext, Umbruch rechts von der Pfeilspitze.
+* **Meldungen ausblenden:** ✕ je METAR-Station und NOTAM (ohne Rückfrage; auch in der Briefingsicht
+  ausgeblendet); «Aktualisieren» fragt «Alle Meldungen aktualisieren» / «Selektion beim Aktualisieren
+  beibehalten».
+* **NOTAM-Karte:** Karten-Knopf bei NOTAM mit Lage (Felder oder Koordinaten/Radius im Text) – Kreis des
+  NOTAM mit geplantem Fahrtweg (Profilbahn, sonst Trajektorien), Startort, Landeraum.
+* **Warnsymbol «gegenwärtiger Stand»:** bei Start > 6 h bei METAR/TAF, Beobachtungen, SIGMET, NOTAM und
+  Allgemeiner Lage (Mouseover-Text), nicht bei Modelldaten zum Startzeitpunkt.
+* **Gasfahrt:** «Allgemeine Lage» gilt für die ganze Fahrt – steht bei Etappen-Briefings unter «B · Ganze
+  Fahrt» vor E1 (Erarbeitung, Navigation, Briefingsicht; Nummer B1).
+* **Dialoge:** «Schnappschuss entfernen», Panel leeren und Dokument entfernen fragen im Dialog der Anwendung
+  (statt Browser-`confirm`). Radar-Ebenen «Regen», «Webcams», «Wettersonden». Etappenübersicht in der
+  Briefingsicht: Orte zweizeilig, Kontakte je Zeile (sauberer Umbruch).
+* NOTAM-Quelle (seit 0.12.7a): scheitert autorouter, steht der Grund als Hinweis im Panel der Ersatzquelle.
+* Tests: calc 261 (Länderkennzeichen CH), Smoke «desktop» (Station ausblenden, Rückfrage, Warnsymbol,
+  rechte/linke Spalte, A1/A2) und «gas» (Abschnitt «Ganze Fahrt»).
+
 ## 0.12.7 — 2026-10-07 · 2. Pilot für alle Ballone, Ausschnitt-Schieber, Startetappe auf ihren Bereich, Panel-Nummern mit Etappe, FIS-Werte
 
 * **2. Pilot** jetzt für alle Ballontypen (Feld im Assistenten «Personen», Masse, Flugplan P/, Rolle heisst
