@@ -18,6 +18,7 @@ import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { printDialog, paxSheet, paxCardTitle } from './extras.js';
 import { distKm, bearing } from '../calc/geo.js';
 import { icon, iconSvg } from './icons.js';
+import { stageSets, startPlanOff } from '../calc/stageplan.js';
 
 export async function renderBrief(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
@@ -93,13 +94,9 @@ export async function renderBrief(view, ctx, id, opts = {}) {
     lastV?.pdfUrl ? h('div.mini.no-print', [h('a', { href: lastV.pdfUrl, target: '_blank', rel: 'noopener' }, `Final v${lastV.no} PDF ↗`)]) : null,
   ]));
   const panels = visiblePanels(S, b);
-  for (const s of SECTIONS) {
-    const ps = panels.filter((p) => p.section === s.id);
-    if (!ps.length) continue;
-    brief.appendChild(h('div.bs', `${s.id} · ${s[lang] || s.de}`));
-    const tbl = h('table.bp');
-    for (const p of ps) {
-      const d = b.panels[p.key] || { content: {}, extra: {}, comment: '' };
+  /** Zeile eines Panels (th: Nummer/Titel, td: Inhalt); bb = Hauptbriefing oder abgeleitete Sicht einer Etappe (0.12.5). */
+  function panelRow(p, bb, list, rowClass = '') {
+      const d = bb.panels[p.key] || { content: {}, extra: {}, comment: '' };
       const cell = h('td');
       switch (p.kind) {
         case 'core': cell.appendChild(h('div.core-grid', [coreRows(), balloonImage(b, S) ? h('img.bimg.core-img', { src: balloonImage(b, S), alt: b.balloon.reg || '' }) : null])); break;
@@ -124,11 +121,11 @@ export async function renderBrief(view, ctx, id, opts = {}) {
           const snap = d.content?.auto;
           if (snap && ['dabs', 'synoptic'].includes(snap.kind) && (snap.images || []).length) {
             // Bilder als Beilage (eigene Seiten), im Panel nur der Verweis
-            attachments.push({ title: tt(p), images: snap.images, stand: standLine(snap, b) });
-            const viewer = renderSnapshot(snap, b, ctx, { interactive: false }); viewer.classList.add('no-print');
+            attachments.push({ title: `${bb.stagePlan ? `E${bb.stagePlan.no} · ` : ''}${tt(p)}`, images: snap.images, stand: standLine(snap, bb) });
+            const viewer = renderSnapshot(snap, bb, ctx, { interactive: false }); viewer.classList.add('no-print');
             cell.appendChild(h('div', [h('div.mini.attref', t('att_ref', { n: attachments.length, p: snap.images.length })), viewer]));
             for (const x of (snap.data?.texts || []).filter((y) => !y.linkOnly)) cell.appendChild(h('div.print-only', [h('div.mini', [h('b', x.name), x.fetched ? ` · ${new Date(x.fetched).toISOString().slice(0, 16).replace('T', ' ')} UTC` : '']), h('pre.report.wx', { style: { whiteSpace: 'pre-wrap', fontSize: '10px', fontFamily: 'inherit' } }, x.text)]));
-          } else if (snap) cell.appendChild(renderSnapshot(snap, b, ctx, { interactive: false }));
+          } else if (snap) cell.appendChild(renderSnapshot(snap, bb, ctx, { interactive: false }));
           if (d.content?.text) cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap', marginTop: '4px' } }, textToNodes(d.content.text)));
           for (const im of d.content?.images || []) cell.appendChild(h('figure', { style: { margin: '4px 0' } }, [h('img.pimg', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]));
           if (!d.content?.auto && !d.content?.text && !(d.content?.images || []).length) cell.appendChild(h('span.mini', '–'));
@@ -147,9 +144,26 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       }
       if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b', t('ai') + ': '), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
-      tbl.appendChild(h('tr', { class: 'row-' + p.key.replace('.', '-') }, [h('th', [h('span.pno', panelNo(p, panels)), ' ', tt(p), changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]));
+      return h('tr', { class: `row-${p.key.replace('.', '-')}${rowClass}` }, [h('th', [h('span.pno', panelNo(p, list)), ' ', tt(p), bb === b && changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]);
+  }
+  for (const s of SECTIONS) {
+    const ps = panels.filter((p) => p.section === s.id);
+    if (ps.length) {
+      brief.appendChild(h('div.bs', `${s.id} · ${s[lang] || s.de}`));
+      if (s.id === 'B' && startPlanOff(b)) brief.appendChild(h('div.mini', t('sp_startOff')));
+      const tbl = h('table.bp');
+      for (const p of ps) tbl.appendChild(panelRow(p, b, panels));
+      brief.appendChild(tbl);
     }
-    brief.appendChild(tbl);
+    // Etappen-Briefings (0.12.5) zwischen C und D: je Etappe mit Planung ein Abschnitt mit Zeitfenster/Ort und den B/C-Panels
+    if (s.id === 'C') for (const X of stageSets(b)) {
+      const sp = X.bs.stagePlan, list = visiblePanels(S, X.bs);
+      brief.appendChild(h('div.bs.stage', `E${X.no} · ${t('sp_title', { n: X.no, name: X.name || '–' })}`));
+      brief.appendChild(h('div.mini', t('sp_sub', { d: fmtDate(z, sp.ms0, lang), t0: hhmm(z, sp.ms0), t1: hhmm(z, sp.ms1), tz: 'LT', k0: Math.round(sp.km0), k1: Math.round(sp.km1), len: Math.round(sp.lenKm), a: sp.from.name, b: sp.to.name, mid: sp.mid.name })));
+      const tbl = h('table.bp');
+      for (const p of list) tbl.appendChild(panelRow(p, X.bs, list, ` row-${X.sid}`));
+      brief.appendChild(tbl);
+    }
   }
   brief.appendChild(h('div.bf', [h('span', `${APP.name} ${APP.version} · Wicki Aero GmbH · ${t('printDisclaimer')}`), h('span', `${b.site.icao} · ${b.site.tz}`)]));
   if (attachments.length) brief.appendChild(h('div.appendix', attachments.map((a, i) => h('div.att', [h('div.bs', `${t('att_title', { n: i + 1 })} · ${a.title}`), a.stand, ...a.images.map((im) => h('figure', { style: { margin: '4px 0' } }, [h('img.pimg.att', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]))]))));

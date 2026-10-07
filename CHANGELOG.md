@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.12.5 — 2026-10-07 · Ops-Briefing je Etappe, Ortsnamen ISO
+
+* **Ops-Briefing je Etappe (Gasfahrt):** Klickbox **«Ops-Briefing für Etappe»** im Etappenmenü des
+  Höhenprofil-Werkzeugs und im neuen Dialog beim Anlegen einer Etappe (Klick auf die Zeitzeile: Name + Klickbox);
+  Marke **B/C** hinter dem Etappennamen (Grafik, Etappenübersicht, Legende). Die Planung der Startetappe sind die
+  Abschnitte B/C; jede weitere Etappe mit Planung bekommt zwischen C und D einen Abschnitt **E‹n›** mit Zeitfenster,
+  Ort (Etappenmitte → Etappenende, Ortsnamen über Nominatim) und eigenen Panels: METAR/TAF, Temps (zur
+  Etappenmitte), Beobachtungen, Flugwetterprognose (DE), Wind, Ballonprognose, SIGWX, Thermik, Meteogramm,
+  Bemerkungen, Luftraum (Bahnabschnitt des Profils), DABS (nur bei Berührung der Schweiz), NOTAM (überlappende
+  Kreise entlang des Abschnitts), Bemerkungen. Mindestens eine Etappe je Briefing hat eine Planung (Vorgabe
+  Startetappe; Klickbox der letzten Planung gesperrt); Startetappe ohne Planung → orts-/zeitgebundene Panels fehlen
+  in B/C (Hinweis). Vorgabe-Etappen: ab 10 h Start/Enroute/Landung, darunter eine Etappe «Enroute». Etappen-
+  Briefings in Navigation, «Pflichtinhalte ergänzen», Freigabe-Checkliste, Vollständigkeit, «Alle verfügbaren
+  Daten aktualisieren», KI-Kommentar (Etappenkontext) und Briefingsicht/Druck (DABS-Beilagen mit Kennung E‹n›).
+  Hinweis bei verschobener Etappe; Planungsdaten gelöschter Etappen werden entfernt. Nahe Etappennamen weichen in
+  eine zweite Zeile aus. Neu `js/calc/stageplan.js` (`stagePlanBriefing`, `stageSets`, `coverPoints` …),
+  Daten `b.profile.stages[].ops`, `b.stagePlans`.
+* **Ortsnamen:** Länderkennzeichen vor Ortsnamen jetzt einheitlich ISO-2 («DE-Stuttgart»), auch bei der
+  Radiosonde (vorher Kfz-Kennzeichen «D-»).
+* Tests: calc 246 (Etappen-Planung: Vorgaben, Mindestens-eine-Regel, Etappensicht, Kreise, Sichtbarkeit,
+  Vollständigkeit), Smoke «gas» (Dialog neue Etappe, Klickbox, Abschnitt E3 im Editor und in der Briefingsicht).
+
 ## 0.12.4 — 2026-10-07 · NOTAM ohne Schlüssel, Gas-Startmasse, Modellwahl, Orte mit Länderkennzeichen
 
 * **NOTAM ohne Zugang:** neue schlüssellose Quellen im Worker – **FAA DINS** (`notams.faa.gov/dinsQueryWeb`,

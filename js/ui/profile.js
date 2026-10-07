@@ -11,6 +11,7 @@ import { t, getLang } from '../i18n.js';
 import { MODELS, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDate, isoDate, localParts, fmtDateTime } from '../calc/time.js';
 import { ensureProfile, altAt, msAtKm, kmAtMs, posAtKm, reliefAt, segments, rateClass, reliefBreaches, addStage, removeStage, moveStage, stageWindows, nightFraction, ballastPlan, fitPoints } from '../calc/profile.js';
+import { stageOps, canDropOps, ensureOps, pruneStagePlans } from '../calc/stageplan.js';
 import { buildProfileData } from '../auto/profiledata.js';
 import { massPerf, fillFractionOf } from '../model.js';
 import { icao } from '../calc/geo.js';
@@ -215,11 +216,18 @@ export function drawChart(svg, st) {
   }
   // ---- Ebene 3: ECET/BCMT-Marken, Etappen (nummeriert) mit Menü und Griff
   for (const e of sunRow) if (e.kind === 'ecet' || e.kind === 'bcmt') { const k = kmT(e.ms); svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: T, y2: H - B, stroke: C.dim, 'stroke-dasharray': '2 3', opacity: .7 })); }   // Kürzel stehen in der Sonnenzeile
+  const rowEnd = [-Infinity, -Infinity];   // rechtes Ende des letzten Namens je Zeile (untere/obere) – nahe Etappen weichen in die obere Zeile aus
   p.stages.forEach((s, i) => {
-    svg.appendChild(el('line', { x1: x(s.km), x2: x(s.km), y1: T - 18, y2: H - B, stroke: C.stage, 'stroke-width': 1.5 }));   // Strich reicht über die Grafik hinaus bis zum Namen
-    const label = `${i + 1} · ${s.name || ''}`, lw = label.length * 6.4, right = x(s.km) + 4 + lw + 20 > W - R;   // am rechten Rand nach links anschreiben
-    svg.appendChild(el('text', { x: x(s.km) + (right ? -4 : 4), y: T - 7, 'text-anchor': right ? 'end' : 'start', 'font-size': 11, fill: C.stage, 'font-weight': 600 }, label));
-    if (st.interactive) { menuIcon(svg, right ? x(s.km) - 8 - lw - 14 : x(s.km) + 8 + lw, T - 18, 'stage', i); if (i > 0) stageHandle(svg, x(s.km), i); }
+    const ops = stageOps(p.stages, i), pw = ops ? 26 : 0;   // Marke «B/C»: Etappe mit eigener Meteo-/Luftraum-/NOTAM-Planung (0.12.5)
+    const label = `${i + 1} · ${s.name || ''}`, lw = label.length * 6.4 + pw, right = x(s.km) + 4 + lw + 20 > W - R;   // am rechten Rand nach links anschreiben
+    const row = !right && x(s.km) < rowEnd[0] + 10 && x(s.km) >= rowEnd[1] + 10 ? 1 : 0;
+    const yT = row ? T - 21 : T - 7, yL = row ? T - 32 : T - 18;
+    svg.appendChild(el('line', { x1: x(s.km), x2: x(s.km), y1: yL, y2: H - B, stroke: C.stage, 'stroke-width': 1.5 }));   // Strich reicht über die Grafik hinaus bis zum Namen
+    const tx0 = x(s.km) + (right ? -4 - pw : 4);
+    svg.appendChild(el('text', { x: tx0, y: yT, 'text-anchor': right ? 'end' : 'start', 'font-size': 11, fill: C.stage, 'font-weight': 600 }, label));
+    if (ops) { const px = right ? x(s.km) - 4 - pw + 3 : tx0 + lw - pw + 3; const g = el('g', { class: 'pf-ops' }); g.appendChild(el('rect', { x: px, y: yT - 9, width: 22, height: 11, rx: 3, fill: C.stage })); g.appendChild(el('text', { x: px + 11, y: yT - 0.5, 'text-anchor': 'middle', 'font-size': 7.5, fill: '#fff', 'font-weight': 700 }, 'B/C')); g.appendChild(el('title', {}, t(i === 0 ? 'pf_opsStart' : 'pf_opsStage'))); svg.appendChild(g); used.add('ops'); }
+    if (st.interactive) { menuIcon(svg, right ? x(s.km) - 8 - lw - 14 : x(s.km) + 8 + lw, yL, 'stage', i, s.name || ''); if (i > 0) stageHandle(svg, x(s.km), i); }
+    if (!right) rowEnd[row] = x(s.km) + 8 + lw + 14;
     used.add('stage');
   });
   // Modellhorizont vor dem geplanten Fahrtende: Marker mit Pfeil «Ende Prognosemodell» auf Höhe der Etappennamen
@@ -266,8 +274,8 @@ export function drawChart(svg, st) {
   st.scale = { x, y, KM, yMin, yMax, kx: (px) => Math.max(0, Math.min(KM, (px - ML) / (W - ML - R) * KM)), my: (py) => Math.max(yMin, Math.min(yMax, yMin + (1 - (py - T) / (H - T - B)) * (yMax - yMin))), yAx2 };
   return svg;
 }
-function menuIcon(root, px, py, kind, idx) {
-  const g = el('g', { class: 'pf-mi', 'data-kind': kind, 'data-idx': idx });
+function menuIcon(root, px, py, kind, idx, name) {
+  const g = el('g', { class: 'pf-mi', 'data-kind': kind, 'data-idx': idx, ...(name != null ? { 'data-name': name } : {}) });
   g.appendChild(el('rect', { x: px, y: py, width: 14, height: 14, rx: 3, fill: C.panel, stroke: C.line }));
   for (const d of [4, 7, 10]) g.appendChild(el('line', { x1: px + 3, x2: px + 11, y1: py + d, y2: py + d, stroke: C.dim, 'stroke-width': 1.3 }));
   g.appendChild(el('title', {}, kind === 'pt' ? t('pf_ptMenu') : t('pf_stMenu')));
@@ -321,6 +329,7 @@ export function legend(used, ctx, o = {}) {
     used.has('as-tmp') ? [h('span', '(HX)'), t('pf_legAs').split('·').pop().trim()] : null,
     [sw('background:var(--pf-pt)'), t('pf_legPts')],
     used.has('stage') ? [sw('background:var(--pf-stage);height:2px'), t('pf_legStage')] : null,
+    used.has('ops') ? [h('span.sw.pf-opsleg', 'B/C'), t('pf_legOps')] : null,
     [sw('background:var(--pf-ok)'), t('pf_legRate', { m: minAgl })],
   ].filter(Boolean);
   const box = h('div.pf-legend', items.map((it) => h('span', it)));
@@ -392,11 +401,12 @@ export function stageRows(b, ctx) {
 }
 export function stageTable(b, ctx) {
   const rows = stageRows(b, ctx); if (!rows.length) return null;
+  const p = ensureProfile(b);
   const tz = tzName(b);
   const place = (q) => (q ? icao(q.lat, q.lon) : '–');
   return h('div.pf-stages-wrap', [h('div.lbl', t('pf_stages')), h('div.tscroll', h('table.pf-stages.no-lb', [
     h('thead', h('tr', [h('th', 'Nr.'), h('th', t('pf_stage')), h('th', t('pf_stFrom', { tz })), h('th.n', 'km'), h('th.n', t('pf_stAlt')), h('th', t('pf_stPlace')), h('th', t('pf_stCountry')), h('th', t('pf_stAs')), h('th', t('pf_stHz')), h('th', t('pf_stContacts'))])),
-    h('tbody', rows.map((w) => h('tr', [h('td.n', w.no), h('td', w.name || '–'), h('td.mono', `${fmtTD(b, w.ms0)}–${fmtTD(b, w.ms1)}`), h('td.n', `${Math.round(w.km0)}–${Math.round(w.km1)}`), h('td.n', w.altMin != null ? `${w.altMin}–${w.altMax}` : '–'), h('td.mono', `${place(w.from)} → ${place(w.to)}`), h('td', w.firs.map((f) => `${f.name}${f.country && f.country !== f.name ? ` (${f.country})` : ''}`).join(' → ') || '–'), h('td', w.as.map((a) => `${a.name}${a.status === 'near' ? ' (' + t('as_near') + ')' : ''}${a.tmp ? ' (HX)' : ''}`).join(', ') || '–'), h('td', w.hz.map((x) => `${hzLabel(x)} ${Math.round(x.km)}${(x.kmEnd ?? x.km) > x.km ? '–' + Math.round(x.kmEnd) : ''} km`).join(', ') || '–'), h('td', w.contacts.map((c) => `${c.name}${c.freq ? ' ' + c.freq : ''}${c.phone ? ' · ' + c.phone : ''}`).join('; ') || '–')]))),
+    h('tbody', rows.map((w, i) => h('tr', [h('td.n', w.no), h('td', [w.name || '–', stageOps(p.stages, i) ? h('span.tag.pf-opstag', { title: t(i === 0 ? 'pf_opsStart' : 'pf_opsStage') }, 'B/C') : null]), h('td.mono', `${fmtTD(b, w.ms0)}–${fmtTD(b, w.ms1)}`), h('td.n', `${Math.round(w.km0)}–${Math.round(w.km1)}`), h('td.n', w.altMin != null ? `${w.altMin}–${w.altMax}` : '–'), h('td.mono', `${place(w.from)} → ${place(w.to)}`), h('td', w.firs.map((f) => `${f.name}${f.country && f.country !== f.name ? ` (${f.country})` : ''}`).join(' → ') || '–'), h('td', w.as.map((a) => `${a.name}${a.status === 'near' ? ' (' + t('as_near') + ')' : ''}${a.tmp ? ' (HX)' : ''}`).join(', ') || '–'), h('td', w.hz.map((x) => `${hzLabel(x)} ${Math.round(x.km)}${(x.kmEnd ?? x.km) > x.km ? '–' + Math.round(x.kmEnd) : ''} km`).join(', ') || '–'), h('td', w.contacts.map((c) => `${c.name}${c.freq ? ' ' + c.freq : ''}${c.phone ? ' · ' + c.phone : ''}`).join('; ') || '–')]))),
   ]))]);
 }
 export const standLine = (b, D) => (D ? t('pf_stand', { t: fmtDateTime(zoneOf(b), D.stand, getLang()), m: D.modelName || D.model || '', s: D.source || '' }) + (D.errors?.length ? ` · ${t('pf_errors', { e: D.errors.join('; ') })}` : '') : '');
@@ -561,8 +571,13 @@ export function openProfileTool(b0, ctx, o = {}) {
       menuEl.appendChild(h('div.ttl', t('pf_stTitle', { n: idx + 1, t: `${fmtTD(b, msAtKm(p.data.track, s.km))} ${tzName(b)}`, km: s.km })));
       const inp = h('input', { type: 'text', placeholder: t('pf_stName') }); inp.value = s.name || ''; menuEl.appendChild(inp);
       btn(t('pf_rename'), () => { s.name = inp.value.trim() || s.name; }, false);
-      if (idx > 0) btn(t('pf_delPrev'), () => removeStage(p.stages, idx, 'prev'), false);
-      if (idx < p.stages.length - 1) btn(t('pf_delNext'), () => removeStage(p.stages, idx, 'next'), false);
+      // Klickbox «Ops-Briefing für Etappe» (0.12.5): mindestens eine Etappe je Briefing behält die Planung
+      const on = stageOps(p.stages, idx), lockOn = on && !canDropOps(p.stages, idx);
+      const cb = h('input', { type: 'checkbox', checked: on, disabled: lockOn || !!sample, onchange: () => { snapshot(); s.ops = cb.checked; ensureOps(p.stages); redraw(); changed(); } });
+      menuEl.appendChild(h('label.pf-ops-row', { title: lockOn ? t('pf_opsOnly') : t('pf_opsHint') }, [cb, ' ', t(idx === 0 ? 'pf_opsStart' : 'pf_opsStage'), lockOn ? h('span.note.small', ` · ${t('pf_opsOnly')}`) : null]));
+      const drop = (mode) => { const gone = p.stages[idx].id; removeStage(p.stages, idx, mode); ensureOps(p.stages); if (!sample) { if (b.stagePlans) delete b.stagePlans[gone]; pruneStagePlans(b); } };
+      if (idx > 0) btn(t('pf_delPrev'), () => drop('prev'), false);
+      if (idx < p.stages.length - 1) btn(t('pf_delNext'), () => drop('next'), false);
     }
     chartWrap.appendChild(menuEl);
     inpFocus(menuEl);
@@ -589,8 +604,26 @@ export function openProfileTool(b0, ctx, o = {}) {
     const mi = ev.target.closest('.pf-mi'); if (mi) { openMenu(mi.dataset.kind, +mi.dataset.idx, ev); ev.stopPropagation(); return; }
     if (!ev.target.closest('.pf-axis')) return;
     const { px } = pos(ev), km = Math.round(st.scale.kx(px));
-    snapshot(); const s = addStage(p.stages, km, t('pf_newStage', { t: fmtTD(b, msAtKm(p.data.track, km)) }), 2); if (!s) { history.pop(); undoBtn.disabled = !history.length; return; } redraw(); changed();
+    if (p.stages.some((q) => Math.abs(q.km - km) < 2)) return;
+    openNewStageMenu(km, ev); ev.stopPropagation();   // sonst schliesst der Klick auf den Hintergrund das Menü gleich wieder
   });
+  // Dialog beim Anlegen einer Etappe (0.12.5): Name und Klickbox «Ops-Briefing für Etappe» bestätigen
+  function openNewStageMenu(km, ev) {
+    closeMenu();
+    const r = chartWrap.getBoundingClientRect();
+    menuEl = h('div.pf-menu.pf-newstage');
+    menuEl.style.left = Math.max(0, Math.min(r.width - 270, ev.clientX - r.left + 6)) + 'px'; menuEl.style.top = (ev.clientY - r.top - 120) + 'px';
+    const tm = fmtTD(b, msAtKm(p.data.track, km));
+    menuEl.appendChild(h('div.ttl', t('pf_newStageTitle', { t: `${tm} ${tzName(b)}`, km })));
+    const inp = h('input', { type: 'text', placeholder: t('pf_stName') }); inp.value = t('pf_newStage', { t: tm }); menuEl.appendChild(inp);
+    const cb = h('input', { type: 'checkbox', checked: false, disabled: !!sample });
+    menuEl.appendChild(h('label.pf-ops-row', { title: t('pf_opsHint') }, [cb, ' ', t('pf_opsStage')]));
+    menuEl.appendChild(h('div.note.small', t('pf_opsHint')));
+    menuEl.appendChild(h('button', { type: 'button', onclick: () => { snapshot(); const s = addStage(p.stages, km, inp.value.trim() || t('pf_newStage', { t: tm }), 2, cb.checked); if (!s) { history.pop(); undoBtn.disabled = !history.length; } closeMenu(); redraw(); changed(); } }, t('pf_createStage')));
+    menuEl.appendChild(h('button', { type: 'button', onclick: closeMenu }, t('cancel')));
+    chartWrap.appendChild(menuEl);
+    inpFocus(menuEl);
+  }
   // Karte (nur Ansicht): Leaflet mit wählbarer Grundkarte, Bahn, Stundenmarken, Höhenpunkte, Etappenmarker, Luftraumflächen
   let map = null, layerGroup = null, baseLayer = null, aipLayer = null;
   function drawMap() {

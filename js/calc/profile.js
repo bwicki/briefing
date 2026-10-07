@@ -34,9 +34,10 @@ export function defaultPoints(siteAlt, cruiseAlt, totalKm, landAlt = siteAlt) {
   const cruise = Math.max(siteAlt + 300, Math.round(cruiseAlt / 50) * 50);
   return [{ km: 0, alt: Math.round(siteAlt) }, { km: 2, alt: cruise }, { km: Math.max(3, T - 6), alt: cruise }, { km: T, alt: Math.round(landAlt) }];
 }
-export const defaultStages = (names = { start: 'Start', enroute: 'Enroute', landing: 'Landung' }, totalKm = 100) => [
-  { id: 's1', km: 0, name: names.start }, { id: 's2', km: Math.round(totalKm * 0.15), name: names.enroute }, { id: 's3', km: Math.round(totalKm * 0.85), name: names.landing },
-];
+/** Vorgabe-Etappen: ab 10 h Fahrtdauer Start / Enroute / Landung, darunter eine Etappe «Enroute» (0.12.5); die erste trägt die Planung (ops). */
+export const defaultStages = (names = { start: 'Start', enroute: 'Enroute', landing: 'Landung' }, totalKm = 100, durationMin = 1440) => (durationMin >= 600 ? [
+  { id: 's1', km: 0, name: names.start, ops: true }, { id: 's2', km: Math.round(totalKm * 0.15), name: names.enroute, ops: false }, { id: 's3', km: Math.round(totalKm * 0.85), name: names.landing, ops: false },
+] : [{ id: 's1', km: 0, name: names.enroute, ops: true }]);
 /** Punkte auf die Bahnlänge anpassen: sortieren, erster Punkt bei 0 km, letzter bei totalKm; Zwischenpunkte jenseits entfernen. */
 export function fitPoints(points, totalKm) {
   const T = Math.max(1, Math.round(totalKm * 10) / 10);
@@ -151,9 +152,9 @@ let seq = 0;
 const newId = () => `st${Date.now().toString(36)}${(seq++).toString(36)}`;
 export const sortStages = (stages) => stages.sort((a, b) => a.km - b.km);
 /** Etappe bei km einfügen (Name optional); Nummerierung ergibt sich aus der Reihenfolge. */
-export function addStage(stages, km, name = '', minGap = 2) {
+export function addStage(stages, km, name = '', minGap = 2, ops = false) {
   if (stages.some((s) => Math.abs(s.km - km) < minGap)) return null;
-  const s = { id: newId(), km: Math.round(km), name };
+  const s = { id: newId(), km: Math.round(km), name, ops: !!ops };
   stages.push(s); sortStages(stages); return s;
 }
 /** Etappe löschen: 'prev' = Vorgänger übernimmt den Abschnitt, 'next' = Nachfolger beginnt hier. */

@@ -19,6 +19,8 @@ import { openAccessDialog } from './access.js';
 import { fplPanel } from './fplpanel.js';
 import { profilePanel } from './profile.js';
 import { icon, iconSvg } from './icons.js';
+import { stageSets, startPlanOff, planStale, stageWindowsOf, STAGE_REFRESH } from '../calc/stageplan.js';
+import { placeName } from '../net.js';
 
 export async function renderEditor(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
@@ -45,7 +47,12 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     } catch (e) { toast(`${t('error')}: ${e.message}`); }
   }
   const saveSoon = debounce(() => saveNow(), 900);
-  const touched = (panelKey) => { dirty = true; if (panelKey) { const p = b.panels[panelKey]; p.updatedAt = Date.now(); p.updatedBy = ctx.who; } saveSoon(); drawNav(); };
+  const touched = (panelKey, X = main) => {
+    dirty = true;
+    if (panelKey) { const p = X.b.panels[panelKey]; if (p) { p.updatedAt = Date.now(); p.updatedBy = ctx.who; } if (X.sid) X.plan.at = windowOf(X.sid); }
+    saveSoon(); drawNav();
+    if (panelKey === 'A.profile') setsSoon();   // Etappen geändert → Etappen-Briefings nachführen (0.12.5)
+  };
   const touchedSoon = debounce(() => drawSide(), 1500);
   window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 
@@ -79,10 +86,24 @@ export async function renderEditor(view, ctx, id, opts = {}) {
 
   const panels = visiblePanels(S, b);
   const mandatory = new Set(mandatoryPanels(S, b).map((p) => p.key));
+  // Kontexte: Hauptbriefing (main) und Etappen-Briefings (0.12.5: je Etappe mit Planung ausser der ersten ein Satz B/C-Panels
+  // mit der abgeleiteten Sicht der Etappe – Ort = Etappenmitte, Zeitfenster = Etappe)
+  const main = { b, sid: null, panels, mandatory, id: (p) => p.key };
+  let sets = [], setsSig = '';
+  const windowOf = (sid) => { const w = stageWindowsOf(b).find((x) => x.id === sid); return w ? { km0: w.km0, km1: w.km1, ms0: w.ms0, ms1: w.ms1 } : null; };
+  function buildSets() {
+    sets = stageSets(b).map((x) => ({ ...x, b: x.bs, panels: visiblePanels(S, x.bs), mandatory: new Set(mandatoryPanels(S, x.bs).map((p) => p.key)), sect: `E${x.no}`, id: (p) => `${x.sid}-${p.key}` }));
+    setsSig = sets.map((x) => `${x.sid}:${x.no}:${Math.round(x.bs.stagePlan.km0)}-${Math.round(x.bs.stagePlan.km1)}:${Math.round(x.bs.stagePlan.ms0 / 600000)}-${Math.round(x.bs.stagePlan.ms1 / 600000)}`).join('|') + (startPlanOff(b) ? '|off' : '');
+    return setsSig;
+  }
+  buildSets();
+  const setsSoon = debounce(() => { const old = setsSig; if (buildSets() !== old) { drawNav(); drawPanels(); } }, 1200);
+  const items = () => [...panels.map((p) => ({ id: p.key, p, X: main })), ...sets.flatMap((X) => X.panels.map((p) => ({ id: X.id(p), p, X })))];
+  const itemOf = (id) => items().find((it) => it.id === id);
 
-  function panelStatus(p) {
-    if (panelFilled(p, b)) return 'ok';
-    if (mandatory.has(p.key)) return 'must';
+  function panelStatus(p, X = main) {
+    if (panelFilled(p, X.b)) return 'ok';
+    if (X.mandatory.has(p.key)) return 'must';
     if (p.grade === 'auto') return 'auto';
     return 'man';
   }
@@ -99,13 +120,16 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   function drawNav() {
     const e = nav.firstChild; clear(e);
     if (!activeSect) activeSect = SECTIONS.find((s) => panels.some((p) => p.section === s.id))?.id || 'A';
+    const navSect = (id, label, ps, X) => {
+      const det = h('details', { 'data-sect': id }, [h('summary', label)]);
+      det.addEventListener('toggle', () => { if (det.dataset.auto) { delete det.dataset.auto; return; } if (det.open) { navOpen.add(id); if (closedActive === id) closedActive = null; } else { navOpen.delete(id); if (id === activeSect) closedActive = id; } });
+      for (const p of ps) { const key = X.id(p); det.appendChild(h('div.it', { 'data-key': key, onclick: () => { setActive(key); document.getElementById('panel-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p, X)), h('span.pno', panelNo(p, X.panels)), ' ', tt(p), X.mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null])); }
+      e.appendChild(det);
+    };
     for (const s of SECTIONS) {
       const ps = panels.filter((p) => p.section === s.id);
-      if (!ps.length) continue;
-      const det = h('details', { 'data-sect': s.id }, [h('summary', `${s.id} · ${s[lang] || s.de}`)]);
-      det.addEventListener('toggle', () => { if (det.dataset.auto) { delete det.dataset.auto; return; } if (det.open) { navOpen.add(s.id); if (closedActive === s.id) closedActive = null; } else { navOpen.delete(s.id); if (s.id === activeSect) closedActive = s.id; } });
-      for (const p of ps) det.appendChild(h('div.it', { 'data-key': p.key, onclick: () => { setActive(p.key); document.getElementById('panel-' + p.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p)), h('span.pno', panelNo(p, panels)), ' ', tt(p), mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null]));
-      e.appendChild(det);
+      if (ps.length) navSect(s.id, `${s.id} · ${s[lang] || s.de}`, ps, main);
+      if (s.id === 'C') for (const X of sets) navSect(X.sect, t('sp_nav', { n: X.no, name: X.name }), X.panels, X);   // Etappen-Briefings zwischen C und D
     }
     e.appendChild(h('div.note', { style: { marginTop: '8px' } }, t('navLegend')));
     applyNavOpen();
@@ -113,8 +137,9 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     drawSide();
   }
   function setActive(key) {
-    const p = panels.find((x) => x.key === key); if (!p) return;
-    if (p.section !== activeSect) { activeSect = p.section; closedActive = null; }
+    const it = itemOf(key); if (!it) return;
+    const sect = it.X.sid ? it.X.sect : it.p.section;
+    if (sect !== activeSect) { activeSect = sect; closedActive = null; }
     activeKey = key; applyNavOpen();
   }
   // aktiver Abschnitt aus der Scroll-Position (erstes Panel, dessen Oberkante die Lesemarke erreicht hat)
@@ -144,7 +169,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     clear(side);
     const hrs = Math.round((b.time.startMs - Date.now()) / 3600000);
     const counts = { ok: 0, must: 0, auto: 0, man: 0 };
-    for (const p of panels) counts[panelStatus(p)]++;
+    for (const it of items()) counts[panelStatus(it.p, it.X)]++;
     const ch = changesSinceFinal(b);
     side.append(...[
       goNoGoCard(b, ctx),
@@ -174,37 +199,37 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   // Zusatzboxen unter dem Panelinhalt: «Eigener Text / Bilder / Daten» (blau) und «Kommentar PIC» (gelb) – erscheinen nur mit Inhalt
   // oder nach Klick auf den Symbolknopf im Panelkopf; KI-Kommentar dazwischen (violett)
   const openBoxes = new Set();
-  function extraBox(p, d) {
-    return h('div.sub.extra', [h('div.lbl', t('extra')), pasteArea(d.extra, (v) => { d.extra = v; touched(p.key); }, upload, { placeholder: t('extraHint'), rows: 2 })]);
+  function extraBox(p, d, X = main) {
+    return h('div.sub.extra', [h('div.lbl', t('extra')), pasteArea(d.extra, (v) => { d.extra = v; touched(p.key, X); }, upload, { placeholder: t('extraHint'), rows: 2 })]);
   }
-  function commentBox(p, d) {
+  function commentBox(p, d, X = main) {
     const ro = shared?.role === 'read';
-    return h('div.sub.cmt', [h('div.lbl', t('comment')), textarea(d.comment, { rows: 2, readOnly: ro, placeholder: t('comment'), oninput: (e) => { d.comment = e.target.value; touched(p.key); } })]);
+    return h('div.sub.cmt', [h('div.lbl', t('comment')), textarea(d.comment, { rows: 2, readOnly: ro, placeholder: t('comment'), oninput: (e) => { d.comment = e.target.value; touched(p.key, X); } })]);
   }
-  function subBlocks(p) {
-    const d = b.panels[p.key];
+  function subBlocks(p, X = main) {
+    const d = X.b.panels[p.key];
     const hasExtra = !!((d.extra?.text || '').trim() || (d.extra?.images || []).length);
-    const extra = hasExtra || openBoxes.has(p.key + ':extra') ? extraBox(p, d) : null;
+    const extra = hasExtra || openBoxes.has(X.id(p) + ':extra') ? extraBox(p, d, X) : null;
     // KI-Kommentar direkt unter dem Panelinhalt: Text (Klick auf ✎ zum Bearbeiten), ✕ verwirft
     let ai = null;
     if (d.ai?.text) {
       const ro = shared?.role === 'read';
       const txt = h('div.ai-text', d.ai.text);
-      const ed = textarea(d.ai.text, { rows: 4, oninput: (e) => { d.ai.text = e.target.value; d.ai.edited = true; txt.textContent = e.target.value; touched(p.key); } }); ed.hidden = true;
-      ai = h('div.sub.ai', [h('div.row-actions', [h('span.lbl', [icon('ai', 14), ` ${t('ai')} · ${d.ai.model || ''} · ${d.ai.ts ? fmtDateTime(z, d.ai.ts, lang) : ''}${d.ai.edited ? ' · ' + t('ai_edited') : ''}`]), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_edit'), onclick: () => { ed.hidden = !ed.hidden; txt.hidden = !ed.hidden; if (!ed.hidden) ed.focus(); } }, icon('edit')), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_discard'), onclick: () => { d.ai = null; touched(p.key); drawPanels(); } }, icon('close'))]), txt, ed]);
+      const ed = textarea(d.ai.text, { rows: 4, oninput: (e) => { d.ai.text = e.target.value; d.ai.edited = true; txt.textContent = e.target.value; touched(p.key, X); } }); ed.hidden = true;
+      ai = h('div.sub.ai', [h('div.row-actions', [h('span.lbl', [icon('ai', 14), ` ${t('ai')} · ${d.ai.model || ''} · ${d.ai.ts ? fmtDateTime(z, d.ai.ts, lang) : ''}${d.ai.edited ? ' · ' + t('ai_edited') : ''}`]), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_edit'), onclick: () => { ed.hidden = !ed.hidden; txt.hidden = !ed.hidden; if (!ed.hidden) ed.focus(); } }, icon('edit')), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_discard'), onclick: () => { d.ai = null; touched(p.key, X); drawPanels(); } }, icon('close'))]), txt, ed]);
     }
-    const comment = (d.comment || '').trim() || openBoxes.has(p.key + ':cmt') ? commentBox(p, d) : null;
+    const comment = (d.comment || '').trim() || openBoxes.has(X.id(p) + ':cmt') ? commentBox(p, d, X) : null;
     return [extra, ai, comment];
   }
   /** Symbolknöpfe im Panelkopf: 📝 Eigener Text/Bilder/Daten · 💬 Kommentar PIC – fügen die Box unter dem Inhalt an und setzen den Fokus. */
-  function addButtons(p, d) {
+  function addButtons(p, d, X = main) {
     if (shared?.role === 'read') return null;
     const open = (kind) => {
-      const body = document.getElementById('panel-' + p.key)?.querySelector('.panel-body'); if (!body) return;
+      const body = document.getElementById('panel-' + X.id(p))?.querySelector('.panel-body'); if (!body) return;
       let box = body.querySelector(kind === 'extra' ? ':scope > .sub.extra' : ':scope > .sub.cmt');
       if (!box) {
-        openBoxes.add(`${p.key}:${kind}`);
-        box = kind === 'extra' ? extraBox(p, d) : commentBox(p, d);
+        openBoxes.add(`${X.id(p)}:${kind}`);
+        box = kind === 'extra' ? extraBox(p, d, X) : commentBox(p, d, X);
         if (kind === 'extra') { const before = body.querySelector(':scope > .sub.ai') || body.querySelector(':scope > .sub.cmt'); before ? body.insertBefore(box, before) : body.appendChild(box); } else body.appendChild(box);
       }
       box.querySelector('textarea')?.focus();
@@ -220,22 +245,23 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     return (p.link && S.sources[p.link]) || snap?.data?.pdfUrl || snap?.sourceUrl || snap?.data?.sourceUrl || snap?.images?.find((im) => im.src)?.src || (snap?.source && /^https?:\/\//.test(snap.source) ? snap.source : '') || '';
   }
   const shortUrl = (u) => { const x = u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''); return x.length > 28 ? x.slice(0, 26) + '[…]' : x; };
-  function renderPanel(p) {
-    const d = b.panels[p.key] || (b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '' });
+  function renderPanel(p, X = main) {
+    const bb = X.b;   // Hauptbriefing oder abgeleitete Sicht der Etappe
+    const d = bb.panels[p.key] || (bb.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '' });
     const srcUrl = sourceUrlOf(p, d);
     const head = h('div.panel-head', [
       h('div.lft', [
-        h('div.ttl', [h('span.pno', panelNo(p, panels)), ' ', tt(p)]),
+        h('div.ttl', [h('span.pno', panelNo(p, X.panels)), ' ', tt(p)]),
         h('div.src', `${t('stand')}: ${d.updatedAt ? `${fmtDateTime(z, d.updatedAt, lang)} · ${d.updatedBy || ''}` : t('stand_none')}`),
       ]),
       h('div.rgt', [
         h('div.rrow', [
-          mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
+          X.mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
           p.grade === 'auto' ? tag('auto', 'AUTO') : p.grade === 'half' ? tag('half', 'LINK + EINFÜGEN') : p.grade === 'calc' ? tag('calc', 'CALC') : null,
-          p.noAi ? null : aiButtons(p, d),
+          p.noAi ? null : aiButtons(p, d, X),
         ]),
         srcUrl ? h('a.srclink', { href: srcUrl, target: '_blank', rel: 'noopener', title: srcUrl }, shortUrl(srcUrl)) : null,
-        addButtons(p, d),
+        addButtons(p, d, X),
       ]),
     ]);
     const body = h('div.panel-body');
@@ -250,7 +276,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       case 'paxbriefing': content = paxBriefingBlock(p, d); break;
       case 'text': {
         if (d.content.text == null && p.defaultText) d.content.text = tt(p.defaultText);
-        content = textarea(d.content.text || '', { rows: 2, oninput: (e) => { d.content.text = e.target.value; touched(p.key); } });
+        content = textarea(d.content.text || '', { rows: 2, oninput: (e) => { d.content.text = e.target.value; touched(p.key, X); } });
         break;
       }
       case 'fpl': content = fplPanel(b, ctx, d, () => touched(p.key), shared?.role === 'read'); break;
@@ -268,9 +294,9 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         const link = p.link && S.sources[p.link];
         if (!d.content) d.content = {};
         content = h('div', [
-          autoBlock(p, d, b, ctx, { onChange: () => touched(p.key), readOnly: shared?.role === 'read', upload }),
+          autoBlock(p, d, bb, ctx, { onChange: () => touched(p.key, X), readOnly: shared?.role === 'read', upload }),
           // Einfügepflicht (LINK + EINFÜGEN): Feld für den offiziellen Bericht bleibt immer sichtbar; sonst dient die Zusatzbox
-          p.grade === 'half' ? h('div.sub.half', [h('div.lbl', t('panel_pasteSummary')), pasteArea(d.content, (v) => { Object.assign(d.content, { text: v.text, images: v.images }); touched(p.key); }, upload)]) : null,
+          p.grade === 'half' ? h('div.sub.half', [h('div.lbl', t('panel_pasteSummary')), pasteArea(d.content, (v) => { Object.assign(d.content, { text: v.text, images: v.images }); touched(p.key, X); }, upload)]) : null,
         ]);
         break;
       }
@@ -282,15 +308,15 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         ]);
       }
     }
-    body.append(content, ...subBlocks(p).filter(Boolean));
-    return h('div.panel' + (panelStatus(p) === 'must' ? '.must-open' : ''), { id: 'panel-' + p.key }, [head, body]);
+    body.append(content, ...subBlocks(p, X).filter(Boolean));
+    return h('div.panel' + (panelStatus(p, X) === 'must' ? '.must-open' : ''), { id: 'panel-' + X.id(p) }, [head, body]);
   }
   /** «KI-Kommentar» (direkt) und «…» (mit Prompt-Maske) im Titelbalken – Server-Modus mit KI-Freigabe. */
-  function aiButtons(p, d) {
+  function aiButtons(p, d, X = main) {
     if (ctx.store.mode !== 'remote' || !ctx.can('ai') || shared?.role === 'read') return null;
     const hasContent = !!(d.content?.auto || (d.content?.text || '').trim() || (d.content?.images || []).length || (d.extra?.text || '').trim() || (d.extra?.images || []).length || ['core', 'sun', 'massperf', 'schedule', 'equipment', 'transition'].includes(p.kind));
     if (!hasContent) return null;
-    const run = async (edit) => { const btn = wrap.querySelector('button'); btn.disabled = true; btn.textContent = t('ai_working'); await askAi(p, d, b, ctx, () => touched(p.key), drawPanels, { edit }); btn.disabled = false; btn.textContent = d.ai?.text ? t('ai_again') : t('ai_ask'); btn.classList.toggle('renew', !!d.ai?.text); };
+    const run = async (edit) => { const btn = wrap.querySelector('button'); btn.disabled = true; btn.textContent = t('ai_working'); await askAi(p, d, X.b, ctx, () => touched(p.key, X), drawPanels, { edit }); btn.disabled = false; btn.textContent = d.ai?.text ? t('ai_again') : t('ai_ask'); btn.classList.toggle('renew', !!d.ai?.text); };
     const wrap = h('span.aibtns', [
       h('button.btn.small.ai' + (d.ai?.text ? '.renew' : ''), { type: 'button', title: t('ai_direct'), onclick: () => run(false) }, d.ai?.text ? t('ai_again') : t('ai_ask')),
       h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => run(true) }, icon('more', 14)),
@@ -341,17 +367,24 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   }
   async function refreshAll(statusEl) {
     const keys = panels.filter((p) => p.kind === 'auto' && (['meteogram', 'wind', 'temps', 'traj', 'balloon', 'pdiff', 'metar', 'sigmet', 'thermal'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE'))).map((p) => p.key);
-    let n = 0;
+    let n = 0, total = keys.length;
     ctx.autoLoad = false;
     const res = await refreshAllData(ctx, b, keys, (k, st, e) => { if (statusEl) statusEl.textContent = `${k} ${st === 'loading' ? '…' : st === 'ok' ? '✓' : '✗ ' + (e?.message || '')}`; });
     for (const [k, snap] of Object.entries(res)) { if (!snap.error) { b.panels[k].content = { ...(b.panels[k].content || {}), auto: snap }; touched(k); n++; } }
-    (b.meteo = b.meteo || {}).lastRefresh = { ts: Date.now(), n, total: keys.length };
+    // Etappen-Briefings (0.12.5): dieselben Modell-/Meldungspanels je Etappe
+    for (const X of sets) {
+      const ks = X.panels.filter((p) => p.kind === 'auto' && (STAGE_REFRESH.includes(p.auto) || (p.auto === 'fwp' && X.bs.site.country === 'DE'))).map((p) => p.key);
+      total += ks.length;
+      const r2 = await refreshAllData(ctx, X.bs, ks, (k, st, e) => { if (statusEl) statusEl.textContent = `${X.sect} ${k} ${st === 'loading' ? '…' : st === 'ok' ? '✓' : '✗ ' + (e?.message || '')}`; });
+      for (const [k, snap] of Object.entries(r2)) { if (!snap.error) { X.bs.panels[k].content = { ...(X.bs.panels[k].content || {}), auto: snap }; touched(k, X); n++; } }
+    }
+    (b.meteo = b.meteo || {}).lastRefresh = { ts: Date.now(), n, total };
     drawPanels(); ctx.autoLoad = true;
   }
   /** Über dem ersten Abschnitt, bleibt beim Rollen unter der Kopfzeile stehen: alle automatischen Panels neu laden (ohne KI-Kommentare)
    *  mit Status daneben, und «Pflichtinhalte ergänzen» – springt zum nächsten noch leeren Pflicht-Panel (zyklisch ab dem aktiven). */
   let mustBtn = null;
-  const openMandatory = () => panels.filter((p) => panelStatus(p) === 'must');
+  const openMandatory = () => items().filter((it) => panelStatus(it.p, it.X) === 'must');
   function updateMustBtn() {
     if (!mustBtn) return;
     const n = openMandatory().length;
@@ -360,10 +393,10 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   }
   function jumpMandatory() {
     const open = openMandatory(); if (!open.length) return;
-    const i = open.findIndex((p) => p.key === activeKey);
+    const i = open.findIndex((it) => it.id === activeKey);
     const next = open[(i + 1) % open.length];
-    setActive(next.key);
-    document.getElementById('panel-' + next.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setActive(next.id);
+    document.getElementById('panel-' + next.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   function refreshRow() {
     const canEdit = canOwn || shared?.role === 'edit';
@@ -381,21 +414,39 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const rr = refreshRow(); if (rr) mainCol.appendChild(rr);
     for (const s of SECTIONS) {
       const ps = panels.filter((p) => p.section === s.id);
-      if (!ps.length) continue;
-      mainCol.appendChild(h('div.sect-title', [h('span.id', s.id), h('span.nm', s[lang] || s.de)]));
-      if (s.id === 'B' && b.site.lat != null) mainCol.appendChild(meteoBar(b, ctx, { onChange: () => { dirty = true; saveSoon(); }, refreshAll, readOnly: shared?.role === 'read' }));
-      for (const p of ps) mainCol.appendChild(renderPanel(p));
+      if (ps.length) {
+        mainCol.appendChild(h('div.sect-title', [h('span.id', s.id), h('span.nm', s[lang] || s.de)]));
+        if (s.id === 'B' && b.site.lat != null) mainCol.appendChild(meteoBar(b, ctx, { onChange: () => { dirty = true; saveSoon(); }, refreshAll, readOnly: shared?.role === 'read' }));
+        if (s.id === 'B' && startPlanOff(b)) mainCol.appendChild(h('div.sect-sub', h('span.warn', t('sp_startOff'))));
+        for (const p of ps) mainCol.appendChild(renderPanel(p));
+      }
+      if (s.id === 'C') for (const X of sets) renderStageSet(X);   // Etappen-Briefings zwischen C und D (0.12.5)
     }
+  }
+  /** Abschnitt «E2 · Etappe 2 · Name» mit Zeitfenster/Ort und den B/C-Panels der Etappe. */
+  function renderStageSet(X) {
+    const sp = X.bs.stagePlan;
+    mainCol.appendChild(h('div.sect-title.stage', [h('span.id', X.sect), h('span.nm', t('sp_title', { n: X.no, name: X.name || '–' }))]));
+    const sub = h('div.sect-sub', { title: t('sp_hint') });
+    const line = () => `${t('sp_sub', { d: fmtDate(z, sp.ms0, lang), t0: hhmm(z, sp.ms0), t1: hhmm(z, sp.ms1), tz: 'LT', k0: Math.round(sp.km0), k1: Math.round(sp.km1), len: Math.round(sp.lenKm), a: sp.from.name, b: sp.to.name, mid: sp.mid.name })}`;
+    const txt = h('span', line());
+    sub.append(txt, planStale(X.plan.at, windowOf(X.sid)) ? h('span.warn', `⚠ ${t('sp_stale')}`) : null);
+    mainCol.appendChild(sub);
+    // Ortsnamen der Etappe (Nominatim) nachtragen, einmal je Etappe gespeichert
+    const want = [['fromName', sp.from], ['midName', sp.mid], ['toName', sp.to]].filter(([k]) => !X.plan[k]);
+    if (want.length && b.site.lat != null) Promise.all(want.map(([k, q]) => placeName(q.lat, q.lon, b.site.country, lang).then((nm) => { if (nm) { X.plan[k] = nm; q.name = nm; if (k === 'midName') X.bs.site.name = nm; if (k === 'toName') X.bs.landing.name = nm; } }))).then(() => { if (sub.isConnected) { txt.textContent = line(); dirty = true; saveSoon(); } });
+    for (const p of X.panels) mainCol.appendChild(renderPanel(p, X));
   }
   document.addEventListener('fb:ai', () => drawNav());
 
   // ---------------------------------------------------------------- Freigabe
   async function release() {
-    const missing = mandatoryPanels(S, b).filter((p) => !panelFilled(p, b));
+    // Pflicht-Panels des Hauptbriefings und der Etappen-Briefings (0.12.5)
+    const missing = [...mandatoryPanels(S, b).filter((p) => !panelFilled(p, b)).map((p) => tt(p)), ...sets.flatMap((X) => mandatoryPanels(S, X.bs).filter((p) => !panelFilled(p, X.bs)).map((p) => `${X.sect} · ${tt(p)}`))];
     const reason = textarea('', { rows: 2, placeholder: t('rel_reason') });
     const ch = changesSinceFinal(b);
     const content = h('div', [
-      missing.length ? h('div', [h('div.warn', t('rel_missing')), h('ul', missing.map((p) => h('li', tt(p)))), h('div.lbl', t('rel_force')), reason]) : h('div.ok', t('rel_ok')),
+      missing.length ? h('div', [h('div.warn', t('rel_missing')), h('ul', missing.map((x) => h('li', x))), h('div.lbl', t('rel_force')), reason]) : h('div.ok', t('rel_ok')),
       ch ? h('div.note', { style: { marginTop: '8px' } }, ch.any ? `${t('chg_title', { n: ch.since.no })}: ${[...ch.fields.map((f) => t('chg_' + f)), ...ch.panels.map((p) => tt(panelByKey(p.key) || { de: p.key }))].join(', ')}` : t('chg_none')) : null,
       h('div.note', { style: { marginTop: '8px' } }, t('rel_pdfHint')),
     ]);

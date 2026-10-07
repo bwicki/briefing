@@ -85,7 +85,7 @@ echo "# --- Datenabrufe (/api/wx) ---"
 TOK=$(j -X POST $A/api/session -d '{"user":"bwicki","password":"1234"}' | tok); H="Authorization: Bearer $TOK"
 echo "# wx ohne Token → 401"; code "$A/api/wx/metar?lat=47.3&lon=8.4"; echo
 echo "# om ungültige Query → 400"; curl -s -w " %{http_code}\n" -H "$H" "$A/api/wx/om?query=foo"
-echo "# notam ohne Zugang (0.12.4): schlüssellose Quellen DINS/NOTAM Search werden versucht – im Test ohne Netz → 502 mit beiden Fehlern"; curl -s -w " %{http_code}\n" -H "$H" "$A/api/wx/notam?lat=47.3&lon=8.4" | grep -o "DINS: [^;]*; NOTAM Search: [^)]*)[^\"]*\"} [0-9]*"
+echo "# notam ohne Zugang (0.12.4): schlüssellose Quellen DINS/NOTAM Search werden versucht – im Test ohne Netz → 502 mit beiden Fehlern"; curl -s -w " %{http_code}\n" -H "$H" "$A/api/wx/notam?lat=47.3&lon=8.4" | grep -o "DINS: .*NOTAM Search: .*\"} 502"
 echo "# ai ohne Zugang → 424"; curl -s -w " %{http_code}\n" -H "$H" -X POST "$A/api/wx/ai" -d '{"prompt":"x"}'
 echo "# snapshot fremder Host → 400"; curl -s -w " %{http_code}\n" -H "$H" -X POST "$A/api/wx/snapshot?b=test00000001" -d '{"url":"https://example.com/x.png"}'
 echo "# unbekannt → 404"; code -H "$H" "$A/api/wx/foo"; echo

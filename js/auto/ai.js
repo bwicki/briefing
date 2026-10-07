@@ -19,6 +19,8 @@ export function flightContext(b, ctx) {
     sun ? `Sonne: BCMT ${hhmm(z, sun.official.bcmt)} SR ${hhmm(z, sun.official.sr)} SS ${hhmm(z, sun.official.ss)} ECET ${hhmm(z, sun.official.ecet)} LT` : '',
     `Kriterien: Bodenwind marginal ab ${L.wind?.[0] ?? 4} m/s, nein ab ${L.wind?.[1] ?? 6} m/s; Böen ${L.gust?.[0] ?? 6}/${L.gust?.[1] ?? 8} m/s; CAPE ${L.cape?.[0] ?? 300}/${L.cape?.[1] ?? 800} J/kg; Trockenfenster ≥ ${g.dryWindowH ?? 3} h; kein Gewitter innert ${g.noTsH ?? 3} h`,
     `Fahrtart: ${b.flight.kind}, Pax: ${b.persons.pax.length}`,
+    // Etappen-Briefing (0.12.5): Ort = Etappenmitte, Zeitfenster = Etappe
+    b.stagePlan ? `ETAPPE ${b.stagePlan.no} «${b.stagePlan.name}» der Gasfahrt: km ${Math.round(b.stagePlan.km0)}–${Math.round(b.stagePlan.km1)}, ${fmtDate(z, b.stagePlan.ms0, lang)} ${hhmm(z, b.stagePlan.ms0)}–${hhmm(z, b.stagePlan.ms1)} LT, Höhen ${b.stagePlan.altMin ?? '?'}–${b.stagePlan.altMax ?? '?'} m AMSL; «Startort» oben = Mitte der Etappe, «Landeraum» = Etappenende` : '',
   ].filter(Boolean).join('\n');
 }
 

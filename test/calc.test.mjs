@@ -27,6 +27,8 @@ import { inSwitzerland } from '../js/panels.js';
 import { parseDwdAstro } from '../js/calc/sun.js';
 import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing, ageRefMs, fillFractionOf, massPerf } from '../js/model.js';
 import { carCode } from '../js/net.js';
+import { stageOps, canDropOps, ensureOps, coverPoints, countryAtKm, stagePlanBriefing, stageSets, startPlanOff, planStale, pruneStagePlans } from '../js/calc/stageplan.js';
+import { defaultStages } from '../js/calc/profile.js';
 import { decodeMetar as dMetar, decodeTaf as dTaf } from '../js/calc/metar.js';
 
 let fails = 0, n = 0;
@@ -416,7 +418,7 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(b.panels['B.fwp'].content.text === 'Bericht (Pflicht)', 'Einfügepflicht-Panel (half): Bericht bleibt im Inhalt');
   const d = duplicateBriefing(b, S);
   ok(d.edition === 0 && newBriefing(S).edition === 0, 'neu/dupliziert: Bearbeitungsstand 0');
-  ok(carCode('DE') === 'D' && carCode('AT') === 'A' && carCode('FR') === 'F' && carCode('LI') === 'FL' && carCode('xx') === 'XX', 'Kfz-Kennzeichen für Ortsangaben im Ausland');
+  ok(carCode('DE') === 'DE' && carCode('AT') === 'AT' && carCode('li') === 'LI' && carCode('xx') === 'XX', 'Länderkennzeichen für Ortsangaben im Ausland: ISO-2, einheitlich mit placeLabel (0.12.5)');
   const ml = dMetar('METAR LSZH 051120Z 24008KT 9999 FEW040 BKN100 14/08 Q1018 TEMPO 4000 RA=', 'de');
   ok(ml[0].startsWith('LSZH') && ml.some((x) => x.startsWith('→')), 'METAR-Klartext: Kopfzeile ohne Präfix (Präfix setzt die Anzeige), Änderungsgruppe mit →');
   const tl = dTaf('TAF LSZH 051025Z 0512/0618 24008KT 9999 SCT040 BECMG 0518/0521 VRB02KT=', 'de');
@@ -539,6 +541,49 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(!touchesCH({ site: { country: 'DE', lat: 47.82, lon: 9.80 }, landing: { country: 'PL', lat: 52.2, lon: 21.0 }, panels: { 'B.traj': { content: { auto: { data: { tracks: [{ points: [{ lat: 47.82, lon: 9.80 }, { lat: 48.5, lon: 11 }] }] } } } } } }) && touchesCH({ site: { country: 'DE', lat: 47.82, lon: 9.80 }, panels: { 'B.traj': { content: { auto: { data: { tracks: [{ points: [{ lat: 47.4, lon: 9.0 }] }] } } } } } }), 'DABS nur, wenn die Fahrt die Schweiz berührt (Wolfegg → Polen nicht; Bahn über CH schon)');
   ok(waterFromItems([], [], []).length === 0 && waterFromItems([{ km: 0 }, { km: 1 }], [null, null], []).length === 0, 'Wasserflächen aus OSM: leer ohne Treffer');
   ok(hz.map((x) => x.type).join(',') === 'wind,ice,cb,wind' && hz[0].kmEnd === 20, 'Achtung-Zeichen: Wind (anhaltend zusammengefasst, nach Pause neu), Vereisung, CB, kein Nebel in 1800 m über Grund: ' + hz.map((x) => x.type + '@' + x.km + '-' + x.kmEnd).join(','));
+}
+
+// ---------------------------------------------------------------- 0.12.5 Ops-Briefing je Etappe
+{
+  const S = mergeSettings({});
+  const t0 = Date.UTC(2026, 9, 6, 14, 0);
+  const track = { totalKm: 180, points: [] };
+  for (let k = 0; k <= 180; k += 5) track.points.push({ km: k, ms: t0 + k * 5 * 60000, lat: 47.0 + k * 0.004, lon: 8.0 + k * 0.012, alt: k < 40 ? 1300 : 2300 });
+  const st = defaultStages({ start: 'Start', enroute: 'Enroute', landing: 'Landung' }, 180, 1200);
+  ok(st.length === 3 && st[0].ops === true && st[1].ops === false && stageOps(st, 0) && !stageOps(st, 1) && defaultStages({ start: 'Start', enroute: 'Enroute', landing: 'Landung' }, 100, 480).length === 1 && defaultStages({ start: 'Start', enroute: 'Enroute', landing: 'Landung' }, 100, 480)[0].name === 'Enroute', 'Vorgabe-Etappen: ab 10 h drei (Start mit Planung), darunter eine «Enroute» mit Planung');
+  ok(stageOps([{ id: 'a', km: 0 }, { id: 'b', km: 50 }], 0) && !stageOps([{ id: 'a', km: 0 }, { id: 'b', km: 50 }], 1) && !canDropOps(st, 0) && (st[1].ops = true, canDropOps(st, 0)) && canDropOps(st, 1), 'Planung ohne Angabe: erste Etappe ja; ausschalten nur, wenn eine andere Etappe eine Planung hat');
+  st[0].ops = false; st[1].ops = false; ensureOps(st);
+  ok(st[0].ops === true, 'ensureOps: ohne Planung fällt sie an die Startetappe');
+  const ns = addStage(st, 120, 'Nacht', 2, true);
+  ok(ns.ops === true && addStage(st, 60, 'x').ops === false, 'addStage übernimmt die Klickbox');
+  const cp = coverPoints(track, 27, 153, 25, '2 · Enroute');
+  ok(cp.length === 2 && cp.every((q) => q.nm === 25) && Math.abs(cp[0].lat - (47 + 58.5 * 0.004)) < 0.01 && cp[1].name === '2 · Enroute 122 km' && coverPoints(track, 0, 20, 25).length === 1 && coverPoints(track, 0, 180, 10).length === 6, 'NOTAM-Kreise entlang der Etappe: überlappend, max. 6: ' + JSON.stringify(cp.map((q) => q.name)));
+  ok(countryAtKm([{ country: 'CH', fromKm: 0, toKm: 40 }, { country: 'DE', fromKm: 40, toKm: 180 }], 90) === 'DE' && countryAtKm([], 90, { lat: 48.5, lon: 9 }) === 'DE' && countryAtKm([], 90, null, 'CH') === 'CH', 'Land an km aus der FIR-Folge, sonst Schätzung');
+  // Abgeleitete Sicht einer Etappe
+  const b = newBriefing(S); b.balloon = { ...b.balloon, type: 'gas' }; b.site = { ...b.site, name: 'Oberlunkhofen', lat: 47.0, lon: 8.0, elev: 450, country: 'CH', tz: 'Europe/Zurich' }; b.time.startMs = t0; b.intent.durationMin = 900;
+  b.profile = { points: [{ km: 0, alt: 450 }, { km: 5, alt: 1300 }, { km: 40, alt: 1300 }, { km: 45, alt: 2300 }, { km: 170, alt: 2300 }, { km: 180, alt: 600 }], stages: [{ id: 's1', km: 0, name: 'Start', ops: true }, { id: 's2', km: 27, name: 'Enroute', ops: true }, { id: 's3', km: 153, name: 'Landung' }], layers: {}, data: { track, totalKm: 180, relief: track.points.map((q) => ({ km: q.km, m: 400 + q.km })), firs: [{ name: 'SWITZERLAND', country: 'CH', fromKm: 0, toKm: 40 }, { name: 'LANGEN', country: 'DE', fromKm: 40, toKm: 180 }] } };
+  upgradeBriefing(b);
+  const bs = stagePlanBriefing(b, 's2');
+  ok(bs && bs.stagePlan.no === 2 && bs.stagePlan.km0 === 27 && bs.stagePlan.km1 === 153 && bs.time.startMs === t0 + 27 * 5 * 60000 && bs.intent.durationMin === 126 * 5 && Math.abs(bs.site.lat - (47 + 90 * 0.004)) < 0.001 && bs.site.country === 'DE' && bs.site.elev === 490 && bs.landing.country === 'DE' && Math.abs(bs.landing.lat - (47 + 153 * 0.004)) < 0.001, 'Etappensicht: Zeitfenster der Etappe, Ort = Etappenmitte (Relief, Land aus der FIR-Folge), Landeraum = Etappenende: ' + JSON.stringify({ start: bs.time.startMs - t0, dur: bs.intent.durationMin, site: bs.site, landing: bs.landing }));
+  ok(bs.intent.altMinFt === Math.round(1300 * 3.28084) && bs.intent.altMaxFt === Math.round(2300 * 3.28084) && bs.stagePlan.traj.tracks[0].points.length === 25 && bs.panels === b.stagePlans.s2.panels && bs.panels['C.notam'] && !bs.panels['A.core'], 'Höhenband und Bahnabschnitt der Etappe; Panels = Planungsdatensatz');
+  bs.metarKm = 80; bs.dabsDay = 'tomorrow';
+  ok(b.stagePlans.s2.metarKm === 80 && b.stagePlans.s2.dabsDay === 'tomorrow' && bs.metarKm === 80, 'Abrufeinstellungen der Etappe landen im Planungsdatensatz');
+  const sets = stageSets(b);
+  ok(sets.length === 1 && sets[0].sid === 's2' && sets[0].no === 2 && stageSets({ ...b, balloon: { type: 'hab' } }).length === 0, 'Etappen-Briefings: Etappen mit Planung ausser der ersten; keine bei Heissluft');
+  const vp = visiblePanels(S, bs).map((p) => p.key);
+  ok(vp.includes('B.meteogram') && vp.includes('C.notam') && vp.includes('B.remarks') && !vp.includes('B.traj') && !vp.includes('C.fpl') && !vp.includes('A.core') && vp.includes('C.dabs'), 'Sichtbare Panels der Etappe: Planung + Bemerkungen, DABS weil der Bahnabschnitt über die Schweiz führt: ' + vp.join(','));
+  const far = { ...bs, site: { ...bs.site, country: 'DE' }, landing: { ...bs.landing, country: 'DE' }, stagePlan: { ...bs.stagePlan, traj: { tracks: [{ points: [{ lat: 48.5, lon: 10 }, { lat: 49, lon: 11 }] }] } } };
+  ok(!visiblePanels(S, far).some((p) => p.key === 'C.dabs'), 'kein DABS in der Etappe, wenn ihr Bahnabschnitt die Schweiz nicht berührt');
+  b.profile.stages[1].km = 10; b.profile.data.firs[0].toKm = 100;
+  const bs2 = stagePlanBriefing(b, 's2');
+  ok(!startPlanOff(b) && (b.profile.stages[0].ops = false, startPlanOff(b)) && !visiblePanels(S, b).some((p) => p.key === 'B.meteogram') && visiblePanels(S, b).some((p) => p.key === 'C.fpl') && visiblePanels(S, b).some((p) => p.key === 'B.remarks'), 'Startetappe ohne Planung: orts-/zeitgebundene Panels fehlen in B/C, Flugplan und Bemerkungen bleiben');
+  b.profile.stages[0].ops = true;
+  ok(planStale({ km0: 10, km1: 153, ms0: bs2.stagePlan.ms0, ms1: bs2.stagePlan.ms1 }, { km0: 10, km1: 153, ms0: bs2.stagePlan.ms0 + 60000, ms1: bs2.stagePlan.ms1 }) === false && planStale({ km0: 27, km1: 153, ms0: 0, ms1: 0 }, { km0: 10, km1: 153, ms0: 0, ms1: 0 }) === true, 'planStale: verschoben > 2 km oder > 20 min');
+  const c0 = completion(b, S);
+  b.stagePlans.s2.panels['B.meteogram'].content.auto = { kind: 'meteogram', text: 'x' };
+  ok(completion(b, S) > c0, 'Vollständigkeit zählt die Panels der Etappen-Briefings mit');
+  b.profile.stages.splice(1, 1); pruneStagePlans(b);
+  ok(!b.stagePlans.s2 && stageSets(b).length === 0, 'Planungsdaten gelöschter Etappen werden entfernt');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

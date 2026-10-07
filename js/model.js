@@ -13,6 +13,7 @@ import { hotAir, gasBalloon } from './calc/aero.js';
 import { buildSchedule, scheduleWarnings, buildPlan, planTemplate, planToStops } from './calc/schedule.js';
 import { icao, bearing, distKm, compass, countryGuess } from './calc/geo.js';
 import { PANELS, touchesCH, visiblePanels, panelFilled } from './panels.js';
+import { stageSets, pruneStagePlans } from './calc/stageplan.js';
 import { tt, t as tr } from './i18n.js';
 import { routeMatrix, routeMatrixLine } from './countries.js';
 
@@ -61,6 +62,9 @@ export function upgradeBriefing(b) {
   for (const p of PANELS) if (!b.panels[p.key]) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
   // 0.11.2: Bearbeitungsstand «vN» (Sitzungen) – Bestand übernimmt den bisherigen Speicherzähler
   if (b.edition == null) b.edition = b.revision || 0;
+  // 0.12.5: Planungen je Etappe (Ops-Briefing); verwaiste Datensätze gelöschter Etappen entfernen
+  if (!b.stagePlans || typeof b.stagePlans !== 'object') b.stagePlans = {};
+  pruneStagePlans(b);
   // 0.11.4: Füllungsgrad je Briefing (Vorgabe 100 %, meist wird voll gefüllt); Bestand: Stammwert der Hülle
   if (b.weather && b.weather.fillPct == null) b.weather.fillPct = Math.round((b.balloon?.fillFraction ?? 1) * 100);
   // 0.11.2: bei Auto-Panels ohne Einfügepflicht wandert «eigener Text/Bilder» (content) in die Zusatzbox (extra)
@@ -95,6 +99,8 @@ export function duplicateBriefing(src, settings) {
   }
   b.schedule.rows = []; b.schedule.overrides = {};
   for (const it of b.schedule.plan || []) delete it.pin;
+  b.stagePlans = {};   // 0.12.5: Etappen-Briefings sind zeitgebunden
+  if (b.profile) b.profile.data = null;
   return b;
 }
 
@@ -335,9 +341,12 @@ export const formatNo = (year, n) => `${year}-${String(n).padStart(3, '0')}`;
 /** Anteil gefüllter sichtbarer Panels in Prozent (Fortschritt «in Arbeit NN %»). */
 export function completion(b, settings) {
   const ps = visiblePanels(settings, b);
-  if (!ps.length) return 0;
-  const n = ps.filter((p) => panelFilled(p, b)).length;
-  return Math.round((100 * n) / ps.length);
+  // 0.12.5: Etappen-Briefings zählen mit (ihre Panels mit der abgeleiteten Sicht der Etappe)
+  const sets = stageSets(b);
+  const total = ps.length + sets.reduce((a, x) => a + visiblePanels(settings, x.bs).length, 0);
+  if (!total) return 0;
+  const n = ps.filter((p) => panelFilled(p, b)).length + sets.reduce((a, x) => a + visiblePanels(settings, x.bs).filter((p) => panelFilled(p, x.bs)).length, 0);
+  return Math.round((100 * n) / total);
 }
 /** Ende der Fahrt für die Sperre: Start + max(6 h, Fahrtdauer + 2 h). */
 export function lockMs(b) {

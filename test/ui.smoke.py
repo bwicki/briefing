@@ -34,7 +34,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         ctxb = b.new_context(viewport=viewport, device_scale_factor=scale, is_mobile=mobile, has_touch=mobile, locale='de-CH', timezone_id='Europe/Zurich')
         pg = ctxb.new_page()
         pg.on('console', lambda m: errors.append(f'[{name}] console.{m.type}: {m.text}') if m.type in ('error',) and 'Failed to load resource' not in m.text else None)   # abgebrochene Kacheln sind kein Fehler
-        pg.on('pageerror', lambda e: errors.append(f'[{name}] pageerror: {e}'))
+        pg.on('pageerror', lambda e: errors.append(f'[{name}] pageerror: {e} @ {(e.stack or "").splitlines()[1:3]}'))
         # lokaler Modus erzwingen: apiBase leer
         pg.route('**/js/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body="window.BRIEFING_CONFIG = { apiBase: '' };"))
         mock_external(pg)
@@ -303,7 +303,7 @@ def run_gas(name):
         ctxb = b.new_context(viewport={'width': 1366, 'height': 900}, device_scale_factor=1.5, locale='de-CH', timezone_id='Europe/Zurich')
         pg = ctxb.new_page()
         pg.on('console', lambda m: errors.append(f'[{name}] console.{m.type}: {m.text}') if m.type in ('error',) and 'Failed to load resource' not in m.text else None)
-        pg.on('pageerror', lambda e: errors.append(f'[{name}] pageerror: {e}'))
+        pg.on('pageerror', lambda e: errors.append(f'[{name}] pageerror: {e} @ {(e.stack or "").splitlines()[1:3]}'))
         pg.route('**/js/config.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body="window.BRIEFING_CONFIG = { apiBase: '' };"))
         mock_external(pg)
         pg.route('**/api.open-meteo.com/v1/elevation**', elev)
@@ -379,25 +379,54 @@ def run_gas(name):
         assert a1[1] >= a0[1] + 200 and not pg.is_disabled('.pf-tool button:has-text("Rückgängig")'), f'Punkt gezogen ({a0[1]} → {a1[1]} m), Rückgängig aktiv'
         n0 = len(pg.query_selector_all('.pf-tool svg .pf-pt')); pg.mouse.dblclick(box['x'] + 500 * sx, box['y'] + 200 * sy); pg.wait_for_timeout(2500); idle()
         assert len(pg.query_selector_all('.pf-tool svg .pf-pt')) == n0 + 1, 'Doppelklick setzt einen Punkt'
-        s0 = len(pg.query_selector_all('.pf-tool svg .pf-sh')); ab = pg.query_selector('.pf-tool svg .pf-axis').bounding_box(); pg.mouse.click(ab['x'] + ab['width'] * 0.6, ab['y'] + ab['height'] / 2); pg.wait_for_timeout(600)
-        assert len(pg.query_selector_all('.pf-tool svg .pf-sh')) == s0 + 1, 'Klick auf die Zeitzeile setzt eine Etappengrenze (Griff)'
+        # 0.12.5: Klick auf die Zeitzeile öffnet den Dialog «Neue Etappe» (Name, Klickbox «Ops-Briefing für Etappe»)
+        s0 = len(pg.query_selector_all('.pf-tool svg .pf-sh')); ops0 = len(pg.query_selector_all('.pf-tool svg .pf-ops')); ab = pg.query_selector('.pf-tool svg .pf-axis').bounding_box(); pg.mouse.click(ab['x'] + ab['width'] * 0.6, ab['y'] + ab['height'] / 2); pg.wait_for_timeout(600)
+        assert ops0 == 1 and pg.is_visible('.pf-menu.pf-newstage') and 'Ops-Briefing' in pg.inner_text('.pf-menu.pf-newstage') and len(pg.query_selector_all('.pf-tool svg .pf-sh')) == s0, 'Startetappe mit Marke B/C; Dialog «Neue Etappe» mit Klickbox, noch keine Grenze gesetzt'
+        pg.fill('.pf-menu.pf-newstage input[type=text]', 'Nacht'); pg.check('.pf-menu.pf-newstage input[type=checkbox]'); pg.click('.pf-menu.pf-newstage button:has-text("Etappe anlegen")'); pg.wait_for_timeout(600)
+        assert len(pg.query_selector_all('.pf-tool svg .pf-sh')) == s0 + 1 and 'Nacht' in pg.text_content('.pf-tool svg.pf-svg') and len(pg.query_selector_all('.pf-tool svg .pf-ops')) == 2, 'Etappe «Nacht» mit Planung angelegt (Griff, Name, Marke B/C)'
+        assert len(pg.query_selector_all('.pf-tool table.pf-stages .pf-opstag')) == 2 and 'eigener Planung' in pg.inner_text('.pf-tool .pf-legend'), 'Etappentabelle und Legende zeigen die Planungs-Marke'
         mi = pg.query_selector_all('.pf-tool svg .pf-mi[data-kind=stage]')[-1]; mb = mi.bounding_box(); pg.mouse.click(mb['x'] + mb['width'] / 2, mb['y'] + mb['height'] / 2); pg.wait_for_timeout(400)
-        assert pg.is_visible('.pf-menu') and 'zusammenlegen' in pg.inner_text('.pf-menu'), 'Etappenmenü mit Zusammenlegen'
-        pg.fill('.pf-menu input', 'Voralpen'); pg.click('.pf-menu button:has-text("Umbenennen")'); pg.wait_for_timeout(400)
+        assert pg.is_visible('.pf-menu') and 'zusammenlegen' in pg.inner_text('.pf-menu') and pg.is_checked('.pf-menu label.pf-ops-row input') is False, 'Etappenmenü (letzte Etappe «Landung») mit Zusammenlegen und Klickbox aus'
+        pg.fill('.pf-menu input[type=text]', 'Voralpen'); pg.click('.pf-menu button:has-text("Umbenennen")'); pg.wait_for_timeout(400)
         assert 'Voralpen' in pg.text_content('.pf-tool svg.pf-svg'), 'Etappe umbenannt'
         pg.screenshot(path=f'{OUT}/{name}_03_tool_edit.png')
         pg.keyboard.press('Control+z'); pg.wait_for_timeout(1200)
         assert 'Voralpen' not in pg.text_content('.pf-tool svg.pf-svg'), 'Ctrl+Z nimmt die Umbenennung zurück'
+        # Klickbox der Startetappe: ausschaltbar, weil «Nacht» eine Planung hat; danach sperrt die Mindestens-eine-Regel die Klickbox bei «Nacht»
+        mi = pg.query_selector_all('.pf-tool svg .pf-mi[data-kind=stage]')[0]; mb = mi.bounding_box(); pg.mouse.click(mb['x'] + mb['width'] / 2, mb['y'] + mb['height'] / 2); pg.wait_for_timeout(400)
+        assert pg.is_checked('.pf-menu label.pf-ops-row input') and not pg.is_disabled('.pf-menu label.pf-ops-row input') and 'Abschnitte B und C' in pg.inner_text('.pf-menu'), 'Startetappe: Klickbox an (= Abschnitte B/C), ausschaltbar'
+        pg.uncheck('.pf-menu label.pf-ops-row input'); pg.wait_for_timeout(500)
+        assert len(pg.query_selector_all('.pf-tool svg .pf-ops')) == 1, 'Planung der Startetappe ausgeschaltet → eine Marke'
+        mi = pg.query_selector('.pf-tool svg .pf-mi[data-kind=stage][data-name="Nacht"]'); mb = mi.bounding_box(); pg.mouse.click(mb['x'] + mb['width'] / 2, mb['y'] + mb['height'] / 2); pg.wait_for_timeout(400)
+        assert pg.input_value('.pf-menu input[type=text]') == 'Nacht' and pg.is_checked('.pf-menu label.pf-ops-row input') and pg.is_disabled('.pf-menu label.pf-ops-row input') and 'mindestens' in pg.inner_text('.pf-menu'), 'Einzige Planung («Nacht»): Klickbox gesperrt mit Hinweis'
+        pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
+        mi = pg.query_selector_all('.pf-tool svg .pf-mi[data-kind=stage]')[0]; mb = mi.bounding_box(); pg.mouse.click(mb['x'] + mb['width'] / 2, mb['y'] + mb['height'] / 2); pg.wait_for_timeout(400)
+        pg.check('.pf-menu label.pf-ops-row input'); pg.wait_for_timeout(500)
+        assert len(pg.query_selector_all('.pf-tool svg .pf-ops')) == 2, 'Planung der Startetappe wieder an'
         pg.click('.pf-tool .seg button:has-text("UTC")'); pg.wait_for_timeout(600)
         assert 'UTC' in pg.text_content('.pf-tool svg.pf-svg') and 'Abschnitt UTC' in pg.inner_text('.pf-tool table.pf-ballast'), 'LT/UTC-Schalter wirkt auf Grafik und Ballasttabelle'
         pg.click('.pf-tool .seg button:has-text("Karte")'); pg.wait_for_timeout(1200)
         assert pg.is_visible('.pf-tool .pf-map') and len(pg.query_selector_all('.pf-tool .pf-stage-icon')) >= 3, 'Kartenansicht mit Etappenmarkern'
         pg.click('.pf-tool .seg button:has-text("Satellit")'); pg.wait_for_timeout(600)
         pg.screenshot(path=f'{OUT}/{name}_04_tool_map.png')
-        pg.keyboard.press('Escape'); pg.wait_for_timeout(800)
+        pg.keyboard.press('Escape'); pg.wait_for_timeout(2500)
         assert pg.query_selector('.dialog.pf-tool') is None, 'Werkzeug mit Escape geschlossen'
         leg = pg.eval_on_selector_all('#panel-A\\.profile .pf-legend > span', 'els => els.map(e => e.textContent)')
         assert any('Relief' in x for x in leg) and not any('CTR' in x for x in leg), 'Legende nur mit vorkommenden Symbolen: ' + str(leg)
+        # 0.12.5: Etappen-Briefing «E2 · Etappe 2 · Nacht» zwischen C und D mit eigenen B/C-Panels, in der Navigation und bei «Pflichtinhalte ergänzen»
+        assert len(pg.query_selector_all('.sect-title.stage')) == 1 and 'Nacht' in pg.inner_text('.sect-title.stage') and 'Ort der Planung' in pg.inner_text('.sect-sub'), 'Abschnitt E2 mit Zeitfenster/Ort'
+        sp = pg.query_selector_all('.panel[id^="panel-st"]'); assert len(sp) >= 12 and any(e.get_attribute('id').endswith('-C.notam') for e in sp) and not any(e.get_attribute('id').endswith('-C.fpl') for e in sp), 'Panels der Etappe (B/C ohne Flugplan): ' + str(len(sp))
+        es = pg.text_content('.sect-title.stage .id')   # «Nacht» ist die dritte Etappe → E3
+        assert es == 'E3' and pg.query_selector(f'.enav details[data-sect="{es}"]') is not None and 'Nacht' in pg.text_content(f'.enav details[data-sect="{es}"] summary'), 'Navigation mit Abschnitt ' + es
+        order = pg.evaluate("() => [...document.querySelectorAll('.sect-title')].map(e => e.querySelector('.id').textContent)")
+        assert order.index(es) == order.index('C') + 1 and order.index('D') == order.index(es) + 1, 'Reihenfolge A B C E3 D: ' + str(order)
+        for _ in range(40):
+            pg.wait_for_timeout(300)
+            if pg.query_selector('.panel[id$="-B.meteogram"] svg, .panel[id$="-B.meteogram"] table'): break
+        assert pg.query_selector('.panel[id$="-B.meteogram"] svg, .panel[id$="-B.meteogram"] table') is not None, 'Meteogramm der Etappe automatisch geladen'
+        assert 'Nacht' not in pg.inner_text('.panel[id$="-C.notam"] .ptools') and pg.query_selector('.panel[id$="-C.notam"] .ptools select') is not None, 'NOTAM-Panel der Etappe mit Modus-Wahl'
+        pg.query_selector('.sect-title.stage').screenshot(path=f'{OUT}/{name}_06_stage_title.png')
+        pg.evaluate("() => document.querySelector('.sect-title.stage').scrollIntoView()"); pg.wait_for_timeout(400); pg.screenshot(path=f'{OUT}/{name}_06_stage.png')
         pg.select_option('#panel-C\\.notam .ptools select', 'places'); pg.wait_for_timeout(500)
         pg.click('#panel-C\\.notam button:has-text("Orte aus Etappen")'); pg.wait_for_timeout(500)
         assert len(pg.query_selector_all('#panel-C\\.notam .np-row')) >= 3, 'NOTAM-Orte aus den Etappen'
@@ -405,6 +434,8 @@ def run_gas(name):
         assert pg.query_selector('.brief tr.row-A-profile svg.pf-svg') is not None and pg.query_selector('.brief tr.row-A-profile table.pf-ballast') is not None, 'Briefingsicht: Profil mit Ballasttabelle'
         assert pg.evaluate("() => document.querySelector('.brief tr.row-A-profile details.pf-fold.legend').open") and pg.query_selector('.brief tr.row-A-profile details.pf-fold.model') is not None, 'Briefingsicht: Legende immer offen, Modell der Schätzung nur weil im Panel aufgeklappt'
         pg.query_selector('.brief tr.row-A-profile').screenshot(path=f'{OUT}/{name}_05_view.png')
+        assert len(pg.query_selector_all('.brief .bs.stage')) == 1 and 'Nacht' in pg.inner_text('.brief .bs.stage') and len(pg.query_selector_all('.brief tr.row-B-meteogram')) == 2, 'Briefingsicht: Abschnitt E2 mit den Panels der Etappe (Meteogramm zweimal: Hauptbriefing und Etappe)'
+        pg.query_selector('.brief .bs.stage').scroll_into_view_if_needed(); pg.wait_for_timeout(300); pg.screenshot(path=f'{OUT}/{name}_07_view_stage.png')
         b.close()
 
 run('desktop', {'width': 1366, 'height': 860})

@@ -7,6 +7,8 @@
  * «paste» (Einfüge-Assistent) oder «text»; der Deep-Link (`link`) verweist auf
  * die Quelle in den Einstellungen (sources).
  */
+import { PLAN_KEYS, STAGE_PANEL_KEYS, startPlanOff } from './calc/stageplan.js';
+
 export const SECTIONS = [
   { id: 'A', de: 'Operationelle Vorbereitung', en: 'Operational preparation' },
   { id: 'B', de: 'Meteorologische Vorbereitung', en: 'Meteorological preparation' },
@@ -58,13 +60,19 @@ export const PANELS = [
 
 export const panelByKey = (k) => PANELS.find((p) => p.key === k);
 
-/** Sichtbare Panels in Reihenfolge (ausgeblendete und CH-only entfernt, wenn die Fahrt die Schweiz nicht berührt). */
+/**
+ * Sichtbare Panels in Reihenfolge (ausgeblendete und CH-only entfernt, wenn die Fahrt die Schweiz nicht berührt).
+ * 0.12.5: Etappen-Briefing (abgeleitete Sicht mit `stagePlan`) → nur die Panels der Etappenplanung; Startetappe ohne
+ * Planung → die orts-/zeitgebundenen Panels fehlen in den Abschnitten B/C (die Planung liegt dann bei einer anderen Etappe).
+ */
 export function visiblePanels(settings, briefing) {
   const hidden = new Set(settings?.panels?.hidden || []);
   const ch = briefing ? touchesCH(briefing) : true;
   const gas = briefing ? briefing.balloon?.type === 'gas' : true;
   const dur = briefing ? (briefing.intent?.durationMin || 0) : Infinity;
-  return PANELS.filter((p) => !hidden.has(p.key) && (!p.chOnly || ch) && (!p.gasOnly || gas) && (!p.minDurationMin || dur >= p.minDurationMin));
+  const stageSet = briefing?.stagePlan ? new Set(STAGE_PANEL_KEYS) : null;
+  const dropped = !stageSet && briefing && startPlanOff(briefing) ? new Set(PLAN_KEYS) : null;
+  return PANELS.filter((p) => !hidden.has(p.key) && (!p.chOnly || ch) && (!p.gasOnly || gas) && (!p.minDurationMin || dur >= p.minDurationMin) && (!stageSet || stageSet.has(p.key)) && (!dropped || !dropped.has(p.key)));
 }
 /** Berührt die Fahrt die Schweiz? Startort/Landeraum/FIR-Folge/Trajektorienpunkte (grobe Länderschätzung). */
 // Grober Umriss der Schweiz (lat, lon; ~20 Stützpunkte) – ersetzt das Rechteck, das Süddeutschland und Vorarlberg mitgezählt hat (0.12.4)
@@ -76,7 +84,7 @@ export function touchesCH(b) {
   const inCH = inSwitzerland;
   if (b?.landing?.lat != null && inCH(b.landing.lat, b.landing.lon)) return true;
   for (const f of b?.panels?.['C.airspace']?.content?.auto?.data?.firs || []) for (const sq of f.seq || []) if (sq.country === 'CH') return true;
-  for (const tr of b?.panels?.['B.traj']?.content?.auto?.data?.tracks || []) for (const p of tr.points || []) if (inCH(p.lat, p.lon)) return true;
+  for (const tr of b?.stagePlan?.traj?.tracks || b?.panels?.['B.traj']?.content?.auto?.data?.tracks || []) for (const p of tr.points || []) if (inCH(p.lat, p.lon)) return true;
   return false;
 }
 /** Nummer eines Panels innerhalb seines Abschnitts (A1 … An) in der sichtbaren Liste. */

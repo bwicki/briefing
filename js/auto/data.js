@@ -13,6 +13,7 @@ import { isoDate, hhmm, fmtDur } from '../calc/time.js';
 import { distKm, bearing, icao } from '../calc/geo.js';
 import { t, getLang } from '../i18n.js';
 import { dataFile, placeName } from '../net.js';
+import { coverPoints } from '../calc/stageplan.js';
 
 const memo = new Map();
 const shareTok = (ctx) => ctx.shared?.token;
@@ -133,7 +134,8 @@ export async function wind(ctx, b) {
 /** Stüve zur Startzeit (volles Profil bis topHpa). */
 export async function temps(ctx, b) {
   const j = await getForecast(ctx, b);
-  const i = OM.indexAt(j, b.time.startMs);
+  const atMs = b.stagePlan?.msMid ?? b.time.startMs;   // Etappen-Briefing: Profil zur Etappenmitte (0.12.5)
+  const i = OM.indexAt(j, atMs);
   if (i < 0) throw new Error(t('auto_noHours'));
   const elev = b.site.elev ?? j.elevation;
   const prof = OM.profile(j, i, elev).map((l) => ({ label: l.label, hPa: l.hPa, ft: l.ft, m: Math.round(l.m), spd: l.spd, dir: l.dir, temp: l.temp, dew: l.dew, rh: l.rh }));
@@ -142,7 +144,7 @@ export async function temps(ctx, b) {
   const inv = [];
   const asc = prof.filter((l) => l.temp != null).sort((a, b2) => a.m - b2.m);
   for (let k = 1; k < asc.length; k++) if (asc[k].temp > asc[k - 1].temp + 0.2) inv.push({ fromFt: asc[k - 1].ft, toFt: asc[k].ft, dT: +(asc[k].temp - asc[k - 1].temp).toFixed(1) });
-  const text = `${t('auto_profileAt')} ${hhmm(b.site.tz || 'Europe/Zurich', b.time.startMs)} LT: ` + asc.map((l) => `${l.ft} ft ${l.temp?.toFixed(1)}°/${l.dew?.toFixed(1)}° ${l.dir != null ? Math.round(l.dir).toString().padStart(3, '0') : '–'}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ') + (inv.length ? ` · Inversion: ${inv.map((x) => `${x.fromFt}–${x.toFt} ft (+${x.dT} K)`).join(', ')}` : '') + (pbl != null ? ` · Grenzschicht ${Math.round(pbl * OM.M_TO_FT)} ft AGL` : '') + (fzl != null ? ` · 0 °C ${Math.round(fzl * OM.M_TO_FT)} ft` : '');
+  const text = `${t('auto_profileAt')} ${hhmm(b.site.tz || 'Europe/Zurich', atMs)} LT: ` + asc.map((l) => `${l.ft} ft ${l.temp?.toFixed(1)}°/${l.dew?.toFixed(1)}° ${l.dir != null ? Math.round(l.dir).toString().padStart(3, '0') : '–'}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ') + (inv.length ? ` · Inversion: ${inv.map((x) => `${x.fromFt}–${x.toFt} ft (+${x.dT} K)`).join(', ')}` : '') + (pbl != null ? ` · Grenzschicht ${Math.round(pbl * OM.M_TO_FT)} ft AGL` : '') + (fzl != null ? ` · 0 °C ${Math.round(fzl * OM.M_TO_FT)} ft` : '');
   // Letzte Messung der nächsten Radiosondenstation (Payerne 06610 u. a.) – Server-Modus
   let obs = null, obsErr = '';
   if (ctx.store.mode === 'remote') {
@@ -164,7 +166,7 @@ export async function temps(ctx, b) {
     } catch { /* ohne Sonde */ }
   }
   const sondeText = sonde ? `\n${t('auto_sondehub')} ${sonde.serial}${sonde.place ? ' ' + sonde.place : ''} (${Math.round(sonde.km)} km, ${(sonde.launch || '').slice(0, 16).replace('T', ' ')}Z): ` + sonde.levels.filter((l, i, a) => i % Math.max(1, Math.floor(a.length / 8)) === 0).map((l) => `${l.ft} ft ${l.temp ?? '–'}°/${l.dew ?? '–'}° ${l.dir != null ? String(l.dir).padStart(3, '0') : '–'}/${l.spd != null ? Math.round(l.spd * OM.MS_TO_KT) : '–'} kt`).join(' · ') : '';
-  return { kind: 'temps', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev, obs, obsErr, sonde }, text: text + obsText + sondeText };
+  return { kind: 'temps', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { profile: prof, pbl, fzl, inversions: inv, elev, obs, obsErr, sonde, atMs }, text: text + obsText + sondeText };
 }
 /** Radiosondenstationen (WMO) – die nächste zum Startort. */
 export const SOUNDING_STATIONS = [
@@ -315,6 +317,11 @@ export async function notam(ctx, b, opts = {}) {
   if (mode === 'places') {
     pts = (b.notamPlaces || []).filter((p) => p.lat != null).map((p) => ({ lat: p.lat, lon: p.lon, name: p.name || icao(p.lat, p.lon), nm: Math.max(5, Math.round((+p.km || 200) / 1.852)) }));
     if (!pts.length) throw new Error(t('notam_noPlaces'));
+  } else if (b.stagePlan) {
+    // Etappen-Briefing (0.12.5): überlappende Kreise entlang des Etappenabschnitts der Bahn
+    const nm = opts.nm || ctx.settings.notamRadiusNm || 25;
+    pts = coverPoints(b.stagePlan.track, b.stagePlan.km0, b.stagePlan.km1, nm, `${b.stagePlan.no} · ${b.stagePlan.name}`.trim());
+    if (!pts.length) pts = [{ lat: b.site.lat, lon: b.site.lon, name: b.site.name, nm }];
   } else {
     const nm = opts.nm || ctx.settings.notamRadiusNm || 25;
     pts = [{ lat: b.site.lat, lon: b.site.lon, name: b.site.name, nm }];
@@ -353,7 +360,7 @@ export function vfrRelevant(it, maxFt, fromMs, toMs) {
 
 /** Lufträume entlang der Trajektorien (openAIP über den Worker): durchfahren / nahe / darüber, FIR-Folge. */
 export async function airspace(ctx, b) {
-  let trj = b.panels['B.traj']?.content?.auto?.data;
+  let trj = b.stagePlan?.traj || b.panels['B.traj']?.content?.auto?.data;   // Etappen-Briefing: Bahnabschnitt des Profils (0.12.5)
   if (!trj?.tracks?.length) trj = (await traj(ctx, b)).data;
   const tracks = trj.tracks.filter((x) => !x.belowGround);
   const corridorKm = +ctx.settings.airspaceCorridorKm || 5;

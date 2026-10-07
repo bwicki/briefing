@@ -141,7 +141,10 @@ S.fisContacts       // 0.12: [{ cc, name, freq, phone }] für die Etappenübersi
 Ballastplan und Etappenfenster werden nicht gespeichert, sondern aus `points`, `stages` und `data`
 gerechnet (`ballastPlan`, `stageWindows` in `js/calc/profile.js`). Etappen sind Teilintervalle der
 Distanz; jede Etappe hat Zeitfenster, Ort (Bahnpunkt), Land/FIR (aus der Luftraumanalyse), Lufträume,
-Achtung-Zeichen und FIS-Kontakte (Etappenübersicht). Eigene Panels B/C je Etappe: 0.12.x.
+Achtung-Zeichen und FIS-Kontakte (Etappenübersicht). Eigene Panels B/C je Etappe: **0.12.5 «Ops-Briefing je
+Etappe»** – `stage.ops` (Klickbox im Etappenmenü und im Dialog beim Anlegen; Vorgabe: Startetappe), Planungsdaten
+`b.stagePlans[stageId].panels`, abgeleitete Sicht `stagePlanBriefing()` (`js/calc/stageplan.js`): Ort =
+Etappenmitte, Zeitfenster = Etappe, Landeraum = Etappenende, Luftraum/NOTAM entlang des Bahnabschnitts.
 
 ## 4 Algorithmen
 
@@ -170,7 +173,9 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 - Neues Panel **A «Fahrtprofil»** (nur Gas): Grafik als Bild im Briefing, Klick öffnet das Werkzeug (Vollbild-Dialog).
 - Werkzeug: SVG wie Skizze Stand 5; Werkzeugleiste: Umschalter Profil / Karte (Karte nur Ansicht), LT / UTC, «↶ Rückgängig», Layer-Schalter Wetter / Lufträume rechts; Achsen km / Zeit (mit SS · ECET · BCMT · SR) / Tag; Etappengriffe am unteren Rand; Pillen zuoberst. Punkte ziehen, Doppelklick setzt, ≡ rechts oben neben Punkt/Etappe (einfügen davor/danach, löschen; Etappe umbenennen/löschen). Klick auf die Zeitzeile setzt eine Etappengrenze. Jeder Punkt: Höhe, Zeit, km, Wind/Temperatur des Modells.
 - Karte (Trajektorien-Panel und Werkzeug): Bahn der gewählten Höhen in Akzentfarbe; Etappen als Raute + Fähnchen + Name; Höhenpunkte als kleine Akzentpunkte mit Höhe; Zeitmarken unverändert klein; Luftraumflächen nach Layer.
-- Etappen im Editor: Abschnitte B/C je Etappe mit Zeitfenster und Ort (Akkordeon je Etappe), Pflichtpanels je Etappe nach Land.
+- Etappen im Editor (0.12.5): Abschnitt «E‹n› · Etappe n · Name» zwischen C und D je Etappe mit Planung (ausser der
+  Startetappe = Abschnitte B/C), Zeitfenster und Ort in der Unterzeile, eigene B/C-Panels; Pflichtpanels wie im
+  Hauptbriefing (Einstellungen), Mindestens-eine-Planung-Regel, Marke B/C im Werkzeug.
 - Kontakte FIR/Land aus dem AIP (Vorgabe CH/D/A/F/I in den Einstellungen, Experten).
 - Nachfahrer-Abschnitt ab 12 h Fahrtdauer: Route, Maut/Vignetten, Übernachtung, Grenzdokumente.
 - Druck: Profil als Vollbreite-Grafik, Ballasttabelle in A3, Etappenübersicht als Tabelle.
@@ -179,8 +184,8 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 
 Umgesetzt: Panel A «Fahrtprofil» mit Datenaufbereitung, Grafik als Bild und Werkzeug (alle Punkte
 der Skizze Stand 11, inkl. Beispiel mit Erklärungen, OSM-Wasser, FIS-Sektoren), Kartenansicht mit Grundkarten, Ballastschätzung, Etappenübersicht mit Kontakten,
-NOTAM-Orte aus Etappen, Nachfahrer-Panel ab 12 h, Druck, Zeitzone einheitlich. Offen (0.12.x):
-Abschnitte B/C je Etappe (Akkordeon, Pflichtpanels je Land), Kalibrierung über Inventurpunkte und
+NOTAM-Orte aus Etappen, Nachfahrer-Panel ab 12 h, Druck, Zeitzone einheitlich; 0.12.5: Ops-Briefing je
+Etappe (Abschnitte E‹n›). Offen (0.12.x): Pflichtpanels je Land, Kalibrierung über Inventurpunkte und
 Barogramm, Unsicherheit auf der Zeitzeile (Frage f), Nachrechnen beim Ziehen statt beim Loslassen
 (Frage g – umgesetzt ist: Profil sofort, Bahn/Relief/Lufträume beim Loslassen mit Statusanzeige).
 

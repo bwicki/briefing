@@ -182,7 +182,7 @@ export async function buildProfileData(ctx, b, onStep) {
   p.points = fitPoints(p.points, track.totalKm);
   track = integrate(fcs, altFn(p.points), base);
   p.points = fitPoints(p.points, track.totalKm);
-  if (!p.stages.length) p.stages = defaultStages({ start: t('pf_stStart'), enroute: t('pf_stEnroute'), landing: t('pf_stLanding') }, track.totalKm);
+  if (!p.stages.length) p.stages = defaultStages({ start: t('pf_stStart'), enroute: t('pf_stEnroute'), landing: t('pf_stLanding') }, track.totalKm, durationMin);
   for (const s of p.stages) s.km = Math.min(s.km, Math.max(0, track.totalKm - 2));
   // 4) Relief je km (Open-Meteo Elevation, 100 Punkte je Abruf)
   step(t('pf_stepRelief'));

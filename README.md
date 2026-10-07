@@ -215,6 +215,25 @@ Panel-Arten:
   mit dem einklappbaren Block **«Modell der Schätzung»** (Parameter und Bedeutung der Spalten; im
   Briefingdruck nur, wenn aufgeklappt). Im NOTAM-Panel («Umkreis um Orte») übernimmt «Orte aus Etappen» die
   Etappenmitten.
+* **Ops-Briefing je Etappe** (0.12.5, nur Gasballon) — jede Etappe des Fahrtprofils kann eine eigene
+  Meteo-, Luftraum- und NOTAM-Planung tragen. Die Planung der **Startetappe** sind die Abschnitte **B und C**
+  des Briefings (Startort, ganze Fahrt – wie bisher). Jede weitere Etappe mit Planung bekommt zwischen C und D
+  einen eigenen Abschnitt **«E‹n› · Etappe n · Name»** mit Zeitfenster und Ort: Meteo-Panels (METAR/TAF,
+  Temps zur Etappenmitte, Beobachtungen, Flugwetterprognose DE, Wind, Ballonprognose, SIGWX, Thermik,
+  Meteogramm) zur **Mitte der Etappe** im **Zeitfenster der Etappe**, Luftraum entlang des Etappenabschnitts der
+  Bahn, NOTAM in überlappenden Kreisen entlang des Abschnitts, DABS nur, wenn der Abschnitt die Schweiz berührt,
+  je Abschnitt «Bemerkungen». Schalten: Klickbox **«Ops-Briefing für Etappe»** im Etappenmenü (≡) des
+  Werkzeugs und im Dialog beim Anlegen einer Etappe (Klick auf die Zeitzeile: Name + Klickbox); Etappen mit
+  Planung tragen die Marke **B/C** hinter dem Namen (Grafik, Etappenübersicht, Legende). **Mindestens eine
+  Etappe** je Briefing hat eine Planung (Vorgabe Startetappe): die Klickbox der letzten Planung ist gesperrt;
+  ist die Startetappe ausgeschaltet, fehlen in B/C die orts-/zeitgebundenen Panels (Hinweis), Flugplan,
+  Absprachen, Übergangshöhe und Bemerkungen bleiben. Vorgabe-Etappen: ab 10 h Fahrtdauer Start / Enroute /
+  Landung, darunter eine Etappe «Enroute». Etappen-Briefings zählen bei Vollständigkeit, Pflichtinhalten
+  («Pflichtinhalte ergänzen», Freigabe-Checkliste), «Alle verfügbaren Daten aktualisieren», Navigation,
+  KI-Kommentar (mit Etappenkontext) und Druck (eigene Abschnitte, DABS-Beilagen mit Etappen-Kennung) mit.
+  Verschobene Etappen: Hinweis «Etappe seit dem Abruf verschoben – Daten aktualisieren». Daten:
+  `b.profile.stages[].ops`, `b.stagePlans[stageId].panels` (+ Ortsnamen, Abrufeinstellungen);
+  abgeleitete Sicht `stagePlanBriefing()` in `js/calc/stageplan.js`.
 
 ### Automatische Panels (Phase 2)
 
@@ -487,7 +506,7 @@ js/defaults.js             Standard-Einstellungen und Stammdaten
 js/panels.js               Panel-Register A–D
 js/i18n.js                 Oberflächentexte DE/EN
 js/net.js                  Open-Meteo, Nominatim, OSRM
-js/calc/*.js               Sonne/Mond, RAC-Parser, Aerostatik, Zeitplan, Geo, Zeit, Flugplan (fpl.js), Höhenprofil/Etappen/Ballast (profile.js)
+js/calc/*.js               Sonne/Mond, RAC-Parser, Aerostatik, Zeitplan, Geo, Zeit, Flugplan (fpl.js), Höhenprofil/Etappen/Ballast (profile.js), Ops-Briefing je Etappe (stageplan.js)
 js/ui/*.js                 Liste, Ablauf, Erarbeitung, Briefingsicht, Einstellungen, Links, Flugplan-Panel (fplpanel.js), Höhenprofil-Werkzeug (profile.js, Beispiel profile_sample.js)
 js/vendor/                 Leaflet (BSD-2), qrcode-generator (MIT)
 data/rac/rac-ch.json       RAC 4-4 OCT 2026 – DEC 2027
