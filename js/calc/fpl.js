@@ -142,7 +142,7 @@ export function buildFpl(b, S, opts = {}) {
     dest16: 'ZZZZ', eet16: hhmm4(dur), altn16: 'ZZZZ', altn16b: type === 'gas' ? 'ZZZZ' : '',
     dep18: dep, dest18: dest, dof18: dof(startMs), eet18: eet.map((e) => ({ ...e, text: `${e.code}${hhmm4(e.min)}` })),
     typ18: T.typ18 || (type === 'gas' ? 'GAS BALLOON' : 'HOT AIR BALLOON'), code18, altn18: 'UNKNOWN' + (type === 'gas' ? ' UNKNOWN' : ''), rmk18: rmkParts.join(' '),
-    e19: hhmm4(enduranceMin), p19: 1 + (b.persons?.pax?.length || 0),
+    e19: hhmm4(enduranceMin), p19: 1 + (b.balloon?.type === 'gas' && (b.persons?.copilot || '').trim() ? 1 : 0) + (b.persons?.pax?.length || 0),
     r19: { uhf: !!F.r19?.uhf, vhf: F.r19?.vhf !== false, elba: !!F.r19?.elba },
     s19: { polar: !!F.s19?.polar, desert: !!F.s19?.desert, maritime: !!F.s19?.maritime, jungle: !!F.s19?.jungle },
     j19: { light: F.j19?.light !== false, fluores: !!F.j19?.fluores, uhf: !!F.j19?.uhf, vhf: !!F.j19?.vhf },

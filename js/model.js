@@ -38,7 +38,7 @@ export function newBriefing(settings, now = Date.now()) {
     time: { date, time: '06:30', startMs: fromLocal(tz, date, '06:30'), base: settings.timeBase || 'LT' },
     intent: { durationMin: intent.durationMin, altMinFt: intent.altMinFt, altMaxFt: intent.altMaxFt, direction: '', dayNight: 'day', remark: '', levels: [...intent.levels] },
     landing: emptyPlace(),
-    persons: { picId: settings.persons.find((x) => x.roles?.includes('pic'))?.id || '', pic: settings.persons.find((x) => x.roles?.includes('pic'))?.name || '', retrieveId: settings.persons.find((x) => x.roles?.includes('retrieve'))?.id || '', retrieve: settings.persons.find((x) => x.roles?.includes('retrieve'))?.name || '', retrievers: settings.persons.filter((x) => x.roles?.includes('retrieve')).slice(0, 1).map((x) => ({ id: x.id, name: x.name })), pax: [] },
+    persons: { picId: settings.persons.find((x) => x.roles?.includes('pic'))?.id || '', pic: settings.persons.find((x) => x.roles?.includes('pic'))?.name || '', copilotId: '', copilot: '', retrieveId: settings.persons.find((x) => x.roles?.includes('retrieve'))?.id || '', retrieve: settings.persons.find((x) => x.roles?.includes('retrieve'))?.name || '', retrievers: settings.persons.filter((x) => x.roles?.includes('retrieve')).slice(0, 1).map((x) => ({ id: x.id, name: x.name })), pax: [] },
     schedule: { stops: [{ id: 'm1', meetingId: meeting?.id || '', name: meeting?.name || '', lat: meeting?.lat ?? null, lon: meeting?.lon ?? null, driveMin: null, driveKm: null, driveSource: '', dwellMin: 0 }], meetingId: meeting?.id || '', meetingName: meeting?.name || '', meetingLat: meeting?.lat ?? null, meetingLon: meeting?.lon ?? null, driveMin: null, driveSource: '', driveKm: null, rigMin: bal?.rigMin ?? 45, fillMin: bal?.fillMin ?? 0, bufferMin: settings.scheduleDefaults.bufferMin, recoveryMin: settings.scheduleDefaults.recoveryMin, rows: [], overrides: {} },
     weather: { tempC: 15, qnh: 1013, rh: null, envTempC: bal?.envTempC ?? 100, source: 'manual', stand: null, gasDeltaT: 0, fillPct: 100 },
     panels: {}, versions: [], log: [], accessCount: 0,
@@ -57,6 +57,7 @@ export function upgradeBriefing(b) {
   ensureStops(b.schedule);
   ensurePlan(b);
   if (!Array.isArray(b.persons.retrievers)) b.persons.retrievers = b.persons.retrieve ? [{ id: b.persons.retrieveId || 'custom', name: b.persons.retrieve }] : [];
+  if (b.persons.copilotId == null) { b.persons.copilotId = ''; b.persons.copilot = ''; }   // 0.12.6: 2. Pilot (Gasfahrt)
   for (const p of b.persons.pax || []) if (/^(Pax|Passenger) \d+$/.test(p.name || '')) p.name = '';   // alte Platzhalter-Namen
   if (b.flight && b.flight.nvfr == null) b.flight.nvfr = b.intent?.dayNight === 'night' || b.intent?.dayNight === 'both';   // 0.8.1: NVFR-Schalter statt Tag/Nacht in der Absicht
   for (const p of PANELS) if (!b.panels[p.key]) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
@@ -175,11 +176,15 @@ export function fillFractionOf(b) {
   return b?.balloon?.fillFraction ?? 1;
 }
 /** Tragkraft (Heissluft) oder Ballast (Gas) aus Briefing-Eingaben. */
+/** Zweiter Pilot an Bord (Gasfahrt, 0.12.6)? */
+export const hasCopilot = (b) => b?.balloon?.type === 'gas' && !!(b.persons?.copilot || '').trim();
+/** Personen an Bord: PIC (+ 2. Pilot bei der Gasfahrt) + Pax. */
+export const personsOnBoard = (b) => 1 + (hasCopilot(b) ? 1 : 0) + (b.persons?.pax?.length || 0);
 export function massPerf(b, settings) {
   const bal = b.balloon, w = b.weather;
-  const persons = 1 + (b.persons.pax?.length || 0);
+  const persons = personsOnBoard(b);
   const pw = +bal.personWeight || +settings?.balloons?.gasDefaults?.personWeight || 85;
-  const personMasses = [b.persons.picWeight || pw, ...(b.persons.pax || []).map((p) => p.weight || pw)];
+  const personMasses = [b.persons.picWeight || pw, ...(hasCopilot(b) ? [b.persons.copilotWeight || pw] : []), ...(b.persons.pax || []).map((p) => p.weight || pw)];
   if (bal.type === 'gas') {
     return { type: 'gas', r: gasBalloon({
       volume: bal.volume, fillFraction: fillFractionOf(b), gas: bal.gas, purity: bal.purity, siteAlt: b.site.elev || 0,
@@ -284,6 +289,23 @@ export function routeCountries(b) {
   return out;
 }
 export const crossesBorder = (b) => routeCountries(b).size > 1;
+/** Für die Fahrt anwendbare Übergangshöhen (0.12.6): Länder der Fahrt (Startort, Landeraum, FIR-Folge, Profil-FIRs) → Vorgaben je Land, sonst Einträge mit passendem Land. */
+export function applicableTransitions(b, settings) {
+  const cc = routeCountries(b);
+  for (const f of b.profile?.data?.firs || []) if (f.country) cc.add(f.country);
+  const ids = new Set();
+  for (const c of cc) {
+    const d = settings?.transitionDefaults?.[c];
+    if (d?.length) d.forEach((x) => ids.add(x));
+    else for (const ta of settings?.transitionAltitudes || []) if ((ta.countries || []).includes(c)) ids.add(ta.id);
+  }
+  return (settings?.transitionAltitudes || []).map((ta) => ta.id).filter((id) => ids.has(id));
+}
+/** Angeklickte Übergangshöhen: von Hand gesetzt (manual), sonst die anwendbaren der Fahrt. */
+export function transitionItems(b, settings) {
+  const d = b.panels?.['C.transition'];
+  return d?.content?.manual ? (d.content.items || []) : applicableTransitions(b, settings);
+}
 export { touchesCH };
 /** Flugplan nötig? NVFR, Grenzüberschreitung oder Gasfahrt → Standard «ja». */
 export const fplSuggested = (b) => !!(b.flight?.nvfr || b.balloon?.type === 'gas' || crossesBorder(b));

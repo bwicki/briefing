@@ -137,13 +137,14 @@ export async function renderSettings(view, ctx) {
 
   function persons() {
     const box = h('div');
-    const ROLES = ['pic', 'crew', 'retrieve', 'pax'];
+    const ROLES = ['pic', 'copilot', 'crew', 'retrieve', 'pax'];   // 0.12.6: «2. Pilot GB» (Gasfahrt)
+    const ROLE_LBL = { pic: 'PIC', copilot: t('role_copilot'), crew: 'CREW', retrieve: 'RETRIEVE', pax: 'PAX' };
     const drawP = () => {
       clear(box);
       S.persons.forEach((p, i) => box.appendChild(h('div.item-box', [
         h('div.head', [h('b', p.name), h('button.btn.icon', { type: 'button', onclick: () => { S.persons.splice(i, 1); drawP(); } }, icon('del'))]),
         h('div.frow.c4', [txtField(p, 'name', t('name')), txtField(p, 'phone', t('phone')), txtField(p, 'email', t('email')), numField(p, 'weight', `${t('weight')} kg`)]),
-        h('div.chips', ROLES.map((r) => h('button.chip', { type: 'button', 'aria-pressed': (p.roles || []).includes(r), onclick: (e) => { p.roles = p.roles || []; const i2 = p.roles.indexOf(r); if (i2 >= 0) p.roles.splice(i2, 1); else p.roles.push(r); e.currentTarget.setAttribute('aria-pressed', p.roles.includes(r)); } }, r.toUpperCase()))),
+        h('div.chips', ROLES.map((r) => h('button.chip', { type: 'button', 'aria-pressed': (p.roles || []).includes(r), onclick: (e) => { p.roles = p.roles || []; const i2 = p.roles.indexOf(r); if (i2 >= 0) p.roles.splice(i2, 1); else p.roles.push(r); e.currentTarget.setAttribute('aria-pressed', p.roles.includes(r)); } }, ROLE_LBL[r] || r.toUpperCase()))),
         (() => { const de = docsEditor(p, S.docTypes?.person, ctx); return fieldAdd(t('docs'), de, () => de.addFn(), t('doc_add')); })(),
       ])));
       box.addFn = () => { S.persons.push({ id: uid(6), name: '', roles: ['crew'], phone: '', email: '', weight: null }); drawP(); };

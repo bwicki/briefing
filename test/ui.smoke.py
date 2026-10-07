@@ -310,7 +310,9 @@ def run_gas(name):
         pg.route('**/overpass-api.de/**', water)
         for pat in ['**/basemaps.cartocdn.com/**', '**/tile.opentopomap.org/**', '**/tile.openstreetmap.org/**', '**/server.arcgisonline.com/**']: pg.route(pat, lambda r: r.fulfill(status=200, content_type='image/png', body=PNG))
         # 0.12.2: nach der Anmeldung immer die Übersicht «Meine Briefings», auch wenn die Adresse anderswo zeigt
-        pg.goto(BASE + '#/settings'); pg.wait_for_timeout(800); pg.fill('#gatePw', '1234'); pg.click('#gateOpen'); pg.wait_for_timeout(900)
+        pg.goto(BASE + '#/settings'); pg.wait_for_timeout(800)
+        assert pg.is_visible('#gateVer') and 'Fahrtbriefing 0.' in pg.text_content('#gateVer'), 'Version auf der Anmeldeseite (0.12.6): ' + pg.text_content('#gateVer')
+        pg.fill('#gatePw', '1234'); pg.click('#gateOpen'); pg.wait_for_timeout(900)
         assert pg.evaluate('location.hash') == '#/list' and pg.query_selector('.chips.scopes, table.list, .note') is not None, 'Nach der Anmeldung: Liste «Meine Briefings»: ' + pg.evaluate('location.hash')
         pg.goto(BASE + '#/new'); pg.wait_for_timeout(700)
         pg.click('.wiz button.chip:has-text("Gas")'); pg.wait_for_timeout(500)
@@ -323,10 +325,26 @@ def run_gas(name):
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1500)
         sel = pg.query_selector('.wiz .row-actions select')
         assert sel is not None and pg.evaluate("el => el.value", sel) == 'icon_eu' and 'ICON-EU' in pg.inner_text('.wiz .row-actions'), 'Wettermodell wählbar, Vorgabe ICON-EU'
-        for i in range(3): pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1200)
+        pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1200)
+        # 0.12.6: 2. Pilot (nur Gas) im Schritt «Personen» – Auswahl «frei» mit Name; zählt bei den Personen an Bord
+        cosel = pg.query_selector_all('.wiz .frow.top select')[1]
+        assert cosel is not None and '2. PILOT' in pg.inner_text('.wiz .frow.top').upper(), 'Feld «2. Pilot» im Schritt Personen'
+        cosel.select_option('custom'); pg.wait_for_timeout(300)
+        pg.fill('.wiz .frow.top input[type=text]:visible', 'Kurt Frieden'); pg.dispatch_event('.wiz .frow.top input[type=text]:visible', 'input'); pg.wait_for_timeout(400)
+        assert '(inkl. PIC) 2 ·' in pg.inner_text('.wiz .card .sub2'), 'Vorschau zählt PIC + 2. Pilot: ' + pg.inner_text('.wiz .card .sub2')
+        for i in range(2): pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1200)
+        assert 'Kurt Frieden' in pg.inner_text('.wiz'), 'Zusammenfassung nennt den 2. Piloten'
         pg.click('button:has-text("Briefing anlegen")'); pg.wait_for_timeout(3000)
         bid = pg.evaluate('location.hash').split('/')[-1]
         assert pg.query_selector('#panel-A\\.profile') is not None and pg.query_selector('#panel-A\\.retrieve') is not None, 'Gas: Panels «Fahrtprofil» und «Nachfahrer» (≥ 12 h)'
+        assert 'Kurt Frieden' in pg.inner_text('#panel-A\\.core') and '2. Pilot' in pg.inner_text('#panel-A\\.core'), 'Stammdaten mit 2. Pilot'
+        # 0.12.6: Übergangshöhen automatisch nach Ländern der Fahrt (CH: ZH + CH angeklickt, automatisch), von Hand → «wieder automatisch»
+        tr = pg.query_selector('#panel-C\\.transition')
+        assert tr is not None and 'automatisch' in tr.inner_text() and pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=0') and pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=1') and not pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=5'), 'Übergangshöhen CH vorgekreuzt, automatisch'
+        pg.click('#panel-C\\.transition input[type=checkbox] >> nth=5'); pg.wait_for_timeout(400)
+        assert 'von Hand' in pg.inner_text('#panel-C\\.transition') and pg.query_selector('#panel-C\\.transition button:has-text("wieder automatisch")') is not None, 'Handänderung erkannt'
+        pg.click('#panel-C\\.transition button:has-text("wieder automatisch")'); pg.wait_for_timeout(400)
+        assert not pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=5'), 'wieder automatisch'
         pg.query_selector('#panel-A\\.profile').scroll_into_view_if_needed(); pg.wait_for_timeout(300)
         pg.screenshot(path=f'{OUT}/{name}_00_sticky.png')   # haftende Zeile mit «Alle verfügbaren Daten aktualisieren» und «Pflichtinhalte ergänzen»
         pg.click('#panel-A\\.profile button:has-text("Daten aufbereiten")')
@@ -349,7 +367,13 @@ def run_gas(name):
         pg.query_selector('#panel-A\\.profile').screenshot(path=f'{OUT}/{name}_01_panel.png')
         pg.click('#panel-A\\.profile button:has-text("Werkzeug öffnen")'); pg.wait_for_timeout(800)
         assert pg.is_visible('.dialog.pf-tool'), 'Werkzeug geöffnet'
+        assert pg.is_visible('.pf-tool .pf-save') and pg.is_visible('.pf-tool .pf-discard') and len(pg.query_selector_all('.pf-tool .pf-zoom')) == 2, 'Werkzeug (0.12.6): «Speichern und schliessen», «Schliessen ohne Speichern», Spreizung'
         pg.screenshot(path=f'{OUT}/{name}_02_tool.png')
+        # Spreizung ×2 (Distanz): SVG doppelt so breit, Rahmen rollt; zurück auf ×1
+        pg.click('.pf-tool .pf-zoom >> nth=0 >> button:has-text("2×")'); pg.wait_for_timeout(600)
+        assert pg.evaluate("() => document.querySelector('.pf-tool svg.pf-svg').style.width") == '200%' and pg.evaluate("() => document.querySelector('.pf-tool svg.pf-svg').getAttribute('viewBox')").startswith('0 0 2080 ') and pg.evaluate("() => document.querySelector('.pf-tool .pf-chart').scrollWidth > document.querySelector('.pf-tool .pf-chart').clientWidth"), 'Spreizung ×2'
+        pg.screenshot(path=f'{OUT}/{name}_02z_zoom.png')
+        pg.click('.pf-tool .pf-zoom >> nth=0 >> button:has-text("1×")'); pg.wait_for_timeout(500)
         # Modellwahl: kurzes Modell → Warnung unter der Layer-Box und Marker «Ende Prognosemodell» über der Grafik; langes Modell → weg
         pg.click('.pf-tool .pf-modelbtn'); pg.wait_for_timeout(300)
         opts = pg.eval_on_selector_all('.pf-tool .pf-menu button', 'els => els.map(e => e.textContent)')
@@ -403,23 +427,41 @@ def run_gas(name):
         mi = pg.query_selector_all('.pf-tool svg .pf-mi[data-kind=stage]')[0]; mb = mi.bounding_box(); pg.mouse.click(mb['x'] + mb['width'] / 2, mb['y'] + mb['height'] / 2); pg.wait_for_timeout(400)
         pg.check('.pf-menu label.pf-ops-row input'); pg.wait_for_timeout(500)
         assert len(pg.query_selector_all('.pf-tool svg .pf-ops')) == 2, 'Planung der Startetappe wieder an'
+        pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
         pg.click('.pf-tool .seg button:has-text("UTC")'); pg.wait_for_timeout(600)
         assert 'UTC' in pg.text_content('.pf-tool svg.pf-svg') and 'Abschnitt UTC' in pg.inner_text('.pf-tool table.pf-ballast'), 'LT/UTC-Schalter wirkt auf Grafik und Ballasttabelle'
         pg.click('.pf-tool .seg button:has-text("Karte")'); pg.wait_for_timeout(1200)
         assert pg.is_visible('.pf-tool .pf-map') and len(pg.query_selector_all('.pf-tool .pf-stage-icon')) >= 3, 'Kartenansicht mit Etappenmarkern'
         pg.click('.pf-tool .seg button:has-text("Satellit")'); pg.wait_for_timeout(600)
         pg.screenshot(path=f'{OUT}/{name}_04_tool_map.png')
-        pg.keyboard.press('Escape'); pg.wait_for_timeout(2500)
-        assert pg.query_selector('.dialog.pf-tool') is None, 'Werkzeug mit Escape geschlossen'
+        # «Speichern und schliessen» sichert den Stand (Etappe «Nacht» mit Planung); danach (0.12.6) «Schliessen ohne Speichern»: eine Umbenennung wird verworfen
+        pg.click('.pf-tool .pf-save'); pg.wait_for_timeout(1500)
+        assert pg.query_selector('.dialog.pf-tool') is None, 'Werkzeug mit «Speichern und schliessen» geschlossen'
+        pg.click('#panel-A\\.profile button:has-text("Werkzeug öffnen")'); pg.wait_for_timeout(1500)
+        n_ops = len(pg.query_selector_all('.pf-tool svg .pf-ops'))
+        mi = pg.query_selector('.pf-tool svg .pf-mi[data-kind=stage][data-name="Nacht"]'); mb = mi.bounding_box(); pg.mouse.click(mb['x'] + mb['width'] / 2, mb['y'] + mb['height'] / 2); pg.wait_for_timeout(400)
+        pg.fill('.pf-menu input[type=text]', 'Verworfen'); pg.click('.pf-menu button:has-text("Umbenennen")'); pg.wait_for_timeout(500)
+        assert 'Verworfen' in pg.text_content('.pf-tool svg.pf-svg'), 'umbenannt'
+        pg.click('.pf-tool .pf-discard'); pg.wait_for_timeout(1200)
+        pg.click('#panel-A\\.profile button:has-text("Werkzeug öffnen")'); pg.wait_for_timeout(1500)
+        assert 'Verworfen' not in pg.text_content('.pf-tool svg.pf-svg') and 'Nacht' in pg.text_content('.pf-tool svg.pf-svg') and len(pg.query_selector_all('.pf-tool svg .pf-ops')) == n_ops, 'Schliessen ohne Speichern: Umbenennung verworfen, Etappe «Nacht» mit Planung bleibt'
+        pg.click('.pf-tool .pf-save'); pg.wait_for_timeout(2500)
+        assert pg.query_selector('.dialog.pf-tool') is None, 'Werkzeug mit «Speichern und schliessen» geschlossen'
         leg = pg.eval_on_selector_all('#panel-A\\.profile .pf-legend > span', 'els => els.map(e => e.textContent)')
         assert any('Relief' in x for x in leg) and not any('CTR' in x for x in leg), 'Legende nur mit vorkommenden Symbolen: ' + str(leg)
         # 0.12.5: Etappen-Briefing «E2 · Etappe 2 · Nacht» zwischen C und D mit eigenen B/C-Panels, in der Navigation und bei «Pflichtinhalte ergänzen»
-        assert len(pg.query_selector_all('.sect-title.stage')) == 1 and 'Nacht' in pg.inner_text('.sect-title.stage') and 'Ort der Planung' in pg.inner_text('.sect-sub'), 'Abschnitt E2 mit Zeitfenster/Ort'
+        heads = pg.query_selector_all('.sect-title.stage')
+        assert len(heads) == 2 and 'E1' in heads[0].inner_text() and 'Nacht' in heads[1].inner_text() and 'Ort der Planung' in pg.inner_text('.sect-sub >> nth=1'), 'Etappenköpfe E1 (Startetappe = B/C) und E3 «Nacht» mit Zeitfenster/Ort (0.12.6)'
+        assert len(pg.query_selector_all('.sect-title.sub')) == 4, 'B/C als Untertitel je Etappe'
+        sb = pg.query_selector_all('.refresh-all .stage-btn'); assert len(sb) == 2 and 'E1' in sb[0].inner_text() and 'Nacht' in sb[1].inner_text(), 'Etappen-Knöpfe in der haftenden Zeile'
+        sb[1].click(); pg.wait_for_timeout(900)
+        assert pg.evaluate("() => document.getElementById('sect-E3').getBoundingClientRect().top < 260"), 'Knopf springt zum Etappenkopf E3'
+        assert pg.query_selector('.enav details[data-sect="E1"]') is not None and len(pg.query_selector_all('.enav details[data-sect="E1"] .subhead')) == 2 and pg.query_selector('.enav details[data-sect="B"]') is None, 'Navigation: E1 mit Untergruppen B/C statt B/C auf oberster Ebene'
         sp = pg.query_selector_all('.panel[id^="panel-st"]'); assert len(sp) >= 12 and any(e.get_attribute('id').endswith('-C.notam') for e in sp) and not any(e.get_attribute('id').endswith('-C.fpl') for e in sp), 'Panels der Etappe (B/C ohne Flugplan): ' + str(len(sp))
-        es = pg.text_content('.sect-title.stage .id')   # «Nacht» ist die dritte Etappe → E3
+        es = heads[1].query_selector('.id').text_content()   # «Nacht» ist die dritte Etappe → E3
         assert es == 'E3' and pg.query_selector(f'.enav details[data-sect="{es}"]') is not None and 'Nacht' in pg.text_content(f'.enav details[data-sect="{es}"] summary'), 'Navigation mit Abschnitt ' + es
         order = pg.evaluate("() => [...document.querySelectorAll('.sect-title')].map(e => e.querySelector('.id').textContent)")
-        assert order.index(es) == order.index('C') + 1 and order.index('D') == order.index(es) + 1, 'Reihenfolge A B C E3 D: ' + str(order)
+        assert order == ['A', 'E1', 'B', 'C', 'E3', 'B', 'C', 'D'], 'Reihenfolge A · E1(B C) · E3(B C) · D: ' + str(order)
         for _ in range(40):
             pg.wait_for_timeout(300)
             if pg.query_selector('.panel[id$="-B.meteogram"] svg, .panel[id$="-B.meteogram"] table'): break

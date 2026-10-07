@@ -5,7 +5,7 @@ import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunRows, twilightClass } from './parts.js';
-import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine, placeLabel } from '../model.js';
+import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems } from '../model.js';
 import { fplView } from './fplpanel.js';
 import { profileView } from './profile.js';
 import { docsLine } from '../stamm.js';
@@ -111,7 +111,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
           break;
         }
         case 'equipment': { const items = d.content.items || ['none']; cell.appendChild(h('div', S.equipmentItems.filter((it) => b.balloon?.type !== 'gas' || !['pressurisation', 'heli'].includes(it)).map((it) => h('span.chk', `${items.includes(it) ? '☑' : '☐'} ${t('eq_' + it)}`)))); break; }
-        case 'transition': { const items = d.content.items || S.transitionDefaults[b.site.country] || []; cell.appendChild(h('div', S.transitionAltitudes.map((ta) => h('span.chk', `${items.includes(ta.id) ? '☑' : '☐'} ${ta.label}`)))); break; }
+        case 'transition': { const items = transitionItems(bb, S); cell.appendChild(h('div', S.transitionAltitudes.map((ta) => h('span.chk', `${items.includes(ta.id) ? '☑' : '☐'} ${ta.label}`)))); break; }
         case 'paxbriefing': cell.appendChild(h('div', [h('div', S.paxBriefingItems.map((it) => h('span.chk', `${(d.content.items || S.paxBriefingItems).includes(it) ? '☑' : '☐'} ${t('pb_' + it)}`))), b.balloon.type === 'gas' ? h('ul', { style: { margin: '4px 0', paddingLeft: '16px' } }, GAS_BRIEFING_EXTRA[lang].map((x) => h('li', x))) : null, h('div.mini', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, AMC1_BOP_BAS_115)])); break;
         case 'text': cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (p.defaultText ? tt(p.defaultText) : '–')))); break;
         case 'profile': cell.appendChild(profileView(b, ctx)); break;
@@ -172,7 +172,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
     return h('div.kv', [
       [t('core_no'), b.no || '–'], [t('core_reg'), b.balloon.label], [t('core_countries'), countriesLine(b)], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
       [t('core_kind'), ['private', 'commercial', 'training', 'exam'].map((k) => `${b.flight.kind === k ? '☑' : '☐'} ${t('kind_' + k)}`).join('  ') + ` · LTF: ${b.flight.operatorName}`],
-      [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('core_pic'), b.persons.pic],
+      [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('core_pic'), b.persons.pic], ...(hasCopilot(b) ? [[t('copilot'), b.persons.copilot]] : []),
       [t('core_pax'), paxLine(b, S, (i) => t('paxPlaceholder', { n: i + 1 }))], [t('core_retrieve'), b.persons.retrieve || '–'],
       [t('core_site'), placeLine(b.site)],
       [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}${b.intent.remark ? ' · ' + b.intent.remark : ''}`],
@@ -185,7 +185,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
     const src = w.source === 'model' ? t('mp_modelStand', { t: w.stand || '' }) : 'manuell';
     if (mp.type === 'hab') {
       return h('div.cols', [
-        h('div.kv', [[t('mp_volume'), `${fmt(bal.volume)} m³`], [t('mp_siteAlt'), `${fmt(b.site.elev)} m · ${w.tempC} °C · QNH ${w.qnh} hPa${w.rh != null ? ' · RH ' + w.rh + ' %' : ''} (${src})`], [t('mp_envTemp'), `${w.envTempC ?? bal.envTempC} °C`], [t('mp_equip'), `${bal.masses.envelope} / ${bal.masses.burner} / ${bal.masses.basket} / ${bal.masses.equipment} kg = ${fmt(r.equipMass)} kg`], [t('mp_persons'), `${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg`], [t('mp_cyl'), (b.cylinders || bal.cylinders).filter((c) => c.count).map((c) => `${c.count}× ${c.name}`).join(', ') + ` = ${fmt(r.cylMass)} kg`], [t('mp_takeoff'), h('b', `${fmt(r.takeoff)} kg`)], [t('mp_allowed'), `${fmt(r.allowed)} kg (${t(r.limitBy === 'mtom' ? 'mp_limitMtom' : 'mp_limitLift', { l: fmt(r.liftAtSite), m: fmt(r.mtom) })}) → ${fmtSigned(r.massDelta)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
+        h('div.kv', [[t('mp_volume'), `${fmt(bal.volume)} m³`], [t('mp_siteAlt'), `${fmt(b.site.elev)} m · ${w.tempC} °C · QNH ${w.qnh} hPa${w.rh != null ? ' · RH ' + w.rh + ' %' : ''} (${src})`], [t('mp_envTemp'), `${w.envTempC ?? bal.envTempC} °C`], [t('mp_equip'), `${bal.masses.envelope} / ${bal.masses.burner} / ${bal.masses.basket} / ${bal.masses.equipment} kg = ${fmt(r.equipMass)} kg`], [t('mp_persons'), `${1 + (hasCopilot(b) ? 1 : 0) + b.persons.pax.length} · ${fmt(r.paxMass)} kg`], [t('mp_cyl'), (b.cylinders || bal.cylinders).filter((c) => c.count).map((c) => `${c.count}× ${c.name}`).join(', ') + ` = ${fmt(r.cylMass)} kg`], [t('mp_takeoff'), h('b', `${fmt(r.takeoff)} kg`)], [t('mp_allowed'), `${fmt(r.allowed)} kg (${t(r.limitBy === 'mtom' ? 'mp_limitMtom' : 'mp_limitLift', { l: fmt(r.liftAtSite), m: fmt(r.mtom) })}) → ${fmtSigned(r.massDelta)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
         h('div.kv', [[t('mp_maxAlt'), `${r.maxAltExcel != null ? fmt(r.maxAltExcel) + ' m AMSL' : '> 10 000 m'} (${t('mp_required')} ${r.required.toFixed(3)} kg/m³)`], [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C · ${t('mp_envMargin', { t: w.envTempC ?? bal.envTempC })} ${fmtSigned(r.envMargin)} K` : '–'], [t('mp_usable'), `${fmt(r.usable)} kg`], [t('mp_burn'), `${fmt(r.burn)} kg/h`], [t('mp_endurance'), fmtDur(r.enduranceMin)], [t('mp_enduranceRes'), fmtDur(r.enduranceExcelReserve)], [t('mp_need', { d: fmtDur(b.intent.durationMin), r: `${Math.round(r.reserveMin)} min` }), `${fmt(r.needKg)} kg → ${t('mp_margin')} ${fmtSigned(r.fuelMargin)} kg`]].map(([k, v]) => [h('div.k', k), h('div.v', v)])),
       ]);
     }

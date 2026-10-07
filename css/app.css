@@ -42,6 +42,7 @@ header.topbar{position:sticky;top:0;z-index:60;background:var(--bg);
 /* ---------- Zugangssperre ---------- */
 .gate{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;}
 .gate-box{width:100%;max-width:320px;text-align:center;display:flex;flex-direction:column;gap:12px;}
+.gate-ver{position:absolute;left:14px;bottom:10px;font-family:var(--mono);font-size:10.5px;color:var(--text-dim);opacity:.75;letter-spacing:.02em}   /* 0.12.6: Version diskret unten links */
 .gate-logo{height:44px;width:auto;object-fit:contain;margin:0 auto 4px;opacity:.94;}
 .gate-box h1{margin:0;font-size:21px;font-weight:600;color:var(--text-strong);letter-spacing:-.01em;}
 .gate-box p{margin:0;font-size:12.5px;line-height:1.6;color:var(--text-dim);}
@@ -758,6 +759,9 @@ table.tbl.list td.acts .btn.icon.small .ico{width:15px;height:15px}
 .pf-chart{overflow-x:auto;position:relative;background:var(--pf-panel);border:1px solid var(--line);border-radius:8px;padding:6px}
 .pf-svg{display:block;width:100%;max-width:100%;height:auto;min-width:640px;font-family:var(--sans)}
 .pf-chart.tool .pf-svg{min-width:900px}
+.pf-chart.tool.zoomed{overflow:auto;max-height:72vh}   /* 0.12.6: Spreizung – Ausschnitt rollt im Rahmen */
+.pf-zoombox{display:inline-flex;align-items:center;gap:4px}.pf-zoombox .seg button{padding:3px 7px;font-size:11.5px}
+.pf-closebtns{margin-left:auto;align-items:center}.pf-tool .dialog-head{display:flex;align-items:center;gap:10px}
 .pf-pt{cursor:grab}.pf-pt:active{cursor:grabbing}.pf-mi{cursor:pointer}.pf-mi:hover rect{stroke:var(--pf-pt)}.pf-sh{cursor:ew-resize}.pf-sh:hover rect{stroke:var(--pf-pt)}.pf-axis{cursor:crosshair}
 .pf-legend{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:11px;line-height:1.3;color:var(--text-dim);margin:4px 0 2px}
 .pf-legend span{display:inline-flex;align-items:center;gap:5px}
@@ -786,6 +790,12 @@ table.tbl.list td.acts .btn.icon.small .ico{width:15px;height:15px}
 .tag.pf-opstag{margin-left:6px}
 /* Abschnitte je Etappe im Editor (E2 …) */
 .sect-title.stage{border-left-color:var(--pf-stage)}.sect-title.stage .id{color:var(--pf-stage)}
+/* 0.12.6: Untertitel B/C innerhalb einer Etappe, Etappen-Gruppen in der Navigation, Etappen-Knöpfe */
+.sect-title.sub{font-size:13.5px;margin:14px 0 8px;padding:5px 12px;border-left-width:3px;background:transparent;border-bottom:1px solid var(--line-soft);border-radius:0}
+.sect-title.sub .id{font-size:12px}
+.enav details.stage>summary{color:var(--pf-stage)}
+.enav .subhead{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--text-dim);margin:6px 0 2px 6px;text-transform:uppercase}
+.refresh-all .stage-btn{border-color:var(--pf-stage);color:var(--pf-stage)}
 .sect-sub{margin:-6px 0 10px;padding:0 12px;font-size:12.5px;color:var(--text-dim)}
 .sect-sub .warn{display:inline-block;margin-left:8px}
 .dialog.pf-tool{max-width:min(98vw,1480px);width:100%;max-height:96vh}

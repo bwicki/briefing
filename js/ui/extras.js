@@ -5,7 +5,7 @@ import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { textarea, field, check } from './widgets.js';
 import { placeLine, mapsUrl } from './place.js';
-import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel, balloonImage, titleLine, lastChangeLine, fileBase, placeLabel } from '../model.js';
+import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel, balloonImage, titleLine, lastChangeLine, fileBase, placeLabel, hasCopilot } from '../model.js';
 import { qrSvg } from './access.js';
 import { hhmm, fmtDate, fmtDateTime, fmtDur } from '../calc/time.js';
 import { goNoGo } from '../calc/gonogo.js';
@@ -27,7 +27,7 @@ export function icsFor(b, ctx, opts = {}) {
   const lines = rows.map((r) => `${hhmm(zz, r.ms)} ${scheduleRowLabel(r, b, t, ctx.settings.activities?.custom)}`);
   const sc = b.schedule;
   const loc = sc.meetingLat != null ? `${sc.meetingName} (${sc.meetingLat.toFixed(5)}, ${sc.meetingLon.toFixed(5)})` : sc.meetingName || placeLabel(b.site);
-  const desc = [`${t('appName')} ${fmtDate(zz, b.time.startMs, lang)} · ${placeLabel(b.site)} · ${b.balloon.label}`, `PIC ${b.persons.pic}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''}`, '', ...lines, '', sc.meetingLat != null ? `${t('meeting')}: ${mapsUrl(sc.meetingLat, sc.meetingLon)}` : '', b.site.lat != null ? `${t('site')}: ${mapsUrl(b.site.lat, b.site.lon)}` : '', opts.link ? `Briefing: ${opts.link}` : ''].filter((x) => x !== null).join('\n');
+  const desc = [`${t('appName')} ${fmtDate(zz, b.time.startMs, lang)} · ${placeLabel(b.site)} · ${b.balloon.label}`, `PIC ${b.persons.pic}${hasCopilot(b) ? ` · ${t('copilot')} ${b.persons.copilot}` : ''}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''}`, '', ...lines, '', sc.meetingLat != null ? `${t('meeting')}: ${mapsUrl(sc.meetingLat, sc.meetingLon)}` : '', b.site.lat != null ? `${t('site')}: ${mapsUrl(b.site.lat, b.site.lon)}` : '', opts.link ? `Briefing: ${opts.link}` : ''].filter((x) => x !== null).join('\n');
   const now = icsDate(Date.now());
   return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Wicki Aero//Fahrtbriefing//DE', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
     `UID:briefing-${b.id}@briefing.wicki.aero`, `DTSTAMP:${now}`, `DTSTART:${icsDate(first)}`, `DTEND:${icsDate(last)}`,
@@ -49,7 +49,7 @@ export function crewMessage(b, ctx, link) {
   const L = lang === 'en';
   const lines = [
     `${L ? 'Balloon flight' : 'Ballonfahrt'} ${fmtDate(zz, b.time.startMs, lang)} – ${placeLabel(b.site)} (${b.site.icao})`,
-    `${b.balloon.label} · PIC ${b.persons.pic}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''} · ${b.persons.pax.length} Pax`,
+    `${b.balloon.label} · PIC ${b.persons.pic}${hasCopilot(b) ? ` · ${t('copilot')} ${b.persons.copilot}` : ''}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''} · ${b.persons.pax.length} Pax`,
     '',
     ...rows.map((r) => `${hhmm(zz, r.ms)}  ${scheduleRowLabel(r, b, t, ctx.settings.activities?.custom)}`),
     '',
@@ -181,7 +181,7 @@ export function paxSheet(b, ctx) {
     ].map(([k, v]) => [h('div.k', k), h('div.v', v)])), qr ? h('figure.pax-qr', [qr, h('figcaption.mini', t('pax_qr'))]) : null]),
     h('div.bs', t('pax_bring')), h('ul.pax-list', items.map((x) => h('li', x))),
     h('div.bs', t('pax_safety')), h('ul.pax-list', (lang === 'en' ? PAX_SAFETY.en : PAX_SAFETY.de).concat(b.balloon.type === 'gas' ? GAS_BRIEFING_EXTRA[lang] || GAS_BRIEFING_EXTRA.de : []).map((x) => h('li', x))),
-    h('div.bs', t('pax_contact')), h('div.kv.pax-kv', [[t('pic'), `${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`], b.persons.retrieve ? [t('retrieve'), b.persons.retrieve] : null, [t('operator'), b.flight.operatorName]].filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', v)])),
+    h('div.bs', t('pax_contact')), h('div.kv.pax-kv', [[t('pic'), `${b.persons.pic}${pic?.phone ? ' · ' + pic.phone : ''}`], hasCopilot(b) ? [t('copilot'), b.persons.copilot] : null, b.persons.retrieve ? [t('retrieve'), b.persons.retrieve] : null, [t('operator'), b.flight.operatorName]].filter(Boolean).map(([k, v]) => [h('div.k', k), h('div.v', v)])),
     (b.balloon?.trackers?.length ? b.balloon.trackers : pic?.trackers || []).length ? h('div', [h('div.bs', t('pax_track')), h('ul.pax-list.trackers', (b.balloon?.trackers?.length ? b.balloon.trackers : pic.trackers).map((u) => h('li', h('a', { href: u, target: '_blank', rel: 'noopener' }, u.replace(/^https?:\/\/(www\.)?/, ''))))), h('div.mini', t('pax_trackHint'))]) : null,
     h('div.bf', [h('span', t('pax_weather')), h('span', `${t('appName')} · ${b.flight.operatorName}`)]),
   ]);

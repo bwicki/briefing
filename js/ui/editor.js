@@ -6,7 +6,7 @@ import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, paxLine, countriesLine, placeLabel } from '../model.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems, applicableTransitions } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock, askAi } from './autopanels.js';
@@ -100,6 +100,11 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   const setsSoon = debounce(() => { const old = setsSig; if (buildSets() !== old) { drawNav(); drawPanels(); } }, 1200);
   const items = () => [...panels.map((p) => ({ id: p.key, p, X: main })), ...sets.flatMap((X) => X.panels.map((p) => ({ id: X.id(p), p, X })))];
   const itemOf = (id) => items().find((it) => it.id === id);
+  // 0.12.6: mit Etappen-Briefings gliedert sich die Sicht in Etappen – die Abschnitte B/C des Hauptbriefings sind «E1 · ‹Startetappe›»
+  const grouped = () => sets.length > 0;
+  const stage1Name = () => b.profile?.stages?.[0]?.name || t('pf_stStart');
+  const sectOf = (it) => (it.X.sid ? it.X.sect : grouped() && (it.p.section === 'B' || it.p.section === 'C') ? 'E1' : it.p.section);
+  const sectLabel = (s) => `${s.id} · ${s[lang] || s.de}`;
 
   function panelStatus(p, X = main) {
     if (panelFilled(p, X.b)) return 'ok';
@@ -120,16 +125,22 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   function drawNav() {
     const e = nav.firstChild; clear(e);
     if (!activeSect) activeSect = SECTIONS.find((s) => panels.some((p) => p.section === s.id))?.id || 'A';
-    const navSect = (id, label, ps, X) => {
-      const det = h('details', { 'data-sect': id }, [h('summary', label)]);
+    // Gruppe in der Navigation: parts = [{ sub (Zwischentitel, optional), ps, X }]
+    const navSect = (id, label, parts, cls = '') => {
+      const det = h('details' + cls, { 'data-sect': id }, [h('summary', label)]);
       det.addEventListener('toggle', () => { if (det.dataset.auto) { delete det.dataset.auto; return; } if (det.open) { navOpen.add(id); if (closedActive === id) closedActive = null; } else { navOpen.delete(id); if (id === activeSect) closedActive = id; } });
-      for (const p of ps) { const key = X.id(p); det.appendChild(h('div.it', { 'data-key': key, onclick: () => { setActive(key); document.getElementById('panel-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p, X)), h('span.pno', panelNo(p, X.panels)), ' ', tt(p), X.mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null])); }
+      for (const part of parts) {
+        if (part.sub) det.appendChild(h('div.subhead', part.sub));
+        for (const p of part.ps) { const key = part.X.id(p); det.appendChild(h('div.it', { 'data-key': key, onclick: () => { setActive(key); document.getElementById('panel-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p, part.X)), h('span.pno', panelNo(p, part.X.panels)), ' ', tt(p), part.X.mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null])); }
+      }
       e.appendChild(det);
     };
+    const bySect = (X) => SECTIONS.filter((s) => s.id === 'B' || s.id === 'C').map((s) => ({ sub: sectLabel(s), ps: X.panels.filter((p) => p.section === s.id), X })).filter((x) => x.ps.length);
     for (const s of SECTIONS) {
       const ps = panels.filter((p) => p.section === s.id);
-      if (ps.length) navSect(s.id, `${s.id} · ${s[lang] || s.de}`, ps, main);
-      if (s.id === 'C') for (const X of sets) navSect(X.sect, t('sp_nav', { n: X.no, name: X.name }), X.panels, X);   // Etappen-Briefings zwischen C und D
+      if (grouped() && s.id === 'B') { navSect('E1', t('sp_nav', { n: 1, name: stage1Name() }), bySect(main), '.stage'); continue; }   // E1 = Abschnitte B/C des Hauptbriefings
+      if (grouped() && s.id === 'C') { for (const X of sets) navSect(X.sect, t('sp_nav', { n: X.no, name: X.name }), bySect(X), '.stage'); continue; }   // weitere Etappen-Briefings
+      if (ps.length) navSect(s.id, sectLabel(s), [{ ps, X: main }]);
     }
     e.appendChild(h('div.note', { style: { marginTop: '8px' } }, t('navLegend')));
     applyNavOpen();
@@ -138,7 +149,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   }
   function setActive(key) {
     const it = itemOf(key); if (!it) return;
-    const sect = it.X.sid ? it.X.sect : it.p.section;
+    const sect = sectOf(it);
     if (sect !== activeSect) { activeSect = sect; closedActive = null; }
     activeKey = key; applyNavOpen();
   }
@@ -328,7 +339,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       [t('core_no'), b.no || '–'],
       [t('core_reg'), b.balloon.label], [t('core_countries'), countriesLine(b)], [t('core_date'), `${fmtDate(z, b.time.startMs, lang)}${b.flight.occasion ? ' · ' + b.flight.occasion : ''}`],
       [t('core_kind'), `${t('kind_' + b.flight.kind)} · LTF: ${b.flight.operatorName}`], [t('core_start'), `${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`],
-      [t('core_pic'), b.persons.pic], [t('core_pax'), paxLine(b, S)], [t('core_retrieve'), b.persons.retrieve || '–'],
+      [t('core_pic'), b.persons.pic], ...(hasCopilot(b) ? [[t('copilot'), b.persons.copilot]] : []), [t('core_pax'), paxLine(b, S)], [t('core_retrieve'), b.persons.retrieve || '–'],
       [t('core_site'), h('span', [placeLine(b.site), ` · ${b.site.country || ''}`])],
       [t('core_intent'), `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft · ${b.intent.direction || '–'}`],
       ...(docsLine(b.balloon.docs) ? [[t('docs'), docsLine(b.balloon.docs)]] : []),
@@ -350,11 +361,17 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     for (const it of items) box.appendChild(check(t('eq_' + it), sel.has(it), (on) => { if (on) sel.add(it); else sel.delete(it); if (it === 'none' && on) { S.equipmentItems.filter((x) => x !== 'none').forEach((x) => sel.delete(x)); } else if (on) sel.delete('none'); d.content.items = [...sel]; box.querySelectorAll('input').forEach((c, i) => { c.checked = sel.has(S.equipmentItems[i]); }); touched(p.key); }));
     return h('div', [box, sugg.length ? h('div.note', t('eq_suggest', { s: sugg.map((x) => t('eq_' + x)).join(', ') })) : null]);
   }
+  /** Übergangshöhen (0.12.6): die für die Fahrt anwendbaren sind automatisch angeklickt (Länder der Fahrt); Handänderung bleibt, bis «automatisch» gewählt wird. */
   function transitionBlock(p, d) {
-    if (!d.content.items) d.content.items = [...(S.transitionDefaults[b.site.country] || [])];
-    const sel = new Set(d.content.items);
-    const box = h('div');
-    for (const ta of S.transitionAltitudes) box.appendChild(check(ta.label, sel.has(ta.id), (on) => { if (on) sel.add(ta.id); else sel.delete(ta.id); d.content.items = [...sel]; touched(p.key); }));
+    const box = h('div'), wrap = h('div');
+    const draw = () => {
+      clear(box);
+      const sel = new Set(transitionItems(b, S)); d.content.items = [...sel];
+      for (const ta of S.transitionAltitudes) box.appendChild(check(ta.label, sel.has(ta.id), (on) => { if (on) sel.add(ta.id); else sel.delete(ta.id); d.content.items = [...sel]; d.content.manual = true; touched(p.key); draw(); }));
+      const cc = [...routeCountries(b)].join(', ');
+      box.appendChild(h('div.row-actions', [h('span.note', d.content.manual ? t('tr_manual') : t('tr_auto', { c: cc || '–' })), d.content.manual ? h('button.btn.small', { type: 'button', onclick: () => { d.content.manual = false; touched(p.key); draw(); } }, t('tr_resetAuto')) : null]));
+    };
+    draw();
     return h('div', [box, h('div.note', t('tr_hint'))]);
   }
   function paxBriefingBlock(p, d) {
@@ -404,18 +421,23 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const st = h('span.note.small');
     mustBtn = h('button.btn.small.must-btn', { type: 'button', title: t('fillMandatoryHint'), onclick: jumpMandatory });
     updateMustBtn();
+    // 0.12.6: Etappen-Knöpfe (E1 · Start, E3 · Nacht …) springen zum Etappenkopf
+    const stageBtns = grouped() ? [{ sect: 'E1', no: 1, name: stage1Name() }, ...sets].map((X) => h('button.btn.small.stage-btn', { type: 'button', title: t('sp_jump'), onclick: () => { document.getElementById('sect-' + X.sect)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); activeSect = X.sect; closedActive = null; applyNavOpen(); } }, t('sp_nav', { n: X.no, name: X.name }))) : [];
     return h('div.row-actions.refresh-all', [
       b.site.lat != null ? h('button.btn.primary.small', { type: 'button', title: t('refreshAllHint'), onclick: async (e) => { const btn = e.currentTarget; btn.disabled = true; st.textContent = '…'; try { await refreshAll(st); st.textContent = `✓ ${b.meteo?.lastRefresh?.n ?? ''}/${b.meteo?.lastRefresh?.total ?? ''}`; } catch (err) { st.textContent = `✗ ${err.message}`; } btn.disabled = false; } }, [icon('refresh', 16), ` ${t('refreshAllData')}`]) : null,
-      mustBtn, st,
+      mustBtn, ...stageBtns, st,
     ]);
   }
   function drawPanels() {
     clear(mainCol);
     const rr = refreshRow(); if (rr) mainCol.appendChild(rr);
+    const g = grouped();
     for (const s of SECTIONS) {
       const ps = panels.filter((p) => p.section === s.id);
       if (ps.length) {
-        mainCol.appendChild(h('div.sect-title', [h('span.id', s.id), h('span.nm', s[lang] || s.de)]));
+        // 0.12.6: mit Etappen-Briefings steht über B der Etappenkopf «E1 · Etappe 1 · ‹Start›» (Startort, ganze Fahrt); B/C werden Untertitel
+        if (g && s.id === 'B') { mainCol.appendChild(h('div.sect-title.stage', { id: 'sect-E1' }, [h('span.id', 'E1'), h('span.nm', t('sp_title', { n: 1, name: stage1Name() }))])); mainCol.appendChild(h('div.sect-sub', t('sp_subStart', { site: placeLabel(b.site), d: fmtDate(z, b.time.startMs, lang), t0: hhmm(z, b.time.startMs), t1: hhmm(z, b.time.startMs + (b.intent.durationMin || 0) * 60000), tz: 'LT' }))); }
+        mainCol.appendChild(h('div.sect-title' + (g && (s.id === 'B' || s.id === 'C') ? '.sub' : ''), [h('span.id', s.id), h('span.nm', s[lang] || s.de)]));
         if (s.id === 'B' && b.site.lat != null) mainCol.appendChild(meteoBar(b, ctx, { onChange: () => { dirty = true; saveSoon(); }, refreshAll, readOnly: shared?.role === 'read' }));
         if (s.id === 'B' && startPlanOff(b)) mainCol.appendChild(h('div.sect-sub', h('span.warn', t('sp_startOff'))));
         for (const p of ps) mainCol.appendChild(renderPanel(p));
@@ -423,10 +445,10 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       if (s.id === 'C') for (const X of sets) renderStageSet(X);   // Etappen-Briefings zwischen C und D (0.12.5)
     }
   }
-  /** Abschnitt «E2 · Etappe 2 · Name» mit Zeitfenster/Ort und den B/C-Panels der Etappe. */
+  /** Abschnitt «E2 · Etappe 2 · Name» mit Zeitfenster/Ort und den B/C-Panels der Etappe (Untertitel B und C, 0.12.6). */
   function renderStageSet(X) {
     const sp = X.bs.stagePlan;
-    mainCol.appendChild(h('div.sect-title.stage', [h('span.id', X.sect), h('span.nm', t('sp_title', { n: X.no, name: X.name || '–' }))]));
+    mainCol.appendChild(h('div.sect-title.stage', { id: 'sect-' + X.sect }, [h('span.id', X.sect), h('span.nm', t('sp_title', { n: X.no, name: X.name || '–' }))]));
     const sub = h('div.sect-sub', { title: t('sp_hint') });
     const line = () => `${t('sp_sub', { d: fmtDate(z, sp.ms0, lang), t0: hhmm(z, sp.ms0), t1: hhmm(z, sp.ms1), tz: 'LT', k0: Math.round(sp.km0), k1: Math.round(sp.km1), len: Math.round(sp.lenKm), a: sp.from.name, b: sp.to.name, mid: sp.mid.name })}`;
     const txt = h('span', line());
@@ -435,7 +457,11 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     // Ortsnamen der Etappe (Nominatim) nachtragen, einmal je Etappe gespeichert
     const want = [['fromName', sp.from], ['midName', sp.mid], ['toName', sp.to]].filter(([k]) => !X.plan[k]);
     if (want.length && b.site.lat != null) Promise.all(want.map(([k, q]) => placeName(q.lat, q.lon, b.site.country, lang).then((nm) => { if (nm) { X.plan[k] = nm; q.name = nm; if (k === 'midName') X.bs.site.name = nm; if (k === 'toName') X.bs.landing.name = nm; } }))).then(() => { if (sub.isConnected) { txt.textContent = line(); dirty = true; saveSoon(); } });
-    for (const p of X.panels) mainCol.appendChild(renderPanel(p, X));
+    let lastSect = null;
+    for (const p of X.panels) {
+      if (p.section !== lastSect) { const s = SECTIONS.find((x) => x.id === p.section); mainCol.appendChild(h('div.sect-title.sub', [h('span.id', s.id), h('span.nm', s[lang] || s.de)])); lastSect = p.section; }
+      mainCol.appendChild(renderPanel(p, X));
+    }
   }
   document.addEventListener('fb:ai', () => drawNav());
 

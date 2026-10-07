@@ -25,7 +25,7 @@ import { parseIcaoNotam } from '../worker/src/wx.js';
 import { placeLabel } from '../js/model.js';
 import { inSwitzerland } from '../js/panels.js';
 import { parseDwdAstro } from '../js/calc/sun.js';
-import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing, ageRefMs, fillFractionOf, massPerf } from '../js/model.js';
+import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing, ageRefMs, fillFractionOf, massPerf, personsOnBoard, hasCopilot, applicableTransitions, transitionItems } from '../js/model.js';
 import { carCode } from '../js/net.js';
 import { stageOps, canDropOps, ensureOps, coverPoints, countryAtKm, stagePlanBriefing, stageSets, startPlanOff, planStale, pruneStagePlans } from '../js/calc/stageplan.js';
 import { defaultStages } from '../js/calc/profile.js';
@@ -584,6 +584,24 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(completion(b, S) > c0, 'Vollständigkeit zählt die Panels der Etappen-Briefings mit');
   b.profile.stages.splice(1, 1); pruneStagePlans(b);
   ok(!b.stagePlans.s2 && stageSets(b).length === 0, 'Planungsdaten gelöschter Etappen werden entfernt');
+}
+
+// ---------------------------------------------------------------- 0.12.6 2. Pilot (Gas), Übergangshöhen nach Ländern der Fahrt
+{
+  const S = mergeSettings({});
+  const b = newBriefing(S); b.balloon = { ...b.balloon, type: 'gas', personWeight: 80 }; b.persons.pax = [{ name: 'A', weight: null }];
+  upgradeBriefing(b);
+  ok(b.persons.copilotId === '' && personsOnBoard(b) === 2 && !hasCopilot(b), 'ohne 2. Pilot: PIC + Pax');
+  b.persons.copilotId = 'custom'; b.persons.copilot = 'Kurt';
+  ok(hasCopilot(b) && personsOnBoard(b) === 3 && massPerf(b, S).r.paxMass === 240, '2. Pilot zählt zu den Personen an Bord und zur Masse (3 × 80 kg)');
+  ok(buildFpl(b, S).p19 === 3 && (b.balloon.type = 'hab', personsOnBoard(b)) === 2, 'Flugplan P/ 3; bei Heissluft kein 2. Pilot');
+  b.balloon.type = 'gas';
+  const c = newBriefing(S); c.site = { ...c.site, country: 'CH', lat: 47.3, lon: 8.3 }; upgradeBriefing(c);
+  ok(applicableTransitions(c, S).join(',') === 'zh,ch', 'Übergangshöhen CH: zh, ch');
+  c.landing = { name: 'x', lat: 48.5, lon: 9.9, country: 'DE' };
+  ok(applicableTransitions(c, S).join(',') === 'zh,ch,de' && transitionItems(c, S).join(',') === 'zh,ch,de', 'Landeraum DE → zusätzlich de (automatisch)');
+  c.panels['C.transition'].content = { items: ['fr'], manual: true };
+  ok(transitionItems(c, S).join(',') === 'fr', 'von Hand gesetzt bleibt');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

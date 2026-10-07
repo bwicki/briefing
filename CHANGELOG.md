@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.12.6 — 2026-10-07 · 2. Pilot, Etappen-Gliederung, Werkzeug: Spreizung und Speichern/Verwerfen, Übergangshöhen, Version auf der Anmeldeseite
+
+* **Anmeldeseite:** Version diskret unten links (`#gateVer`).
+* **2. Pilot (Gasfahrt):** Rolle **«2. Pilot GB»** bei den Personen in den Einstellungen; im Assistenten
+  «Personen» Feld «2. Pilot» (Stamm oder frei, nur Gas); zählt zu Personen an Bord, Masse (Normgewicht),
+  Flugplan P/, Stammdaten, Briefingsicht, ICS, Crew-Nachricht und Pax-Karte (`persons.copilotId/copilot`,
+  `hasCopilot`, `personsOnBoard`).
+* **Höhenprofil-Werkzeug:** Kopf mit **«Speichern und schliessen»** und **«Schliessen ohne Speichern»**
+  (Stand beim Öffnen: Profil, Etappen, Zeitbasis, Etappen-Planungen); ✕/Escape = speichern. **Spreizung**
+  der Achsen: Distanz ×1/×2/×4/×8, Höhe ×1/×2/×3 – Zeichenfläche wächst, Schrift bleibt, Rahmen rollt
+  (nur Ansicht im Werkzeug; Panel und Druck unverändert).
+* **Erarbeitungssicht mit Etappen-Briefings:** Etappenköpfe «E1 · Etappe 1 · ‹Start›» (= Abschnitte B/C
+  des Hauptbriefings, Unterzeile Startort/ganze Fahrt) und «E‹n› …» mit B/C als Untertiteln; Navigation
+  links gruppiert A · E1 (B, C) · E‹n› (B, C) · D; Etappen-Knöpfe in der haftenden Zeile neben «Alle
+  verfügbaren Daten aktualisieren» springen zum Etappenkopf.
+* **Übergangshöhe (C):** die für die Fahrt anwendbaren Höhen sind automatisch angeklickt (Länder von
+  Startort, Landeraum, FIR-Folge der Luftraumanalyse und des Profils → Vorgaben je Land aus den
+  Einstellungen, sonst Einträge mit passendem Land); Handänderung bleibt (Hinweis «von Hand gesetzt»,
+  Knopf «wieder automatisch»); Briefingsicht zeigt denselben Stand (`applicableTransitions`,
+  `transitionItems`).
+* Tests: calc 252 (2. Pilot in Masse/Flugplan, Übergangshöhen), Smoke «gas» (Version auf der Anmeldeseite,
+  2. Pilot im Assistenten/Stammdaten, Übergangshöhen automatisch/von Hand, Spreizung ×2,
+  Speichern/Verwerfen im Werkzeug, Gliederung E1/E3 mit Etappen-Knöpfen).
+
 ## 0.12.5 — 2026-10-07 · Ops-Briefing je Etappe, Ortsnamen ISO
 
 * **Ops-Briefing je Etappe (Gasfahrt):** Klickbox **«Ops-Briefing für Etappe»** im Etappenmenü des

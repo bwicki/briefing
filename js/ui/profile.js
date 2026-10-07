@@ -19,7 +19,7 @@ import { icon } from './icons.js';
 import { sampleOf } from './profile_sample.js';
 
 const NS = 'http://www.w3.org/2000/svg';
-const W = 1040, H = 550, ML = 58, R = 24, T = 44, B = 120;   // Ränder (ML statt L: L ist Leaflet); oberhalb T: Achsenhinweis und Etappennamen
+const W0 = 1040, H0 = 550, ML = 58, R = 24, T = 44, B = 120;   // Ränder (ML statt L: L ist Leaflet); oberhalb T: Achsenhinweis und Etappennamen
 const MONO = 'var(--mono)';
 /** SVG-Element; fill/stroke als style, damit var(--pf-…) in jedem Browser gilt. */
 function el(n, a = {}, txt) {
@@ -76,6 +76,8 @@ const minAglOf = (ctx) => +ctx.settings.profileLimits?.minAgl || 300;
  */
 export function drawChart(svg, st) {
   const { b, ctx, p, D } = st;
+  // Spreizung (0.12.6, Werkzeug): Zeichenfläche wächst mit den Faktoren, Schrift und Symbole bleiben gleich gross; der Rahmen rollt
+  const zx = st.zoomX || 1, zy = st.zoomY || 1, W = W0 * zx, H = H0 * zy;
   const lang = getLang(), z = zoneOf(b), tz = tzName(b);
   const KM = Math.max(1, D.totalKm), track = D.track, pts = p.points, used = st.used || new Set();
   const minAgl = minAglOf(ctx);
@@ -226,7 +228,7 @@ export function drawChart(svg, st) {
     const tx0 = x(s.km) + (right ? -4 - pw : 4);
     svg.appendChild(el('text', { x: tx0, y: yT, 'text-anchor': right ? 'end' : 'start', 'font-size': 11, fill: C.stage, 'font-weight': 600 }, label));
     if (ops) { const px = right ? x(s.km) - 4 - pw + 3 : tx0 + lw - pw + 3; const g = el('g', { class: 'pf-ops' }); g.appendChild(el('rect', { x: px, y: yT - 9, width: 22, height: 11, rx: 3, fill: C.stage })); g.appendChild(el('text', { x: px + 11, y: yT - 0.5, 'text-anchor': 'middle', 'font-size': 7.5, fill: '#fff', 'font-weight': 700 }, 'B/C')); g.appendChild(el('title', {}, t(i === 0 ? 'pf_opsStart' : 'pf_opsStage'))); svg.appendChild(g); used.add('ops'); }
-    if (st.interactive) { menuIcon(svg, right ? x(s.km) - 8 - lw - 14 : x(s.km) + 8 + lw, yL, 'stage', i, s.name || ''); if (i > 0) stageHandle(svg, x(s.km), i); }
+    if (st.interactive) { menuIcon(svg, right ? x(s.km) - 8 - lw - 14 : x(s.km) + 8 + lw, yL, 'stage', i, s.name || ''); if (i > 0) stageHandle(svg, x(s.km), i, H); }
     if (!right) rowEnd[row] = x(s.km) + 8 + lw + 14;
     used.add('stage');
   });
@@ -271,7 +273,7 @@ export function drawChart(svg, st) {
     const cx = c.axis === 'km' ? ML - 46 : x(c.km), cy = c.axis === 'km' ? yAx1 - 4 : yc(c.alt);
     const g = el('g', { class: 'pf-callout' }); g.appendChild(el('circle', { cx, cy, r: 9, fill: C.pt })); g.appendChild(el('text', { x: cx, y: cy + 4, 'text-anchor': 'middle', 'font-size': 11, fill: '#fff', 'font-weight': 600 }, c.n)); g.appendChild(el('title', {}, t(c.key))); svg.appendChild(g);
   }
-  st.scale = { x, y, KM, yMin, yMax, kx: (px) => Math.max(0, Math.min(KM, (px - ML) / (W - ML - R) * KM)), my: (py) => Math.max(yMin, Math.min(yMax, yMin + (1 - (py - T) / (H - T - B)) * (yMax - yMin))), yAx2 };
+  st.scale = { x, y, KM, yMin, yMax, W, H, kx: (px) => Math.max(0, Math.min(KM, (px - ML) / (W - ML - R) * KM)), my: (py) => Math.max(yMin, Math.min(yMax, yMin + (1 - (py - T) / (H - T - B)) * (yMax - yMin))), yAx2 };
   return svg;
 }
 function menuIcon(root, px, py, kind, idx, name) {
@@ -281,7 +283,7 @@ function menuIcon(root, px, py, kind, idx, name) {
   g.appendChild(el('title', {}, kind === 'pt' ? t('pf_ptMenu') : t('pf_stMenu')));
   root.appendChild(g);
 }
-function stageHandle(root, px, idx) {
+function stageHandle(root, px, idx, H = H0) {
   const g = el('g', { class: 'pf-sh', 'data-idx': idx }); const yb = H - B - 14;
   g.appendChild(el('rect', { x: px - 7, y: yb, width: 14, height: 14, rx: 3, fill: C.stage, stroke: C.panel, 'stroke-width': 1.5 }));
   for (const d of [3, 7, 11]) g.appendChild(el('circle', { cx: px, cy: yb + d, r: 1.3, fill: '#fff' }));
@@ -497,7 +499,11 @@ export function openProfileTool(b0, ctx, o = {}) {
   const modelBtn = h('button.btn.small.pf-modelbtn', { type: 'button', title: t('pf_modelTip'), onclick: (ev) => { ev.stopPropagation(); openModelMenu(); } }, [h('span.note.small', `${t('pf_model')} `), modelLbl, icon('more', 14)]);
   const modelWarn = h('div.pf-modelwarn', { hidden: true });
   const sampleBtn = h('button.btn.small.pf-sample', { type: 'button', title: t('pf_sampleNote'), onclick: () => toggleSample() }, t('pf_sample'));
-  const toolbar = h('div.pf-toolbar', [viewSeg, tzSeg, undoBtn, modelBtn, sampleBtn, status, layerBox]);
+  // Spreizung der Achsen (0.12.6): Distanz ×1/×2/×4/×8, Höhe ×1/×2/×3 – nur im Werkzeug, nicht gespeichert
+  let zoomX = 1, zoomY = 1;
+  const zoomSeg = (vals, get, set) => { const seg = h('div.seg.pf-zoom'); const draw = () => { clear(seg); for (const v of vals) seg.appendChild(segBtn(`${v}×`, get() === v, () => { set(v); draw(); redraw(); })); }; draw(); return seg; };
+  const zoomBox = h('div.pf-zoombox', { title: t('pf_zoomTip') }, [h('span.note.small', `${t('pf_zoomX')} `), zoomSeg([1, 2, 4, 8], () => zoomX, (v) => { zoomX = v; }), h('span.note.small', ` ${t('pf_zoomY')} `), zoomSeg([1, 2, 3], () => zoomY, (v) => { zoomY = v; })]);
+  const toolbar = h('div.pf-toolbar', [viewSeg, tzSeg, undoBtn, modelBtn, sampleBtn, status, zoomBox, layerBox]);
   const toolbar2 = h('div.pf-toolbar2', { hidden: true }, [modelWarn]);
   function openModelMenu() {
     closeMenu();
@@ -529,16 +535,27 @@ export function openProfileTool(b0, ctx, o = {}) {
   const tables = h('div.pf-tables');
   const calloutBox = h('div');
   const body = h('div.dialog-body.pf-body', [toolbar, toolbar2, chartWrap, mapWrap, legendBox, calloutBox, tables]);
+  // Stand beim Öffnen (0.12.6): «Schliessen ohne Speichern» stellt Profil, Zeitbasis und Etappen-Planungen wieder her
+  const orig = { p: JSON.parse(JSON.stringify(realP)), base: realB.time.base, plans: JSON.parse(JSON.stringify(realB.stagePlans || {})) };
   const close = () => { back.remove(); document.removeEventListener('keydown', onKey); if (map) { map.remove(); map = null; } o.onClose?.(); };
-  const back = h('div.backdrop.pf-backdrop', h('div.dialog.pf-tool', [h('div.dialog-head', [h('div.section-title', `${t('pf_title')} · ${b.site.name || ''} · ${fmtDate(zoneOf(b), b.time.startMs, getLang())}`), h('button.btn.icon', { type: 'button', onclick: close, 'aria-label': 'close' }, '✕')]), body]));
+  const saveClose = () => { if (sample) toggleSample(); realP.updated = Date.now(); o.onChange?.(); close(); };
+  const discard = () => {
+    if (sample) toggleSample();
+    for (const k of Object.keys(realP)) delete realP[k];
+    Object.assign(realP, JSON.parse(JSON.stringify(orig.p)));
+    realB.time.base = orig.base; realB.stagePlans = JSON.parse(JSON.stringify(orig.plans));
+    o.onChange?.(); close();
+  };
+  const back = h('div.backdrop.pf-backdrop', h('div.dialog.pf-tool', [h('div.dialog-head', [h('div.section-title', `${t('pf_title')} · ${b.site.name || ''} · ${fmtDate(zoneOf(b), b.time.startMs, getLang())}`), h('div.row-actions.pf-closebtns', [h('button.btn.small.primary.pf-save', { type: 'button', onclick: saveClose }, t('pf_saveClose')), h('button.btn.small.pf-discard', { type: 'button', onclick: discard }, t('pf_discardClose')), h('button.btn.icon', { type: 'button', onclick: saveClose, 'aria-label': 'close', title: t('pf_saveClose') }, '✕')])]), body]));
   document.body.appendChild(back);
-  const onKey = (ev) => { if (ev.key === 'Escape') { if (menuEl) closeMenu(); else close(); } if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z' && !ev.target.closest('input,textarea')) { ev.preventDefault(); undo(); } };
+  const onKey = (ev) => { if (ev.key === 'Escape') { if (menuEl) closeMenu(); else saveClose(); } if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z' && !ev.target.closest('input,textarea')) { ev.preventDefault(); undo(); } };
   document.addEventListener('keydown', onKey);
   let st = null;
   function redraw() {
     const used = new Set();
-    st = { b, ctx, p, D: p.data, interactive: true, used, callouts: sample?.callouts };
+    st = { b, ctx, p, D: p.data, interactive: true, used, callouts: sample?.callouts, zoomX, zoomY };
     drawChart(svg, st);
+    svg.style.width = `${zoomX * 100}%`; svg.style.maxWidth = zoomX > 1 ? 'none' : ''; chartWrap.classList.toggle('zoomed', zoomX > 1 || zoomY > 1);
     const D = p.data; modelWarn.hidden = toolbar2.hidden = !D.cut;
     if (D.cut) { clear(modelWarn); modelWarn.append('⚠ ', t('pf_modelEndHint', { m: D.modelName || '', t: fmtTD(b, D.endMs), tz: tzName(b), p: fmtTD(b, D.plannedEndMs) })); }
     if (!sample) modelLbl.textContent = modelName();
@@ -586,7 +603,7 @@ export function openProfileTool(b0, ctx, o = {}) {
   back.addEventListener('click', (ev) => { if (menuEl && !menuEl.contains(ev.target) && !ev.target.closest('.pf-mi')) closeMenu(); });
   // Ziehen (Punkte, Etappengriffe), Doppelklick setzt einen Punkt, Klick auf die Zeitzeile setzt eine Etappengrenze
   let drag = null, dragStage = null, moved = false, pendingRedraw = false;
-  const pos = (ev) => { const r = svg.getBoundingClientRect(); return { px: (ev.clientX - r.left) * W / r.width, py: (ev.clientY - r.top) * H / r.height }; };
+  const pos = (ev) => { const r = svg.getBoundingClientRect(); return { px: (ev.clientX - r.left) * st.scale.W / r.width, py: (ev.clientY - r.top) * st.scale.H / r.height }; };
   svg.addEventListener('pointerdown', (ev) => {
     const pt = ev.target.closest('.pf-pt'), sh = ev.target.closest('.pf-sh');
     if (pt) { snapshot(); drag = +pt.dataset.i; } else if (sh) { snapshot(); dragStage = +sh.dataset.idx; } else return;
@@ -599,7 +616,7 @@ export function openProfileTool(b0, ctx, o = {}) {
     else { moveStage(p.stages, dragStage, sc.kx(px), sc.KM); redraw(); }
   });
   svg.addEventListener('pointerup', () => { const wasPt = drag != null && moved, wasSt = dragStage != null && moved; drag = null; dragStage = null; if (pendingRedraw) { pendingRedraw = false; redraw(); } if (wasPt) { changed(); recompute(); } else if (wasSt) changed(); });
-  svg.addEventListener('dblclick', (ev) => { const { px, py } = pos(ev); if (py < T || py > H - B || ev.target.closest('.pf-mi,.pf-sh')) return; snapshot(); p.points.push({ km: Math.round(st.scale.kx(px) * 10) / 10, alt: Math.round(st.scale.my(py) / 50) * 50 }); p.points = fitPoints(p.points, st.scale.KM); redraw(); changed(); recompute(); });
+  svg.addEventListener('dblclick', (ev) => { const { px, py } = pos(ev); if (py < T || py > st.scale.H - B || ev.target.closest('.pf-mi,.pf-sh')) return; snapshot(); p.points.push({ km: Math.round(st.scale.kx(px) * 10) / 10, alt: Math.round(st.scale.my(py) / 50) * 50 }); p.points = fitPoints(p.points, st.scale.KM); redraw(); changed(); recompute(); });
   svg.addEventListener('click', (ev) => {
     const mi = ev.target.closest('.pf-mi'); if (mi) { openMenu(mi.dataset.kind, +mi.dataset.idx, ev); ev.stopPropagation(); return; }
     if (!ev.target.closest('.pf-axis')) return;

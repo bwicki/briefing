@@ -182,6 +182,7 @@ async function route() {
 // ---------------------------------------------------------------- Start
 async function main() {
   $('appVersion').textContent = APP.version;
+  if ($('gateVer')) $('gateVer').textContent = `${APP.name} ${APP.version}`;   // 0.12.6: Version auf der Anmeldeseite
   // Höhe der Kopfzeile als CSS-Variable (haftende Zeile «Daten aktualisieren / Pflichtinhalte» darunter, 0.12.2)
   const topbar = $('topbar'); const setTop = () => document.documentElement.style.setProperty('--topbar-h', topbar.offsetHeight + 'px');
   setTop(); if (window.ResizeObserver) new ResizeObserver(setTop).observe(topbar); window.addEventListener('resize', setTop);

@@ -125,7 +125,9 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
    nach Querabstand gewichtet; `>` = Ziel jenseits der Bahnenden). Trajektorien-
    Niveaus (Startwerte je Ballontyp aus den Einstellungen). Landeraum und Richtung
    bleiben optional.
-4. **Personen** — PIC, **mehrere Nachfahrer** (Liste aus Stamm oder frei), Pax
+4. **Personen** — PIC, bei der Gasfahrt **2. Pilot** (Personen mit Rolle «2. Pilot GB» aus den
+   Einstellungen oder frei; zählt zu Personen an Bord, Masse und Flugplan P/; 0.12.6), **mehrere
+   Nachfahrer** (Liste aus Stamm oder frei), Pax
    (Name leer = Platzhalter im Briefing, Gewicht), Vorschau Tragkraft bzw. Ballast;
    Temperatur/QNH/Feuchte werden, wenn der Start innert 15 Tagen liegt, aus dem
    Modell geholt.
@@ -185,7 +187,9 @@ Panel-Arten:
 * **Berechnet** — Stammdaten, Sonne/Mond, Tragkraft/Ballast (Eingaben Temperatur,
   QNH, Feuchte, Hüllentemperatur; Knopf «aus Modell übernehmen»; Tanks je Briefing
   änderbar), Tagesplanung (Routing, Überschreibungen mit ↺ zurücksetzen),
-  Spezialausrüstung (Gasballon ohne Druckerhöhung und Heli-Bergung), Übergangshöhe (nach Land vorgekreuzt), Standard-Briefing PAX
+  Spezialausrüstung (Gasballon ohne Druckerhöhung und Heli-Bergung), Übergangshöhe (die für die Fahrt
+  anwendbaren sind automatisch angeklickt – Länder von Startort, Landeraum, FIR-Folge und Profil; Handänderung
+  bleibt bis «wieder automatisch», 0.12.6), Standard-Briefing PAX
   (Checkliste, AMC1 BOP.BAS.115, Zusatzpunkte Gasballon).
 * **Einfüge-Assistent** (Meteo, DABS, NOTAM, SIGWX …) — *Quelle öffnen ↗* führt
   zur Quelle (Einstellungen → Quellen), das Feld nimmt Text per Tastatur und
@@ -207,7 +211,10 @@ Panel-Arten:
   Punkte ziehen/setzen/löschen (≡), Etappen nummeriert mit Griff ⋮ und Menü (umbenennen, mit
   Vorgänger/Nachfolger zusammenlegen), Rückgängig (Ctrl+Z), Pille **«Wettermodell ‹Name› ⋯»** (Vorgabe das
   feinste Modell, das die ganze Fahrt abdeckt; Horizont-Warnung), «Beispiel» (synthetische Fahrt mit
-  nummerierten Erklärungen zum Üben), Layer Wetter/Lufträume, Kartenansicht mit wählbarer Grundkarte.
+  nummerierten Erklärungen zum Üben), Layer Wetter/Lufträume, Kartenansicht mit wählbarer Grundkarte,
+  **Spreizung** der Achsen (Distanz ×1/×2/×4/×8, Höhe ×1/×2/×3; Grafik wächst, Rahmen rollt – nur Ansicht,
+  0.12.6) und oben **«Speichern und schliessen»** / **«Schliessen ohne Speichern»** (stellt Profil,
+  Etappen, Zeitbasis und Etappen-Planungen vom Öffnen wieder her; ✕ und Escape = speichern, 0.12.6).
   Die **Legende** (erste Zeile: Bedienhinweis) ist einklappbar und wird im Briefingdruck immer gedruckt.
   Darunter die **Etappenübersicht** (Zeit, km, Höhenband, Ort, Land/FIR, Lufträume, Achtung, Kontakte:
   FIS-Sektoren aus openAIP entlang der Etappe, sonst die FIS-Kontakte je Land aus den Einstellungen) und die
@@ -231,7 +238,11 @@ Panel-Arten:
   Landung, darunter eine Etappe «Enroute». Etappen-Briefings zählen bei Vollständigkeit, Pflichtinhalten
   («Pflichtinhalte ergänzen», Freigabe-Checkliste), «Alle verfügbaren Daten aktualisieren», Navigation,
   KI-Kommentar (mit Etappenkontext) und Druck (eigene Abschnitte, DABS-Beilagen mit Etappen-Kennung) mit.
-  Verschobene Etappen: Hinweis «Etappe seit dem Abruf verschoben – Daten aktualisieren». Daten:
+  Verschobene Etappen: Hinweis «Etappe seit dem Abruf verschoben – Daten aktualisieren». **Gliederung
+  (0.12.6):** mit Etappen-Briefings zeigt die Erarbeitungssicht Etappenköpfe «E1 · Etappe 1 · ‹Start›»
+  (= Abschnitte B/C des Hauptbriefings) und «E‹n› · …» mit B/C als Untertiteln; die Navigation links
+  gruppiert entsprechend (A · E1 (B, C) · E‹n› (B, C) · D), und neben «Alle verfügbaren Daten
+  aktualisieren» springen Etappen-Knöpfe (E1 · Start, E3 · Nacht …) zum Etappenkopf. Daten:
   `b.profile.stages[].ops`, `b.stagePlans[stageId].panels` (+ Ortsnamen, Abrufeinstellungen);
   abgeleitete Sicht `stagePlanBriefing()` in `js/calc/stageplan.js`.
 

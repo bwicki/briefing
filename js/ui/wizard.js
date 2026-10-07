@@ -4,7 +4,7 @@ import { t, getLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, kv, stats, fieldAdd } from './widgets.js';
 import { scheduleEditor } from './parts.js';
-import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan, directionText, isLocked, placeLabel } from '../model.js';
+import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan, directionText, isLocked, placeLabel, personsOnBoard, hasCopilot } from '../model.js';
 import { placeRow, placeLine, pickPlace, mapsLink, typeToPick } from './place.js';
 import { stammLabel } from '../stamm.js';
 import { resolveBalloon } from '../defaults.js';
@@ -377,6 +377,10 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const pers = (role) => P.filter((p) => !role || p.roles?.includes(role)).map((p) => ({ value: p.id, label: stammLabel(p, p.name) })).concat([{ value: 'custom', label: t('operatorCustom') }]);
     const picCustom = input('text', b.persons.picId === 'custom' ? b.persons.pic : '', { placeholder: t('name'), oninput: (e) => { b.persons.pic = e.target.value; persistSoon(); } }); picCustom.hidden = b.persons.picId !== 'custom';
     const picSel = select(pers('pic'), b.persons.picId, { onchange: (e) => { b.persons.picId = e.target.value; picCustom.hidden = e.target.value !== 'custom'; b.persons.pic = e.target.value === 'custom' ? picCustom.value : P.find((p) => p.id === e.target.value)?.name || ''; persistSoon(); } });
+    // 0.12.6: 2. Pilot (nur Gasfahrt) – Personen mit Rolle «2. Pilot GB», «keiner» oder frei
+    const coOpts = [{ value: '', label: t('copilotNone') }].concat(pers('copilot'));
+    const coCustom = input('text', b.persons.copilotId === 'custom' ? b.persons.copilot : '', { placeholder: t('name'), oninput: (e) => { b.persons.copilot = e.target.value; drawPreview(); persistSoon(); } }); coCustom.hidden = b.persons.copilotId !== 'custom';
+    const coSel = select(coOpts, b.persons.copilotId || '', { onchange: (e) => { b.persons.copilotId = e.target.value; coCustom.hidden = e.target.value !== 'custom'; b.persons.copilot = e.target.value === 'custom' ? coCustom.value : P.find((p) => p.id === e.target.value)?.name || ''; drawPreview(); persistSoon(); } });
     // Nachfahrer: mehrere Personen (Liste aus Stamm oder frei)
     const retOpts = pers('retrieve').concat(pers('crew').filter((x) => !pers('retrieve').some((y) => y.value === x.value) && x.value !== 'custom'));
     const retBox = h('div.retrievers');
@@ -408,7 +412,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       const { type, r } = massPerf(b, ctx.settings);
       const src = b.weather.source === 'model' ? t('mp_modelStand', { t: b.weather.stand || '' }) : `${t('mp_temp')} ${b.weather.tempC} °C · QNH ${b.weather.qnh}`;
       if (type === 'hab') {
-        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewLift')} (${bal.reg})`), h('span.sub2', `${t('mp_persons')} ${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg · ${src}`)])]), stats([
+        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewLift')} (${bal.reg})`), h('span.sub2', `${t('mp_persons')} ${personsOnBoard(b)} · ${fmt(r.paxMass)} kg · ${src}`)])]), stats([
           [t('mp_takeoff'), `${fmt(r.takeoff)} kg`], [t('mp_allowed'), `${fmt(r.allowed)} kg`, null, t(r.limitBy === 'mtom' ? 'mp_limitMtom' : 'mp_limitLift', { l: fmt(r.liftAtSite), m: fmt(r.mtom) })], [t('mp_delta'), `${fmtSigned(r.massDelta)} kg`, r.massDelta > 0 ? 'neg' : 'pos'],
           [t('mp_envReq'), r.envReq != null ? `${fmt(r.envReq)} °C` : '–', r.envReq != null && r.envReq > (b.weather.envTempC || bal.envTempC) ? 'neg' : ''],
           [t('mp_maxAlt'), r.maxAltExcel != null ? `${fmt(r.maxAltExcel)} m` : '–'],
@@ -416,15 +420,15 @@ export async function renderWizard(view, ctx, id, opts = {}) {
           [t('mp_enduranceRes'), fmtDur(Math.max(0, r.enduranceMin - r.reserveMin))], [t('mp_margin'), `${fmtSigned(Math.round(r.fuelMargin))} kg`, r.fuelMargin < 0 ? 'neg' : 'pos'],
         ])]));
       } else {
-        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewBallast')} (${bal.label})`), h('span.sub2', `${t('mp_persons')} ${1 + b.persons.pax.length} · ${fmt(r.paxMass)} kg · ${src}`)])]), stats([
+        preview.appendChild(h('div.card', [h('div.card-head', [h('div.section-title.two', [h('span', `${t('previewBallast')} (${bal.label})`), h('span.sub2', `${t('mp_persons')} ${personsOnBoard(b)} · ${fmt(r.paxMass)} kg · ${src}`)])]), stats([
           [t('gb_gross'), `${fmt(r.grossLift)} kg`], [t('gb_net'), `${fmt(r.net)} kg`], [t('gb_ballast'), `${fmt(r.ballast)} kg · ${fmt(r.ballastPct)} %`, r.ballast < r.reserveKg ? 'neg' : 'pos'],
           [t('gb_units'), r.units != null ? `${fmt(r.units, 1)} × ${bal.ballastUnitKg} kg` : '–'],
         ])]));
       }
-      if ((b.persons.pax.length + 1) > (bal.maxPersons || 99)) preview.appendChild(h('div.warn', `⚠ ${t('b_maxPersons')}: ${bal.maxPersons}`));
+      if (personsOnBoard(b) > (bal.maxPersons || 99)) preview.appendChild(h('div.warn', `⚠ ${t('b_maxPersons')}: ${bal.maxPersons}`));
     }
     drawPax(); drawPreview();
-    body.append(h('div.frow.top', [field(t('pic'), h('div', [picSel, picCustom])), fieldAdd(t('retrieve'), retBox, retAdd, t('retrieveAdd'))]), fieldAdd(t('pax'), paxBox, paxAdd, t('paxAdd')), preview);
+    body.append(h('div.frow.top', [field(t('pic'), h('div', [picSel, picCustom])), bal.type === 'gas' ? field(t('copilot'), h('div', [coSel, coCustom])) : null, fieldAdd(t('retrieve'), retBox, retAdd, t('retrieveAdd'))]), fieldAdd(t('pax'), paxBox, paxAdd, t('paxAdd')), preview);
     // Modellwerte für die Vorschau holen (einmal je Ort/Zeit)
     if (b.site.lat != null && b.weather.source !== 'model' && (b.time.startMs - Date.now()) < 15 * 86400000) {
       const p = localParts(tz(), b.time.startMs);
@@ -454,7 +458,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s1'))), h('div.card-body', kv([[t('registration'), b.balloon.label], [t('flightKind'), t('kind_' + b.flight.kind)], [t('operator'), b.flight.operatorName], [t('occasion'), b.flight.occasion || '–']]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s2'))), h('div.card-body', kv([[t('site'), placeLine(b.site)], [t('date'), `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`], [t('sun'), sun ? `BCMT ${hhmm(z, sun.official.bcmt)} · SR ${hhmm(z, sun.official.sr)} · SS ${hhmm(z, sun.official.ss)} · ECET ${hhmm(z, sun.official.ecet)}` : '–'], sun?.nightStart ? ['', h('span.warn', t('night'))] : null]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s3'))), h('div.card-body', kv([[t('duration'), fmtDur(b.intent.durationMin)], [t('altBand'), `${b.intent.altMinFt}–${b.intent.altMaxFt} ft`], [t('direction'), b.intent.direction || '–'], b.landing?.lat != null ? [t('landingSite'), placeLine(b.landing)] : null, [t('levels'), b.intent.levels.join(', ')]]))]),
-        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s4'))), h('div.card-body', kv([[t('pic'), b.persons.pic], [t('retrieve'), b.persons.retrieve || '–'], [t('pax'), b.persons.pax.map((p) => p.name).join(', ') || '–'], type === 'hab' ? [t('mp_takeoff'), `${fmt(r.takeoff)} kg (${fmtSigned(r.massDelta)} kg)`] : [t('gb_ballast'), `${fmt(r.ballast)} kg`]]))]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s4'))), h('div.card-body', kv([[t('pic'), b.persons.pic], ...(hasCopilot(b) ? [[t('copilot'), b.persons.copilot]] : []), [t('retrieve'), b.persons.retrieve || '–'], [t('pax'), b.persons.pax.map((p) => p.name).join(', ') || '–'], type === 'hab' ? [t('mp_takeoff'), `${fmt(r.takeoff)} kg (${fmtSigned(r.massDelta)} kg)`] : [t('gb_ballast'), `${fmt(r.ballast)} kg`]]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv([[t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–')]].concat(b.schedule.skip ? [[t('sch_title'), t('sch_skipped')]] : rows.map((row) => [hhmm(z, row.ms), scheduleRowLabel(row, b, t, S.activities?.custom)]))))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_mandatory'))), h('div.card-body', [h('ul.mand', mandatoryPanels(S, b).map((p) => h('li', h('b', tt(p))))), h('div.note', t('wiz_createHint'))])]),
       ]),
