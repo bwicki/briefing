@@ -152,6 +152,11 @@ let seq = 0;
 const newId = () => `st${Date.now().toString(36)}${(seq++).toString(36)}`;
 export const sortStages = (stages) => stages.sort((a, b) => a.km - b.km);
 /** Etappe bei km einfügen (Name optional); Nummerierung ergibt sich aus der Reihenfolge. */
+/** 0.12.7: kommt zur einzigen Etappe «Enroute» eine weitere hinzu, heisst die erste fortan «Start» (ihre Planung gilt nur noch für ihren Bereich). */
+export function renameStartStage(stages, names = { start: 'Start', enroute: 'Enroute' }) {
+  if (!stages || stages.length < 2 || (stages[0].name || '') !== names.enroute) return false;
+  stages[0].name = names.start; return true;
+}
 export function addStage(stages, km, name = '', minGap = 2, ops = false) {
   if (stages.some((s) => Math.abs(s.km - km) < minGap)) return null;
   const s = { id: newId(), km: Math.round(km), name, ops: !!ops };

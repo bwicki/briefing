@@ -10,7 +10,7 @@ import { h, clear, toast, fmt } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { MODELS, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDate, isoDate, localParts, fmtDateTime } from '../calc/time.js';
-import { ensureProfile, altAt, msAtKm, kmAtMs, posAtKm, reliefAt, segments, rateClass, reliefBreaches, addStage, removeStage, moveStage, stageWindows, nightFraction, ballastPlan, fitPoints } from '../calc/profile.js';
+import { ensureProfile, altAt, msAtKm, kmAtMs, posAtKm, reliefAt, segments, rateClass, reliefBreaches, addStage, removeStage, moveStage, renameStartStage, stageWindows, nightFraction, ballastPlan, fitPoints } from '../calc/profile.js';
 import { stageOps, canDropOps, ensureOps, pruneStagePlans } from '../calc/stageplan.js';
 import { buildProfileData } from '../auto/profiledata.js';
 import { massPerf, fillFractionOf } from '../model.js';
@@ -76,19 +76,22 @@ const minAglOf = (ctx) => +ctx.settings.profileLimits?.minAgl || 300;
  */
 export function drawChart(svg, st) {
   const { b, ctx, p, D } = st;
-  // Spreizung (0.12.6, Werkzeug): Zeichenfläche wächst mit den Faktoren, Schrift und Symbole bleiben gleich gross; der Rahmen rollt
-  const zx = st.zoomX || 1, zy = st.zoomY || 1, W = W0 * zx, H = H0 * zy;
+  // Spreizung Höhe (0.12.6, Werkzeug): Zeichenfläche wächst mit dem Faktor, Schrift und Symbole bleiben gleich gross; der Rahmen rollt
+  // Ausschnitt (0.12.7, Werkzeug): Fenster [k0,k1] km über die ganze Breite; Schieber mit Beginn- und Endmarke unter der Zeitskala (Zeile BR), nicht gespeichert
+  const zy = st.zoomY || 1, BR = st.interactive ? 30 : 0, BB = B + BR, W = W0, H = H0 * zy + BR;
   const lang = getLang(), z = zoneOf(b), tz = tzName(b);
   const KM = Math.max(1, D.totalKm), track = D.track, pts = p.points, used = st.used || new Set();
+  const w0 = st.interactive && st.win ? [Math.max(0, Math.min(KM, st.win.k0)), Math.max(0, Math.min(KM, st.win.k1))] : [0, KM];
+  const [k0, k1] = w0[1] - w0[0] >= 1 ? w0 : [0, KM], SPAN = k1 - k0;
   const minAgl = minAglOf(ctx);
   const reliefMax = D.relief?.length ? Math.max(...D.relief.map((r) => r.m)) : 0, reliefMin = D.relief?.length ? Math.min(...D.relief.map((r) => r.m)) : 0;
   const yMin = reliefMin > 1500 ? Math.floor((reliefMin - 500) / 500) * 500 : 0;
   const yMax = Math.ceil(Math.max(Math.max(...pts.map((q) => q.alt)) + 700, reliefMax + 600, yMin + 2500, D.yMaxHint || 0) / 500) * 500;
-  const x = (km) => ML + (km / KM) * (W - ML - R), y = (m) => T + (1 - (m - yMin) / (yMax - yMin)) * (H - T - B);
+  const x = (km) => ML + ((km - k0) / SPAN) * (W - ML - R), y = (m) => T + (1 - (m - yMin) / (yMax - yMin)) * (H - T - BB);
   const yc = (m) => y(Math.max(yMin, Math.min(yMax, m)));
   const msK = (km) => msAtKm(track, km), kmT = (ms) => kmAtMs(track, ms);
   const startMs = D.startMs, endMs = D.endMs;
-  const yAx1 = H - B + 16, yAx2 = H - B + 40, ySun = H - B + 52, ySun2 = H - B + 61, yAx3 = H - B + 84;
+  const yAx1 = H - BB + 16, yAx2 = H - BB + 40, ySun = H - BB + 52 + BR, ySun2 = H - BB + 61 + BR, yAx3 = H - BB + 84 + BR;
   const relief = D.relief || [];
   const reliefY = (km) => (relief.length ? y(Math.max(yMin, reliefAt(relief, km))) : y(yMin));
   clear(svg);
@@ -96,62 +99,66 @@ export function drawChart(svg, st) {
   const defs = el('defs');
   const hatch = el('pattern', { id: 'pf-hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }); hatch.appendChild(el('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: C.bad, 'stroke-width': 2 })); defs.appendChild(hatch);
   for (const k of Object.keys(AS_COL)) { const pt = el('pattern', { id: 'pf-as-' + k, width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(-45)' }); pt.appendChild(el('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: AS_COL[k], 'stroke-width': 1, opacity: .45 })); defs.appendChild(pt); }
+  const clip = el('clipPath', { id: 'pf-clip' }); clip.appendChild(el('rect', { x: ML - 1, y: 0, width: W - ML - R + 2, height: H })); defs.appendChild(clip);
   svg.appendChild(defs);
+  const clipA = el('clipPath', { id: 'pf-clip-ax' }); clipA.appendChild(el('rect', { x: ML - 16, y: 0, width: W - ML - R + 32, height: H })); defs.appendChild(clipA);
+  const ga = el('g', { 'clip-path': 'url(#pf-clip-ax)' }); svg.appendChild(ga);   // Skalenbeschriftungen (km, Zeit) dürfen etwas über den Rand ragen; liegen unter der Grafik (AGL-Warnung deckt sie)
+  const gc = el('g', { 'clip-path': 'url(#pf-clip)' }); svg.appendChild(gc);   // Ausschnitt: alles Lagebezogene endet am Rand der Zeichenfläche; Achsenbeschriftungen links liegen ausserhalb
   // ---- Ebene 0: Nacht/Dämmerung, Gitter, Relief mit Mindestabstand-Band, Unterschreitungen
   for (const bd of sunBands(D.sun, startMs, endMs)) {
     if (bd.state === 'day') continue;
     const k0 = Math.max(0, kmT(bd.ms0)), k1 = Math.min(KM, kmT(bd.ms1)); if (k1 <= k0) continue;
-    svg.appendChild(el('rect', { x: x(k0), y: T, width: x(k1) - x(k0), height: H - T - B, fill: C.night, opacity: bd.state === 'night' ? .22 : .12 })); used.add('night');
+    gc.appendChild(el('rect', { x: x(k0), y: T, width: x(k1) - x(k0), height: H - T - BB, fill: C.night, opacity: bd.state === 'night' ? .22 : .12 })); used.add('night');
   }
   for (let m = yMin; m <= yMax; m += 1000) svg.appendChild(el('text', { x: ML - 6, y: y(m) + 4, 'text-anchor': 'end', 'font-size': 11, fill: C.dim, 'font-family': MONO }, m));
   svg.appendChild(el('text', { x: ML - 6, y: T - 8, 'text-anchor': 'end', 'font-size': 9, fill: C.dim }, 'm AMSL'));
   if (relief.length) {
     const base0 = `${x(KM)},${y(yMin)} ${x(0)},${y(yMin)}`;
-    svg.appendChild(el('polygon', { points: relief.map((r) => `${x(r.km)},${yc(r.m + minAgl)}`).join(' ') + ' ' + base0, fill: C.relief, opacity: .18 }));
-    svg.appendChild(el('polygon', { points: relief.map((r) => `${x(r.km)},${yc(r.m)}`).join(' ') + ' ' + base0, fill: C.relief, opacity: .75 }));
+    gc.appendChild(el('polygon', { points: relief.map((r) => `${x(r.km)},${yc(r.m + minAgl)}`).join(' ') + ' ' + base0, fill: C.relief, opacity: .18 }));
+    gc.appendChild(el('polygon', { points: relief.map((r) => `${x(r.km)},${yc(r.m)}`).join(' ') + ' ' + base0, fill: C.relief, opacity: .75 }));
     // Wasserflächen (ebene Läufe im Höhenmodell) als blaue Einsätze an der Oberfläche
-    for (const w of D.water || []) { if (w.m < yMin || w.m > yMax) continue; const yw = yc(w.m); svg.appendChild(el('rect', { x: x(w.km0), y: yw, width: x(w.km1) - x(w.km0), height: Math.min(9, y(yMin) - yw), fill: C.water, opacity: .9 })); used.add(D.waterSource === 'osm' ? 'water-osm' : 'water'); }
+    for (const w of D.water || []) { if (w.m < yMin || w.m > yMax) continue; const yw = yc(w.m); gc.appendChild(el('rect', { x: x(w.km0), y: yw, width: x(w.km1) - x(w.km0), height: Math.min(9, y(yMin) - yw), fill: C.water, opacity: .9 })); used.add(D.waterSource === 'osm' ? 'water-osm' : 'water'); }
     const hi = relief.reduce((a, r) => (r.m > a.m ? r : a), relief[0]);
-    svg.appendChild(el('text', { x: Math.max(x(0) + 110, Math.min(x(hi.km) + 4, W - R - 190)), y: Math.min(yc(hi.m) + 26, y(yMin) - 6), 'font-size': 10, fill: C.panel }, t('pf_reliefLbl', { m: minAgl })));
+    gc.appendChild(el('text', { x: Math.max(x(0) + 110, Math.min(x(hi.km) + 4, W - R - 190)), y: Math.min(yc(hi.m) + 26, y(yMin) - 6), 'font-size': 10, fill: C.panel }, t('pf_reliefLbl', { m: minAgl })));
     used.add('relief');
   }
   // Höhenlinien über die ganze Breite, vor Nacht/Dämmerung und Relief (Geländehöhe ablesbar)
-  for (let m = yMin; m <= yMax; m += 500) svg.appendChild(el('line', { x1: ML, x2: W - R, y1: y(m), y2: y(m), stroke: C.grid, 'stroke-width': m % 1000 ? .6 : 1, opacity: m % 1000 ? .5 : .7 }));
+  for (let m = yMin; m <= yMax; m += 500) gc.appendChild(el('line', { x1: ML, x2: W - R, y1: y(m), y2: y(m), stroke: C.grid, 'stroke-width': m % 1000 ? .6 : 1, opacity: m % 1000 ? .5 : .7 }));
   const lows = relief.length ? reliefBreaches(pts, relief, { minAgl }) : [];
-  for (const lo of lows) { svg.appendChild(el('rect', { x: x(lo.km0), y: T, width: x(lo.km1) - x(lo.km0), height: H - T - B, fill: 'url(#pf-hatch)', opacity: .35 })); used.add('low'); }
+  for (const lo of lows) { gc.appendChild(el('rect', { x: x(lo.km0), y: T, width: x(lo.km1) - x(lo.km0), height: H - T - BB, fill: 'url(#pf-hatch)', opacity: .35 })); used.add('low'); }
   // ---- Achsen: km (mit Zwischenstrichen 25/50/75 %) · Zeit (volle Stunden, Zwischenstriche 30') · Sonne · Tag
-  svg.appendChild(el('line', { x1: ML, x2: W - R, y1: H - B, y2: H - B, stroke: C.dim }));
-  const step = KM <= 60 ? 5 : KM <= 150 ? 10 : KM <= 400 ? 20 : 50;
-  for (let k = 0; k <= KM + 1e-6; k += step / 4) { const major = Math.abs(k / step - Math.round(k / step)) < 1e-6; svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: H - B, y2: H - B + (major ? 4 : 2), stroke: C.dim, 'stroke-width': major ? 1 : .6 })); if (major) svg.appendChild(el('text', { x: x(k), y: yAx1, 'text-anchor': 'middle', 'font-size': 11, fill: C.dim, 'font-family': MONO }, Math.round(k))); }
+  gc.appendChild(el('line', { x1: ML, x2: W - R, y1: H - BB, y2: H - BB, stroke: C.dim }));
+  const step = SPAN <= 60 ? 5 : SPAN <= 150 ? 10 : SPAN <= 400 ? 20 : 50;   // Schrittweite nach dem sichtbaren Ausschnitt
+  for (let k = Math.max(0, Math.ceil((k0 - 1e-6) / (step / 4)) * (step / 4)); k <= Math.min(KM, k1) + 1e-6; k += step / 4) { const major = Math.abs(k / step - Math.round(k / step)) < 1e-6; gc.appendChild(el('line', { x1: x(k), x2: x(k), y1: H - BB, y2: H - BB + (major ? 4 : 2), stroke: C.dim, 'stroke-width': major ? 1 : .6 })); if (major) ga.appendChild(el('text', { x: x(k), y: yAx1, 'text-anchor': 'middle', 'font-size': 11, fill: C.dim, 'font-family': MONO }, Math.round(k))); }
   svg.appendChild(el('text', { x: ML - 14, y: yAx1, 'text-anchor': 'end', 'font-size': 10, fill: C.dim }, 'km'));
-  svg.appendChild(el('line', { x1: ML, x2: W - R, y1: yAx2 - 12, y2: yAx2 - 12, stroke: C.line }));
+  gc.appendChild(el('line', { x1: ML, x2: W - R, y1: yAx2 - 12, y2: yAx2 - 12, stroke: C.line }));
   const hourMs = 3600000, firstHour = Math.ceil(startMs / hourMs) * hourMs;
   const pxPerHour = (x(kmT(Math.min(endMs, startMs + hourMs))) - x(0)) || 40;
   const every = pxPerHour >= 34 ? 1 : pxPerHour >= 18 ? 2 : 3;
   let n = 0;
   for (let ms = firstHour; ms <= endMs; ms += hourMs / 2) {
     const full = (ms - firstHour) % hourMs === 0, k = kmT(ms); if (k > KM) break;
-    svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: yAx2 - 12, y2: yAx2 - (full ? 8 : 10), stroke: C.stage, 'stroke-width': full ? 1 : .6 }));
-    if (full) { const hh = localParts(z, ms).hh; if (n % every === 0 || hh === 0) svg.appendChild(el('text', { x: x(k), y: yAx2, 'text-anchor': 'middle', 'font-size': 10.5, fill: C.stage, 'font-family': MONO }, hhmm(z, ms))); n++; }
+    gc.appendChild(el('line', { x1: x(k), x2: x(k), y1: yAx2 - 12, y2: yAx2 - (full ? 8 : 10), stroke: C.stage, 'stroke-width': full ? 1 : .6 }));
+    if (full) { const hh = localParts(z, ms).hh; if (n % every === 0 || hh === 0) ga.appendChild(el('text', { x: x(k), y: yAx2, 'text-anchor': 'middle', 'font-size': 10.5, fill: C.stage, 'font-family': MONO }, hhmm(z, ms))); n++; }
   }
   svg.appendChild(el('text', { x: ML - 22, y: yAx2, 'text-anchor': 'end', 'font-size': 10, fill: C.stage }, tz));
   // Sonnenzeiten SS · ECET · BCMT · SR: Kürzel und darunter die Uhrzeit, bündig zur Marke
   const sunRow = (D.sun || []).filter((e) => e.ms >= startMs && e.ms <= endMs);
   for (const e of sunRow) {
     const k = kmT(e.ms), anchor0 = e.kind === 'ss' || e.kind === 'bcmt' ? 'end' : 'start'; const anchor = anchor0 === 'start' && x(k) > W - R - 40 ? 'end' : anchor0 === 'end' && x(k) < ML + 40 ? 'start' : anchor0; const dx = anchor === 'end' ? -2 : 2;
-    svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: yAx2 - 12, y2: ySun2 + 1, stroke: C.night, opacity: .55, 'stroke-width': .8 }));
-    svg.appendChild(el('text', { x: x(k) + dx, y: ySun, 'text-anchor': anchor, 'font-size': 8, fill: C.night, opacity: .9, 'font-family': MONO, 'font-weight': 600 }, e.kind.toUpperCase()));
-    svg.appendChild(el('text', { x: x(k) + dx, y: ySun2, 'text-anchor': anchor, 'font-size': 7.5, fill: C.night, opacity: .9, 'font-family': MONO }, hhmm(z, e.ms)));
+    gc.appendChild(el('line', { x1: x(k), x2: x(k), y1: yAx2 - 12, y2: ySun2 + 1, stroke: C.night, opacity: .55, 'stroke-width': .8 }));
+    gc.appendChild(el('text', { x: x(k) + dx, y: ySun, 'text-anchor': anchor, 'font-size': 8, fill: C.night, opacity: .9, 'font-family': MONO, 'font-weight': 600 }, e.kind.toUpperCase()));
+    gc.appendChild(el('text', { x: x(k) + dx, y: ySun2, 'text-anchor': anchor, 'font-size': 7.5, fill: C.night, opacity: .9, 'font-family': MONO }, hhmm(z, e.ms)));
   }
   // Tageszeile nur, wenn die Fahrt (in der gewählten Zone) über Mitternacht geht (ohne Zeilenbeschriftungen «Sonne»/«Tag» links, 0.12.2)
   const midnights = []; let lastDay = isoDate(z, startMs);
   for (let ms = firstHour; ms <= endMs; ms += hourMs) { const d = isoDate(z, ms); if (d !== lastDay) { midnights.push(ms); lastDay = d; } }
   if (midnights.length) {
-    svg.appendChild(el('text', { x: x(0), y: yAx3, 'font-size': 10.5, fill: C.fg, 'font-weight': 600 }, fmtDate(z, startMs, lang) + (tz === 'UTC' ? ' UTC' : '')));
-    for (const ms of midnights) { const k = kmT(ms); svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: H - B, y2: yAx3 + 3, stroke: C.fg, 'stroke-width': 1.2, 'stroke-dasharray': '3 2' })); svg.appendChild(el('text', { x: x(k) + 4, y: yAx3, 'font-size': 10.5, fill: C.fg, 'font-weight': 600 }, fmtDate(z, ms, lang) + (tz === 'UTC' ? ' UTC' : ''))); }
+    gc.appendChild(el('text', { x: x(0), y: yAx3, 'font-size': 10.5, fill: C.fg, 'font-weight': 600 }, fmtDate(z, startMs, lang) + (tz === 'UTC' ? ' UTC' : '')));
+    for (const ms of midnights) { const k = kmT(ms); gc.appendChild(el('line', { x1: x(k), x2: x(k), y1: H - BB, y2: yAx3 + 3, stroke: C.fg, 'stroke-width': 1.2, 'stroke-dasharray': '3 2' })); gc.appendChild(el('text', { x: x(k) + 4, y: yAx3, 'font-size': 10.5, fill: C.fg, 'font-weight': 600 }, fmtDate(z, ms, lang) + (tz === 'UTC' ? ' UTC' : ''))); }
   }
   svg.appendChild(el('text', { x: ML, y: yAx3 + (midnights.length ? 16 : 0), 'font-size': 9.5, fill: C.dim }, t('pf_startLand', { s: `${fmtDate(z, startMs, lang)} ${hhmm(z, startMs)}`, l: fmtTD(b, endMs), tz, h: ((endMs - startMs) / hourMs).toFixed(1), km: Math.round(KM) })));
-  if (st.interactive) svg.appendChild(el('rect', { x: ML, y: yAx2 - 12, width: W - ML - R, height: 16, fill: 'transparent', class: 'pf-axis' }));
+  if (st.interactive) gc.appendChild(el('rect', { x: ML, y: yAx2 - 12, width: W - ML - R, height: 16, fill: 'transparent', class: 'pf-axis' }));
   // ---- Ebene 1: Lufträume (Layer): Flächen bis zur Reliefline, Status (HX) in Klammern unter der Bezeichnung
   const clipPoly = (km0, km1, lo, hi) => {   // Fläche hi…lo, unten durch das Relief begrenzt
     const top = `${x(km0)},${yc(hi)} ${x(km1)},${yc(hi)}`;
@@ -164,18 +171,18 @@ export function drawChart(svg, st) {
     const kind = asKind(a), col = AS_COL[kind], near = a.status === 'near';
     const km1 = Math.min(KM, a.km1), poly = clipPoly(a.km0, km1, a.lo, a.hi);
     const stroke = { stroke: col, 'stroke-width': near ? 1 : 1.4, 'stroke-dasharray': kind === 'ctr' || kind === 'sua' ? '6 3' : near ? '2 2' : '', fill: 'none' };
-    svg.appendChild(el('polygon', { points: poly, fill: `url(#pf-as-${kind})`, opacity: near ? .3 : .6 }));
+    gc.appendChild(el('polygon', { points: poly, fill: `url(#pf-as-${kind})`, opacity: near ? .3 : .6 }));
     // Rand: Oberkante und senkrechte Grenzen bis zum Boden; Unterkante nur dort, wo sie über dem Relief liegt
     const y0 = yc(a.hi), yb = (k) => Math.min(yc(a.lo), reliefY(k));
-    svg.appendChild(el('polyline', { points: `${x(a.km0)},${yb(a.km0)} ${x(a.km0)},${y0} ${x(km1)},${y0} ${x(km1)},${yb(km1)}`, ...stroke }));
+    gc.appendChild(el('polyline', { points: `${x(a.km0)},${yb(a.km0)} ${x(a.km0)},${y0} ${x(km1)},${y0} ${x(km1)},${yb(km1)}`, ...stroke }));
     let run = [];
-    const flush = () => { if (run.length > 1) svg.appendChild(el('polyline', { points: run.join(' '), ...stroke })); run = []; };
+    const flush = () => { if (run.length > 1) gc.appendChild(el('polyline', { points: run.join(' '), ...stroke })); run = []; };
     for (let k = a.km0; k <= km1 + 1e-6; k += Math.max(0.5, (km1 - a.km0) / 60)) { if (yc(a.lo) < reliefY(k) - 0.5) run.push(`${x(Math.min(k, km1))},${yc(a.lo)}`); else flush(); }
     flush();
     const lbl = `${a.name} · ${a.cls && a.cls !== 'SUA' ? a.cls : a.typeKey} · ${a.lowerTxt || ''} – ${a.upperTxt || ''}`;
-    svg.appendChild(el('text', { x: x(a.km0) + 5, y: y0 + 13, 'font-size': 10, fill: col, 'font-weight': 600 }, lbl));
+    gc.appendChild(el('text', { x: x(a.km0) + 5, y: y0 + 13, 'font-size': 10, fill: col, 'font-weight': 600 }, lbl));
     // Status (HX / O/R / Betriebszeiten) unter der Bezeichnung, umbrochen auf die Breite der Fläche
-    if (a.tmp) wrapText(a.tmp, Math.max(8, Math.floor((x(km1) - x(a.km0) - 8) / 5.2))).forEach((ln, i) => svg.appendChild(el('text', { x: x(a.km0) + 5, y: y0 + 25 + i * 11, 'font-size': 9, fill: col }, ln)));
+    if (a.tmp) wrapText(a.tmp, Math.max(8, Math.floor((x(km1) - x(a.km0) - 8) / 5.2))).forEach((ln, i) => gc.appendChild(el('text', { x: x(a.km0) + 5, y: y0 + 25 + i * 11, 'font-size': 9, fill: col }, ln)));
     used.add('as-' + kind); if (a.tmp) used.add('as-tmp');
   }
   // ---- Ebene 2: Wetter (Layer): Decken je Stundenzelle (unten bis zum Relief), Inversionen, Nullgradgrenze, Achtung-Zeichen
@@ -188,23 +195,23 @@ export function drawChart(svg, st) {
       const [k0, k1] = cell(i);
       for (const c of hr.clouds || []) {
         if (c.hi < yMin || c.lo > yMax) continue;
-        svg.appendChild(el('polygon', { points: clipPoly(k0, k1, c.lo, c.hi), fill: C.cloud, opacity: .55 })); used.add('cloud');
-        if (!overlaps(c, hrs[i - 1]?.clouds)) { const lx = x(k0) + (k0 === 0 ? 40 : 4); svg.appendChild(el('text', { x: lx, y: yc(c.hi) + 12, 'font-size': 10, fill: C.fg, 'font-weight': 600 }, `${c.label} ${c.hi - c.lo} m`)); svg.appendChild(el('text', { x: lx, y: yc(c.hi) + 23, 'font-size': 9, fill: C.fg }, `${c.lo}–${c.hi} m`)); }
+        gc.appendChild(el('polygon', { points: clipPoly(k0, k1, c.lo, c.hi), fill: C.cloud, opacity: .55 })); used.add('cloud');
+        if (!overlaps(c, hrs[i - 1]?.clouds)) { const lx = x(k0) + (k0 === 0 ? 40 : 4); gc.appendChild(el('text', { x: lx, y: yc(c.hi) + 12, 'font-size': 10, fill: C.fg, 'font-weight': 600 }, `${c.label} ${c.hi - c.lo} m`)); gc.appendChild(el('text', { x: lx, y: yc(c.hi) + 23, 'font-size': 9, fill: C.fg }, `${c.lo}–${c.hi} m`)); }
       }
       for (const iv of hr.inv || []) {
         if (iv.hi < yMin || iv.lo > yMax) continue;
         const iso = iv.kind === 'iso', y0 = yc(iv.hi), y1 = yc(iv.lo);
         // Inversion: Band mit gestrichelter Mittellinie; Isothermie: helleres Band ohne Linie
-        svg.appendChild(el('rect', { x: x(k0), y: y0, width: x(k1) - x(k0), height: Math.max(2, y1 - y0), fill: C.inv, opacity: iso ? .14 : .26 }));
-        if (!iso) svg.appendChild(el('line', { x1: x(k0), x2: x(k1), y1: (y0 + y1) / 2, y2: (y0 + y1) / 2, stroke: C.inv, 'stroke-width': 1.6, 'stroke-dasharray': '6 4' }));
+        gc.appendChild(el('rect', { x: x(k0), y: y0, width: x(k1) - x(k0), height: Math.max(2, y1 - y0), fill: C.inv, opacity: iso ? .14 : .26 }));
+        if (!iso) gc.appendChild(el('line', { x1: x(k0), x2: x(k1), y1: (y0 + y1) / 2, y2: (y0 + y1) / 2, stroke: C.inv, 'stroke-width': 1.6, 'stroke-dasharray': '6 4' }));
         used.add(iso ? 'iso' : 'inv');
-        const seen = iso ? invFirst.iso : invFirst.inv; if (!seen) { invFirst[iso ? 'iso' : 'inv'] = true; svg.appendChild(el('text', { x: x(k0) + 4, y: y0 - 3, 'font-size': 9.5, fill: C.inv }, t(iso ? 'pf_iso' : 'pf_inversion'))); }
+        const seen = iso ? invFirst.iso : invFirst.inv; if (!seen) { invFirst[iso ? 'iso' : 'inv'] = true; gc.appendChild(el('text', { x: x(k0) + 4, y: y0 - 3, 'font-size': 9.5, fill: C.inv }, t(iso ? 'pf_iso' : 'pf_inversion'))); }
       }
       if (hr.fzl != null && hr.fzl >= yMin && hr.fzl <= yMax) zeroPts.push([hr.km, hr.fzl]);
     });
     if (zeroPts.length >= 2) {
-      svg.appendChild(el('polyline', { points: zeroPts.map(([k, m]) => `${x(k)},${y(m)}`).join(' '), fill: 'none', stroke: C.zero, 'stroke-width': 1.8, 'stroke-dasharray': '2 4', 'stroke-linecap': 'round' }));
-      svg.appendChild(el('text', { x: x(zeroPts[0][0]) + 2, y: y(zeroPts[0][1]) - 4, 'font-size': 10, fill: C.zero, 'font-weight': 600 }, '0 °C'));
+      gc.appendChild(el('polyline', { points: zeroPts.map(([k, m]) => `${x(k)},${y(m)}`).join(' '), fill: 'none', stroke: C.zero, 'stroke-width': 1.8, 'stroke-dasharray': '2 4', 'stroke-linecap': 'round' }));
+      gc.appendChild(el('text', { x: x(zeroPts[0][0]) + 2, y: y(zeroPts[0][1]) - 4, 'font-size': 10, fill: C.zero, 'font-weight': 600 }, '0 °C'));
       used.add('zero');
     }
     for (const hz of D.hazards || []) {
@@ -213,39 +220,39 @@ export function drawChart(svg, st) {
       g.appendChild(el('path', { d: WX_ICON[hz.type] || WX_ICON.wind, transform: `translate(${cx} ${cy})`, fill: hz.type === 'cb' ? C.bad : 'none', stroke: C.bad, 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
       if (hz.type === 'wind') g.appendChild(el('text', { x: cx, y: cy + 23, 'text-anchor': 'middle', 'font-size': 9, fill: C.bad, 'font-weight': 600 }, hzLabel(hz).replace(/^\S+\s*/, '')));   // nur beim Wind «35 kt»; Einzelheiten im Tooltip
       g.appendChild(el('title', {}, `${hzLabel(hz)} · ${fmtTD(b, hz.ms)}${hz.msEnd > hz.ms ? '–' + fmtTD(b, hz.msEnd) : ''} ${tz} · ${hz.km}${hz.kmEnd > hz.km ? '–' + hz.kmEnd : ''} km · ${hz.txt || ''}`));
-      svg.appendChild(g); used.add('hz-' + hz.type);
+      gc.appendChild(g); used.add('hz-' + hz.type);
     }
   }
   // ---- Ebene 3: ECET/BCMT-Marken, Etappen (nummeriert) mit Menü und Griff
-  for (const e of sunRow) if (e.kind === 'ecet' || e.kind === 'bcmt') { const k = kmT(e.ms); svg.appendChild(el('line', { x1: x(k), x2: x(k), y1: T, y2: H - B, stroke: C.dim, 'stroke-dasharray': '2 3', opacity: .7 })); }   // Kürzel stehen in der Sonnenzeile
+  for (const e of sunRow) if (e.kind === 'ecet' || e.kind === 'bcmt') { const k = kmT(e.ms); gc.appendChild(el('line', { x1: x(k), x2: x(k), y1: T, y2: H - BB, stroke: C.dim, 'stroke-dasharray': '2 3', opacity: .7 })); }   // Kürzel stehen in der Sonnenzeile
   const rowEnd = [-Infinity, -Infinity];   // rechtes Ende des letzten Namens je Zeile (untere/obere) – nahe Etappen weichen in die obere Zeile aus
   p.stages.forEach((s, i) => {
     const ops = stageOps(p.stages, i), pw = ops ? 26 : 0;   // Marke «B/C»: Etappe mit eigener Meteo-/Luftraum-/NOTAM-Planung (0.12.5)
     const label = `${i + 1} · ${s.name || ''}`, lw = label.length * 6.4 + pw, right = x(s.km) + 4 + lw + 20 > W - R;   // am rechten Rand nach links anschreiben
     const row = !right && x(s.km) < rowEnd[0] + 10 && x(s.km) >= rowEnd[1] + 10 ? 1 : 0;
     const yT = row ? T - 21 : T - 7, yL = row ? T - 32 : T - 18;
-    svg.appendChild(el('line', { x1: x(s.km), x2: x(s.km), y1: yL, y2: H - B, stroke: C.stage, 'stroke-width': 1.5 }));   // Strich reicht über die Grafik hinaus bis zum Namen
+    gc.appendChild(el('line', { x1: x(s.km), x2: x(s.km), y1: yL, y2: H - BB, stroke: C.stage, 'stroke-width': 1.5 }));   // Strich reicht über die Grafik hinaus bis zum Namen
     const tx0 = x(s.km) + (right ? -4 - pw : 4);
-    svg.appendChild(el('text', { x: tx0, y: yT, 'text-anchor': right ? 'end' : 'start', 'font-size': 11, fill: C.stage, 'font-weight': 600 }, label));
-    if (ops) { const px = right ? x(s.km) - 4 - pw + 3 : tx0 + lw - pw + 3; const g = el('g', { class: 'pf-ops' }); g.appendChild(el('rect', { x: px, y: yT - 9, width: 22, height: 11, rx: 3, fill: C.stage })); g.appendChild(el('text', { x: px + 11, y: yT - 0.5, 'text-anchor': 'middle', 'font-size': 7.5, fill: '#fff', 'font-weight': 700 }, 'B/C')); g.appendChild(el('title', {}, t(i === 0 ? 'pf_opsStart' : 'pf_opsStage'))); svg.appendChild(g); used.add('ops'); }
-    if (st.interactive) { menuIcon(svg, right ? x(s.km) - 8 - lw - 14 : x(s.km) + 8 + lw, yL, 'stage', i, s.name || ''); if (i > 0) stageHandle(svg, x(s.km), i, H); }
+    gc.appendChild(el('text', { x: tx0, y: yT, 'text-anchor': right ? 'end' : 'start', 'font-size': 11, fill: C.stage, 'font-weight': 600 }, label));
+    if (ops) { const px = right ? x(s.km) - 4 - pw + 3 : tx0 + lw - pw + 3; const g = el('g', { class: 'pf-ops' }); g.appendChild(el('rect', { x: px, y: yT - 9, width: 22, height: 11, rx: 3, fill: C.stage })); g.appendChild(el('text', { x: px + 11, y: yT - 0.5, 'text-anchor': 'middle', 'font-size': 7.5, fill: '#fff', 'font-weight': 700 }, 'B/C')); g.appendChild(el('title', {}, t(i === 0 ? 'pf_opsStart' : 'pf_opsStage'))); gc.appendChild(g); used.add('ops'); }
+    if (st.interactive) { menuIcon(gc, right ? x(s.km) - 8 - lw - 14 : x(s.km) + 8 + lw, yL, 'stage', i, s.name || ''); if (i > 0) stageHandle(gc, x(s.km), i, H - BB); }
     if (!right) rowEnd[row] = x(s.km) + 8 + lw + 14;
     used.add('stage');
   });
   // Modellhorizont vor dem geplanten Fahrtende: Marker mit Pfeil «Ende Prognosemodell» auf Höhe der Etappennamen
   if (D.cut) {
     const xe = x(KM); const g = el('g');
-    g.appendChild(el('line', { x1: xe, x2: xe, y1: T - 30, y2: H - B, stroke: C.bad, 'stroke-width': 1.5, 'stroke-dasharray': '4 3' }));
+    g.appendChild(el('line', { x1: xe, x2: xe, y1: T - 30, y2: H - BB, stroke: C.bad, 'stroke-width': 1.5, 'stroke-dasharray': '4 3' }));
     g.appendChild(el('path', { d: `M${xe - 26} ${T - 26} h22 m-4 -4 l4 4 l-4 4`, fill: 'none', stroke: C.bad, 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));   // Pfeil zeigt auf die Prognosegrenze
     g.appendChild(el('text', { x: xe - 30, y: T - 22, 'text-anchor': 'end', 'font-size': 10, fill: C.bad, 'font-weight': 600 }, t('pf_modelEnd')));
     g.appendChild(el('title', {}, t('pf_modelEndHint', { m: D.modelName || '', t: fmtTD(b, endMs), tz, p: fmtTD(b, D.plannedEndMs) })));
-    svg.appendChild(g); used.add('cut');
+    gc.appendChild(g); used.add('cut');
   }
   // ---- Ebene 4: Profil, Punkte, Beschriftungen; Ebene 5: Raten-Pillen zuoberst
   const pills = [];
   for (const s of segments(pts, track)) {
     const col = rateCol(s.rate);
-    svg.appendChild(el('line', { x1: x(s.km0), y1: y(s.alt0), x2: x(s.km1), y2: y(s.alt1), stroke: col, 'stroke-width': 3.5, 'stroke-linecap': 'round' }));
+    gc.appendChild(el('line', { x1: x(s.km0), y1: y(s.alt0), x2: x(s.km1), y2: y(s.alt1), stroke: col, 'stroke-width': 3.5, 'stroke-linecap': 'round' }));
     pills.push({ mx: (x(s.km0) + x(s.km1)) / 2, my: (y(s.alt0) + y(s.alt1)) / 2, col, lbl: `${s.rate >= 0 ? '+' : '−'}${Math.abs(s.rate).toFixed(1)}` });
     used.add('rate-' + rateClass(s.rate));
   }
@@ -253,27 +260,40 @@ export function drawChart(svg, st) {
     const c = el('circle', { cx: x(q.km), cy: y(q.alt), r: 6, fill: C.pt, stroke: C.panel, 'stroke-width': 2, class: st.interactive ? 'pf-pt' : '', 'data-i': i });
     const tp = track.points ? track.points.reduce((a, pp) => (Math.abs(pp.km - q.km) < Math.abs(a.km - q.km) ? pp : a), track.points[0]) : null;
     c.appendChild(el('title', {}, `${q.alt} m AMSL · ${fmtTD(b, msK(q.km))} ${tz} · ${q.km} km${tp ? ` · ${t('pf_wind')} ${tp.dir}°/${tp.spdKt} kt` : ''}`));
-    svg.appendChild(c);
-    const lb = el('text', { x: x(q.km), y: y(q.alt) + 20, 'text-anchor': i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle', 'font-size': 10, fill: C.fg, 'font-family': MONO }, String(q.alt)); lb.appendChild(el('tspan', { 'font-size': 6.5 }, 'm')); lb.appendChild(el('tspan', {}, `·${fmtTD(b, msK(q.km))}`)); svg.appendChild(lb);
-    if (st.interactive) menuIcon(svg, x(q.km) + 9, y(q.alt) - 22, 'pt', i);
+    gc.appendChild(c);
+    const lb = el('text', { x: x(q.km), y: y(q.alt) + 20, 'text-anchor': i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle', 'font-size': 10, fill: C.fg, 'font-family': MONO }, String(q.alt)); lb.appendChild(el('tspan', { 'font-size': 6.5 }, 'm')); lb.appendChild(el('tspan', {}, `·${fmtTD(b, msK(q.km))}`)); gc.appendChild(lb);
+    if (st.interactive) menuIcon(gc, x(q.km) + 9, y(q.alt) - 22, 'pt', i);
   });
   used.add('pt');
   // Raten-Pillen mittig auf dem Teilstück (horizontal und vertikal), «m/s» kleiner
-  for (const pl of pills) { const g = el('g', { class: 'pf-pill' }); const w = 44; g.appendChild(el('rect', { x: pl.mx - w / 2, y: pl.my - 7, width: w, height: 14, rx: 7, fill: C.panel, stroke: pl.col, 'stroke-width': 1 })); const tx = el('text', { x: pl.mx, y: pl.my + 3.5, 'text-anchor': 'middle', 'font-size': 10, fill: pl.col, 'font-family': MONO, 'font-weight': 600 }, pl.lbl); tx.appendChild(el('tspan', { 'font-size': 6.5, 'font-weight': 400 }, ' m/s')); g.appendChild(tx); svg.appendChild(g); }
+  for (const pl of pills) { const g = el('g', { class: 'pf-pill' }); const w = 44; g.appendChild(el('rect', { x: pl.mx - w / 2, y: pl.my - 7, width: w, height: 14, rx: 7, fill: C.panel, stroke: pl.col, 'stroke-width': 1 })); const tx = el('text', { x: pl.mx, y: pl.my + 3.5, 'text-anchor': 'middle', 'font-size': 10, fill: pl.col, 'font-family': MONO, 'font-weight': 600 }, pl.lbl); tx.appendChild(el('tspan', { 'font-size': 6.5, 'font-weight': 400 }, ' m/s')); g.appendChild(tx); gc.appendChild(g); }
   // AGL-Warnung: rot, zweizeilig («< 300 m AGL» / «68–77 km»), auf der Distanzskala, hinterlegt (überdeckt die km-Beschriftung)
   for (const lo of lows) {
     const cx = (x(lo.km0) + x(lo.km1)) / 2, l1 = `<${minAgl}m AGL`, l2 = `${Math.round(lo.km0)}–${Math.round(lo.km1)} km`, w = Math.max(l1.length, l2.length) * 4.6 + 8;
-    svg.appendChild(el('rect', { x: cx - w / 2, y: yAx1 - 9, width: w, height: 20, rx: 2, fill: C.panel }));
-    svg.appendChild(el('text', { x: cx, y: yAx1 - 1, 'text-anchor': 'middle', 'font-size': 8, fill: C.bad, 'font-weight': 600, 'font-family': MONO }, l1));
-    svg.appendChild(el('text', { x: cx, y: yAx1 + 8, 'text-anchor': 'middle', 'font-size': 7.5, fill: C.bad, 'font-family': MONO }, l2));
+    gc.appendChild(el('rect', { x: cx - w / 2, y: yAx1 - 9, width: w, height: 20, rx: 2, fill: C.panel }));
+    gc.appendChild(el('text', { x: cx, y: yAx1 - 1, 'text-anchor': 'middle', 'font-size': 8, fill: C.bad, 'font-weight': 600, 'font-family': MONO }, l1));
+    gc.appendChild(el('text', { x: cx, y: yAx1 + 8, 'text-anchor': 'middle', 'font-size': 7.5, fill: C.bad, 'font-family': MONO }, l2));
   }
   // Erklärungen (Beispiel): nummerierte Kreise an festen Stellen
   for (const c of st.callouts || []) {
     if (!c.axis && c.km == null) continue;
     const cx = c.axis === 'km' ? ML - 46 : x(c.km), cy = c.axis === 'km' ? yAx1 - 4 : yc(c.alt);
-    const g = el('g', { class: 'pf-callout' }); g.appendChild(el('circle', { cx, cy, r: 9, fill: C.pt })); g.appendChild(el('text', { x: cx, y: cy + 4, 'text-anchor': 'middle', 'font-size': 11, fill: '#fff', 'font-weight': 600 }, c.n)); g.appendChild(el('title', {}, t(c.key))); svg.appendChild(g);
+    const g = el('g', { class: 'pf-callout' }); g.appendChild(el('circle', { cx, cy, r: 9, fill: C.pt })); g.appendChild(el('text', { x: cx, y: cy + 4, 'text-anchor': 'middle', 'font-size': 11, fill: '#fff', 'font-weight': 600 }, c.n)); g.appendChild(el('title', {}, t(c.key))); gc.appendChild(g);
   }
-  st.scale = { x, y, KM, yMin, yMax, W, H, kx: (px) => Math.max(0, Math.min(KM, (px - ML) / (W - ML - R) * KM)), my: (py) => Math.max(yMin, Math.min(yMax, yMin + (1 - (py - T) / (H - T - B)) * (yMax - yMin))), yAx2 };
+  // ---- Ausschnitt-Schieber (0.12.7, nur Werkzeug) unter der Zeitskala: Übersicht über die ganze Fahrt mit Etappenstrichen, Fenster als Band, Beginn-/Endmarke
+  if (st.interactive) {
+    const yBr = yAx2 + 14, xo = (km) => ML + (km / KM) * (W - ML - R);
+    svg.appendChild(el('text', { x: ML - 6, y: yBr + 3.5, 'text-anchor': 'end', 'font-size': 9, fill: C.dim }, t('pf_win')));
+    const g = el('g', { class: 'pf-brush' });
+    g.appendChild(el('rect', { x: ML, y: yBr - 5, width: W - ML - R, height: 10, rx: 3, fill: C.grid, opacity: .9, class: 'pf-br-track' }));
+    for (const s of p.stages) if (s.km > 0) g.appendChild(el('line', { x1: xo(s.km), x2: xo(s.km), y1: yBr - 5, y2: yBr + 5, stroke: C.stage, 'stroke-width': 1 }));
+    g.appendChild(el('rect', { x: xo(k0), y: yBr - 6, width: Math.max(2, xo(k1) - xo(k0)), height: 12, rx: 2, fill: C.stage, opacity: .3, class: 'pf-br-band' }));
+    for (const [end, k] of [['a', k0], ['b', k1]]) { const hg = el('g', { class: 'pf-br-h', 'data-end': end }); hg.appendChild(el('rect', { x: xo(k) - 4, y: yBr - 9, width: 8, height: 18, rx: 2, fill: C.panel, stroke: C.stage, 'stroke-width': 1.4 })); hg.appendChild(el('line', { x1: xo(k), x2: xo(k), y1: yBr - 4, y2: yBr + 4, stroke: C.stage, 'stroke-width': 1 })); hg.appendChild(el('title', {}, t('pf_winHint'))); g.appendChild(hg); }
+    g.appendChild(el('title', {}, t('pf_winHint')));
+    svg.appendChild(g);
+    svg.appendChild(el('text', { x: W - R, y: yBr + 17, 'text-anchor': 'end', 'font-size': 9, fill: C.dim, class: 'pf-br-lbl' }, SPAN < KM - 1e-6 ? t('pf_winLbl', { k0: Math.round(k0), k1: Math.round(k1), t0: fmtTD(b, msK(k0)), t1: fmtTD(b, msK(k1)), tz }) : t('pf_winAll')));
+  }
+  st.scale = { x, y, KM, k0, k1, yMin, yMax, W, H, BB, kx: (px) => Math.max(0, Math.min(KM, k0 + (px - ML) / (W - ML - R) * SPAN)), kmo: (px) => Math.max(0, Math.min(KM, (px - ML) / (W - ML - R) * KM)), my: (py) => Math.max(yMin, Math.min(yMax, yMin + (1 - (py - T) / (H - T - BB)) * (yMax - yMin))), yAx2 };
   return svg;
 }
 function menuIcon(root, px, py, kind, idx, name) {
@@ -283,8 +303,8 @@ function menuIcon(root, px, py, kind, idx, name) {
   g.appendChild(el('title', {}, kind === 'pt' ? t('pf_ptMenu') : t('pf_stMenu')));
   root.appendChild(g);
 }
-function stageHandle(root, px, idx, H = H0) {
-  const g = el('g', { class: 'pf-sh', 'data-idx': idx }); const yb = H - B - 14;
+function stageHandle(root, px, idx, yBase = H0 - B) {
+  const g = el('g', { class: 'pf-sh', 'data-idx': idx }); const yb = yBase - 14;
   g.appendChild(el('rect', { x: px - 7, y: yb, width: 14, height: 14, rx: 3, fill: C.stage, stroke: C.panel, 'stroke-width': 1.5 }));
   for (const d of [3, 7, 11]) g.appendChild(el('circle', { cx: px, cy: yb + d, r: 1.3, fill: '#fff' }));
   g.appendChild(el('title', {}, t('pf_stHandle')));
@@ -499,10 +519,11 @@ export function openProfileTool(b0, ctx, o = {}) {
   const modelBtn = h('button.btn.small.pf-modelbtn', { type: 'button', title: t('pf_modelTip'), onclick: (ev) => { ev.stopPropagation(); openModelMenu(); } }, [h('span.note.small', `${t('pf_model')} `), modelLbl, icon('more', 14)]);
   const modelWarn = h('div.pf-modelwarn', { hidden: true });
   const sampleBtn = h('button.btn.small.pf-sample', { type: 'button', title: t('pf_sampleNote'), onclick: () => toggleSample() }, t('pf_sample'));
-  // Spreizung der Achsen (0.12.6): Distanz ×1/×2/×4/×8, Höhe ×1/×2/×3 – nur im Werkzeug, nicht gespeichert
-  let zoomX = 1, zoomY = 1;
+  // Spreizung Höhe ×1/×2/×3 (0.12.6) und Ausschnitt (0.12.7: Schieber unter der Zeitskala, Knopf «Ganze Fahrt») – nur im Werkzeug, nicht gespeichert
+  let zoomY = 1, win = null;
   const zoomSeg = (vals, get, set) => { const seg = h('div.seg.pf-zoom'); const draw = () => { clear(seg); for (const v of vals) seg.appendChild(segBtn(`${v}×`, get() === v, () => { set(v); draw(); redraw(); })); }; draw(); return seg; };
-  const zoomBox = h('div.pf-zoombox', { title: t('pf_zoomTip') }, [h('span.note.small', `${t('pf_zoomX')} `), zoomSeg([1, 2, 4, 8], () => zoomX, (v) => { zoomX = v; }), h('span.note.small', ` ${t('pf_zoomY')} `), zoomSeg([1, 2, 3], () => zoomY, (v) => { zoomY = v; })]);
+  const winBtn = h('button.btn.small.pf-winall', { type: 'button', title: t('pf_winHint'), onclick: () => { win = null; redraw(); } }, t('pf_winAll'));
+  const zoomBox = h('div.pf-zoombox', { title: t('pf_zoomTip') }, [h('span.note.small', `${t('pf_zoomY')} `), zoomSeg([1, 2, 3], () => zoomY, (v) => { zoomY = v; }), winBtn]);
   const toolbar = h('div.pf-toolbar', [viewSeg, tzSeg, undoBtn, modelBtn, sampleBtn, status, zoomBox, layerBox]);
   const toolbar2 = h('div.pf-toolbar2', { hidden: true }, [modelWarn]);
   function openModelMenu() {
@@ -553,9 +574,9 @@ export function openProfileTool(b0, ctx, o = {}) {
   let st = null;
   function redraw() {
     const used = new Set();
-    st = { b, ctx, p, D: p.data, interactive: true, used, callouts: sample?.callouts, zoomX, zoomY };
+    st = { b, ctx, p, D: p.data, interactive: true, used, callouts: sample?.callouts, zoomY, win };
     drawChart(svg, st);
-    svg.style.width = `${zoomX * 100}%`; svg.style.maxWidth = zoomX > 1 ? 'none' : ''; chartWrap.classList.toggle('zoomed', zoomX > 1 || zoomY > 1);
+    chartWrap.classList.toggle('zoomed', zoomY > 1); winBtn.disabled = !(st.scale.k1 - st.scale.k0 < st.scale.KM - 1e-6);
     const D = p.data; modelWarn.hidden = toolbar2.hidden = !D.cut;
     if (D.cut) { clear(modelWarn); modelWarn.append('⚠ ', t('pf_modelEndHint', { m: D.modelName || '', t: fmtTD(b, D.endMs), tz: tzName(b), p: fmtTD(b, D.plannedEndMs) })); }
     if (!sample) modelLbl.textContent = modelName();
@@ -602,21 +623,28 @@ export function openProfileTool(b0, ctx, o = {}) {
   const inpFocus = (m) => { const i = m.querySelector('input'); if (i) { i.focus(); i.select(); i.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') m.querySelector('button')?.click(); }); } };
   back.addEventListener('click', (ev) => { if (menuEl && !menuEl.contains(ev.target) && !ev.target.closest('.pf-mi')) closeMenu(); });
   // Ziehen (Punkte, Etappengriffe), Doppelklick setzt einen Punkt, Klick auf die Zeitzeile setzt eine Etappengrenze
-  let drag = null, dragStage = null, moved = false, pendingRedraw = false;
+  let drag = null, dragStage = null, dragBr = null, moved = false, pendingRedraw = false, brushTap = 0;
   const pos = (ev) => { const r = svg.getBoundingClientRect(); return { px: (ev.clientX - r.left) * st.scale.W / r.width, py: (ev.clientY - r.top) * st.scale.H / r.height }; };
+  // Ausschnitt (0.12.7): Marke ziehen, Band verschieben, Klick auf die Übersicht zentriert das Fenster, Doppelklick = ganze Fahrt; Mindestbreite 1 % der Fahrt (≥ 1 km)
+  const setWin = (a, c) => { const sc = st.scale, min = Math.max(1, sc.KM / 100); let k0 = Math.max(0, Math.min(sc.KM - min, a)), k1 = Math.max(k0 + min, Math.min(sc.KM, c)); if (k1 - k0 < min) k0 = Math.max(0, k1 - min); win = k1 - k0 >= sc.KM - 1e-6 ? null : { k0, k1 }; redraw(); };
   svg.addEventListener('pointerdown', (ev) => {
-    const pt = ev.target.closest('.pf-pt'), sh = ev.target.closest('.pf-sh');
-    if (pt) { snapshot(); drag = +pt.dataset.i; } else if (sh) { snapshot(); dragStage = +sh.dataset.idx; } else return;
+    const pt = ev.target.closest('.pf-pt'), sh = ev.target.closest('.pf-sh'), bh = ev.target.closest('.pf-br-h'), bb = ev.target.closest('.pf-br-band'), bt = ev.target.closest('.pf-br-track');
+    if (bh || bb || bt) { const now = Date.now(); if (now - brushTap < 450) { brushTap = 0; win = null; redraw(); return; } brushTap = now; }   // Doppelklick selbst erkennen (die Neuzeichnung ersetzt die Elemente)
+    if (bh) dragBr = { end: bh.dataset.end };
+    else if (bb) { const { px } = pos(ev); dragBr = { end: 'band', km: st.scale.kmo(px), k0: st.scale.k0, k1: st.scale.k1 }; }
+    else if (bt) { const { px } = pos(ev), sc = st.scale, span = sc.k1 - sc.k0, c = sc.kmo(px); const a = Math.max(0, Math.min(sc.KM - span, c - span / 2)); setWin(a, a + span); return; }
+    else if (pt) { snapshot(); drag = +pt.dataset.i; } else if (sh) { snapshot(); dragStage = +sh.dataset.idx; } else return;
     moved = false; svg.setPointerCapture(ev.pointerId); ev.preventDefault();
   });
   svg.addEventListener('pointermove', (ev) => {
+    if (dragBr) { const { px } = pos(ev), sc = st.scale, km = sc.kmo(px); if (dragBr.end === 'a') setWin(km, sc.k1); else if (dragBr.end === 'b') setWin(sc.k0, km); else { const span = dragBr.k1 - dragBr.k0, a = Math.max(0, Math.min(sc.KM - span, dragBr.k0 + km - dragBr.km)); setWin(a, a + span); } return; }
     if (drag == null && dragStage == null) return;
     const { px, py } = pos(ev), sc = st.scale; moved = true;
     if (drag != null) { const first = drag === 0, last = drag === p.points.length - 1; const q = p.points[drag]; q.km = first ? 0 : last ? sc.KM : Math.round(sc.kx(px) * 10) / 10; q.alt = Math.round(sc.my(py) / 50) * 50; if (!first && !last) { const lo = p.points[drag - 1].km + 0.5, hi = p.points[drag + 1].km - 0.5; q.km = Math.max(lo, Math.min(hi, q.km)); } redraw(); }
     else { moveStage(p.stages, dragStage, sc.kx(px), sc.KM); redraw(); }
   });
-  svg.addEventListener('pointerup', () => { const wasPt = drag != null && moved, wasSt = dragStage != null && moved; drag = null; dragStage = null; if (pendingRedraw) { pendingRedraw = false; redraw(); } if (wasPt) { changed(); recompute(); } else if (wasSt) changed(); });
-  svg.addEventListener('dblclick', (ev) => { const { px, py } = pos(ev); if (py < T || py > st.scale.H - B || ev.target.closest('.pf-mi,.pf-sh')) return; snapshot(); p.points.push({ km: Math.round(st.scale.kx(px) * 10) / 10, alt: Math.round(st.scale.my(py) / 50) * 50 }); p.points = fitPoints(p.points, st.scale.KM); redraw(); changed(); recompute(); });
+  svg.addEventListener('pointerup', () => { dragBr = null; const wasPt = drag != null && moved, wasSt = dragStage != null && moved; drag = null; dragStage = null; if (pendingRedraw) { pendingRedraw = false; redraw(); } if (wasPt) { changed(); recompute(); } else if (wasSt) changed(); });
+  svg.addEventListener('dblclick', (ev) => { if (ev.target.closest('.pf-brush')) { win = null; redraw(); return; } const { px, py } = pos(ev); if (py < T || py > st.scale.H - st.scale.BB || ev.target.closest('.pf-mi,.pf-sh')) return; snapshot(); p.points.push({ km: Math.round(st.scale.kx(px) * 10) / 10, alt: Math.round(st.scale.my(py) / 50) * 50 }); p.points = fitPoints(p.points, st.scale.KM); redraw(); changed(); recompute(); });
   svg.addEventListener('click', (ev) => {
     const mi = ev.target.closest('.pf-mi'); if (mi) { openMenu(mi.dataset.kind, +mi.dataset.idx, ev); ev.stopPropagation(); return; }
     if (!ev.target.closest('.pf-axis')) return;
@@ -636,7 +664,7 @@ export function openProfileTool(b0, ctx, o = {}) {
     const cb = h('input', { type: 'checkbox', checked: false, disabled: !!sample });
     menuEl.appendChild(h('label.pf-ops-row', { title: t('pf_opsHint') }, [cb, ' ', t('pf_opsStage')]));
     menuEl.appendChild(h('div.note.small', t('pf_opsHint')));
-    menuEl.appendChild(h('button', { type: 'button', onclick: () => { snapshot(); const s = addStage(p.stages, km, inp.value.trim() || t('pf_newStage', { t: tm }), 2, cb.checked); if (!s) { history.pop(); undoBtn.disabled = !history.length; } closeMenu(); redraw(); changed(); } }, t('pf_createStage')));
+    menuEl.appendChild(h('button', { type: 'button', onclick: () => { snapshot(); const s = addStage(p.stages, km, inp.value.trim() || t('pf_newStage', { t: tm }), 2, cb.checked); if (!s) { history.pop(); undoBtn.disabled = !history.length; } else renameStartStage(p.stages, { start: t('pf_stStart'), enroute: t('pf_stEnroute') }); closeMenu(); redraw(); changed(); } }, t('pf_createStage')));   // 0.12.7: «Enroute» → «Start», sobald eine weitere Etappe dazukommt
     menuEl.appendChild(h('button', { type: 'button', onclick: closeMenu }, t('cancel')));
     chartWrap.appendChild(menuEl);
     inpFocus(menuEl);

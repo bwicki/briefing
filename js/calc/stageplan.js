@@ -92,6 +92,34 @@ export function stagePlanBriefing(b, stageId) {
   return bs;
 }
 /** Etappen-Briefings des Briefings (Etappen mit Planung ausser der ersten; die erste sind die Abschnitte B/C). */
+/**
+ * 0.12.7: Planung der Startetappe (Abschnitte B/C des Hauptbriefings) nur auf ihren Bereich, sobald weitere Etappen bestehen:
+ * abgeleitete Sicht mit Zeitfenster, Höhenband und Bahnabschnitt der ersten Etappe (`stagePlan.start = true`); Startort, Landeraum,
+ * Panels und Abrufeinstellungen bleiben die des Hauptbriefings (Schreibzugriffe gehen durch). Mit nur einer Etappe, ohne Profil
+ * oder ohne Planung bei der Startetappe → das Briefing selbst (ganze Fahrt).
+ */
+export function startPlanBriefing(b) {
+  if (!b || b.balloon?.type !== 'gas' || (b.profile?.stages || []).length < 2 || startPlanOff(b)) return b;
+  const w = stageWindowsOf(b)[0]; if (!w || !(w.km1 > w.km0)) return b;
+  const D = b.profile.data, track = D.track;
+  const kmMid = (w.km0 + w.km1) / 2, mid = posAtKm(track, kmMid) || w.from;
+  const elevMid = D.relief?.length ? Math.round(reliefAt(D.relief, kmMid)) : (b.site.elev ?? 0);
+  const altMinFt = Math.round((w.altMin ?? altAt(b.profile.points, kmMid) ?? elevMid) * M_TO_FT), altMaxFt = Math.max(altMinFt + 500, Math.round((w.altMax ?? elevMid) * M_TO_FT));
+  const segPts = track.points.filter((q) => q.km >= w.km0 - 0.01 && q.km <= w.km1 + 0.01);
+  const durationMin = Math.max(10, Math.round((w.ms1 - w.ms0) / 60000));
+  const toName = icao(w.to.lat, w.to.lon);
+  const stagePlan = {
+    start: true, id: w.id, no: 1, name: w.name || '', km0: w.km0, km1: w.km1, ms0: w.ms0, ms1: w.ms1, msMid: Math.round((w.ms0 + w.ms1) / 2), altMin: w.altMin, altMax: w.altMax,
+    from: { ...w.from, name: b.site.name, country: b.site.country }, to: { ...w.to, name: toName, country: countryAtKm(D.firs, w.km1, w.to, b.site.country) }, mid: { ...mid, name: icao(mid.lat, mid.lon), country: countryAtKm(D.firs, kmMid, mid, b.site.country) },
+    track: { points: segPts }, traj: { tracks: [{ label: 'Profil', altFt: Math.round((w.altMax ?? elevMid) * M_TO_FT), altM: w.altMax, points: segPts.map((q) => ({ ms: q.ms, lat: q.lat, lon: q.lon })) }], landing: { lat: w.to.lat, lon: w.to.lon, name: toName } },
+    lenKm: Math.round((w.km1 - w.km0) * 10) / 10,
+  };
+  const bs = { ...b, intent: { ...b.intent, durationMin, altMinFt, altMaxFt }, stagePlan };
+  for (const k of ['dabsDay', 'metarKm', 'obsKm', 'notamMode', 'notamPlaces', 'updated', 'state']) Object.defineProperty(bs, k, { get: () => b[k], set: (v) => { b[k] = v; }, enumerable: true, configurable: true });
+  return bs;
+}
+/** Kennung des Bereichs der Startetappe (für Neuaufbau der Sicht): km/Zeit-Grenzen oder '' ohne Beschränkung. */
+export const startPlanSig = (b) => { const v = startPlanBriefing(b); return v === b ? '' : `s:${Math.round(v.stagePlan.km1)}:${Math.round(v.stagePlan.ms1 / 600000)}`; };
 export function stageSets(b) {
   if (!b || b.balloon?.type !== 'gas') return [];
   const stages = b.profile?.stages || [];

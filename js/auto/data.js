@@ -134,7 +134,7 @@ export async function wind(ctx, b) {
 /** Stüve zur Startzeit (volles Profil bis topHpa). */
 export async function temps(ctx, b) {
   const j = await getForecast(ctx, b);
-  const atMs = b.stagePlan?.msMid ?? b.time.startMs;   // Etappen-Briefing: Profil zur Etappenmitte (0.12.5)
+  const atMs = b.stagePlan && !b.stagePlan.start ? b.stagePlan.msMid : b.time.startMs;   // Etappen-Briefing: Profil zur Etappenmitte (0.12.5); Startetappe: zur Startzeit
   const i = OM.indexAt(j, atMs);
   if (i < 0) throw new Error(t('auto_noHours'));
   const elev = b.site.elev ?? j.elevation;
@@ -364,7 +364,7 @@ export async function airspace(ctx, b) {
   if (!trj?.tracks?.length) trj = (await traj(ctx, b)).data;
   const tracks = trj.tracks.filter((x) => !x.belowGround);
   const corridorKm = +ctx.settings.airspaceCorridorKm || 5;
-  const pts = tracks.flatMap((x) => x.points).concat([{ lat: b.site.lat, lon: b.site.lon }], b.landing?.lat != null ? [{ lat: b.landing.lat, lon: b.landing.lon }] : []);
+  const pts = tracks.flatMap((x) => x.points).concat(b.stagePlan ? [] : [{ lat: b.site.lat, lon: b.site.lon }], !b.stagePlan && b.landing?.lat != null ? [{ lat: b.landing.lat, lon: b.landing.lon }] : []);   // Etappen-Sicht (0.12.5/0.12.7): nur der Bahnabschnitt
   const dLat = (corridorKm + 3) / 111.2, dLon = (corridorKm + 3) / (111.2 * Math.max(0.2, Math.cos(b.site.lat * Math.PI / 180)));
   const bbox = [Math.min(...pts.map((p) => p.lon)) - dLon, Math.min(...pts.map((p) => p.lat)) - dLat, Math.max(...pts.map((p) => p.lon)) + dLon, Math.max(...pts.map((p) => p.lat)) + dLat].map((v) => +v.toFixed(3));
   const tileKey = /[?&]apiKey=([A-Za-z0-9]+)/.exec(ctx.settings.airspaceTileUrl || '')?.[1];

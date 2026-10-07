@@ -125,8 +125,9 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
    nach Querabstand gewichtet; `>` = Ziel jenseits der Bahnenden). Trajektorien-
    Niveaus (Startwerte je Ballontyp aus den Einstellungen). Landeraum und Richtung
    bleiben optional.
-4. **Personen** — PIC, bei der Gasfahrt **2. Pilot** (Personen mit Rolle «2. Pilot GB» aus den
-   Einstellungen oder frei; zählt zu Personen an Bord, Masse und Flugplan P/; 0.12.6), **mehrere
+4. **Personen** — PIC, **2. Pilot** (Personen mit Rolle «2. Pilot» aus den
+   Einstellungen oder frei; zählt zu Personen an Bord, Masse und Flugplan P/; 0.12.6, seit 0.12.7
+   für alle Ballontypen), **mehrere
    Nachfahrer** (Liste aus Stamm oder frei), Pax
    (Name leer = Platzhalter im Briefing, Gewicht), Vorschau Tragkraft bzw. Ballast;
    Temperatur/QNH/Feuchte werden, wenn der Start innert 15 Tagen liegt, aus dem
@@ -212,9 +213,13 @@ Panel-Arten:
   Vorgänger/Nachfolger zusammenlegen), Rückgängig (Ctrl+Z), Pille **«Wettermodell ‹Name› ⋯»** (Vorgabe das
   feinste Modell, das die ganze Fahrt abdeckt; Horizont-Warnung), «Beispiel» (synthetische Fahrt mit
   nummerierten Erklärungen zum Üben), Layer Wetter/Lufträume, Kartenansicht mit wählbarer Grundkarte,
-  **Spreizung** der Achsen (Distanz ×1/×2/×4/×8, Höhe ×1/×2/×3; Grafik wächst, Rahmen rollt – nur Ansicht,
-  0.12.6) und oben **«Speichern und schliessen»** / **«Schliessen ohne Speichern»** (stellt Profil,
-  Etappen, Zeitbasis und Etappen-Planungen vom Öffnen wieder her; ✕ und Escape = speichern, 0.12.6).
+  **Spreizung Höhe** ×1/×2/×3 (Grafik wächst, Rahmen rollt; 0.12.6) und **Ausschnitt** (0.12.7): Schieber
+  **unterhalb der Zeitskala** mit Beginn- und Endmarke über die ganze Fahrt (Etappenstriche zur Orientierung);
+  das Fenster wird über die ganze Breite gespreizt (km-Skala feiner), Band verschiebbar, Klick auf die
+  Übersicht zentriert, Doppelklick oder Knopf **«Ganze Fahrt»** stellt alles wieder her – nur zur
+  Bearbeitung, nicht gespeichert (Panel und Druck zeigen die ganze Fahrt). Oben **«Speichern und
+  schliessen»** / **«Schliessen ohne Speichern»** (stellt Profil, Etappen, Zeitbasis und Etappen-Planungen
+  vom Öffnen wieder her; ✕ und Escape = speichern, 0.12.6).
   Die **Legende** (erste Zeile: Bedienhinweis) ist einklappbar und wird im Briefingdruck immer gedruckt.
   Darunter die **Etappenübersicht** (Zeit, km, Höhenband, Ort, Land/FIR, Lufträume, Achtung, Kontakte:
   FIS-Sektoren aus openAIP entlang der Etappe, sonst die FIS-Kontakte je Land aus den Einstellungen) und die
@@ -224,7 +229,11 @@ Panel-Arten:
   Etappenmitten.
 * **Ops-Briefing je Etappe** (0.12.5, nur Gasballon) — jede Etappe des Fahrtprofils kann eine eigene
   Meteo-, Luftraum- und NOTAM-Planung tragen. Die Planung der **Startetappe** sind die Abschnitte **B und C**
-  des Briefings (Startort, ganze Fahrt – wie bisher). Jede weitere Etappe mit Planung bekommt zwischen C und D
+  des Briefings (Startort). Mit nur einer Etappe gilt sie für die ganze Fahrt; **sobald weitere Etappen
+  bestehen, ist sie auf den Bereich der Startetappe beschränkt** (0.12.7: Dauer, Höhenband, Luftraum und
+  NOTAM entlang des Abschnitts bis zur zweiten Etappe; Temps zur Startzeit; Startort, Landeraum und alle
+  übrigen Panels unverändert; Unterzeile «Etappe 1 bis km …») – und die einzige Vorgabe-Etappe «Enroute»
+  wird beim Anlegen einer weiteren Etappe in **«Start»** umbenannt. Jede weitere Etappe mit Planung bekommt zwischen C und D
   einen eigenen Abschnitt **«E‹n› · Etappe n · Name»** mit Zeitfenster und Ort: Meteo-Panels (METAR/TAF,
   Temps zur Etappenmitte, Beobachtungen, Flugwetterprognose DE, Wind, Ballonprognose, SIGWX, Thermik,
   Meteogramm) zur **Mitte der Etappe** im **Zeitfenster der Etappe**, Luftraum entlang des Etappenabschnitts der
@@ -242,7 +251,10 @@ Panel-Arten:
   (0.12.6):** mit Etappen-Briefings zeigt die Erarbeitungssicht Etappenköpfe «E1 · Etappe 1 · ‹Start›»
   (= Abschnitte B/C des Hauptbriefings) und «E‹n› · …» mit B/C als Untertiteln; die Navigation links
   gruppiert entsprechend (A · E1 (B, C) · E‹n› (B, C) · D), und neben «Alle verfügbaren Daten
-  aktualisieren» springen Etappen-Knöpfe (E1 · Start, E3 · Nacht …) zum Etappenkopf. Daten:
+  aktualisieren» springen Etappen-Knöpfe (E1 · Start, E3 · Nacht …) zum Etappenkopf. **Nummern mit Etappe
+  (0.12.7):** sobald Etappen-Briefings bestehen, tragen die Panels der Abschnitte B/C die Etappe in der
+  Nummer – «E1-B2», «E3-C3» – in Navigation, Panelköpfen und Briefingsicht (dort mit Etappenkopf E1); A und
+  D bleiben «A1», «D2». Daten:
   `b.profile.stages[].ops`, `b.stagePlans[stageId].panels` (+ Ortsnamen, Abrufeinstellungen);
   abgeleitete Sicht `stagePlanBriefing()` in `js/calc/stageplan.js`.
 
@@ -408,7 +420,7 @@ Freigabe-Links, Nutzer & Freigaben (Stamm-Freigaben; Supermaster: Nutzer
 anlegen, Kennwort setzen, Freischaltungen, Stamm ansehen), Statistik (Supermaster),
 Zugänge (API-Schlüssel und Logins, zentral, verschlüsselt; nur der Supermaster
 ändert sie; das Auge zeigt die Eingabe im Klartext und lädt bei leerem Feld den
-gespeicherten Wert nach — protokolliert), Experte (Kennwort ändern, Reserve-Regel, Aerostatik Gasballon, Achtung-Zeichen-Grenzen und Mindestabstand des Höhenprofils, FIS-Kontakte je Land für die Etappenübersicht; Gashüllen zusätzlich Widerstandszahl WZ). *Export/Import JSON* sichert
+gespeicherten Wert nach — protokolliert), Experte (Kennwort ändern, Reserve-Regel, Aerostatik Gasballon, Achtung-Zeichen-Grenzen und Mindestabstand des Höhenprofils, FIS-Kontakte je Land (0.12.7: Deutschland nach DFS AIC VFR 01/26, Frankreich nach AIP France – Platzhalter für München Information und Italien bleiben) für die Etappenübersicht; Gashüllen zusätzlich Widerstandszahl WZ). *Export/Import JSON* sichert
 die Einstellungen (ohne Zugänge).
 
 ---

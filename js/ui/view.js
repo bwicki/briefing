@@ -18,7 +18,7 @@ import { fmtDate, fmtDateTime, hhmm, fmtDur } from '../calc/time.js';
 import { printDialog, paxSheet, paxCardTitle } from './extras.js';
 import { distKm, bearing } from '../calc/geo.js';
 import { icon, iconSvg } from './icons.js';
-import { stageSets, startPlanOff } from '../calc/stageplan.js';
+import { stageSets, startPlanOff, startPlanBriefing } from '../calc/stageplan.js';
 
 export async function renderBrief(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
@@ -95,6 +95,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   ]));
   const panels = visiblePanels(S, b);
   /** Zeile eines Panels (th: Nummer/Titel, td: Inhalt); bb = Hauptbriefing oder abgeleitete Sicht einer Etappe (0.12.5). */
+  const setsV = stageSets(b), pfx = (p, bb) => (setsV.length && (bb !== b || p.section === 'B' || p.section === 'C') ? `E${bb !== b ? bb.stagePlan.no : 1}-` : '');   // 0.12.7: «E1-C3» mit mehreren Etappen
   function panelRow(p, bb, list, rowClass = '') {
       const d = bb.panels[p.key] || { content: {}, extra: {}, comment: '' };
       const cell = h('td');
@@ -144,19 +145,21 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       }
       if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b', t('ai') + ': '), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
-      return h('tr', { class: `row-${p.key.replace('.', '-')}${rowClass}` }, [h('th', [h('span.pno', panelNo(p, list)), ' ', tt(p), bb === b && changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]);
+      return h('tr', { class: `row-${p.key.replace('.', '-')}${rowClass}` }, [h('th', [h('span.pno', panelNo(p, list, pfx(p, bb))), ' ', tt(p), bb === b && changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]);
   }
   for (const s of SECTIONS) {
     const ps = panels.filter((p) => p.section === s.id);
     if (ps.length) {
-      brief.appendChild(h('div.bs', `${s.id} · ${s[lang] || s.de}`));
+      // 0.12.7: mit Etappen-Briefings steht über B der Etappenkopf «E1 · Etappe 1 · ‹Start›» mit dem Bereich der Startetappe
+      if (setsV.length && s.id === 'B') { const sp1 = startPlanBriefing(b).stagePlan; brief.appendChild(h('div.bs.stage', `E1 · ${t('sp_title', { n: 1, name: b.profile?.stages?.[0]?.name || t('pf_stStart') })}`)); brief.appendChild(h('div.mini', sp1 ? t('sp_subStart1', { site: placeLabel(b.site), d: fmtDate(z, sp1.ms0, lang), t0: hhmm(z, sp1.ms0), t1: hhmm(z, sp1.ms1), tz: 'LT', k1: Math.round(sp1.km1), len: Math.round(sp1.lenKm), b: sp1.to.name }) : t('sp_subStart', { site: placeLabel(b.site), d: fmtDate(z, b.time.startMs, lang), t0: hhmm(z, b.time.startMs), t1: hhmm(z, b.time.startMs + (b.intent.durationMin || 0) * 60000), tz: 'LT' }))); }
+      brief.appendChild(h('div.bs' + (setsV.length && (s.id === 'B' || s.id === 'C') ? '.sub' : ''), `${s.id} · ${s[lang] || s.de}`));
       if (s.id === 'B' && startPlanOff(b)) brief.appendChild(h('div.mini', t('sp_startOff')));
       const tbl = h('table.bp');
       for (const p of ps) tbl.appendChild(panelRow(p, b, panels));
       brief.appendChild(tbl);
     }
     // Etappen-Briefings (0.12.5) zwischen C und D: je Etappe mit Planung ein Abschnitt mit Zeitfenster/Ort und den B/C-Panels
-    if (s.id === 'C') for (const X of stageSets(b)) {
+    if (s.id === 'C') for (const X of setsV) {
       const sp = X.bs.stagePlan, list = visiblePanels(S, X.bs);
       brief.appendChild(h('div.bs.stage', `E${X.no} · ${t('sp_title', { n: X.no, name: X.name || '–' })}`));
       brief.appendChild(h('div.mini', t('sp_sub', { d: fmtDate(z, sp.ms0, lang), t0: hhmm(z, sp.ms0), t1: hhmm(z, sp.ms1), tz: 'LT', k0: Math.round(sp.km0), k1: Math.round(sp.km1), len: Math.round(sp.lenKm), a: sp.from.name, b: sp.to.name, mid: sp.mid.name })));

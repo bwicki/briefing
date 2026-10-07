@@ -176,8 +176,8 @@ export function fillFractionOf(b) {
   return b?.balloon?.fillFraction ?? 1;
 }
 /** Tragkraft (Heissluft) oder Ballast (Gas) aus Briefing-Eingaben. */
-/** Zweiter Pilot an Bord (Gasfahrt, 0.12.6)? */
-export const hasCopilot = (b) => b?.balloon?.type === 'gas' && !!(b.persons?.copilot || '').trim();
+/** Zweiter Pilot an Bord (0.12.6; seit 0.12.7 für alle Ballontypen)? */
+export const hasCopilot = (b) => !!(b?.persons?.copilot || '').trim();   // 0.12.7: alle Ballontypen (0.12.6: nur Gas)
 /** Personen an Bord: PIC (+ 2. Pilot bei der Gasfahrt) + Pax. */
 export const personsOnBoard = (b) => 1 + (hasCopilot(b) ? 1 : 0) + (b.persons?.pax?.length || 0);
 export function massPerf(b, settings) {

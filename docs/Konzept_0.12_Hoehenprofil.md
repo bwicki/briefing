@@ -185,7 +185,10 @@ Summe + Landeballast (Reserve + Bremsballast aus Stammdaten) gegen den Vorrat (A
 Umgesetzt: Panel A «Fahrtprofil» mit Datenaufbereitung, Grafik als Bild und Werkzeug (alle Punkte
 der Skizze Stand 11, inkl. Beispiel mit Erklärungen, OSM-Wasser, FIS-Sektoren), Kartenansicht mit Grundkarten, Ballastschätzung, Etappenübersicht mit Kontakten,
 NOTAM-Orte aus Etappen, Nachfahrer-Panel ab 12 h, Druck, Zeitzone einheitlich; 0.12.5: Ops-Briefing je
-Etappe (Abschnitte E‹n›). Offen (0.12.x): Pflichtpanels je Land, Kalibrierung über Inventurpunkte und
+Etappe (Abschnitte E‹n›); 0.12.6: Gliederung der Erarbeitung nach Etappen (E1 = B/C), Speichern/Verwerfen
+und Spreizung Höhe im Werkzeug; 0.12.7: Ausschnitt-Schieber unter der Zeitskala (Beginn-/Endmarke, nicht
+gespeichert), Planung der Startetappe nur auf ihren Bereich sobald weitere Etappen bestehen (Umbenennung
+«Enroute» → «Start»), Panel-Nummern mit Etappe («E1-C3»). Offen (0.12.x): Pflichtpanels je Land, Kalibrierung über Inventurpunkte und
 Barogramm, Unsicherheit auf der Zeitzeile (Frage f), Nachrechnen beim Ziehen statt beim Loslassen
 (Frage g – umgesetzt ist: Profil sofort, Bahn/Relief/Lufträume beim Loslassen mit Statusanzeige).
 

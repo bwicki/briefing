@@ -89,13 +89,19 @@ export const DEFAULT_SETTINGS = {
   // 0.12: Grenzen für die Achtung-Zeichen im Höhenprofil (Wind in Fahrthöhe, Windsprung benachbarter Schichten, CAPE) und Mindestabstand über Grund
   profileLimits: { windKt: 30, shearKt: 20, cape: 500, minAgl: 300 },
   // 0.12: FIS-Kontakte je Land (AIP ENR 2.1 / GEN 3.3) für die Etappenübersicht – editierbar in Einstellungen → Experten;
-  // nur gesicherte Werte vorbelegt, übrige Länder als Platzhalter mit AIP-Verweis
+  // nur belegte Werte vorbelegt, übrige als Platzhalter mit AIP-Verweis. 0.12.7: DE nach DFS AIC VFR 01/26 (02 APR 2026, Sektoren Langen
+  // Information), FR nach AIP France AIRAC 01 OCT 2026 (AD 2 LFSB/LFLL 2.18); München Information und Italien ohne öffentlich
+  // zugängliche amtliche Quelle → Platzhalter (vor der Fahrt im AIP prüfen)
   fisContacts: [
     { cc: 'CH', name: 'Zürich Information (FIS)', freq: '124.700', phone: '' }, { cc: 'CH', name: 'Geneva Information (FIS)', freq: '126.350', phone: '' },
     { cc: 'AT', name: 'Wien Information (FIS)', freq: '124.400', phone: '' },
-    { cc: 'DE', name: 'FIS Langen / München / Bremen – Frequenz je Sektor gemäss AIP Germany ENR 2.1', freq: '', phone: '' },
-    { cc: 'FR', name: 'SIV (FIS) je Sektor gemäss AIP France ENR 2.1', freq: '', phone: '' },
-    { cc: 'IT', name: 'FIS Milano / Padova / Roma gemäss AIP Italia ENR 2.1', freq: '', phone: '' },
+    { cc: 'DE', name: 'Langen Information (FIS) Sektor Stuttgart', freq: '128.950', phone: '' }, { cc: 'DE', name: 'Langen Information (FIS) Sektor Saarbrücken', freq: '123.525', phone: '' },
+    { cc: 'DE', name: 'Langen Information (FIS) Sektor Frankfurt', freq: '119.150', phone: '' }, { cc: 'DE', name: 'Langen Information (FIS) Sektor Düsseldorf', freq: '129.875', phone: '' },
+    { cc: 'DE', name: 'München Information (FIS) – Frequenz je Sektor gemäss AIP Germany ENR 2.1', freq: '', phone: '' },
+    { cc: 'FR', name: 'Bâle Information (SIV Bâle)', freq: '130.905', phone: '' }, { cc: 'FR', name: 'Bâle Information (SIV Bâle, Sektoren T1/T2/T3)', freq: '134.680', phone: '' },
+    { cc: 'FR', name: 'Lyon Information (FIS, bis FL145)', freq: '135.200', phone: '' }, { cc: 'FR', name: 'Lyon Information (FIS)', freq: '135.530', phone: '' },
+    { cc: 'FR', name: 'Marseille / Reims / Paris Information – Frequenz je SIV-Sektor gemäss AIP France ENR 2.1', freq: '', phone: '' },
+    { cc: 'IT', name: 'Milano / Padova / Roma Information – Frequenz gemäss AIP Italia ENR 2.1', freq: '', phone: '' },
   ],
   paxCardTitle: { de: 'Passagier Info-/Sicherheitskarte', en: 'Passenger info / safety card' },
   webcams: [{ id: 'uetliberg', name: 'Uetliberg (Roundshot)', lat: 47.3496, lon: 8.4913, url: 'https://uetliberg.roundshot.com/' }, { id: 'rigi', name: 'Rigi Kulm (Roundshot)', lat: 47.0569, lon: 8.4854, url: 'https://rigi.roundshot.com/' }],
@@ -217,6 +223,8 @@ export function mergeSettings(saved) {
   // 0.10.2: Standardradien Beobachtungen 50 → 75 km, Sonden 150 → 250 km (nur wenn noch die alten Standards gespeichert sind)
   if (out.obsRadiusKm === 50) out.obsRadiusKm = 75;
   if (out.sondeKm === 150) out.sondeKm = 250;
+  // 0.12.7: FIS-Liste nur mit den Platzhaltern von 0.12 (DE/FR/IT ohne Frequenz) → neue Standardliste mit belegten Werten
+  if (Array.isArray(out.fisContacts) && !out.fisContacts.some((c) => ['DE', 'FR', 'IT'].includes(c.cc) && (c.freq || c.phone))) out.fisContacts = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.fisContacts));
   // 0.7: Beispielballone «Heissluft NNNN m³» → Muster + Transponder-Hexcode; 0.11.0: BAZL-Registerdaten (Hex 24-bit, Muster, ARC)
   for (const x of out.balloons?.hab || []) {
     if (x.hex == null) x.hex = '';

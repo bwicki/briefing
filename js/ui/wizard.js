@@ -377,7 +377,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const pers = (role) => P.filter((p) => !role || p.roles?.includes(role)).map((p) => ({ value: p.id, label: stammLabel(p, p.name) })).concat([{ value: 'custom', label: t('operatorCustom') }]);
     const picCustom = input('text', b.persons.picId === 'custom' ? b.persons.pic : '', { placeholder: t('name'), oninput: (e) => { b.persons.pic = e.target.value; persistSoon(); } }); picCustom.hidden = b.persons.picId !== 'custom';
     const picSel = select(pers('pic'), b.persons.picId, { onchange: (e) => { b.persons.picId = e.target.value; picCustom.hidden = e.target.value !== 'custom'; b.persons.pic = e.target.value === 'custom' ? picCustom.value : P.find((p) => p.id === e.target.value)?.name || ''; persistSoon(); } });
-    // 0.12.6: 2. Pilot (nur Gasfahrt) – Personen mit Rolle «2. Pilot GB», «keiner» oder frei
+    // 0.12.6: 2. Pilot – Personen mit Rolle «2. Pilot», «keiner» oder frei (0.12.7: alle Ballontypen)
     const coOpts = [{ value: '', label: t('copilotNone') }].concat(pers('copilot'));
     const coCustom = input('text', b.persons.copilotId === 'custom' ? b.persons.copilot : '', { placeholder: t('name'), oninput: (e) => { b.persons.copilot = e.target.value; drawPreview(); persistSoon(); } }); coCustom.hidden = b.persons.copilotId !== 'custom';
     const coSel = select(coOpts, b.persons.copilotId || '', { onchange: (e) => { b.persons.copilotId = e.target.value; coCustom.hidden = e.target.value !== 'custom'; b.persons.copilot = e.target.value === 'custom' ? coCustom.value : P.find((p) => p.id === e.target.value)?.name || ''; drawPreview(); persistSoon(); } });
@@ -428,7 +428,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       if (personsOnBoard(b) > (bal.maxPersons || 99)) preview.appendChild(h('div.warn', `⚠ ${t('b_maxPersons')}: ${bal.maxPersons}`));
     }
     drawPax(); drawPreview();
-    body.append(h('div.frow.top', [field(t('pic'), h('div', [picSel, picCustom])), bal.type === 'gas' ? field(t('copilot'), h('div', [coSel, coCustom])) : null, fieldAdd(t('retrieve'), retBox, retAdd, t('retrieveAdd'))]), fieldAdd(t('pax'), paxBox, paxAdd, t('paxAdd')), preview);
+    body.append(h('div.frow.top', [field(t('pic'), h('div', [picSel, picCustom])), field(t('copilot'), h('div', [coSel, coCustom])), fieldAdd(t('retrieve'), retBox, retAdd, t('retrieveAdd'))]), fieldAdd(t('pax'), paxBox, paxAdd, t('paxAdd')), preview);
     // Modellwerte für die Vorschau holen (einmal je Ort/Zeit)
     if (b.site.lat != null && b.weather.source !== 'model' && (b.time.startMs - Date.now()) < 15 * 86400000) {
       const p = localParts(tz(), b.time.startMs);

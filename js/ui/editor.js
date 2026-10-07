@@ -19,7 +19,7 @@ import { openAccessDialog } from './access.js';
 import { fplPanel } from './fplpanel.js';
 import { profilePanel } from './profile.js';
 import { icon, iconSvg } from './icons.js';
-import { stageSets, startPlanOff, planStale, stageWindowsOf, STAGE_REFRESH } from '../calc/stageplan.js';
+import { stageSets, startPlanOff, startPlanBriefing, startPlanSig, planStale, stageWindowsOf, STAGE_REFRESH } from '../calc/stageplan.js';
 import { placeName } from '../net.js';
 
 export async function renderEditor(view, ctx, id, opts = {}) {
@@ -88,12 +88,14 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   const mandatory = new Set(mandatoryPanels(S, b).map((p) => p.key));
   // Kontexte: Hauptbriefing (main) und Etappen-Briefings (0.12.5: je Etappe mit Planung ausser der ersten ein Satz B/C-Panels
   // mit der abgeleiteten Sicht der Etappe – Ort = Etappenmitte, Zeitfenster = Etappe)
-  const main = { b, sid: null, panels, mandatory, id: (p) => p.key };
+  // 0.12.7: mit weiteren Etappen gilt die Planung der Startetappe nur für ihren Bereich (abgeleitete Sicht, schreibt ins Briefing durch)
+  const main = { b: startPlanBriefing(b), sid: null, panels, mandatory, id: (p) => p.key };
   let sets = [], setsSig = '';
   const windowOf = (sid) => { const w = stageWindowsOf(b).find((x) => x.id === sid); return w ? { km0: w.km0, km1: w.km1, ms0: w.ms0, ms1: w.ms1 } : null; };
   function buildSets() {
     sets = stageSets(b).map((x) => ({ ...x, b: x.bs, panels: visiblePanels(S, x.bs), mandatory: new Set(mandatoryPanels(S, x.bs).map((p) => p.key)), sect: `E${x.no}`, id: (p) => `${x.sid}-${p.key}` }));
-    setsSig = sets.map((x) => `${x.sid}:${x.no}:${Math.round(x.bs.stagePlan.km0)}-${Math.round(x.bs.stagePlan.km1)}:${Math.round(x.bs.stagePlan.ms0 / 600000)}-${Math.round(x.bs.stagePlan.ms1 / 600000)}`).join('|') + (startPlanOff(b) ? '|off' : '');
+    main.b = startPlanBriefing(b);
+    setsSig = sets.map((x) => `${x.sid}:${x.no}:${Math.round(x.bs.stagePlan.km0)}-${Math.round(x.bs.stagePlan.km1)}:${Math.round(x.bs.stagePlan.ms0 / 600000)}-${Math.round(x.bs.stagePlan.ms1 / 600000)}`).join('|') + (startPlanOff(b) ? '|off' : '') + '|' + startPlanSig(b);
     return setsSig;
   }
   buildSets();
@@ -105,6 +107,8 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   const stage1Name = () => b.profile?.stages?.[0]?.name || t('pf_stStart');
   const sectOf = (it) => (it.X.sid ? it.X.sect : grouped() && (it.p.section === 'B' || it.p.section === 'C') ? 'E1' : it.p.section);
   const sectLabel = (s) => `${s.id} · ${s[lang] || s.de}`;
+  // 0.12.7: mit mehreren Etappen tragen die Panels der Etappen-Briefings die Etappe in der Nummer («E1-C3»)
+  const pno = (p, X) => panelNo(p, X.panels, grouped() && (X.sid || p.section === 'B' || p.section === 'C') ? `E${X.sid ? X.no : 1}-` : '');
 
   function panelStatus(p, X = main) {
     if (panelFilled(p, X.b)) return 'ok';
@@ -131,7 +135,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       det.addEventListener('toggle', () => { if (det.dataset.auto) { delete det.dataset.auto; return; } if (det.open) { navOpen.add(id); if (closedActive === id) closedActive = null; } else { navOpen.delete(id); if (id === activeSect) closedActive = id; } });
       for (const part of parts) {
         if (part.sub) det.appendChild(h('div.subhead', part.sub));
-        for (const p of part.ps) { const key = part.X.id(p); det.appendChild(h('div.it', { 'data-key': key, onclick: () => { setActive(key); document.getElementById('panel-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p, part.X)), h('span.pno', panelNo(p, part.X.panels)), ' ', tt(p), part.X.mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null])); }
+        for (const p of part.ps) { const key = part.X.id(p); det.appendChild(h('div.it', { 'data-key': key, onclick: () => { setActive(key); document.getElementById('panel-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p, part.X)), h('span.pno', pno(p, part.X)), ' ', tt(p), part.X.mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: 'auto' } }, '!') : null])); }
       }
       e.appendChild(det);
     };
@@ -262,7 +266,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const srcUrl = sourceUrlOf(p, d);
     const head = h('div.panel-head', [
       h('div.lft', [
-        h('div.ttl', [h('span.pno', panelNo(p, X.panels)), ' ', tt(p)]),
+        h('div.ttl', [h('span.pno', pno(p, X)), ' ', tt(p)]),
         h('div.src', `${t('stand')}: ${d.updatedAt ? `${fmtDateTime(z, d.updatedAt, lang)} · ${d.updatedBy || ''}` : t('stand_none')}`),
       ]),
       h('div.rgt', [
@@ -436,7 +440,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       const ps = panels.filter((p) => p.section === s.id);
       if (ps.length) {
         // 0.12.6: mit Etappen-Briefings steht über B der Etappenkopf «E1 · Etappe 1 · ‹Start›» (Startort, ganze Fahrt); B/C werden Untertitel
-        if (g && s.id === 'B') { mainCol.appendChild(h('div.sect-title.stage', { id: 'sect-E1' }, [h('span.id', 'E1'), h('span.nm', t('sp_title', { n: 1, name: stage1Name() }))])); mainCol.appendChild(h('div.sect-sub', t('sp_subStart', { site: placeLabel(b.site), d: fmtDate(z, b.time.startMs, lang), t0: hhmm(z, b.time.startMs), t1: hhmm(z, b.time.startMs + (b.intent.durationMin || 0) * 60000), tz: 'LT' }))); }
+        if (g && s.id === 'B') { mainCol.appendChild(h('div.sect-title.stage', { id: 'sect-E1' }, [h('span.id', 'E1'), h('span.nm', t('sp_title', { n: 1, name: stage1Name() }))])); const sp1 = main.b.stagePlan; mainCol.appendChild(h('div.sect-sub', sp1 ? t('sp_subStart1', { site: placeLabel(b.site), d: fmtDate(z, sp1.ms0, lang), t0: hhmm(z, sp1.ms0), t1: hhmm(z, sp1.ms1), tz: 'LT', k1: Math.round(sp1.km1), len: Math.round(sp1.lenKm), b: sp1.to.name }) : t('sp_subStart', { site: placeLabel(b.site), d: fmtDate(z, b.time.startMs, lang), t0: hhmm(z, b.time.startMs), t1: hhmm(z, b.time.startMs + (b.intent.durationMin || 0) * 60000), tz: 'LT' }))); }
         mainCol.appendChild(h('div.sect-title' + (g && (s.id === 'B' || s.id === 'C') ? '.sub' : ''), [h('span.id', s.id), h('span.nm', s[lang] || s.de)]));
         if (s.id === 'B' && b.site.lat != null) mainCol.appendChild(meteoBar(b, ctx, { onChange: () => { dirty = true; saveSoon(); }, refreshAll, readOnly: shared?.role === 'read' }));
         if (s.id === 'B' && startPlanOff(b)) mainCol.appendChild(h('div.sect-sub', h('span.warn', t('sp_startOff'))));

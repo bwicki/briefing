@@ -137,7 +137,7 @@ export async function renderSettings(view, ctx) {
 
   function persons() {
     const box = h('div');
-    const ROLES = ['pic', 'copilot', 'crew', 'retrieve', 'pax'];   // 0.12.6: «2. Pilot GB» (Gasfahrt)
+    const ROLES = ['pic', 'copilot', 'crew', 'retrieve', 'pax'];   // 0.12.6: «2. Pilot» (0.12.7: alle Ballontypen)
     const ROLE_LBL = { pic: 'PIC', copilot: t('role_copilot'), crew: 'CREW', retrieve: 'RETRIEVE', pax: 'PAX' };
     const drawP = () => {
       clear(box);

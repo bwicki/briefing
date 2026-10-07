@@ -83,6 +83,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         takeoff1 = _re.search(r'Start\u00ad?gewicht[^\d]*(\d+)', pg.inner_text('.wiz'), _re.I) or _re.search(r'Ballast[^\d]*(\d+)', pg.inner_text('.wiz'), _re.I)
         assert takeoff0 and takeoff1 and int(takeoff1.group(1)) != int(takeoff0.group(1)), f'Vorschau reagiert auf Pax: {takeoff0 and takeoff0.group(0)} → {takeoff1 and takeoff1.group(0)}'
         assert 'Personen (inkl. PIC) 3' in pg.inner_text('.wiz'), 'Personenzahl in der Vorschau'
+        assert '2. PILOT' in pg.inner_text('.wiz .frow.top').upper() and len(pg.query_selector_all('.wiz .frow.top select')) >= 2, '0.12.7: Feld «2. Pilot» auch bei Heissluft'
         rows = pg.query_selector_all('.pax-row:not(.ret-row) input[type=text]')
         if rows: rows[0].fill('Viviane Graf')
         pg.wait_for_timeout(300)
@@ -326,7 +327,7 @@ def run_gas(name):
         sel = pg.query_selector('.wiz .row-actions select')
         assert sel is not None and pg.evaluate("el => el.value", sel) == 'icon_eu' and 'ICON-EU' in pg.inner_text('.wiz .row-actions'), 'Wettermodell wählbar, Vorgabe ICON-EU'
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1200)
-        # 0.12.6: 2. Pilot (nur Gas) im Schritt «Personen» – Auswahl «frei» mit Name; zählt bei den Personen an Bord
+        # 0.12.6: 2. Pilot im Schritt «Personen» (0.12.7: alle Ballontypen) – Auswahl «frei» mit Name; zählt bei den Personen an Bord
         cosel = pg.query_selector_all('.wiz .frow.top select')[1]
         assert cosel is not None and '2. PILOT' in pg.inner_text('.wiz .frow.top').upper(), 'Feld «2. Pilot» im Schritt Personen'
         cosel.select_option('custom'); pg.wait_for_timeout(300)
@@ -367,12 +368,31 @@ def run_gas(name):
         pg.query_selector('#panel-A\\.profile').screenshot(path=f'{OUT}/{name}_01_panel.png')
         pg.click('#panel-A\\.profile button:has-text("Werkzeug öffnen")'); pg.wait_for_timeout(800)
         assert pg.is_visible('.dialog.pf-tool'), 'Werkzeug geöffnet'
-        assert pg.is_visible('.pf-tool .pf-save') and pg.is_visible('.pf-tool .pf-discard') and len(pg.query_selector_all('.pf-tool .pf-zoom')) == 2, 'Werkzeug (0.12.6): «Speichern und schliessen», «Schliessen ohne Speichern», Spreizung'
+        assert pg.is_visible('.pf-tool .pf-save') and pg.is_visible('.pf-tool .pf-discard') and len(pg.query_selector_all('.pf-tool .pf-zoom')) == 1 and pg.is_disabled('.pf-tool .pf-winall'), 'Werkzeug (0.12.6/0.12.7): «Speichern und schliessen», «Schliessen ohne Speichern», Spreizung Höhe, «Ganze Fahrt» (aus)'
         pg.screenshot(path=f'{OUT}/{name}_02_tool.png')
-        # Spreizung ×2 (Distanz): SVG doppelt so breit, Rahmen rollt; zurück auf ×1
+        # 0.12.7: Ausschnitt – Schieber unter der Zeitskala: Endmarke nach links ziehen → Fenster, km-Skala feiner, «Ganze Fahrt» aktiv; Band verschieben; Doppelklick = ganze Fahrt
+        assert pg.query_selector('.pf-tool svg .pf-brush') is not None and 'Ausschnitt' in pg.text_content('.pf-tool svg.pf-svg') and 'Ganze Fahrt' in pg.text_content('.pf-tool svg .pf-br-lbl'), 'Schieber «Ausschnitt» mit Beginn-/Endmarke, Beschriftung «Ganze Fahrt»'
+        tr = pg.query_selector('.pf-tool svg .pf-br-track').bounding_box(); hb = pg.query_selector('.pf-tool svg .pf-br-h[data-end=b]').bounding_box()
+        km_lbls0 = len(pg.query_selector_all('.pf-tool svg text'))
+        pg.mouse.move(hb['x'] + hb['width'] / 2, hb['y'] + hb['height'] / 2); pg.mouse.down(); pg.mouse.move(tr['x'] + tr['width'] * 0.35, hb['y'] + hb['height'] / 2, steps=10); pg.mouse.up(); pg.wait_for_timeout(500)
+        lbl = pg.text_content('.pf-tool svg .pf-br-lbl')
+        assert lbl.startswith('Ausschnitt 0–') and 'km' in lbl and not pg.is_disabled('.pf-tool .pf-winall') and pg.evaluate("() => document.querySelector('.pf-tool svg.pf-svg').getAttribute('viewBox')").startswith('0 0 1040 '), 'Endmarke gezogen → Fenster ab km 0, Grafik gleich breit: ' + lbl
+        assert pg.query_selector('.pf-tool svg g[clip-path]') is not None, 'Lagebezogenes im Ausschnitt beschnitten (clipPath)'
+        pg.screenshot(path=f'{OUT}/{name}_02z_window.png')
+        bb_ = pg.query_selector('.pf-tool svg .pf-br-band').bounding_box()
+        pg.mouse.move(bb_['x'] + bb_['width'] / 2, bb_['y'] + bb_['height'] / 2); pg.mouse.down(); pg.mouse.move(bb_['x'] + bb_['width'] / 2 + tr['width'] * 0.3, bb_['y'] + bb_['height'] / 2, steps=10); pg.mouse.up(); pg.wait_for_timeout(500)
+        lbl2 = pg.text_content('.pf-tool svg .pf-br-lbl')
+        assert lbl2.startswith('Ausschnitt ') and not lbl2.startswith('Ausschnitt 0–'), 'Band verschoben: ' + lbl2
+        pg.click('.pf-tool .pf-winall'); pg.wait_for_timeout(500)
+        assert 'Ganze Fahrt' in pg.text_content('.pf-tool svg .pf-br-lbl') and pg.is_disabled('.pf-tool .pf-winall'), '«Ganze Fahrt» stellt die ganze Fahrt wieder her'
+        ha = pg.query_selector('.pf-tool svg .pf-br-h[data-end=a]').bounding_box()
+        pg.mouse.move(ha['x'] + ha['width'] / 2, ha['y'] + ha['height'] / 2); pg.mouse.down(); pg.mouse.move(tr['x'] + tr['width'] * 0.5, ha['y'] + ha['height'] / 2, steps=10); pg.mouse.up(); pg.wait_for_timeout(500)
+        assert not pg.text_content('.pf-tool svg .pf-br-lbl').startswith('Ausschnitt 0–'), 'Beginnmarke gezogen'
+        pg.mouse.dblclick(tr['x'] + tr['width'] * 0.75, tr['y'] + tr['height'] / 2); pg.wait_for_timeout(500)
+        assert 'Ganze Fahrt' in pg.text_content('.pf-tool svg .pf-br-lbl'), 'Doppelklick auf den Schieber = ganze Fahrt'
+        # Spreizung Höhe ×2: Grafik höher, Rahmen rollt; zurück
         pg.click('.pf-tool .pf-zoom >> nth=0 >> button:has-text("2×")'); pg.wait_for_timeout(600)
-        assert pg.evaluate("() => document.querySelector('.pf-tool svg.pf-svg').style.width") == '200%' and pg.evaluate("() => document.querySelector('.pf-tool svg.pf-svg').getAttribute('viewBox')").startswith('0 0 2080 ') and pg.evaluate("() => document.querySelector('.pf-tool .pf-chart').scrollWidth > document.querySelector('.pf-tool .pf-chart').clientWidth"), 'Spreizung ×2'
-        pg.screenshot(path=f'{OUT}/{name}_02z_zoom.png')
+        assert pg.evaluate("() => document.querySelector('.pf-tool svg.pf-svg').getAttribute('viewBox')").endswith(' 1130') and pg.evaluate("() => document.querySelector('.pf-tool .pf-chart').classList.contains('zoomed')"), 'Spreizung Höhe ×2 (550·2 + 30)'
         pg.click('.pf-tool .pf-zoom >> nth=0 >> button:has-text("1×")'); pg.wait_for_timeout(500)
         # Modellwahl: kurzes Modell → Warnung unter der Layer-Box und Marker «Ende Prognosemodell» über der Grafik; langes Modell → weg
         pg.click('.pf-tool .pf-modelbtn'); pg.wait_for_timeout(300)
@@ -395,7 +415,7 @@ def run_gas(name):
         idle()
         pts0 = pg.evaluate("() => [...document.querySelectorAll('.pf-tool svg .pf-pt')].map(c => [+c.getAttribute('cx'), +c.getAttribute('cy')])")
         a0 = pg.evaluate("() => [...document.querySelectorAll('.pf-tool svg .pf-pt')].map(c => parseInt(c.querySelector('title').textContent))")
-        svg = pg.query_selector('.pf-tool svg.pf-svg'); box = svg.bounding_box(); sx = box['width'] / 1040; sy = box['height'] / 550
+        svg = pg.query_selector('.pf-tool svg.pf-svg'); box = svg.bounding_box(); vb = svg.get_attribute('viewBox').split(); sx = box['width'] / float(vb[2]); sy = box['height'] / float(vb[3])
         x0, y0 = box['x'] + pts0[1][0] * sx, box['y'] + pts0[1][1] * sy
         pg.mouse.move(x0, y0); pg.mouse.down(); pg.mouse.move(x0 + 20 * sx, y0 - 60 * sy, steps=8); pg.mouse.up(); pg.wait_for_timeout(2500); idle()
         alts = lambda: pg.evaluate("() => [...document.querySelectorAll('.pf-tool svg .pf-pt')].map(c => parseInt(c.querySelector('title').textContent))")
@@ -453,6 +473,8 @@ def run_gas(name):
         heads = pg.query_selector_all('.sect-title.stage')
         assert len(heads) == 2 and 'E1' in heads[0].inner_text() and 'Nacht' in heads[1].inner_text() and 'Ort der Planung' in pg.inner_text('.sect-sub >> nth=1'), 'Etappenköpfe E1 (Startetappe = B/C) und E3 «Nacht» mit Zeitfenster/Ort (0.12.6)'
         assert len(pg.query_selector_all('.sect-title.sub')) == 4, 'B/C als Untertitel je Etappe'
+        sub1 = pg.inner_text('.sect-sub >> nth=0'); assert 'Etappe 1 bis km' in sub1 and 'nur ihr Bereich' in sub1, '0.12.7: Planung der Startetappe nur auf ihren Bereich: ' + sub1
+        assert pg.text_content('#panel-B\\.metar .pno').startswith('E1-B') and pg.text_content('.panel[id^="panel-st"][id$="-C.notam"] .pno').startswith('E3-C') and pg.text_content('#panel-A\\.core .pno') == 'A1' and pg.text_content('.enav details[data-sect="E1"] .it .pno').startswith('E1-'), '0.12.7: Panel-Nummern mit Etappe («E1-B2», «E3-C3»), A ohne'
         sb = pg.query_selector_all('.refresh-all .stage-btn'); assert len(sb) == 2 and 'E1' in sb[0].inner_text() and 'Nacht' in sb[1].inner_text(), 'Etappen-Knöpfe in der haftenden Zeile'
         sb[1].click(); pg.wait_for_timeout(900)
         assert pg.evaluate("() => document.getElementById('sect-E3').getBoundingClientRect().top < 260"), 'Knopf springt zum Etappenkopf E3'
@@ -476,7 +498,7 @@ def run_gas(name):
         assert pg.query_selector('.brief tr.row-A-profile svg.pf-svg') is not None and pg.query_selector('.brief tr.row-A-profile table.pf-ballast') is not None, 'Briefingsicht: Profil mit Ballasttabelle'
         assert pg.evaluate("() => document.querySelector('.brief tr.row-A-profile details.pf-fold.legend').open") and pg.query_selector('.brief tr.row-A-profile details.pf-fold.model') is not None, 'Briefingsicht: Legende immer offen, Modell der Schätzung nur weil im Panel aufgeklappt'
         pg.query_selector('.brief tr.row-A-profile').screenshot(path=f'{OUT}/{name}_05_view.png')
-        assert len(pg.query_selector_all('.brief .bs.stage')) == 1 and 'Nacht' in pg.inner_text('.brief .bs.stage') and len(pg.query_selector_all('.brief tr.row-B-meteogram')) == 2, 'Briefingsicht: Abschnitt E2 mit den Panels der Etappe (Meteogramm zweimal: Hauptbriefing und Etappe)'
+        bsx = pg.query_selector_all('.brief .bs.stage'); assert len(bsx) == 2 and 'E1' in bsx[0].inner_text() and 'Nacht' in bsx[1].inner_text() and len(pg.query_selector_all('.brief tr.row-B-meteogram')) == 2 and pg.text_content('.brief tr.row-B-meteogram .pno').startswith('E1-B'), 'Briefingsicht: Etappenköpfe E1 (Startetappe, 0.12.7) und E3 «Nacht», Panel-Nummern mit Etappe'
         pg.query_selector('.brief .bs.stage').scroll_into_view_if_needed(); pg.wait_for_timeout(300); pg.screenshot(path=f'{OUT}/{name}_07_view_stage.png')
         b.close()
 

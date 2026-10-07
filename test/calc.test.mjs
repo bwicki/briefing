@@ -27,8 +27,8 @@ import { inSwitzerland } from '../js/panels.js';
 import { parseDwdAstro } from '../js/calc/sun.js';
 import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing, ageRefMs, fillFractionOf, massPerf, personsOnBoard, hasCopilot, applicableTransitions, transitionItems } from '../js/model.js';
 import { carCode } from '../js/net.js';
-import { stageOps, canDropOps, ensureOps, coverPoints, countryAtKm, stagePlanBriefing, stageSets, startPlanOff, planStale, pruneStagePlans } from '../js/calc/stageplan.js';
-import { defaultStages } from '../js/calc/profile.js';
+import { stageOps, canDropOps, ensureOps, coverPoints, countryAtKm, stagePlanBriefing, stageSets, startPlanOff, startPlanBriefing, startPlanSig, planStale, pruneStagePlans } from '../js/calc/stageplan.js';
+import { defaultStages, renameStartStage } from '../js/calc/profile.js';
 import { decodeMetar as dMetar, decodeTaf as dTaf } from '../js/calc/metar.js';
 
 let fails = 0, n = 0;
@@ -594,7 +594,7 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(b.persons.copilotId === '' && personsOnBoard(b) === 2 && !hasCopilot(b), 'ohne 2. Pilot: PIC + Pax');
   b.persons.copilotId = 'custom'; b.persons.copilot = 'Kurt';
   ok(hasCopilot(b) && personsOnBoard(b) === 3 && massPerf(b, S).r.paxMass === 240, '2. Pilot zählt zu den Personen an Bord und zur Masse (3 × 80 kg)');
-  ok(buildFpl(b, S).p19 === 3 && (b.balloon.type = 'hab', personsOnBoard(b)) === 2, 'Flugplan P/ 3; bei Heissluft kein 2. Pilot');
+  ok(buildFpl(b, S).p19 === 3 && (b.balloon.type = 'hab', personsOnBoard(b)) === 3 && hasCopilot(b), 'Flugplan P/ 3; 0.12.7: 2. Pilot auch bei Heissluft');
   b.balloon.type = 'gas';
   const c = newBriefing(S); c.site = { ...c.site, country: 'CH', lat: 47.3, lon: 8.3 }; upgradeBriefing(c);
   ok(applicableTransitions(c, S).join(',') === 'zh,ch', 'Übergangshöhen CH: zh, ch');
@@ -602,6 +602,35 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(applicableTransitions(c, S).join(',') === 'zh,ch,de' && transitionItems(c, S).join(',') === 'zh,ch,de', 'Landeraum DE → zusätzlich de (automatisch)');
   c.panels['C.transition'].content = { items: ['fr'], manual: true };
   ok(transitionItems(c, S).join(',') === 'fr', 'von Hand gesetzt bleibt');
+}
+
+// ---------------------------------------------------------------- 0.12.7 Startetappe auf ihren Bereich, Umbenennung, Panel-Nummern mit Etappe, FIS-Werte
+{
+  const S = mergeSettings({});
+  const t0 = Date.UTC(2026, 9, 6, 14, 0);
+  const track = { totalKm: 180, points: [] };
+  for (let k = 0; k <= 180; k += 5) track.points.push({ km: k, ms: t0 + k * 5 * 60000, lat: 47.0 + k * 0.004, lon: 8.0 + k * 0.012, alt: k < 40 ? 1300 : 2300 });
+  const b = newBriefing(S); b.balloon = { ...b.balloon, type: 'gas' }; b.site = { ...b.site, name: 'Oberlunkhofen', lat: 47.0, lon: 8.0, elev: 450, country: 'CH', tz: 'Europe/Zurich' }; b.time.startMs = t0; b.intent.durationMin = 900;
+  b.landing = { name: 'Ziel', lat: 47.7, lon: 10.2, country: 'DE' };
+  b.profile = { points: [{ km: 0, alt: 450 }, { km: 5, alt: 1300 }, { km: 40, alt: 1300 }, { km: 45, alt: 2300 }, { km: 170, alt: 2300 }, { km: 180, alt: 600 }], stages: [{ id: 's1', km: 0, name: 'Enroute', ops: true }], layers: {}, data: { track, totalKm: 180, relief: track.points.map((q) => ({ km: q.km, m: 400 + q.km })), firs: [{ name: 'SWITZERLAND', country: 'CH', fromKm: 0, toKm: 40 }, { name: 'LANGEN', country: 'DE', fromKm: 40, toKm: 180 }] } };
+  upgradeBriefing(b);
+  ok(startPlanBriefing(b) === b && startPlanSig(b) === '', 'eine Etappe: Planung der Startetappe = ganze Fahrt (Briefing selbst)');
+  const s2 = addStage(b.profile.stages, 40, 'Nacht', 2, true);
+  ok(s2 && renameStartStage(b.profile.stages, { start: 'Start', enroute: 'Enroute' }) === true && b.profile.stages[0].name === 'Start' && renameStartStage(b.profile.stages, { start: 'Start', enroute: 'Enroute' }) === false, 'weitere Etappe → «Enroute» wird «Start» (nur einmal, nur beim Vorgabenamen)');
+  const v = startPlanBriefing(b);
+  ok(v !== b && v.stagePlan.start === true && v.stagePlan.no === 1 && v.stagePlan.km0 === 0 && v.stagePlan.km1 === 40 && v.intent.durationMin === 200 && v.time.startMs === t0 && v.site === b.site && v.landing === b.landing && v.panels === b.panels, 'Sicht der Startetappe: Dauer = Etappe 1 (200 min), Startort/Landeraum/Panels bleiben');
+  ok(v.intent.altMinFt === Math.round(450 * 3.28084) && v.intent.altMaxFt === Math.round(1300 * 3.28084) && v.stagePlan.traj.tracks[0].points.length === 9 && v.stagePlan.to.country === 'CH' && v.stagePlan.lenKm === 40 && startPlanSig(b) === `s:40:${Math.round(v.stagePlan.ms1 / 600000)}`, 'Höhenband und Bahnabschnitt (0–40 km) der Startetappe');
+  v.metarKm = 90; v.notamMode = 'places';
+  ok(b.metarKm === 90 && b.notamMode === 'places' && v.metarKm === 90, 'Abrufeinstellungen der Startetappen-Sicht landen im Briefing');
+  const vp = visiblePanels(S, v).map((p) => p.key);
+  ok(vp.includes('A.core') && vp.includes('B.traj') && vp.includes('C.fpl') && vp.includes('B.meteogram'), 'Sicht der Startetappe behält alle Panels (kein Etappen-Satz): ' + vp.length);
+  b.profile.stages[0].ops = false;
+  ok(startPlanBriefing(b) === b, 'ohne Planung bei der Startetappe keine Sicht');
+  b.profile.stages[0].ops = true;
+  const vis = visiblePanels(S, b);
+  ok(panelNo(vis.find((p) => p.key === 'C.notam'), vis, 'E1-') === 'E1-' + panelNo(vis.find((p) => p.key === 'C.notam'), vis) && panelNo(vis[0], vis) === 'A1', 'Panel-Nummer mit Etappe: «E1-C‹n›»');
+  const fis = mergeSettings({ fisContacts: [{ cc: 'CH', name: 'Zürich Information (FIS)', freq: '124.700', phone: '' }, { cc: 'DE', name: 'alt', freq: '', phone: '' }] }).fisContacts;
+  ok(fis.some((c) => c.cc === 'DE' && c.freq === '128.950') && fis.some((c) => c.cc === 'FR' && c.freq === '130.905') && mergeSettings({ fisContacts: [{ cc: 'DE', name: 'eigen', freq: '123.000', phone: '' }] }).fisContacts.length === 1, 'FIS-Liste: alte Platzhalter → neue Standardwerte; eigene Werte bleiben');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

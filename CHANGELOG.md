@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.12.7 — 2026-10-07 · 2. Pilot für alle Ballone, Ausschnitt-Schieber, Startetappe auf ihren Bereich, Panel-Nummern mit Etappe, FIS-Werte
+
+* **2. Pilot** jetzt für alle Ballontypen (Feld im Assistenten «Personen», Masse, Flugplan P/, Rolle heisst
+  «2. Pilot»; `hasCopilot` ohne Gas-Bedingung).
+* **Höhenprofil-Werkzeug – Ausschnitt:** Schieber unterhalb der Zeitskala mit **Beginn- und Endmarke**
+  (Übersicht über die ganze Fahrt mit Etappenstrichen); das Fenster wird über die ganze Breite gespreizt
+  (km-Schrittweite nach dem Ausschnitt, Lagebezogenes am Rand beschnitten), Band verschiebbar, Klick auf die
+  Übersicht zentriert, Doppelklick oder Knopf **«Ganze Fahrt»** hebt den Ausschnitt auf; Beschriftung
+  «Ausschnitt 0–120 km · 20:00–23:15 LT». Nicht gespeichert; die Distanz-Spreizung ×1…×8 (0.12.6) entfällt,
+  Spreizung Höhe bleibt.
+* **Startetappe auf ihren Bereich:** sobald weitere Etappen bestehen, gilt die Planung der Startetappe
+  (Abschnitte B/C) nur für die erste Etappe – abgeleitete Sicht `startPlanBriefing()` (Dauer, Höhenband,
+  Bahnabschnitt für Luftraum/NOTAM; Temps zur Startzeit; Startort, Landeraum, Panels und Abrufeinstellungen
+  des Hauptbriefings, Schreibzugriffe gehen durch); Unterzeile «Etappe 1 bis km … (… km) · bis ‹Ort›»
+  in Erarbeitung und Briefingsicht. Die einzige Vorgabe-Etappe **«Enroute» wird «Start»**, sobald im
+  Werkzeug eine weitere Etappe angelegt wird (`renameStartStage`).
+* **Panel-Nummern mit Etappe:** mit Etappen-Briefings heissen die Panels der Abschnitte B/C «E1-B2»,
+  «E3-C3» (Navigation, Panelköpfe, Briefingsicht mit Etappenkopf E1 und B/C als Untertitel); A/D unverändert.
+* **FIS-Kontakte (Einstellungen → Experte):** Deutschland mit den Sektoren von Langen Information
+  (Stuttgart 128.950, Saarbrücken 123.525, Frankfurt 119.150, Düsseldorf 129.875 – DFS AIC VFR 01/26 vom
+  2. April 2026), Frankreich mit Bâle Information 130.905 / 134.680 und Lyon Information 135.200 / 135.530
+  (AIP France AIRAC 1. Oktober 2026, AD 2 LFSB/LFLL); München Information und Italien bleiben Platzhalter
+  (keine öffentlich zugängliche amtliche Quelle). Gespeicherte Listen, die nur die Platzhalter von 0.12
+  enthalten, werden auf die neue Standardliste gehoben; eigene Werte bleiben.
+* Tests: calc 261 (Startetappen-Sicht, Umbenennung, Nummern, FIS-Hebung, 2. Pilot Heissluft), Smoke «gas»
+  (Ausschnitt-Schieber: Marken ziehen, Band, «Ganze Fahrt», Doppelklick; Spreizung Höhe; Unterzeile E1;
+  Nummern «E1-B2»/«E3-C3» in Erarbeitung und Briefingsicht) und «desktop» (2. Pilot bei Heissluft).
+
 ## 0.12.6 — 2026-10-07 · 2. Pilot, Etappen-Gliederung, Werkzeug: Spreizung und Speichern/Verwerfen, Übergangshöhen, Version auf der Anmeldeseite
 
 * **Anmeldeseite:** Version diskret unten links (`#gateVer`).

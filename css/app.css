@@ -328,6 +328,7 @@ details.exp summary{cursor:pointer;font-weight:600;padding:8px 0;}
 .brief .bh .l.row{flex-direction:row;align-items:flex-start;gap:10px;}
 .brief .bs{background:#1f2937;color:#fff;padding:3px 8px;font-weight:600;font-size:12px;margin:12px 0 6px;break-after:avoid;}
 .brief .bs.stage{background:#2f6f9f;}   /* Etappen-Briefing (0.12.5) */
+.brief .bs.sub{background:#4b5563;margin-top:6px;font-weight:500;}   /* 0.12.7: Untertitel B/C unter dem Etappenkopf E1 */
 .brief table.bp{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:4px;}
 .brief table.bp td{min-width:0;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto;}
 .brief table.bp td .tbl-scroll{max-width:100%;}
@@ -760,6 +761,7 @@ table.tbl.list td.acts .btn.icon.small .ico{width:15px;height:15px}
 .pf-svg{display:block;width:100%;max-width:100%;height:auto;min-width:640px;font-family:var(--sans)}
 .pf-chart.tool .pf-svg{min-width:900px}
 .pf-chart.tool.zoomed{overflow:auto;max-height:72vh}   /* 0.12.6: Spreizung – Ausschnitt rollt im Rahmen */
+.pf-brush .pf-br-h{cursor:ew-resize}.pf-brush .pf-br-band{cursor:grab}.pf-brush .pf-br-track{cursor:pointer}   /* 0.12.7: Ausschnitt-Schieber */
 .pf-zoombox{display:inline-flex;align-items:center;gap:4px}.pf-zoombox .seg button{padding:3px 7px;font-size:11.5px}
 .pf-closebtns{margin-left:auto;align-items:center}.pf-tool .dialog-head{display:flex;align-items:center;gap:10px}
 .pf-pt{cursor:grab}.pf-pt:active{cursor:grabbing}.pf-mi{cursor:pointer}.pf-mi:hover rect{stroke:var(--pf-pt)}.pf-sh{cursor:ew-resize}.pf-sh:hover rect{stroke:var(--pf-pt)}.pf-axis{cursor:crosshair}

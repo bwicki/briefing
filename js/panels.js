@@ -64,13 +64,14 @@ export const panelByKey = (k) => PANELS.find((p) => p.key === k);
  * Sichtbare Panels in Reihenfolge (ausgeblendete und CH-only entfernt, wenn die Fahrt die Schweiz nicht berührt).
  * 0.12.5: Etappen-Briefing (abgeleitete Sicht mit `stagePlan`) → nur die Panels der Etappenplanung; Startetappe ohne
  * Planung → die orts-/zeitgebundenen Panels fehlen in den Abschnitten B/C (die Planung liegt dann bei einer anderen Etappe).
+ * 0.12.7: Sicht der Startetappe (`stagePlan.start`, Bereich der ersten Etappe) → alle Panels wie im Hauptbriefing.
  */
 export function visiblePanels(settings, briefing) {
   const hidden = new Set(settings?.panels?.hidden || []);
   const ch = briefing ? touchesCH(briefing) : true;
   const gas = briefing ? briefing.balloon?.type === 'gas' : true;
   const dur = briefing ? (briefing.intent?.durationMin || 0) : Infinity;
-  const stageSet = briefing?.stagePlan ? new Set(STAGE_PANEL_KEYS) : null;
+  const stageSet = briefing?.stagePlan && !briefing.stagePlan.start ? new Set(STAGE_PANEL_KEYS) : null;   // 0.12.7: Sicht der Startetappe behält alle Panels
   const dropped = !stageSet && briefing && startPlanOff(briefing) ? new Set(PLAN_KEYS) : null;
   return PANELS.filter((p) => !hidden.has(p.key) && (!p.chOnly || ch) && (!p.gasOnly || gas) && (!p.minDurationMin || dur >= p.minDurationMin) && (!stageSet || stageSet.has(p.key)) && (!dropped || !dropped.has(p.key)));
 }
@@ -88,10 +89,10 @@ export function touchesCH(b) {
   return false;
 }
 /** Nummer eines Panels innerhalb seines Abschnitts (A1 … An) in der sichtbaren Liste. */
-export function panelNo(p, list) {
+export function panelNo(p, list, prefix = '') {   // prefix (0.12.7): Etappe, z. B. «E1-» → «E1-C3»
   const same = (list || PANELS).filter((x) => x.section === p.section);
   const k = same.findIndex((x) => x.key === p.key);
-  return `${p.section}${k >= 0 ? k + 1 : ''}`;
+  return `${prefix}${p.section}${k >= 0 ? k + 1 : ''}`;
 }
 /** «A1 · Stammdaten» */
 export const panelTitle = (p, list, tr) => `${panelNo(p, list)} · ${tr(p)}`;
