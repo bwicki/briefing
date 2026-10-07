@@ -24,6 +24,9 @@
   (AIP France AIRAC 1. Oktober 2026, AD 2 LFSB/LFLL); München Information und Italien bleiben Platzhalter
   (keine öffentlich zugängliche amtliche Quelle). Gespeicherte Listen, die nur die Platzhalter von 0.12
   enthalten, werden auf die neue Standardliste gehoben; eigene Werte bleiben.
+* **NOTAM-Quelle sichtbar:** scheitert der Abruf über autorouter (Zugang hinterlegt, aber z. B. API nicht
+  freigegeben), steht der Grund («autorouter: HTTP … oauth2/token: …») als Hinweis im NOTAM-Panel der Ersatzquelle;
+  die Quelle steht wie bisher in der Stand-Zeile.
 * Tests: calc 261 (Startetappen-Sicht, Umbenennung, Nummern, FIS-Hebung, 2. Pilot Heissluft), Smoke «gas»
   (Ausschnitt-Schieber: Marken ziehen, Band, «Ganze Fahrt», Doppelklick; Spreizung Höhe; Unterzeile E1;
   Nummern «E1-B2»/«E3-C3» in Erarbeitung und Briefingsicht) und «desktop» (2. Pilot bei Heissluft).

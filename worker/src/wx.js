@@ -579,13 +579,14 @@ async function notam(env, decrypt, ctx, q) {
   const lat = +q.get('lat'), lon = +q.get('lon'), radius = Math.min(100, +q.get('nm') || 25);
   if (!isFinite(lat) || !isFinite(lon)) return err('lat/lon');
   const cc = String(q.get('cc') || '').split(',').map((x) => x.trim()).filter(Boolean);
-  // 1) autorouter, wenn Zugang hinterlegt (Einstellungen → Zugänge)
+  // 1) autorouter, wenn Zugang hinterlegt (Einstellungen → Zugänge); scheitert der Abruf, wandert der Grund als Hinweis in die Antwort der Ersatzquelle (0.12.7)
+  let arErr = null;
   try { const ar = await notamAutorouter(env, decrypt, ctx, lat, lon, radius, cc); if (ar) return json(ar); }
-  catch (e) { console.warn('autorouter', e.message); }
+  catch (e) { console.warn('autorouter', e.message); arErr = `autorouter: ${e.message}`; }
   // 2) FAA NOTAM API (ein Wiederholungsversuch, da der Dienst oft nicht antwortet); ohne Schlüssel → 3) DINS, 4) FAA NOTAM Search (beide ohne Schlüssel, 0.12.4)
   const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
   if (!id || !secret) {
-    const errors = [];
+    const errors = arErr ? [arErr] : [];
     for (const [name, fn] of [['DINS', () => notamDins(ctx, lat, lon, radius, cc)], ['NOTAM Search', () => notamSearch(ctx, lat, lon, radius)]]) {
       try { const r = await fn(); if (r.items.length || name === 'NOTAM Search') return json({ ...r, errors }); errors.push(`${name}: keine Treffer`); }
       catch (e) { console.warn(name, e.message); errors.push(`${name}: ${e.message}`); }
@@ -602,7 +603,7 @@ async function notam(env, decrypt, ctx, q) {
     });
     return { items, total: j.totalCount, source: 'FAA NOTAM API', generated: new Date().toISOString() };
   });
-  return json(data);
+  return json(arErr ? { ...data, errors: [arErr, ...(data.errors || [])] } : data);
 }
 
 // ------------------------------------------------------------ KI (Anthropic)

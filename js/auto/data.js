@@ -335,7 +335,7 @@ export async function notam(ctx, b, opts = {}) {
   const all = new Map(); const errors = []; let source = 'FAA NOTAM API';
   outer: for (const p of pts.slice(0, 6)) {
     for (const c of hexCover(p.lat, p.lon, p.nm)) {
-      try { const j = await ctx.store.data('notam', { lat: c.lat, lon: c.lon, nm: c.nm, cc }, shareTok(ctx)); if (j.source) source = j.source; for (const it of j.items || []) if (!all.has(it.id)) all.set(it.id, it); }
+      try { const j = await ctx.store.data('notam', { lat: c.lat, lon: c.lon, nm: c.nm, cc }, shareTok(ctx)); if (j.source) source = j.source; for (const e of j.errors || []) if (!errors.includes(e)) errors.push(e); for (const it of j.items || []) if (!all.has(it.id)) all.set(it.id, it); }   // Hinweise des Workers (z. B. autorouter-Fehler) einmal übernehmen (0.12.7)
       catch (e) { errors.push(`${p.name}: ${e.message}`); if (e.status === 424) break outer; break; }
     }
   }
