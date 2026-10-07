@@ -1,91 +1,109 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-582
-FBEU40 EDZF 071200
+566
+FBEU40 EDZF 071800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 07.10.2026, 12.00 UTC bis 08.10.2026, 09.00 UTC
+gültig vom 07.10.2026, 18.00 UTC bis 08.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Ein Hochdruckgebiet über dem östlichen Europa bestimmt tagsüber das
-Wetter mit einer sehr milden und recht trockenen Luft. Ab den
-Nachmittagsstunden greift von Westen die Kaltfront eines Tiefs bei
-Island mit hochreichend feuchter und teils labiler Luft auf den
-Vorhersagebereich über. Sie verlagert sich bis Donnerstagvormittag
-ostwärts bis auf eine Linie Kassel - Rhein-Main-Gebiet -
-Südschwarzwald. Rückseitig fließt mit einer auffrischenden
-Nordwestströmung wesentlich kühlere Luft ein.
+Die Kaltfront eines Tiefs über der Deutschen Bucht nährt sich mit im
+Vorfeld hochreichend feuchter und teils labil geschichteter Luft. Die
+Front selbst erreich den westlichen Rand des Vorhersagegebiets zu
+Beginn der zweiten Nachthälfte. Am frühen Vormittag überquert sie den
+Rhein und gegen Mittag verlässt sie das Vorhersagegebiet nach Osten.
+Rückseitig fließt deutlich kühlere und vorübergehend stabilere Luft
+ein. Im Nordwesten trocknet diese am Nachmittag zunehmend ab, wobei
+sie wieder etwas labilisiert wird.
 
 Wettergeschehen:
-Abgesehen von dünnen hohen oder mittelhohen Wolkenfeldern ist es
-wolkenlos und trocken. Nur vereinzelt und bevorzugt über dem Bergland
-bildet sich FEW/SCT CU mit Basen in 4000 FT AMSL bis FL060 und Tops
-um FL090.
-Am späteren Nachmittag und frühen Abend geht die Bewölkung von Westen
-in BKN SC/AC/CI oberhalb 5000 FT AMSL über. Darin sind ISOL CBs mit
-Tops zwischen FL250 und FL320 eingelagert, woraus westlich des Rheins
-gewittrig durchsetzter Regen fällt. Im Laufe der Nacht weitet sich
-die frontale Bewölkung mit dem Niederschlag ostwärts über das
-Vorhersagegebiet aus.
-Zu Beginn der zweiten Nachthälfte sinkend die Wolkenuntergrenzen auf
-1500 bis 2500 FT AMSL ab und der Niederschlag nimmt einen skaligen
-Charakter an. Mit Frontdurchgang frischt der Wind vor allem in der
-zweiten Nachthälfte auf. In tieferen Lagen treten örtlich Böen um 25
-KT, in höheren Lagen Böen um 35 KT zunächst aus SW-W auf. Nach Westen
-hin dreht die Windrichtung auf Nordwest. Dort treten verbreiteter
-Böen zwischen 25 und 35 KT auf.
-Am Donnerstagvormittag lässt westlich des Rheins der Niederschlag
-nach, größere Wolkenauflockerungen werden bis zum Ende des
-Vorhersagezeitraums nicht erwartet.
+Am Abend liegt zu Beginn über RLP, Baden-Württemberg und Südhessen
+eine BKN/OVC AC/CI Bewölkung oberhalb von FL090-110 vor. Aus dieser
+fällt Regen, der durch EMBD CBs mit TOPs meist bis FL260, vereinzelt
+bis FL320 teils schauerartig verstärkt wird. Einzelne kurze Gewitter
+sind nicht ausgeschlossen. Über dem Rest von Hessen liegt FEW/SCT
+AC/CI oberhalb von FL200 und es ist niederschlagsfrei.
+Im Verlauf der ersten Nachthälfte weitet sich die BKN/OVC AC/CI
+Bewölkung mit den EMBD CB auf das gesamte Vorhersagegebiet aus. Über
+RLP geht sie gegen Ende der ersten Nachthälfte in eine BKN/OVC NS
+Bewölkung über, deren Untergrenzen auf 1500-2500 FT AMSL absinken.
+Weiterhin sind EMBD CB vorhanden.
+
+In der zweiten Nachthälfte bis zum Morgen weitet sich die NS
+Bewölkung mit ihren Untergrenzen auf Hessen und das westliche
+Baden-Württemberg aus. Über RLP zerfallen die EMBD CB, sodass der
+Niederschlag skaligen Charakter annimmt. Im Übergangsbereich zwischen
+dem konvektivem und skaligen Bereich treten örtlich Böen um 25 KT, in
+höheren Lagen um 35 KT aus W-NW auf.
+
+Im Vormittagsverlauf schichtet die NS Bewölkung über RLP und dem
+Westen von Hessen zu BKN LYR SC/AC/CI Bewölkung aus. Dabei lässt der
+Niederschlag nach und die Böen treten nur noch im höherem Bergland
+auf. In der restlichen NS Bewölkung fallen nun auch die CBs zusammen,
+sodass der Niederschlag verbreitet skalig stattfindet. Die
+Untergrenzen heben nur langsam an auf 2000-3000 FT AMSL bis zum
+Mittag.
+
+Nachmittags bis Berichtsende geht über Hessen und RLP die BKN LYR
+SC/AC/CI Bewölkung in SCT/BKN CU/SC über. Die Basen setzten bei
+3000-4000 FT AMSL an und die TOPs reichen bis FL130. Darüber befindet
+sich teils AC/CI. Über Baden-Württemberg zieht die NS Bewölkung ab
+und geht in die BKN LYR SC/AC/CI Bewölkung über, teilweise weiterhin
+mit Regen. Die Untergrenzen heben ebenfalls auf 3000-4000 FT AMSL an.
+Gegen Berichtsende können über dem Hunsrück und dem äußersten
+Nordwesten von Hessen ISOL TCU mit TOPs bis FL130 entstehen, welche
+schwache Regenschauer bringen.
 
 Sichtweite:
-30-60 km. Ab dem Abend mit den aufkommenden frontalen Bedingungen
-Sichtweitenrückgang auf 10-30 km. Im stärkeren Niederschlag zeitweise
-2-5 km.
+Nachts 15-30 km, tagsüber 30-50 km. Im Niederschlag je nach
+Intensität auf 10-3 km reduziert.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 170/05KT  21C | 240/05KT  14C |
-1500FT | 170/10KT  19C | 250/15KT  13C |
-2000FT | 170/10KT  18C | 270/15KT  13C |
-3000FT | 190/15KT  15C | 300/20KT  11C |
-5000FT | 210/15KT  11C | 290/20KT  08C |
-FL100  | 230/15KT  02C | 230/20KT M00C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 170/05KT  17C | 310/10KT  14C |
+1500FT | 180/15KT  17C | 320/15KT  12C |
+2000FT | 190/20KT  17C | 320/20KT  11C |
+3000FT | 200/20KT  14C | 330/30KT  08C |
+5000FT | 210/15KT  10C | 330/25KT  05C |
+FL100  | 210/25KT  01C | 270/15KT M02C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 200/05KT  23C | 210/20KT  16C |
-1500FT | 200/05KT  21C | 210/30KT  15C |
-2000FT | 200/05KT  20C | 210/30KT  15C |
-3000FT | 220/10KT  16C | 230/25KT  12C |
-5000FT | 260/15KT  12C | 240/30KT  09C |
-FL100  | 220/15KT  01C | 230/25KT  00C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 220/15KT  17C | 320/15KT  14C |
+1500FT | 220/25KT  16C | 310/20KT  12C |
+2000FT | 210/25KT  16C | 310/20KT  11C |
+3000FT | 200/25KT  13C | 320/30KT  09C |
+5000FT | 210/30KT  10C | 330/25KT  06C |
+FL100  | 220/40KT  01C | 290/15KT M01C |
 
 Turbulenz:
-Zunächst nicht signifikant. Ab dem Abend in den eingelagerten CBs
-mäßig bis stark. Ab Donnerstagvormittag mäßig unterhalb von FL060.
+In der Umgebung von TCU/CB mäßig bis stark. Von der zweiten
+Nachthälfte bis zum Vormittag mäßig unterhalb FL060. Am Nachmittag
+mäßig oberhalb FL200.
 
 Vereisung:
-Zunächst keine. Abends mit der aufkommenden Front von Westen vermehrt
-mäßige Vereisung zwischen FL110 und FL220, in CBs auch stark. Im
-Verlauf ostwärts ausweitend mit auf FL080 absinkender Untergrenze.
+In TCU/CB mäßig bis stark. Im Abendverlauf auf das gesamte
+Vorhersagegebiet sich ausweitende mäßige Vereisung zwischen
+FL100-220, in der zweiten Nachthälfte auf FL080-200 absinkend. Am
+Nachmittag abziehend.
 
 Nullgradgrenze:
-Um FL110. Ab dem Abend mit Durchzug der Front auf FL080 absinkend.
+Anfangs zwischen FL100-110. Ab der zweiten Nachthälfte mit
+Frontdurchgang auf FL060-75 absinkend.
 
 Inversionen:
 Nicht signifikant.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Gießen  16.51 | 17.23 | 05.04 | 05.36
-Karlsruhe  16.53 | 17.25 | 05.04 | 05.36
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Gießen  05.04 | 05.36 | 16.49 | 17.20
+Karlsruhe  05.04 | 05.36 | 16.51 | 17.22
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 08.10.2026 um 02.00
+UTC
 
-Flugwetterzentrale Frankfurt/Hg
+Flugwetterzentrale Frankfurt/lb

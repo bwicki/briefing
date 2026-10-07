@@ -1,62 +1,61 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-583
-FBEU40 EDZB 071200
+965
+FBEU40 EDZB 071800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 07.10.2026, 12.00 UTC bis 08.10.2026, 09.00 UTC
+gültig vom 07.10.2026, 18.00 UTC bis 08.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Unter abschwächendem Hochdruckeinfluss herrscht zunächst
-störungsfreies Wetter. In der Nacht zu Donnerstag nähert sich von
-Westen die Kaltfront eines sich intensivierenden Tiefs an. Es liegt
-nachts über dem Emsland und zieht bis morgen Mittag nach Südschweden.
+Die Kaltfront eines sich verstärkenden, von Holland nach Dänemark
+ziehenden Tiefs erreicht morgen früh Ostdeutschland und beendet den
+Altweibersommer. Die Kaltfront überquert bis morgen abend
+Ostdeutschland von West nach Ost. Auf ihrer Rückseite fließt mit
+einer straffen westlichen Strömung deutlich kühlere Meeresluft ein.
 
 Wettergeschehen:
-Anfangs in Mecklenburg-Vorpommern gebietsweise BKN SC in 5000 bis
-6000 FT AMSL und Obergrenze in FL070. Außerdem in der Niederlausitz
-und im Süden Sachsen-Anhalts SCT/BKN AC in FL140 und Obergrenze in
-FL170. Sowohl die SC-Felder, als auch die AC-Bänke bewegen sich
-langsam nach Norden und lösen sich im Nachmittagsverlauf weitgehend
-auf.
+Anfangs einzelne CI- und AC-Felder oberhalb FL150 oder klar. In der
+ersten Nachthälfte von W Aufzug von AC/AS oberhalb FL120, darunter
+SCT/BKN SC zwischen FL060 und FL080. Nach Mitternacht weitere
+Bewölkungsverdichtung, am frühen Morgen in Thüringen und
+Sachsen-Anhalt erster leichter Regen.
 
-In der ersten Nachthälfte von Westen her zunehmend dichter werdend
-AS/AC oberhalb von FL150. Darunter auch wieder SCT/BKN SC zwischen
-FL060 und FL080. In der zweiten Nachthälfte geht die Bewölkung von
-Westen her zu OVC NS mit Hauptwolkenuntergrenze bei etwa FL050 über.
-Daraus fällt in der Westhälfte des Vorhersagegebietes zeitweise
-leichter Regen.
+Am Vormittag greifen Bewölkung und Regen auf ganz Ostdeutschland
+über. Bei stärkerem Niederschlag Untergrenzen zwischen 1500 und 2000
+FT AMSL, im Norden zwischen 800 und 1200 FT AGL. Kämme vom Harz, vom
+Thüringer Wald und nachmittags auch vom Erzgebirge von Süden, später
+von Südwesten angestaut und in Wolken.
 
-Am Vormittag greifen diese Bewölkung und der Regen auch auf die
-Osthälfte über. Währenddessen sinkt in der Westhälfte der NS auf 1000
-bis 2000 FT AMSL ab  mit zeitweise mäßigem Regen. Die Höhenlagen des
-Harzes und des Thüringer Waldes gehen dann in Wolken.
+Am Spätnachmittag in Westmecklenburg, Sachsen-Anhalt und
+Westthüringen nachlassender Regen und Anheben der Untergrenzen auf
+2000 bis 3000 FT AMSL.
 
 Sichtweite:
-20 bis 40 km. Im Niederschlag 2 bis 5 km. In der Nacht im Osten
-vorübergehend bodennaher Dunst mit 1 bis 3 km.
+20 bis 40 km, im Niederschlag 2 bis 5 km. In der Nacht in
+Mecklenburg-Vorpommern und Brandenburg gebietsweise Dunst mit 2 bis 4
+km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  15 UTC  |  06 UTC  |
- 500FT | 120/10KT  19C | 160/15KT  12C |
-1000FT | 120/10KT  17C | 190/20KT  15C |
-1500FT | 130/15KT  15C | 210/15KT  16C |
-2000FT | 130/15KT  15C | 210/15KT  16C |
-3000FT | 160/15KT  12C | 200/20KT  14C |
-5000FT | 200/15KT  09C | 190/25KT  10C |
-FL100  | 210/10KT  01C | 200/30KT  00C |
+AMSL  |  21 UTC  |  09 UTC  |
+ 500FT | 150/15KT  15C | 200/10KT  14C |
+1000FT | 160/20KT  16C | 220/20KT  13C |
+1500FT | 170/20KT  16C | 240/25KT  13C |
+2000FT | 170/20KT  16C | 240/25KT  13C |
+3000FT | 200/15KT  13C | 240/20KT  11C |
+5000FT | 200/15KT  10C | 230/25KT  09C |
+FL100  | 220/15KT  01C | 220/30KT  01C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 110/05KT  20C | 190/20KT  16C |
-1500FT | 110/05KT  17C | 220/25KT  15C |
-2000FT | 120/05KT  17C | 220/25KT  15C |
-3000FT | 200/10KT  15C | 220/35KT  12C |
-5000FT | 210/10KT  10C | 210/35KT  09C |
-FL100  | 190/10KT  01C | 210/25KT  01C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 180/15KT  20C | 200/10KT  17C |
+1500FT | 200/15KT  19C | 220/20KT  15C |
+2000FT | 210/15KT  18C | 230/25KT  15C |
+3000FT | 210/15KT  15C | 250/30KT  12C |
+5000FT | 230/15KT  10C | 240/30KT  10C |
+FL100  | 230/15KT  01C | 230/30KT  01C |
 
 Turbulenz:
 Gegen Mitternacht von Westen her einsetzend leicht bis mäßig zwischen
@@ -70,15 +69,15 @@ Um FL100.
 
 Inversionen:
 In der Nacht in der Osthälfte Bildung einer Bodeninversion bis 2000
-FT.
+FT, die sich morgens rasch auflöst.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Berlin  16.30 | 17.03  | 04.44 | 05.19
-Leipzig  16.36 | 17.07  | 04.49 | 05.23
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Berlin  04.44 | 05.19 | 16.27 | 17.00
+Leipzig  04.49 | 05.23 | 16.33 | 17.07
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 08.10.2026 um
+02.00/05.00 UTC
 
-Luftfahrtberatungszentrale Berlin/Oe
+Luftfahrtberatungszentrale Berlin/Ns
