@@ -52,6 +52,18 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.fill('input[type=time]', '06:30'); pg.dispatch_event('input[type=time]', 'change'); pg.wait_for_timeout(600)
         # 0.11.3: Start vor BCMT → Schalter «NVFR zulassen» im Schritt «Wo und wann»
         assert pg.query_selector('.nvfr-row button.chip.nvfr') is not None, 'Schalter «NVFR zulassen» bei Start vor BCMT'
+        # 0.12.3: Start-Ampel nennt «ausserhalb der bürgerlichen Dämmerung»; mit «NVFR zulassen» entfällt das Kriterium
+        ampel = lambda: pg.inner_text('.ampel') if pg.query_selector('.ampel') else ''
+        for _ in range(40):
+            pg.wait_for_timeout(300)
+            if pg.query_selector('.ampel .ampel-row'): break
+        assert 'Dämmerung' in ampel(), 'Start-Ampel vor BCMT ohne NVFR: Dämmerungskriterium: ' + ampel()
+        pg.click('.nvfr-row button.chip.nvfr')
+        for _ in range(40):
+            pg.wait_for_timeout(300)
+            if pg.query_selector('.ampel .ampel-row') and 'Dämmerung' not in ampel(): break
+        assert pg.query_selector('.ampel .ampel-row') is not None and 'Dämmerung' not in ampel(), 'Start-Ampel mit NVFR ohne Dämmerungskriterium: ' + ampel()
+        pg.click('.nvfr-row button.chip.nvfr'); pg.wait_for_timeout(1500)   # zurück auf Tagfahrt für den weiteren Ablauf
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(500)
         # Ortswahl: geplanter Landeraum per ICAO-Kurzkoordinaten
         pg.click('button:has-text("Ort wählen")'); pg.wait_for_timeout(900)

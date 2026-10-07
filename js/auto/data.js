@@ -53,6 +53,8 @@ export async function getForecastAt(ctx, b, lat, lon, modelOverride) {
 
 const standOf = (j, b) => ({ stand: Date.now(), model: j._model, modelName: OM.modelName(j._model), source: 'Open-Meteo', fetched: j._fetched, elevModel: j.elevation });
 const lightFn = (b, ctx) => { const sun = sunFor(b, ctx.settings, ctx.racTable); return (ms) => (sun ? ms >= sun.official.bcmt - 1800000 && ms <= sun.official.ecet + 1800000 : true); };
+/** Ampel-Kriterium «Tageslicht»: bei zugelassener Nachtfahrt (NVFR) entfällt es (0.12.3); die Nachtkennzeichnung im Meteogramm bleibt. */
+const lightForRating = (b, light) => (b.flight?.nvfr ? () => true : light);
 
 /** Meteogramm: Stundenwerte Start−3 h … Landung+3 h mit Ampel. */
 export async function meteogram(ctx, b) {
@@ -62,7 +64,8 @@ export async function meteogram(ctx, b) {
   if (!idx.length) throw new Error(t('auto_noHours'));
   const light = lightFn(b, ctx);
   const lim = ctx.settings.flyLimits;
-  const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, light(r.ms), lim, getLang()); return { ...r, night: !light(r.ms), fog: OM.fogRisk(r).level, baseFt: OM.cloudBaseFt(r), fly: fr.level, why: fr.why }; });
+  const lightOk = lightForRating(b, light);
+  const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, lightOk(r.ms), lim, getLang()); return { ...r, night: !light(r.ms), fog: OM.fogRisk(r).level, baseFt: OM.cloudBaseFt(r), fly: fr.level, why: fr.why }; });
   const z = b.site.tz || 'Europe/Zurich';
   const text = recs.map((r) => `${hhmm(z, r.ms)} T ${r.temp?.toFixed(0)}°/Td ${r.dew?.toFixed(0)}° Wind ${r.d10 != null ? Math.round(r.d10).toString().padStart(3, '0') : '–'}/${Math.round((r.w10 || 0) * OM.MS_TO_KT)}G${Math.round((r.gust || 0) * OM.MS_TO_KT)} kt Wolken ${r.cloud ?? '–'}% RR ${r.precip ?? 0} mm CAPE ${r.cape ?? '–'} → ${['nein', 'marginal', 'fahrbar'][r.fly] || '–'}${r.why?.length ? ' (' + r.why.join(', ') + ')' : ''}`).join('\n');
   return { kind: 'meteogram', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { recs, fromMs: b.time.startMs, toMs: landing }, text };
@@ -96,7 +99,8 @@ export async function startAmpel(ctx, b) {
   if (!idx.length) throw new Error(t('auto_noHours'));
   const light = lightFn(b, ctx);
   const lim = ctx.settings.flyLimits;
-  const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, light(r.ms), lim, getLang()); return { ms: r.ms, fly: fr.level, why: fr.why, w10: r.w10, gust: r.gust, precip: r.precip, cloud: r.cloud }; });
+  const lightOk = lightForRating(b, light);
+  const recs = idx.map((i) => { const r = OM.rec(j, i); const fr = OM.flyRating(r, lightOk(r.ms), lim, getLang()); return { ms: r.ms, fly: fr.level, why: fr.why, w10: r.w10, gust: r.gust, precip: r.precip, cloud: r.cloud }; });
   const level = Math.min(...recs.map((r) => r.fly ?? 2));
   const why = [...new Set(recs.filter((r) => r.fly === level).flatMap((r) => r.why || []))].slice(0, 4);
   return { level, why, recs, ...standOf(j, b) };

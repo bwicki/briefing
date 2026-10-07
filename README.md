@@ -107,7 +107,9 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
    verfügbaren Modellen. «Als Favorit speichern» nur, wenn kein Favorit gewählt ist.
    Sobald Ort und Zeit stehen, erscheint die **Start-Ampel** (denkbar / marginal /
    eher ausgeschlossen) aus Modellwerten und Ampel-Grenzen — grobe Einschätzung,
-   keine Entscheidung.
+   keine Entscheidung. Mit «NVFR zulassen» entfällt das Kriterium «ausserhalb der
+   bürgerlichen Dämmerung» in Start-Ampel und Meteogramm-Ampel (0.12.3); die
+   Nachtkennzeichnung im Meteogramm bleibt.
 3. **Fahrtabsicht** — Start-Ampel, Dauer, Höhenband, Trajektorien-Niveaus; **Trajektorien-
    Karte mit allen Niveaus** (Legende, Stundenpunkte, zeichnet bei Änderungen neu); ein
    Klick auf die Karte übernimmt den Punkt als **geplanten Landeraum** und füllt die

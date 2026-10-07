@@ -267,7 +267,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
           b.flight.nvfr = on;
           const eq = b.panels?.['A.equipment']?.content;
           if (eq?.items) { const set = new Set(eq.items); if (on) { set.add('nvr'); set.delete('none'); } eq.items = [...set]; }
-          persistSoon(); refreshSun();
+          persistSoon(); refreshSun(); ampelSoon();   // Ampel ohne das Dämmerungskriterium neu bewerten (0.12.3)
         };
         sunBox.appendChild(h('div.row-actions.nvfr-row', [
           h('button.chip.lg.nvfr', { type: 'button', 'aria-pressed': !!b.flight.nvfr, onclick: () => setNvfr(!b.flight.nvfr) }, `🌙 ${b.flight.nvfr ? t('nvfr_allowed') : t('nvfr_allow')}`),

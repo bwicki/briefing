@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.3 — 2026-10-07 · NVFR und Start-Ampel
+
+* **Start-Ampel / Meteogramm-Ampel:** bei zugelassener Nachtfahrt («NVFR zulassen» bzw. NVFR-Schalter) wird
+  «ausserhalb der bürgerlichen Dämmerung» nicht mehr als Kriterium gewertet (`lightForRating` in `js/auto/data.js`);
+  die Ampel im Schritt «Ort & Zeit» wird beim Umschalten sofort neu bewertet. Die Nachtkennzeichnung der Stunden im
+  Meteogramm bleibt. Smoke-Test «desktop» prüft beides.
+* Einführungsfilme (0.12.2) bleiben als Prototyp; Weiterarbeit zurückgestellt.
+
 ## 0.12.2 — 2026-10-06 · Höhenprofil Stand 11, App-Rückmeldungen, OSM-Wasser, Einführungsfilme
 
 * **Höhenprofil-Werkzeug (Stand 11):** Zeilenbeschriftungen «Sonne»/«Tag» links der Achsen entfernt;
