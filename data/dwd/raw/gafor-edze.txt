@@ -1,31 +1,25 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edze_node.html
 
-851
-FBEU40 EDZE 070600
+925
+FBEU40 EDZE 071200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich West
-gültig vom 07.10.2026, 06.00 UTC bis 08.10.2026, 03.00 UTC
+gültig vom 07.10.2026, 12.00 UTC bis 08.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 31 bis 39
 
 Wetterlage und -entwicklung:
 Unter schwachen Luftdruckgegensätze bestimmt sehr milde Luft das
-Wetter in Westdeutschland. Am Morgen hält sich teils eine feuchte
-Grundschicht, welche am Vormittag abtrocknet. Am späten Nachmittag
-nähert sich von Westen die Kaltfront eines Tiefs über der Nordsee mit
-zunehmend feuchter und labiler Luft. Am Abend und in der Nacht zum
-Donnerstag überquert die Kaltfront das Vorhersagegebiet ostwärts.
+Wetter in Westdeutschland. Am späten Nachmittag nähert sich von
+Westen die Kaltfront eines Tiefs über der Nordsee mit zunehmend
+feuchter und labiler Luft. Am Abend und in der Nacht zum Donnerstag
+überquert die Kaltfront das Vorhersagegebiet ostwärts.
 
 Wettergeschehen:
-Am Morgen vor allem im Norden, in Tälern und in Flussniederungen
-gebietsweise flache Nebelfelder. Zudem von Westen zunehmend SCT/BKN
-LYR CI oberhalb FL180 bis über Fl245.
-
-Am Vormittag Auflösung der Nebelfelder, in einzelnen Flussniederungen
-im Süden bleiben diese bis zum späten Vormittag bestehen.
-Am Nachmittag im Bergland Bildung von FEW/SCT SC mit Basis 3500-4500
-FT AMSL, Tops FL055-065. Im Südwesten der Eifel teils auch schon BKN
-LYR SC/AS/CI ab FL070.
+Von Westen zunehmend SCT/BKN LYR CI oberhalb FL180 bis über Fl245. Im
+Bergland Bildung von FEW/SCT SC/CU mit Basis 4000-5000 FT AMSL, Tops
+FL060-065. Im Südwesten der Eifel zudem ab dem frühen Nachmittag
+aufkommende BKN LYR SC/AS zwischen 4000 FT AMSL und FL090.
 
 Am Abend von Südwesten weiter verdichtende Bewölkung. Dann westlich
 des Rheins kompakte BKN/OVC SC/AS/CS mit auf 2000-3000 FT AMSL
@@ -33,64 +27,73 @@ absinkenden Untergrenzen, teils auch als BKN/OVC NS mit Untergrenzen
 unter 1000 FT AGL, in der Eifel BKN/OVC ST unter 800 FT AGL.
 Obergrenzen verbreitet oberhalb von FL245. Daraus Regen, teils
 kräftig. Einzelne Schauer und Gewitter aus EMBD CB mit Tops bis FL340
-möglich. Im Osten SCT/BKN LYR SC/CI mit Untergrenzen zwischen 4000 FT
-AMSL und FL080. Darüber weiterhin der CI oberhalb von FL180. Im Laufe
-der Nacht zum Donnerstag ostwärts ausbreitende frontale Bewölkung und
-Niederschläge. Zum Berichtsende im Westen weiter absinkende
-Untergrenzen der BKN/OVC Bewölkung auf 100-500 FT AGL und anhaltender
-Regen. Schauer und einzelne eingelagerte Gewitter aus ISOL CB mit
-Tops bis FL320 weiterhin nicht komplett ausgeschlossen. Zudem im
-Westen auch abseits von CB einzelne Böen bis 30 KT möglich.
+möglich. Im Osten SCT/BKN LYR SC zwischen 4000 FT AMSL und FL080.
+Darüber weiterhin der CI oberhalb von FL180. Im Laufe der Nacht zum
+Donnerstag ostwärts ausbreitende frontale Bewölkung und
+Niederschläge. Im Westen bereits in der ersten Nachthälfte weiter
+absinkende Untergrenzen der BKN/OVC Bewölkung auf häufig 100-500 FT
+AGL und anhaltender Regen. Schauer und einzelne eingelagerte Gewitter
+aus ISOL CB mit Tops bis FL320 sind bis zu Beginn der zweiten
+Nachthälfte nicht komplett ausgeschlossen. Zudem im Westen auch
+abseits von CB insbesondere im Bergland einzelne Böen um 30 KT
+möglich. Auch rückseitig der Bodenfront, die den Bereich gegen etwa 4
+UTC nach Osten überquert haben sollte, schichtet die Bewölkung nur
+sehr zögerlich etwas aus.
+
+Zum Berichtsende gibt es am Niederrhein meist BKN LYR ST/SC zwischen
+1500 FT AMSL und FL120, darüber SCT/BKN CI oberhalb von FL245. Im
+übrigen Bereich dominiert nur wenig ausgeschichtete Bewölkung in
+unterschiedlichen Höhen bis über FL245. Das Bergland ist noch oft in
+Wolken.
 
 Sichtweite:
-10-30 km. Bei Dunst 2-5 km und insbesondere in dichten Nebelfeldern
-unter 500 m. Am Vormittag meist auflösender Nebel und Besserung auf
-30-60 km, in einzelnen Flussniederungen im Süden bleibt der Nebel bis
-zum späten Nachmittag bestehen. Im Regen 5-10 km, bei kräftigem
-Schauer/Gewittern lokal 2-5 km.
+10-30 km. Ab dem Abend von Westen im Regen 5-10 km, bei kräftigem
+Schauer/Gewittern lokal 2-5 km. Donnerstagvormittag 15-35 km, vor
+allem im Bergland 3-8, bei aufliegender Bewölkung unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 31 - 34:
-AMSL  |  09 UTC  |  21 UTC  |
- 500FT | 150/05KT  17C | 190/05KT  16C |
-1000FT | 150/15KT  16C | 220/10KT  15C |
-1500FT | 160/15KT  16C | 220/15KT  15C |
-2000FT | 170/10KT  16C | 220/15KT  14C |
-3000FT | 160/10KT  14C | 220/15KT  13C |
-5000FT | 170/10KT  10C | 210/20KT  10C |
-FL100  | 210/10KT  02C | 200/30KT  00C |
+AMSL  |  15 UTC  |  06 UTC  |
+ 500FT | 150/05KT  21C | 320/15KT  12C |
+1000FT | 150/05KT  20C | 320/20KT  11C |
+1500FT | 160/05KT  18C | 330/30KT  10C |
+2000FT | 180/05KT  17C | 330/30KT  09C |
+3000FT | 210/10KT  15C | 340/30KT  07C |
+5000FT | 220/15KT  10C | 340/30KT  04C |
+FL100  | 220/20KT  02C | 300/15KT M03C |
 
 GAFOR-Gebiete 35 - 39:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 120/05KT  17C | 120/05KT  15C |
-1500FT | 140/15KT  15C | 180/10KT  15C |
-2000FT | 150/15KT  15C | 190/10KT  15C |
-3000FT | 170/15KT  14C | 210/20KT  13C |
-5000FT | 180/15KT  10C | 200/25KT  10C |
-FL100  | 210/10KT  02C | 200/30KT  00C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 160/05KT  20C | 310/10KT  12C |
+1500FT | 170/10KT  18C | 320/20KT  11C |
+2000FT | 170/10KT  17C | 320/25KT  10C |
+3000FT | 190/15KT  14C | 330/30KT  08C |
+5000FT | 210/15KT  11C | 330/25KT  05C |
+FL100  | 230/15KT  02C | 320/15KT M02C |
 
 Turbulenz:
-In der Umgebung von CB mäßig bis stark.
+In der Umgebung von CB mäßig bis stark. In den Frühstunden und am
+Vormittag teils mäßig unterhalb 3000 FT AGL.
 
 Vereisung:
 Zunächst keine. Am Abend und in der Nacht zum Donnerstag in der
-frontalen Bewölkung mäßig ab FL110, vereinzelt auch stark. In CB
-generell bis stark.
+frontalen Bewölkung mäßig ab FL110, in der zweiten Nachthälfte ab
+FL080-090, vereinzelt auch stark. In CB generell bis stark. Zum
+Berichtsende am Niederrhein nicht mehr signifikant.
 
 Nullgradgrenze:
-FL105-115. Zum Berichtsende im Westen zwischen FL080 und FL090, im
-Osten um FL100.
+FL105-115. In der Nacht allmählich absinkend auf FL080 im Westen und
+FL090 im Osten. Zum Berichtsende FL060 im Westen und FL075 im Osten.
 
 Inversionen:
-Anfangs Bodeninversion unterhalb 1000 FT AGL. Am Mittwochvormittag
-auflösende Bodeninversion, in Nebelbereichen bis zum Mittag
-andauernd.
+Nicht signifikant.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Düsseldorf  05.09 | 05.43 | 16.58 | 17.31
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Düsseldorf  16.58 | 17.31 | 05.10 | 05.45
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
 Regionale Wetterberatungszentrale Essen/Hf

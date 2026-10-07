@@ -1,106 +1,91 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-281
-FBEU40 EDZF 070600
+582
+FBEU40 EDZF 071200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 07.10.2026, 06.00 UTC bis 08.10.2026, 03.00 UTC
+gültig vom 07.10.2026, 12.00 UTC bis 08.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Ein Tiefdruckgebiet, das längere Zeit über dem Alpenraum verweilt
-ist, zieht nun nordostwärts über Süddeutschland hinweg. Bis zum
-späteren Vormittag führt dieses in den mittleren und höheren Höhen
-feuchte Luft heran. Ansonsten überwiegt bis zum Abend
-Hochdruckeinfluss mit warmer und weitgehend trockener Luft.
-Anschließend greift von Westen eine Kaltfront mit hochreichend
-feuchter und teils labiler Luft auf den Vorhersagebereich über und
-überquert diesen ostwärts. Rückseitig fließt mit auffrischender
+Ein Hochdruckgebiet über dem östlichen Europa bestimmt tagsüber das
+Wetter mit einer sehr milden und recht trockenen Luft. Ab den
+Nachmittagsstunden greift von Westen die Kaltfront eines Tiefs bei
+Island mit hochreichend feuchter und teils labiler Luft auf den
+Vorhersagebereich über. Sie verlagert sich bis Donnerstagvormittag
+ostwärts bis auf eine Linie Kassel - Rhein-Main-Gebiet -
+Südschwarzwald. Rückseitig fließt mit einer auffrischenden
 Nordwestströmung wesentlich kühlere Luft ein.
 
 Wettergeschehen:
-Mit dem Tief aus dem Alpenraum zieht SCT AC/CI oberhalb FL150 vor
-allem über die östlichen Teile des Vorhersagegebiets
-nord-/nordostwärts hinweg. Sonst ist es weitgehend wolkenfrei.
-Ansonsten treten bevorzugt in Tallagen und Flussniederungen örtlich
-Dunst- und Nebelfelder auf. Lokal kann der Nebel in BKN ST bis 2000
-FT AMSL übergehen.
-
-Vormittags lösen sich die Dunst- und Nebelfelder auf. Im
-Nordhessischen Bergland lösen sich diese lokal erst zu den
-Mittagsstunden auf. Im Südwesten zeigt sich SCT/BKN SC in den Höhen
-zwischen 5000 und FL080. Am späteren Vormittag zieht der AC/CI vom
-Tief über dem östlichen Vorhersagebereich ostwärts ab.
-Ab den Mittagsstunden und am frühen Nachmittag bildet sich
-vorzugsweise über dem Bergland SCT CU mit Basen in 4000 FT AMSL bis
-FL060. Die Obergrenzen können Höhen zwischen FL080 und FL120
-erreichen. Lokal reichen sie auch bis etwa FL160.
-
+Abgesehen von dünnen hohen oder mittelhohen Wolkenfeldern ist es
+wolkenlos und trocken. Nur vereinzelt und bevorzugt über dem Bergland
+bildet sich FEW/SCT CU mit Basen in 4000 FT AMSL bis FL060 und Tops
+um FL090.
 Am späteren Nachmittag und frühen Abend geht die Bewölkung von Westen
 in BKN SC/AC/CI oberhalb 5000 FT AMSL über. Darin sind ISOL CBs mit
-Tops zwischen FL250 und FL320 eingelagert, woraus gewittrig
-durchsetzter Regen fällt. Bis zum Beginn der zweiten Nachthälfte zum
-Donnerstag weiten sich die frontalen Bedingungen ostwärts über das
+Tops zwischen FL250 und FL320 eingelagert, woraus westlich des Rheins
+gewittrig durchsetzter Regen fällt. Im Laufe der Nacht weitet sich
+die frontale Bewölkung mit dem Niederschlag ostwärts über das
 Vorhersagegebiet aus.
-
-Zu Beginn der zweiten Nachthälfte sinkend zusätzlich die
-Wolkenuntergrenzen auf 1500-3500 FT AMSL herab und das Bergland gerät
-von Westen her in Wolken. Es fällt schauerartiger Regen, örtlich sind
-weiterhin Gewitter möglich. Darüber hinaus frischt der Wind vor allem
-in der zweiten Nachthälfte auf. In tieferen Lagen treten örtlich Böen
-um 25 KT, in höheren Lagen Böen um 35 KT zunächst aus SW-W auf. Nach
-Westen hin dreht die Windrichtung auf Nordwest. Dort treten
-verbreiteter Böen zwischen 25 und 35 KT auf.
+Zu Beginn der zweiten Nachthälfte sinkend die Wolkenuntergrenzen auf
+1500 bis 2500 FT AMSL ab und der Niederschlag nimmt einen skaligen
+Charakter an. Mit Frontdurchgang frischt der Wind vor allem in der
+zweiten Nachthälfte auf. In tieferen Lagen treten örtlich Böen um 25
+KT, in höheren Lagen Böen um 35 KT zunächst aus SW-W auf. Nach Westen
+hin dreht die Windrichtung auf Nordwest. Dort treten verbreiteter
+Böen zwischen 25 und 35 KT auf.
+Am Donnerstagvormittag lässt westlich des Rheins der Niederschlag
+nach, größere Wolkenauflockerungen werden bis zum Ende des
+Vorhersagezeitraums nicht erwartet.
 
 Sichtweite:
-30-60 km. Im Dunst 1-5 km, im Nebel unter 1 km. Ab dem Abend mit den
-aufkommenden frontalen Bedingungen Sichtweitenrückgang auf 10-30 km.
-Im stärkeren Niederschlag zeitweise 2-5 km.
+30-60 km. Ab dem Abend mit den aufkommenden frontalen Bedingungen
+Sichtweitenrückgang auf 10-30 km. Im stärkeren Niederschlag zeitweise
+2-5 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 020/05KT  11C | 220/05KT  17C |
-1500FT | 110/05KT  14C | 190/15KT  18C |
-2000FT | 140/05KT  15C | 190/20KT  17C |
-3000FT | 160/10KT  13C | 200/25KT  15C |
-5000FT | 180/10KT  10C | 210/25KT  11C |
-FL100  | 220/05KT  01C | 210/25KT  01C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 170/05KT  21C | 240/05KT  14C |
+1500FT | 170/10KT  19C | 250/15KT  13C |
+2000FT | 170/10KT  18C | 270/15KT  13C |
+3000FT | 190/15KT  15C | 300/20KT  11C |
+5000FT | 210/15KT  11C | 290/20KT  08C |
+FL100  | 230/15KT  02C | 230/20KT M00C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 110/05KT  16C | 220/10KT  19C |
-1500FT | 200/05KT  17C | 200/20KT  18C |
-2000FT | 200/10KT  17C | 200/20KT  17C |
-3000FT | 230/10KT  15C | 210/25KT  14C |
-5000FT | 230/10KT  11C | 220/25KT  10C |
-FL100  | 240/10KT  02C | 220/35KT  01C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 200/05KT  23C | 210/20KT  16C |
+1500FT | 200/05KT  21C | 210/30KT  15C |
+2000FT | 200/05KT  20C | 210/30KT  15C |
+3000FT | 220/10KT  16C | 230/25KT  12C |
+5000FT | 260/15KT  12C | 240/30KT  09C |
+FL100  | 220/15KT  01C | 230/25KT  00C |
 
 Turbulenz:
 Zunächst nicht signifikant. Ab dem Abend in den eingelagerten CBs
-mäßig bis stark.
+mäßig bis stark. Ab Donnerstagvormittag mäßig unterhalb von FL060.
 
 Vereisung:
-Zunächst nicht signifikant. Abends mit der aufkommenden Front von
-Westen vermehrt mäßige Vereisung zwischen Nullgradgrenze und FL220,
-in CBs auch stark. Im Verlauf ostwärts ausweitend.
+Zunächst keine. Abends mit der aufkommenden Front von Westen vermehrt
+mäßige Vereisung zwischen FL110 und FL220, in CBs auch stark. Im
+Verlauf ostwärts ausweitend mit auf FL080 absinkender Untergrenze.
 
 Nullgradgrenze:
-FL100-110. In den Mittagsstunden bis zum Abend zwischen FL105-115. Ab
-dem Abend mit Durchzug der Front absinkend, in der Nacht dann von
-West nach Ost FL090 und FL195. Im westlichen Hunsrück dann um FL080.
+Um FL110. Ab dem Abend mit Durchzug der Front auf FL080 absinkend.
 
 Inversionen:
-Bis zum Vormittag Bodeninversion unterhalb 1500 FT AMSL, die lokal
-etwas stärker ausgeprägt ist. Sonst nicht signifikant.
+Nicht signifikant.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Gießen  05.02 | 05.35 | 16.51 | 17.23
-Karlsruhe  05.02 | 05.35 | 16.53 | 17.25
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Gießen  16.51 | 17.23 | 05.04 | 05.36
+Karlsruhe  16.53 | 17.25 | 05.04 | 05.36
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Flugwetterzentrale Frankfurt/St
+Flugwetterzentrale Frankfurt/Hg
