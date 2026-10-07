@@ -281,7 +281,7 @@ Planungshorizont, **Alle aktualisieren** und der Stand der letzten Aktualisierun
 Beim ersten Öffnen eines Briefings laden sich alle automatischen Panels von
 selbst (Modell-Panels sofort; DABS, Karten und NOTAM — soweit freigeschaltet —
 kurz danach). **0.12.8:** Schnappschüsse, die den gegenwärtigen Stand wiedergeben (METAR/TAF,
-Beobachtungen, SIGMET, NOTAM, Allgemeine Lage), tragen bei einem Start, der mehr als 6 h entfernt liegt,
+Beobachtungen, SIGMET, NOTAM, Allgemeine Lage, DABS, Radar/Webcams), tragen bei einem Start, der mehr als 6 h entfernt liegt,
 in der Stand-Zeile ein Warnsymbol ⚠ («Info gibt gegenwärtigen Stand wieder, muss auf den Startzeitpunkt hin
 aktualisiert werden»); Modelldaten zum Startzeitpunkt nicht. Bei **METAR/TAF** und **NOTAM** blendet ein ✕
 rechts in der Kopfzeile einer Station/Meldung diese ohne Rückfrage aus (`content.hidden`; gilt auch in der

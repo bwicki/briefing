@@ -6,7 +6,7 @@ import { h, clear, toast, num, dialog, confirmDialog } from '../util.js';
 import { stageWindows, posAtKm } from '../calc/profile.js';
 import { t, getLang } from '../i18n.js';
 import { field, input, select, textarea, check } from './widgets.js';
-import { renderSnapshot, setAirspaceUrl, renderSondeWindow } from './autorender.js';
+import { renderSnapshot, setAirspaceUrl, renderSondeWindow, nowWarnLive } from './autorender.js';
 import * as DATA from '../auto/data.js';
 import { MODELS, modelsFor, modelName, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDateTime } from '../calc/time.js';
@@ -80,7 +80,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
       if (d.content.auto) toolbar.appendChild(h('button.btn.icon.small', { type: 'button', title: t('auto_clear'), onclick: async () => { if (await confirmDialog(t('auto_clear'), t('auto_clearQ'), { yes: t('auto_clear'), no: t('cancel') })) { d.content.auto = null; onChange(); draw(); } } }, icon('close', 14)));
       toolbar.appendChild(status);
     }
-    if (p.auto === 'radar') body.appendChild(radarLive(b, ctx));
+    if (p.auto === 'radar') { const w = nowWarnLive(b); if (w) body.appendChild(w); body.appendChild(radarLive(b, ctx)); }   // 0.12.8a: Warnsymbol auch bei Radar/Webcams (live)
     if (p.auto === 'notam' && !readOnly && b.notamMode === 'places') body.appendChild(notamPlacesEditor(b, ctx, () => { onChange(); }, () => run()));
     const snap = d.content.auto;
     const onLanding = (!readOnly && p.auto === 'traj') ? async (pt) => {

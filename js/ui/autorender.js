@@ -20,9 +20,11 @@ const flyTxt = (lv) => (lv == null ? '–' : t('fly_' + lv));
 
 /** Kopfzeile Stand/Modell/Quelle. */
 /** 0.12.8: Quellen, die den gegenwärtigen Stand wiedergeben (nicht den Startzeitpunkt) – Warnsymbol, wenn der Start > 6 h entfernt ist. */
-export const NOW_KINDS = new Set(['metar', 'obs', 'sigmet', 'notam', 'synoptic']);
-export const staleNow = (snap, b) => NOW_KINDS.has(snap?.kind) && (b.time?.startMs || 0) - Date.now() > 6 * 3600000;
+export const NOW_KINDS = new Set(['metar', 'obs', 'sigmet', 'notam', 'synoptic', 'dabs']);   // 0.12.8a: auch DABS; Radar/Webcams (live) über nowWarnLive()
+export const farStart = (b) => (b.time?.startMs || 0) - Date.now() > 6 * 3600000;
+export const staleNow = (snap, b) => NOW_KINDS.has(snap?.kind) && farStart(b);
 export const nowWarn = (snap, b) => (staleNow(snap, b) ? h('span.now-warn', { title: t('now_warn') }, '⚠') : null);
+export const nowWarnLive = (b) => (farStart(b) ? h('div.note.stand', [h('span.now-warn', { title: t('now_warn') }, '⚠'), t('now_live')]) : null);
 export function standLine(snap, b) {
   if (!snap) return null;
   const z = b.site.tz || 'Europe/Zurich';

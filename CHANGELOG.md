@@ -24,8 +24,8 @@
   beibehalten».
 * **NOTAM-Karte:** Karten-Knopf bei NOTAM mit Lage (Felder oder Koordinaten/Radius im Text) – Kreis des
   NOTAM mit geplantem Fahrtweg (Profilbahn, sonst Trajektorien), Startort, Landeraum.
-* **Warnsymbol «gegenwärtiger Stand»:** bei Start > 6 h bei METAR/TAF, Beobachtungen, SIGMET, NOTAM und
-  Allgemeiner Lage (Mouseover-Text), nicht bei Modelldaten zum Startzeitpunkt.
+* **Warnsymbol «gegenwärtiger Stand»:** bei Start > 6 h bei METAR/TAF, Beobachtungen, SIGMET, NOTAM,
+  Allgemeiner Lage, DABS und Radar/Webcams (Mouseover-Text), nicht bei Modelldaten zum Startzeitpunkt.
 * **Gasfahrt:** «Allgemeine Lage» gilt für die ganze Fahrt – steht bei Etappen-Briefings unter «B · Ganze
   Fahrt» vor E1 (Erarbeitung, Navigation, Briefingsicht; Nummer B1).
 * **Dialoge:** «Schnappschuss entfernen», Panel leeren und Dokument entfernen fragen im Dialog der Anwendung
