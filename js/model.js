@@ -31,6 +31,7 @@ export function newBriefing(settings, now = Date.now()) {
     id: uid(12), createdAt: now, updatedAt: now, revision: 0, edition: 0, status: 'draft', finalNo: 0,
     lang: settings.lang || 'de', timeBase: settings.timeBase || 'LT',
     balloon: bal, balloonSel: sel,
+    meteo: { model: 'icon_eu', topHpa: 500 },   // Vorgabe ICON-EU (0.12.4); andere Modelle im Schritt «Was ist geplant?» und in der Modell-Leiste
     flight: { kind: 'commercial', operatorId: op?.id || 'custom', operatorName: op?.name || '', occasion: '', nvfr: false },
     site: site ? { ...deepCopy(site), icao: icao(site.lat, site.lon) } : { name: '', lat: null, lon: null, elev: null, tz, country: '', icao: '' },
     time: { date, time: '06:30', startMs: fromLocal(tz, date, '06:30'), base: settings.timeBase || 'LT' },
@@ -283,11 +284,11 @@ export const fplSuggested = (b) => !!(b.flight?.nvfr || b.balloon?.type === 'gas
 /** Beschriftung einer Zeitplan-Zeile (Etappen mit Namen). */
 export function scheduleRowLabel(r, b, tr, acts) {
   if (r.type) {
-    const place = r.type === 'arrive' ? b.site?.name : r.type === 'landing' ? (b.landing?.name || '') : (r.place?.name || r.name || '');
+    const place = r.type === 'arrive' ? placeLabel(b.site) : r.type === 'landing' ? placeLabel(b.landing) : (r.place?.name || r.name || '');
     return `${actLabel(r, tr, acts)}${place ? ' · ' + place : ''}${r.info ? ' – ' + r.info : ''}`;
   }
   if (r.kind === 'depart') return `${tr('sch_departAt')}${r.name ? ' · ' + r.name : ''}`;
-  if (r.key === 'arrive') return `${tr('sch_arrive')}${b.site?.name ? ' · ' + b.site.name : ''}`;
+  if (r.key === 'arrive') return `${tr('sch_arrive')}${b.site?.name ? ' · ' + placeLabel(b.site) : ''}`;
   return tr('sch_' + r.key);
 }
 
@@ -305,6 +306,14 @@ export function equipmentSuggest(b, sun) {
   return s;
 }
 
+/** Ortsname mit Länderkennzeichen voran, wenn ausserhalb der Schweiz: «DE-Wolfegg» (0.12.4; ein vorhandenes « (DE)» am Ende entfällt). */
+export function placeLabel(p, home = 'CH') {
+  if (!p) return '';
+  const name = String(p.name || '').trim(), cc = String(p.country || '').toUpperCase();
+  if (!name || !cc || cc === home) return name;
+  const bare = name.replace(new RegExp(`\\s*\\(${cc}\\)$`), '');
+  return new RegExp(`^${cc}-`).test(bare) ? bare : `${cc}-${bare}`;
+}
 export const startLabel = (b) => `${hhmm(b.site.tz || 'Europe/Zurich', b.time.startMs)}`;
 
 /** Bild der Hülle: Schnappschuss im Briefing, sonst aus den aktuellen Stammdaten (ältere Briefings). */
@@ -353,7 +362,7 @@ export function fileBase(b) {
 /** Titelzeile für Ausdrucke: «Fahrtbriefing · 2026-017 · HB-QWZ · Start: Di 06.10.2026, 06:30 – Oberlunkhofen AG». */
 export function titleLine(b, lang = 'de', appName = 'Fahrtbriefing') {
   const z = b.site?.tz || 'Europe/Zurich';
-  return [appName, b.no || '', b.balloon?.reg || '', `Start: ${fmtDate(z, b.time.startMs, lang)}, ${hhmm(z, b.time.startMs)} – ${b.site?.name || ''}`].filter(Boolean).join(' · ');
+  return [appName, b.no || '', b.balloon?.reg || '', `Start: ${fmtDate(z, b.time.startMs, lang)}, ${hhmm(z, b.time.startMs)} – ${placeLabel(b.site)}`].filter(Boolean).join(' · ');
 }
 /** «Letzte Änderung: 05.10.2026 09:37 · B. Wicki». */
 export function lastChangeLine(b, lang = 'de', label = 'Letzte Änderung') {

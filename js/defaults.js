@@ -41,8 +41,8 @@ export const DEFAULT_SETTINGS = {
       { id: 'HB-QWV', name: 'HB-QWV', model: 'NL-STU/1000', hex: '4B2C91', volume: 1050, mass: 116, gas: 'H2', purity: 0.995, fillFraction: 1.0, placeholder: true },
     ],
     baskets: [
-      { id: 'wettkampf', name: 'Wettkampfkorb', mass: 50, equipment: 40, instruments: 0, maxPersons: 2, ballastUnitKg: 15, reserveUnits: 3, placeholder: true },
-      { id: 'pax', name: 'Pax-Korb', mass: 70, equipment: 40, instruments: 0, maxPersons: 4, ballastUnitKg: 15, reserveUnits: 3, placeholder: true },
+      { id: 'wettkampf', name: 'Wettkampfkorb', mass: 50, equipment: 45, instruments: 0, maxPersons: 2, ballastUnitKg: 15, reserveUnits: 3, placeholder: true },
+      { id: 'pax', name: 'Pax-Korb', mass: 70, equipment: 45, instruments: 0, maxPersons: 4, ballastUnitKg: 15, reserveUnits: 3, placeholder: true },
     ],
     gasDefaults: { personWeight: 85, rigMin: 30, fillMin: 150 },
   },

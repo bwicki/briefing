@@ -314,9 +314,16 @@ def run_gas(name):
         assert pg.evaluate('location.hash') == '#/list' and pg.query_selector('.chips.scopes, table.list, .note') is not None, 'Nach der Anmeldung: Liste «Meine Briefings»: ' + pg.evaluate('location.hash')
         pg.goto(BASE + '#/new'); pg.wait_for_timeout(700)
         pg.click('.wiz button.chip:has-text("Gas")'); pg.wait_for_timeout(500)
+        # 0.12.4: Ausrüstung (kg) im Schritt «Ballon & Fahrt» (Gas), Startzeit in 10-min-Schritten, Wettermodell wählbar in «Was ist geplant?» (Vorgabe ICON-EU)
+        assert 'AUSRÜSTUNG' in pg.inner_text('.wiz').upper() and pg.query_selector('.wiz input[type=number]') is not None, 'Gas: Feld «Ausrüstung (kg)» im Schritt 1'
+        pg.fill('.wiz input[type=number]', '45'); pg.dispatch_event('.wiz input[type=number]', 'input'); pg.wait_for_timeout(300)
         pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(900)
+        assert pg.get_attribute('input[type=time]', 'step') == '600', 'Startzeit auf 10 min'
         pg.fill('input[type=time]', '20:00'); pg.dispatch_event('input[type=time]', 'change'); pg.wait_for_timeout(600)   # Start +28 h, 24 h Fahrt → ICON-D2 (48 h) deckt nur einen Teil ab
-        for i in range(4): pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1200)
+        pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1500)
+        sel = pg.query_selector('.wiz .row-actions select')
+        assert sel is not None and pg.evaluate("el => el.value", sel) == 'icon_eu' and 'ICON-EU' in pg.inner_text('.wiz .row-actions'), 'Wettermodell wählbar, Vorgabe ICON-EU'
+        for i in range(3): pg.click('button:has-text("Weiter →")'); pg.wait_for_timeout(1200)
         pg.click('button:has-text("Briefing anlegen")'); pg.wait_for_timeout(3000)
         bid = pg.evaluate('location.hash').split('/')[-1]
         assert pg.query_selector('#panel-A\\.profile') is not None and pg.query_selector('#panel-A\\.retrieve') is not None, 'Gas: Panels «Fahrtprofil» und «Nachfahrer» (≥ 12 h)'
@@ -336,6 +343,9 @@ def run_gas(name):
         pg.click('#panel-A\\.profile details.pf-fold.model summary'); pg.wait_for_timeout(300)
         assert 'Adiab.' in pg.inner_text('#panel-A\\.profile details.pf-fold.model') and pg.evaluate("() => document.querySelector('[id=\"panel-A.profile\"] details.pf-fold.model').open"), 'Modell der Schätzung aufgeklappt mit Spaltenerklärung'
         assert 'Pflichtinhalte' in pg.inner_text('.refresh-all .must-btn') and pg.evaluate("() => getComputedStyle(document.querySelector('.refresh-all')).position") == 'sticky', 'Knopf «Pflichtinhalte ergänzen» in der haftenden Zeile'
+        eq = pg.inner_text('#panel-A\\.equipment')
+        assert 'Druckerhöhung' not in eq and 'Heli' not in eq and 'NVR' in eq, 'Gas: ohne Druckerhöhung/Heli-Bergung in A «Spezialausrüstung»: ' + eq[:120]
+        assert '45' in pg.inner_text('#panel-A\\.massperf'), 'Ausrüstung 45 kg in der Tragkraft-/Ballastrechnung: ' + pg.inner_text('#panel-A\\.massperf')[:200]
         pg.query_selector('#panel-A\\.profile').screenshot(path=f'{OUT}/{name}_01_panel.png')
         pg.click('#panel-A\\.profile button:has-text("Werkzeug öffnen")'); pg.wait_for_timeout(800)
         assert pg.is_visible('.dialog.pf-tool'), 'Werkzeug geöffnet'

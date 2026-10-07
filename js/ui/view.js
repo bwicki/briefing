@@ -5,7 +5,7 @@ import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunRows, twilightClass } from './parts.js';
-import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine } from '../model.js';
+import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine, placeLabel } from '../model.js';
 import { fplView } from './fplpanel.js';
 import { profileView } from './profile.js';
 import { docsLine } from '../stamm.js';
@@ -53,7 +53,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   tools.push(toggle, printButton(() => printDialog(b, ctx, shared, (p) => { applyParts(p.split(',')); setTimeout(() => window.print(), 150); })));
   const menu = [{ label: t('more'), items: [{ label: paxCardTitle(S), fn: () => ctx.navigate(paxHash) }] }];
   const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
-  setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${locked ? ' · 🔒 ' + t('locked') : ''}${ownerNote}`, tools, menu });
+  setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${placeLabel(b.site)} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${locked ? ' · 🔒 ' + t('locked') : ''}${ownerNote}`, tools, menu });
   if (locked) view.appendChild(h('div.card.lockbar.no-print', h('div.card-body.row-actions', [h('span', [icon('lock', 16), ` ${t('locked_title')}`]), h('span.note.small', t('locked_text', { d: fmtDate(z, b.time.startMs, lang) })), !shared && !foreign ? h('button.btn.small.primary', { type: 'button', onclick: lockDialog }, t('locked_copy')) : null])));
   view.appendChild(brief);
   const attachments = [];   // [{ title, images }] → Beilagen am Schluss
@@ -65,7 +65,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   // Kopf: links Datum/Ort und Ballon; rechts Logo, darunter Titelzeile «Fahrtbriefing · Nr · Kennzeichen · Start: …», letzte Änderung, Status
   brief.appendChild(h('div.bh', [
     h('div.l', [
-      h('h1', `${fmtDate(z, b.time.startMs, lang)} · ${b.site.name}`),
+      h('h1', `${fmtDate(z, b.time.startMs, lang)} · ${placeLabel(b.site)}`),
       h('div.bline', `${b.balloon.label} · ${t('kind_' + b.flight.kind)} · LTF ${b.flight.operatorName}`),
     ]),
     h('div.r', h('img', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' })),
@@ -113,7 +113,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
           cell.appendChild(h('table.inner.sched-view', sched.rows.map((r) => { const pl = rowPlace(r); return h('tr', { class: twl(r.ms) }, [h('td', { style: { textAlign: 'left', fontFamily: 'monospace', whiteSpace: 'nowrap' } }, hhmm(z, r.ms)), h('td', { style: { textAlign: 'left' } }, [scheduleRowLabel(r, b, t, S.activities?.custom), r.dur ? h('span.muted.small', ` · ${r.dur} min`) : null]), h('td', { style: { textAlign: 'left' } }, pl?.lat != null ? placeLine({ name: '', lat: pl.lat, lon: pl.lon }, { noElev: true }) : '')]); })));
           break;
         }
-        case 'equipment': { const items = d.content.items || ['none']; cell.appendChild(h('div', S.equipmentItems.map((it) => h('span.chk', `${items.includes(it) ? '☑' : '☐'} ${t('eq_' + it)}`)))); break; }
+        case 'equipment': { const items = d.content.items || ['none']; cell.appendChild(h('div', S.equipmentItems.filter((it) => b.balloon?.type !== 'gas' || !['pressurisation', 'heli'].includes(it)).map((it) => h('span.chk', `${items.includes(it) ? '☑' : '☐'} ${t('eq_' + it)}`)))); break; }
         case 'transition': { const items = d.content.items || S.transitionDefaults[b.site.country] || []; cell.appendChild(h('div', S.transitionAltitudes.map((ta) => h('span.chk', `${items.includes(ta.id) ? '☑' : '☐'} ${ta.label}`)))); break; }
         case 'paxbriefing': cell.appendChild(h('div', [h('div', S.paxBriefingItems.map((it) => h('span.chk', `${(d.content.items || S.paxBriefingItems).includes(it) ? '☑' : '☐'} ${t('pb_' + it)}`))), b.balloon.type === 'gas' ? h('ul', { style: { margin: '4px 0', paddingLeft: '16px' } }, GAS_BRIEFING_EXTRA[lang].map((x) => h('li', x))) : null, h('div.mini', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, AMC1_BOP_BAS_115)])); break;
         case 'text': cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text || (p.defaultText ? tt(p.defaultText) : '–')))); break;

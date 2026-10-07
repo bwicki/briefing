@@ -4,7 +4,7 @@ import { t, getLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, kv, stats, fieldAdd } from './widgets.js';
 import { scheduleEditor } from './parts.js';
-import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan, directionText, isLocked } from '../model.js';
+import { newBriefing, setStart, sunFor, massPerf, scheduleFor, equipmentSuggest, phaseOf, upgradeBriefing, scheduleRowLabel, setFirstMeeting, applyLanding, applyBalloonToPlan, directionText, isLocked, placeLabel } from '../model.js';
 import { placeRow, placeLine, pickPlace, mapsLink, typeToPick } from './place.js';
 import { stammLabel } from '../stamm.js';
 import { resolveBalloon } from '../defaults.js';
@@ -14,6 +14,7 @@ import { geocode, pointInfo, siteWeatherAt, route } from '../net.js';
 import { startAmpel, quickTraj } from '../auto/data.js';
 import { baseLayers } from './autorender.js';
 import { TRAJ_COLORS, targetEstimate } from '../auto/traj.js';
+import { MODELS } from '../auto/openmeteo.js';
 import { trailerMinutes } from '../calc/schedule.js';
 import { mandatoryPanels } from '../panels.js';
 import { tt } from '../i18n.js';
@@ -69,7 +70,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
   function summaryLines() {
     return [
       `${b.balloon?.label || ''} · ${t('kind_' + b.flight.kind)} · ${b.flight.operatorName}`,
-      `${b.site.name || '?'} · ${fmtDate(tz(), b.time.startMs, lang)} ${hhmm(tz(), b.time.startMs)} LT`,
+      `${placeLabel(b.site) || '?'} · ${fmtDate(tz(), b.time.startMs, lang)} ${hhmm(tz(), b.time.startMs)} LT`,
       `${fmtDur(b.intent.durationMin)} · ${b.intent.altMinFt}–${b.intent.altMaxFt} ft`,
       `${b.persons.pic} · ${b.persons.pax.length} Pax`,
       `${b.schedule.meetingName || '–'}`,
@@ -143,7 +144,10 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       const mapEl = h('div.map.trajprev');
       const note = h('div.note', t('trajprev_loading'));
       const legend = h('div.traj-legend');
-      body.append(note, legend, mapEl);
+      // Wettermodell wählbar (0.12.4): Vorgabe ICON-EU; Modelle, die die Fahrt nicht abdecken, mit ⚠ – bei der Warnung «reicht nur … voraus» hier umstellen
+      const hoursToStart = Math.max(0, (b.time.startMs - Date.now()) / 3600000), needH = hoursToStart + (b.intent.durationMin || 120) / 60;
+      const modelSel = select(MODELS.filter((m) => !m.noLevels).map((m) => ({ value: m.key, label: `${m.name}${m.key ? ` · ${m.note}` : ''}${m.key && m.hours < needH ? ` ⚠ ${t('pf_modelShort', { h: Math.round(Math.max(0, m.hours - hoursToStart)) })}` : ''}` })), b.meteo?.model ?? 'icon_eu', { onchange: (e) => { (b.meteo = b.meteo || { topHpa: 500 }).model = e.target.value; persistSoon(); render(); } });
+      body.append(h('div.row-actions', [h('span.note.small', t('auto_model')), modelSel]), note, legend, mapEl);
       if (b.site.lat == null) { note.textContent = t('site') + '?'; return; }
       const elevFt = Math.round((b.site.elev || 0) * 3.28084);
       const lo = b.intent.altMinFt || 500, hi = b.intent.altMaxFt || 5000;
@@ -190,7 +194,10 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       const img = (x) => x?.image ? h('div.f.bimg-f', [h('label', '\u00a0'), h('img.bimg', { src: x.image, alt: x.id || '' })]) : null;
       if (b.balloonSel.type === 'gas') {
         combo.appendChild(field(t('envelope'), select(S.envelopes.map((e) => ({ value: e.id, label: stammLabel(e, `${e.reg || e.id} · ${e.model} ${e.volume} m³`) })), b.balloonSel.envelopeId, { onchange: (e) => { b.balloonSel.envelopeId = e.target.value; applyBalloon(); redraw(); } })));
-        combo.appendChild(field(t('basket'), select(S.baskets.map((k) => ({ value: k.id, label: stammLabel(k, `${k.name} · ${k.mass} kg · max ${k.maxPersons} P.`) })), b.balloonSel.basketId, { onchange: (e) => { b.balloonSel.basketId = e.target.value; applyBalloon(); } })));
+        combo.appendChild(field(t('basket'), select(S.baskets.map((k) => ({ value: k.id, label: stammLabel(k, `${k.name} · ${k.mass} kg · max ${k.maxPersons} P.`) })), b.balloonSel.basketId, { onchange: (e) => { b.balloonSel.basketId = e.target.value; applyBalloon(); redraw(); } })));
+        // Ausrüstung (Instrumente, Sandsäcke leer, Leinen, Verpflegung …) – zählt zur Startmasse neben Pilot/Crew; Vorgabe aus dem Korb (0.12.4)
+        const eqIn = input('number', b.balloon?.masses?.equipment ?? 45, { min: 0, max: 300, step: 1, oninput: (e) => { if (b.balloon?.masses) { b.balloon.masses.equipment = Math.max(0, +e.target.value || 0); persistSoon(); } } });
+        combo.appendChild(field(`${t('gb_equipKg')} (kg)`, eqIn)); combo.appendChild(h('div.note.small', { style: { flexBasis: '100%' } }, t('gb_equipHint')));
         { const im = img(S.envelopes.find((e) => e.id === b.balloonSel.envelopeId)); if (im) combo.appendChild(im); }
       } else {
         combo.appendChild(field(t('registration'), select(S.hab.map((x) => ({ value: x.id, label: stammLabel(x, `${x.reg || x.id} · ${x.model}`) })), b.balloonSel.id, { onchange: (e) => { b.balloonSel.id = e.target.value; applyBalloon(); redraw(); } })));
@@ -240,7 +247,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const ctry = select([['CH', 'CH'], ['DE', 'DE'], ['AT', 'AT'], ['FR', 'FR'], ['IT', 'IT'], ['LI', 'LI'], ['', t('unknown')]].map(([v, l]) => ({ value: v, label: l })), b.site.country, { onchange: (e) => { b.site.country = e.target.value; refreshSun(); persistSoon(); } });
     const tzIn = input('text', b.site.tz, { oninput: (e) => { b.site.tz = e.target.value || 'Europe/Zurich'; applyTime(); } });
     const dateIn = input('date', b.time.date, { onchange: applyTime });
-    const timeIn = input('time', b.time.time, { onchange: applyTime });
+    const timeIn = input('time', b.time.time, { onchange: applyTime, step: 600 });   // Startzeit auf 10 min (0.12.4)
     const baseRow = h('div.chips', ['LT', 'UTC'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': b.time.base === k, onclick: (e) => { b.time.base = k; baseRow.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); applyTime(); } }, k)));
     const sunBox = h('div.note');
     const horizonBox = h('div.note');

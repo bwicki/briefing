@@ -9,7 +9,7 @@
  */
 import { load, save, del, uid } from './util.js';
 import { mergeSettings } from './defaults.js';
-import { briefingYear, formatNo, lockMs } from './model.js';
+import { briefingYear, formatNo, lockMs, placeLabel } from './model.js';
 
 const cfg = (typeof window !== 'undefined' && window.BRIEFING_CONFIG) || {};
 const API = (cfg.apiBase || '').replace(/\/$/, '');
@@ -161,7 +161,7 @@ const remote = {
 
 function summary(b) {
   return {
-    id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: lockMs(b), tz: b.site?.tz, site: b.site?.name, icao: b.site?.icao, elev: b.site?.elev,
+    id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: lockMs(b), tz: b.site?.tz, site: placeLabel(b.site), icao: b.site?.icao, elev: b.site?.elev,
     balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo, progress: b.progress ?? null, edition: b.edition ?? null,
     revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy, links: (b.accessCount || 0),
   };

@@ -6,7 +6,7 @@ import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, paxLine, countriesLine } from '../model.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, paxLine, countriesLine, placeLabel } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock, askAi } from './autopanels.js';
@@ -68,7 +68,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       ].filter(Boolean) },
     ].filter(Boolean);
     const sub = h('span', [h('span.rev', t('rev', { n: b.edition ?? b.revision ?? 0, t: b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–', who: b.updatedBy || '–' })), ' · ', b.status === 'final' ? tag('final', t('released', { n: b.finalNo })) : tag('', t('status_progress', { p: completion(b, S) })), ' · ', tag(phaseOf(b.time.startMs) === 'final' ? 'final-phase' : phaseOf(b.time.startMs) === 'plan' ? 'plan' : 'pre', t('phase_' + phaseOf(b.time.startMs))), shared ? ` · ${shared.role === 'edit' ? t('ac_editlink') : t('ac_readonly')} · ${shared.person}` : '']);
-    setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${b.site.name || ''} · ${b.balloon.reg}`, sub, tools, menu });
+    setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${placeLabel(b.site)} · ${b.balloon.reg}`, sub, tools, menu });
   }
 
   // ---------------------------------------------------------------- Layout
@@ -319,7 +319,9 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     if (!d.content.items) d.content.items = sugg.length ? [...sugg] : ['none'];
     const sel = new Set(d.content.items);
     const box = h('div');
-    for (const it of S.equipmentItems) box.appendChild(check(t('eq_' + it), sel.has(it), (on) => { if (on) sel.add(it); else sel.delete(it); if (it === 'none' && on) { S.equipmentItems.filter((x) => x !== 'none').forEach((x) => sel.delete(x)); } else if (on) sel.delete('none'); d.content.items = [...sel]; box.querySelectorAll('input').forEach((c, i) => { c.checked = sel.has(S.equipmentItems[i]); }); touched(p.key); }));
+    // Gasballon: Druckerhöhung und Heli-Bergung gibt es nicht (0.12.4)
+    const items = S.equipmentItems.filter((it) => b.balloon?.type !== 'gas' || !['pressurisation', 'heli'].includes(it));
+    for (const it of items) box.appendChild(check(t('eq_' + it), sel.has(it), (on) => { if (on) sel.add(it); else sel.delete(it); if (it === 'none' && on) { S.equipmentItems.filter((x) => x !== 'none').forEach((x) => sel.delete(x)); } else if (on) sel.delete('none'); d.content.items = [...sel]; box.querySelectorAll('input').forEach((c, i) => { c.checked = sel.has(S.equipmentItems[i]); }); touched(p.key); }));
     return h('div', [box, sugg.length ? h('div.note', t('eq_suggest', { s: sugg.map((x) => t('eq_' + x)).join(', ') })) : null]);
   }
   function transitionBlock(p, d) {

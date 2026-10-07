@@ -22,7 +22,7 @@ const shareTok = (ctx) => ctx.shared?.token;
 
 /** Modell-Leiste über Abschnitt B. */
 export function meteoBar(b, ctx, { onChange, refreshAll, readOnly }) {
-  if (!b.meteo) b.meteo = { model: suggestModel((b.time.startMs - Date.now()) / 3600000), topHpa: 500 };
+  if (!b.meteo) b.meteo = { model: 'icon_eu', topHpa: 500 };   // Vorgabe ICON-EU (0.12.4)
   const hours = (b.time.startMs - Date.now()) / 3600000;
   const ok = modelsFor(hours).map((m) => m.key);
   const opts = MODELS.filter((m) => !m.noLevels).map((m) => ({ value: m.key, label: `${m.name} · ${m.note}${ok.includes(m.key) ? '' : ' ✗'}` }));

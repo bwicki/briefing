@@ -514,16 +514,84 @@ async function notamAutorouter(env, decrypt, ctx, lat, lon, radiusNm, cc) {
   });
   return { items, total: items.length, source: 'autorouter NOTAM API', generated: new Date().toISOString() };
 }
+/**
+ * ICAO-NOTAM-Text (A1234/26 NOTAMN … Q) … A) … B) … C) … E) …) in ein Objekt zerlegen; Koordinaten und Radius aus der Q-Zeile
+ * (4723N00757E005 → 47.38, 7.95, 5 NM). Gemeinsam für DINS und FAA NOTAM Search (0.12.4).
+ */
+export function parseIcaoNotam(txt, fallbackLoc) {
+  const s = String(txt || '').replace(/\r/g, '').trim();
+  const head = /^([A-Z]\d{4}\/\d{2})\s+NOTAM([NRC])/m.exec(s);
+  const qm = /Q\)\s*([A-Z]{4})\/(Q[A-Z]{4})\/([IV]+)\/([A-Z]+)\/([A-Z]+)\/(\d{3})\/(\d{3})\/(\d{4})([NS])(\d{5})([EW])(\d{3})/.exec(s);
+  const fld = (k, next) => { const m = new RegExp(`\\b${k}\\)\\s*([\\s\\S]*?)(?=\\s(?:${next})\\)|$)`).exec(s); return m ? m[1].trim() : ''; };
+  const a = fld('A', 'B|C|D|E|F|G'), b = fld('B', 'C|D|E|F|G'), c = fld('C', 'D|E|F|G'), e = fld('E', 'F|G'), f = fld('F', 'G'), g = fld('G', '$');
+  const ymd = (v) => { const m = /^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/.exec(v || ''); return m ? `20${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00Z` : null; };
+  const lat = qm ? (+qm[8].slice(0, 2) + +qm[8].slice(2) / 60) * (qm[9] === 'S' ? -1 : 1) : null;
+  const lon = qm ? (+qm[10].slice(0, 3) + +qm[10].slice(3) / 60) * (qm[11] === 'W' ? -1 : 1) : null;
+  const loc = (a.split(/\s+/)[0] || fallbackLoc || '').toUpperCase();
+  return { id: `${loc}-${head ? head[1] : s.slice(0, 12)}`, number: head ? head[1] : '', type: head ? head[2] : 'N', location: loc, icao: loc, fir: qm ? qm[1] : null, code: qm ? qm[2].slice(1) : null, scope: qm ? qm[5] : null,
+    start: ymd(b), end: /PERM/.test(c) ? 'PERM' : ymd(c), est: /EST/.test(c), text: e, formatted: s, minFL: qm ? +qm[6] : null, maxFL: qm ? +qm[7] : null, lat, lon, radius: qm ? +qm[12] : null, lowerTxt: f || null, upperTxt: g || null };
+}
+const withinNm = (lat, lon, radiusNm) => (it) => { if (it.lat == null || it.lon == null) return true; return distKm(lat, lon, it.lat, it.lon) / 1.852 <= radiusNm + Math.min(it.radius || 0, 300); };
+/** DINS (notams.faa.gov, US-DoD-NOTAM-Dienst, weltweit, ohne Schlüssel): NOTAMs der FIRs der beteiligten Länder, Umkreis über die Q-Zeile. */
+async function notamDins(ctx, lat, lon, radiusNm, cc) {
+  const codes = [...new Set((cc.length ? cc : ['CH']).flatMap((c) => FIRS[String(c).toUpperCase()] || []))];
+  if (!codes.length) codes.push('LSAS');
+  const rows = await cached(ctx, `notam/dins/${codes.join('-')}`, 900, async () => {
+    const url = `https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Raw&retrieveLocId=${encodeURIComponent(codes.join(' '))}&actionType=notamRetrievalByICAOs`;
+    const html = await (await get(url, { accept: 'text/html' }, 25000)).text();
+    const out = [];
+    for (const m of html.matchAll(/<pre[^>]*>([\s\S]*?)<\/pre>/gi)) {
+      const txt = m[1].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+      if (/^[A-Z]\d{4}\/\d{2}\s+NOTAM/.test(txt)) out.push(parseIcaoNotam(txt));
+    }
+    if (!out.length && !/NOTAM/i.test(html)) throw new Error('DINS: keine NOTAM-Daten im Antworttext');
+    return out;
+  });
+  const items = rows.filter(withinNm(lat, lon, radiusNm));
+  return { items, total: items.length, source: 'FAA DINS (FIR-NOTAMs, ohne Schlüssel)', generated: new Date().toISOString(), note: `FIR ${codes.join(', ')}` };
+}
+/** FAA NOTAM Search (notams.aim.faa.gov, ohne Schlüssel, inoffizielle JSON-Schnittstelle der Suchseite): Umkreis um Breite/Länge. */
+async function notamSearch(ctx, lat, lon, radiusNm) {
+  const dms = (v) => { const a = Math.abs(v), d = Math.floor(a), mi = Math.floor((a - d) * 60), se = Math.round(((a - d) * 60 - mi) * 60); return [d, mi, se]; };
+  const [latD, latM, latS] = dms(lat), [lonD, lonM, lonS] = dms(lon);
+  const data = await cached(ctx, `notam/search/${lat.toFixed(2)},${lon.toFixed(2)},${radiusNm}`, 900, async () => {
+    const items = [];
+    for (let offset = 0; offset < 600; offset += 30) {
+      const body = new URLSearchParams({ searchType: '3', designatorsForLocation: '', designatorForAccountable: '', latDegrees: String(latD), latMinutes: String(latM), latSeconds: String(latS), longDegrees: String(lonD), longMinutes: String(lonM), longSeconds: String(lonS),
+        radius: String(Math.round(radiusNm)), sortColumns: '5 false', sortDirection: 'true', radiusSearchOnDesignator: 'false', radiusSearchDesignator: '', latitudeDirection: lat >= 0 ? 'N' : 'S', longitudeDirection: lon >= 0 ? 'E' : 'W',
+        freeFormText: '', flightPathText: '', flightPathDivertAirfields: '', flightPathBuffer: '4', flightPathIncludeNavaids: 'true', flightPathIncludeArtcc: 'false', flightPathIncludeTfr: 'true', flightPathIncludeRegulatory: 'false', flightPathResultsType: 'All NOTAMs',
+        archiveDate: '', archiveDesignator: '', offset: String(offset), notamsOnly: 'false', filters: '', minRunwayLength: '', minRunwayWidth: '', runwaySurfaceTypes: '', predefinedAbbreviation: '', searchQuery: '' });
+      const j = await (await get('https://notams.aim.faa.gov/notamSearch/search', { method: 'POST', body: body.toString(), headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', Referer: 'https://notams.aim.faa.gov/notamSearch/nsapp.html', 'X-Requested-With': 'XMLHttpRequest' } }, 25000)).json();
+      if (!Array.isArray(j.notamList)) throw new Error('NOTAM Search: unerwartete Antwort');
+      for (const n of j.notamList) {
+        const txt = n.icaoMessage || n.traditionalMessage || '';
+        const it = /NOTAM[NRC]/.test(txt) ? parseIcaoNotam(txt, n.facilityDesignator) : { id: `${n.facilityDesignator}-${n.notamNumber}`, number: n.notamNumber || '', type: 'N', location: n.facilityDesignator, icao: n.icaoId || n.facilityDesignator, start: null, end: null, text: txt, formatted: txt, minFL: null, maxFL: null, lat: null, lon: null, radius: null };
+        if (!it.number && n.notamNumber) it.number = n.notamNumber;
+        items.push(it);
+      }
+      if (j.notamList.length < 30 || offset + 30 >= (j.totalNotamCount || 0)) break;
+    }
+    return items;
+  });
+  return { items: data, total: data.length, source: 'FAA NOTAM Search (ohne Schlüssel, inoffiziell)', generated: new Date().toISOString() };
+}
 async function notam(env, decrypt, ctx, q) {
   const lat = +q.get('lat'), lon = +q.get('lon'), radius = Math.min(100, +q.get('nm') || 25);
   if (!isFinite(lat) || !isFinite(lon)) return err('lat/lon');
   const cc = String(q.get('cc') || '').split(',').map((x) => x.trim()).filter(Boolean);
   // 1) autorouter, wenn Zugang hinterlegt (Einstellungen → Zugänge)
   try { const ar = await notamAutorouter(env, decrypt, ctx, lat, lon, radius, cc); if (ar) return json(ar); }
-  catch (e) { console.warn('autorouter', e.message); if (!(await getSecret(env, decrypt, 'faa_client_id'))) return err(`autorouter: ${e.message}`, 502); }
-  // 2) FAA NOTAM API (ein Wiederholungsversuch, da der Dienst oft nicht antwortet)
+  catch (e) { console.warn('autorouter', e.message); }
+  // 2) FAA NOTAM API (ein Wiederholungsversuch, da der Dienst oft nicht antwortet); ohne Schlüssel → 3) DINS, 4) FAA NOTAM Search (beide ohne Schlüssel, 0.12.4)
   const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
-  if (!id || !secret) return err('NOTAM-Zugang fehlt (Einstellungen → Zugänge: autorouter oder FAA)', 424);
+  if (!id || !secret) {
+    const errors = [];
+    for (const [name, fn] of [['DINS', () => notamDins(ctx, lat, lon, radius, cc)], ['NOTAM Search', () => notamSearch(ctx, lat, lon, radius)]]) {
+      try { const r = await fn(); if (r.items.length || name === 'NOTAM Search') return json({ ...r, errors }); errors.push(`${name}: keine Treffer`); }
+      catch (e) { console.warn(name, e.message); errors.push(`${name}: ${e.message}`); }
+    }
+    return err(`NOTAM-Quellen ohne Schlüssel nicht erreichbar (${errors.join('; ')}) – Zugang hinterlegen (Einstellungen → Zugänge: autorouter oder FAA)`, 502);
+  }
   const data = await cached(ctx, `notam/${lat.toFixed(2)},${lon.toFixed(2)},${radius}`, 900, async () => {
     const url = `https://external-api.faa.gov/notamapi/v1/notams?locationLatitude=${lat.toFixed(4)}&locationLongitude=${lon.toFixed(4)}&locationRadius=${radius}&pageSize=1000&sortBy=effectiveStartDate&sortOrder=Asc`;
     let j;

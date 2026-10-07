@@ -5,7 +5,7 @@ import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { textarea, field, check } from './widgets.js';
 import { placeLine, mapsUrl } from './place.js';
-import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel, balloonImage, titleLine, lastChangeLine, fileBase } from '../model.js';
+import { sunFor, scheduleFor, upgradeBriefing, scheduleRowLabel, balloonImage, titleLine, lastChangeLine, fileBase, placeLabel } from '../model.js';
 import { qrSvg } from './access.js';
 import { hhmm, fmtDate, fmtDateTime, fmtDur } from '../calc/time.js';
 import { goNoGo } from '../calc/gonogo.js';
@@ -26,12 +26,12 @@ export function icsFor(b, ctx, opts = {}) {
   const zz = z(b), lang = getLang();
   const lines = rows.map((r) => `${hhmm(zz, r.ms)} ${scheduleRowLabel(r, b, t, ctx.settings.activities?.custom)}`);
   const sc = b.schedule;
-  const loc = sc.meetingLat != null ? `${sc.meetingName} (${sc.meetingLat.toFixed(5)}, ${sc.meetingLon.toFixed(5)})` : sc.meetingName || b.site.name;
-  const desc = [`${t('appName')} ${fmtDate(zz, b.time.startMs, lang)} · ${b.site.name} · ${b.balloon.label}`, `PIC ${b.persons.pic}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''}`, '', ...lines, '', sc.meetingLat != null ? `${t('meeting')}: ${mapsUrl(sc.meetingLat, sc.meetingLon)}` : '', b.site.lat != null ? `${t('site')}: ${mapsUrl(b.site.lat, b.site.lon)}` : '', opts.link ? `Briefing: ${opts.link}` : ''].filter((x) => x !== null).join('\n');
+  const loc = sc.meetingLat != null ? `${sc.meetingName} (${sc.meetingLat.toFixed(5)}, ${sc.meetingLon.toFixed(5)})` : sc.meetingName || placeLabel(b.site);
+  const desc = [`${t('appName')} ${fmtDate(zz, b.time.startMs, lang)} · ${placeLabel(b.site)} · ${b.balloon.label}`, `PIC ${b.persons.pic}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''}`, '', ...lines, '', sc.meetingLat != null ? `${t('meeting')}: ${mapsUrl(sc.meetingLat, sc.meetingLon)}` : '', b.site.lat != null ? `${t('site')}: ${mapsUrl(b.site.lat, b.site.lon)}` : '', opts.link ? `Briefing: ${opts.link}` : ''].filter((x) => x !== null).join('\n');
   const now = icsDate(Date.now());
   return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Wicki Aero//Fahrtbriefing//DE', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
     `UID:briefing-${b.id}@briefing.wicki.aero`, `DTSTAMP:${now}`, `DTSTART:${icsDate(first)}`, `DTEND:${icsDate(last)}`,
-    `SUMMARY:${icsEsc(`${t('ics_title')} ${b.site.name} · ${b.balloon.reg}`)}`, `LOCATION:${icsEsc(loc)}`, `DESCRIPTION:${icsEsc(desc)}`,
+    `SUMMARY:${icsEsc(`${t('ics_title')} ${placeLabel(b.site)} · ${b.balloon.reg}`)}`, `LOCATION:${icsEsc(loc)}`, `DESCRIPTION:${icsEsc(desc)}`,
     b.site.lat != null ? `GEO:${b.site.lat.toFixed(5)};${b.site.lon.toFixed(5)}` : '', `URL:${opts.link || location.origin + location.pathname}`,
     'BEGIN:VALARM', 'TRIGGER:-PT12H', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(t('ics_title'))}`, 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].filter(Boolean).join('\r\n');
 }
@@ -48,7 +48,7 @@ export function crewMessage(b, ctx, link) {
   const zz = z(b), lang = getLang(), sc = b.schedule;
   const L = lang === 'en';
   const lines = [
-    `${L ? 'Balloon flight' : 'Ballonfahrt'} ${fmtDate(zz, b.time.startMs, lang)} – ${b.site.name} (${b.site.icao})`,
+    `${L ? 'Balloon flight' : 'Ballonfahrt'} ${fmtDate(zz, b.time.startMs, lang)} – ${placeLabel(b.site)} (${b.site.icao})`,
     `${b.balloon.label} · PIC ${b.persons.pic}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''} · ${b.persons.pax.length} Pax`,
     '',
     ...rows.map((r) => `${hhmm(zz, r.ms)}  ${scheduleRowLabel(r, b, t, ctx.settings.activities?.custom)}`),
@@ -68,7 +68,7 @@ export async function crewDialog(b, ctx) {
     try { const links = await ctx.store.listAccess(b.id); const l = links.find((x) => x.role === 'read') || links[0]; if (l) link = `${location.origin}${location.pathname}#/s/${l.token}`; } catch { /* ohne Link */ }
   }
   const txt = textarea(crewMessage(b, ctx, link), { rows: 14 });
-  const subject = `${t('ics_title')} ${fmtDate(z(b), b.time.startMs, getLang())} ${b.site.name}`;
+  const subject = `${t('ics_title')} ${fmtDate(z(b), b.time.startMs, getLang())} ${placeLabel(b.site)}`;
   const content = h('div', [h('div.note', t('crew_hint')), txt, h('div.row-actions', { style: { marginTop: '8px' } }, [
     h('button.btn', { type: 'button', onclick: () => navigator.clipboard.writeText(txt.value).then(() => toast(t('copied'))) }, t('copy')),
     h('a.btn', { href: '#', onclick: (e) => { e.preventDefault(); window.open(`https://wa.me/?text=${encodeURIComponent(txt.value)}`, '_blank', 'noopener'); } }, t('ac_whatsapp')),
@@ -176,7 +176,7 @@ export function paxSheet(b, ctx) {
     h('div.bs', t('pax_meet')),
     h('div.pax-meet', [h('div.kv.pax-kv', [
       [t('meeting'), meet ? placeLine({ name: meet.name, lat: meet.lat, lon: meet.lon }, { noElev: true }) : (b.schedule.meetingName || '–')],
-      [t('pax_time'), depart ? `${hhmm(zz, depart.ms)} LT` : '–'], [t('sch_start'), `${hhmm(zz, b.time.startMs)} LT · ${b.site.name}`],
+      [t('pax_time'), depart ? `${hhmm(zz, depart.ms)} LT` : '–'], [t('sch_start'), `${hhmm(zz, b.time.startMs)} LT · ${placeLabel(b.site)}`],
       [t('duration'), `${fmtDur(b.intent.durationMin)} (${t('pax_approx')})`], [t('sch_landing'), landing ? `${hhmm(zz, landing.ms)} LT · ${t('pax_landingNote')}` : '–'],
     ].map(([k, v]) => [h('div.k', k), h('div.v', v)])), qr ? h('figure.pax-qr', [qr, h('figcaption.mini', t('pax_qr'))]) : null]),
     h('div.bs', t('pax_bring')), h('ul.pax-list', items.map((x) => h('li', x))),
@@ -195,7 +195,7 @@ export async function renderPaxCard(view, ctx, id, opts = {}) {
   if (!b) { view.appendChild(h('div.err', 'not found')); return; }
   const zz = z(b), lang = getLang();
   const back = ctx.shared?.material ? `#/m/${ctx.shared.token}/${b.id}` : ctx.shared ? `#/s/${ctx.shared.token}/v` : `#/b/${b.id}`;
-  setHeader({ title: paxCardTitle(ctx.settings), sub: `${fmtDate(zz, b.time.startMs, lang)} · ${b.site.name}`, tools: [h('button.btn', { type: 'button', onclick: () => ctx.navigate(back) }, '← ' + t('view_brief')), printButton(() => window.print())] });
+  setHeader({ title: paxCardTitle(ctx.settings), sub: `${fmtDate(zz, b.time.startMs, lang)} · ${placeLabel(b.site)}`, tools: [h('button.btn', { type: 'button', onclick: () => ctx.navigate(back) }, '← ' + t('view_brief')), printButton(() => window.print())] });
   view.appendChild(paxSheet(b, ctx));
   if (/print=1/.test(location.hash)) setTimeout(() => window.print(), 400);
 }

@@ -21,6 +21,9 @@ import { resolveBalloon, mergeSettings } from '../js/defaults.js';
 import { routeMatrix, countryInfo } from '../js/countries.js';
 import { altAt, msAtKm, kmAtMs, segments, rateClass, reliefBreaches, addStage, removeStage, moveStage, stageWindows, nightFraction, ballastPlan, fitPoints, defaultPoints, hazards, rhoAir, waterRuns, waterFromItems } from '../js/calc/profile.js';
 import { fisSectors } from '../js/auto/profiledata.js';
+import { parseIcaoNotam } from '../worker/src/wx.js';
+import { placeLabel } from '../js/model.js';
+import { inSwitzerland } from '../js/panels.js';
 import { parseDwdAstro } from '../js/calc/sun.js';
 import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, isLocked, completion, fileBase, titleLine, lastChangeLine, paxLine, duplicateBriefing, newBriefing, upgradeBriefing, ageRefMs, fillFractionOf, massPerf } from '../js/model.js';
 import { carCode } from '../js/net.js';
@@ -527,6 +530,13 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   const sq = (lat0, lon0, lat1, lon1) => [[[lat0, lon0], [lat0, lon1], [lat1, lon1], [lat1, lon0], [lat0, lon0]]];
   const fs = fisSectors([{ id: 'a', typeKey: 'FIS', name: 'A INFORMATION', country: 'CH', freqs: [{ value: '124.700' }], polys: [sq(47, 8, 48, 9)] }, { id: 'b', typeKey: 'FIS', name: 'B INFORMATION', country: 'DE', freqs: [{ value: '128.950' }], polys: [sq(48, 8, 49, 9)] }, { id: 'c', typeKey: 'CTR', name: 'x', polys: [sq(47, 8, 49, 9)] }], Array.from({ length: 21 }, (_, i) => ({ km: i * 10, lat: 47.2 + i * 0.1, lon: 8.5 })));
   ok(fs.length === 2 && fs[0].name === 'A INFORMATION' && fs[0].toKm === 70 && fs[1].fromKm === 80 && fs[1].freqs[0] === '128.950' && fisSectors([], []).length === 0, 'FIS-Sektoren entlang der Bahn (openAIP Typ FIS): Folge mit km-Abschnitten und Frequenz: ' + JSON.stringify(fs));
+  // 0.12.4: NOTAM-Text (DINS / NOTAM Search), Ortsname mit Länderkennzeichen, Schweiz-Umriss
+  const nt = parseIcaoNotam('B1234/26 NOTAMN\nQ) LSAS/QRTCA/IV/BO/W/000/130/4723N00757E005\nA) LSAS B) 2610071000 C) 2610071600\nE) TEMPO RESTRICTED AREA LS-R5 ACTIVE.\nF) GND G) FL130');
+  ok(nt.number === 'B1234/26' && nt.location === 'LSAS' && nt.code === 'RTCA' && Math.abs(nt.lat - 47.383) < 0.01 && Math.abs(nt.lon - 7.95) < 0.01 && nt.radius === 5 && nt.minFL === 0 && nt.maxFL === 130 && nt.start === '2026-10-07T10:00:00Z' && nt.end === '2026-10-07T16:00:00Z' && nt.text.startsWith('TEMPO') && nt.lowerTxt === 'GND' && nt.upperTxt === 'FL130', 'ICAO-NOTAM zerlegt (Q-Zeile, A–G): ' + JSON.stringify(nt).slice(0, 160));
+  ok(parseIcaoNotam('A0456/26 NOTAMR A0400/26\nQ) EDMM/QMRLC/IV/NBO/A/000/999/4812N01147E005\nA) EDDM B) 2610061200 C) PERM\nE) RWY 08L/26R CLSD.').end === 'PERM', 'NOTAM PERM');
+  ok(placeLabel({ name: 'Wolfegg', country: 'DE' }) === 'DE-Wolfegg' && placeLabel({ name: 'Gladbeck (DE)', country: 'DE' }) === 'DE-Gladbeck' && placeLabel({ name: 'Oberlunkhofen AG', country: 'CH' }) === 'Oberlunkhofen AG' && placeLabel({ name: 'DE-Wolfegg', country: 'DE' }) === 'DE-Wolfegg', 'Ortsname mit Länderkennzeichen ausserhalb CH');
+  ok(inSwitzerland(47.37, 8.54) && inSwitzerland(46.20, 6.14) && inSwitzerland(46.0, 8.95) && !inSwitzerland(47.82, 9.80) && !inSwitzerland(47.50, 9.75) && !inSwitzerland(47.99, 7.85), 'Schweiz-Umriss: Zürich/Genf/Lugano innen, Wolfegg/Bregenz/Freiburg aussen');
+  ok(!touchesCH({ site: { country: 'DE', lat: 47.82, lon: 9.80 }, landing: { country: 'PL', lat: 52.2, lon: 21.0 }, panels: { 'B.traj': { content: { auto: { data: { tracks: [{ points: [{ lat: 47.82, lon: 9.80 }, { lat: 48.5, lon: 11 }] }] } } } } } }) && touchesCH({ site: { country: 'DE', lat: 47.82, lon: 9.80 }, panels: { 'B.traj': { content: { auto: { data: { tracks: [{ points: [{ lat: 47.4, lon: 9.0 }] }] } } } } } }), 'DABS nur, wenn die Fahrt die Schweiz berührt (Wolfegg → Polen nicht; Bahn über CH schon)');
   ok(waterFromItems([], [], []).length === 0 && waterFromItems([{ km: 0 }, { km: 1 }], [null, null], []).length === 0, 'Wasserflächen aus OSM: leer ohne Treffer');
   ok(hz.map((x) => x.type).join(',') === 'wind,ice,cb,wind' && hz[0].kmEnd === 20, 'Achtung-Zeichen: Wind (anhaltend zusammengefasst, nach Pause neu), Vereisung, CB, kein Nebel in 1800 m über Grund: ' + hz.map((x) => x.type + '@' + x.km + '-' + x.kmEnd).join(','));
 }

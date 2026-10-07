@@ -67,9 +67,13 @@ export function visiblePanels(settings, briefing) {
   return PANELS.filter((p) => !hidden.has(p.key) && (!p.chOnly || ch) && (!p.gasOnly || gas) && (!p.minDurationMin || dur >= p.minDurationMin));
 }
 /** Berührt die Fahrt die Schweiz? Startort/Landeraum/FIR-Folge/Trajektorienpunkte (grobe Länderschätzung). */
+// Grober Umriss der Schweiz (lat, lon; ~20 Stützpunkte) – ersetzt das Rechteck, das Süddeutschland und Vorarlberg mitgezählt hat (0.12.4)
+const CH_OUTLINE = [[46.22, 5.96], [46.40, 6.12], [46.75, 6.45], [47.05, 6.92], [47.30, 7.00], [47.58, 7.52], [47.60, 8.20], [47.78, 8.55], [47.82, 8.72], [47.68, 9.20], [47.55, 9.58], [47.28, 9.53], [47.06, 9.62], [46.92, 10.20], [46.85, 10.48], [46.62, 10.46], [46.40, 10.10], [46.22, 9.30], [45.83, 9.03], [46.00, 8.80], [46.10, 8.42], [46.45, 8.08], [46.00, 7.86], [45.92, 7.25], [46.20, 6.85], [46.40, 6.78], [46.30, 6.30], [46.13, 6.30], [46.12, 6.05]];
+const inRing = (lat, lon, ring) => { let inside = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [yi, xi] = ring[i], [yj, xj] = ring[j]; if (((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / ((yj - yi) || 1e-12) + xi)) inside = !inside; } return inside; };
+export const inSwitzerland = (lat, lon) => inRing(lat, lon, CH_OUTLINE);
 export function touchesCH(b) {
   if ((b?.site?.country || '') === 'CH' || (b?.landing?.country || '') === 'CH') return true;
-  const inCH = (lat, lon) => lat >= 45.8 && lat <= 47.9 && lon >= 5.9 && lon <= 10.6;
+  const inCH = inSwitzerland;
   if (b?.landing?.lat != null && inCH(b.landing.lat, b.landing.lon)) return true;
   for (const f of b?.panels?.['C.airspace']?.content?.auto?.data?.firs || []) for (const sq of f.seq || []) if (sq.country === 'CH') return true;
   for (const tr of b?.panels?.['B.traj']?.content?.auto?.data?.tracks || []) for (const p of tr.points || []) if (inCH(p.lat, p.lon)) return true;

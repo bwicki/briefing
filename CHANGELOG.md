@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.12.4 — 2026-10-07 · NOTAM ohne Schlüssel, Gas-Startmasse, Modellwahl, Orte mit Länderkennzeichen
+
+* **NOTAM ohne Zugang:** neue schlüssellose Quellen im Worker – **FAA DINS** (`notams.faa.gov/dinsQueryWeb`,
+  FIR-NOTAMs der beteiligten Länder, Umkreis über die Koordinaten/Radius der Q-Zeile) und **FAA NOTAM Search**
+  (`notams.aim.faa.gov/notamSearch`, Umkreis um Breite/Länge); Reihenfolge autorouter → FAA-API → DINS → NOTAM
+  Search; ICAO-NOTAM-Parser `parseIcaoNotam` (Q-Zeile, A–G, PERM/EST). Beide Quellen sind inoffiziell und aus der
+  Entwicklungsumgebung nicht erreichbar – Live-Test nötig.
+* **Gasballon:** Feld **«Ausrüstung (kg)»** im Schritt «Ballon & Fahrt» (Vorgabe aus dem Korb, Stamm neu 45 kg),
+  zählt zur Startmasse; Spezialausrüstung ohne «Druckerhöhung» und «Heli-Bergung».
+* **Assistent:** Startzeit in 10-min-Schritten; **Wettermodell** im Schritt «Was ist geplant?» wählbar (⚠ bei zu
+  kurzem Horizont), **Vorgabe ICON-EU** für neue Briefings und für die Modell-Leiste.
+* **DABS** nur, wenn die Fahrt die Schweiz berührt – Schweiz-Umriss statt Rechteck (Wolfegg, Bregenz, Freiburg
+  zählen nicht mehr als CH); `inSwitzerland`, `touchesCH`.
+* **Orte:** Start-/Landeorte ausserhalb der Schweiz mit Länderkennzeichen («DE-Wolfegg») in Liste, Kopfzeile,
+  Tagesplanung, Kalender/ICS, Pax-Karte, Briefingsicht (`placeLabel`).
+* Tests: calc 230 (NOTAM-Parser, placeLabel, Umriss, touchesCH), Smoke «gas» (Ausrüstung, 10-min, Modellwahl,
+  A «Spezialausrüstung»).
+
 ## 0.12.3 — 2026-10-07 · NVFR und Start-Ampel
 
 * **Start-Ampel / Meteogramm-Ampel:** bei zugelassener Nachtfahrt («NVFR zulassen» bzw. NVFR-Schalter) wird

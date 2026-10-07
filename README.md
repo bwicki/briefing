@@ -76,6 +76,9 @@ das mit «Lokaler Modus» an.
 
 ### Übersicht «Briefings»
 
+Start- und Landeorte ausserhalb der Schweiz tragen das Länderkennzeichen voran («DE-Wolfegg»; in
+Liste, Kopfzeile, Tagesplanung, Kalender-Export, Briefingsicht; 0.12.4).
+
 Alle Briefings kompakt (zwei Zeilen je Zelle): **#** (Ordnungsnummer, 🔒 bei Sperre), Datum
 und Startzeit, Startort (ICAO-Kurzkoordinaten, Höhe), Ballon, Fahrttyp, **Status** («in Arbeit
 NN %» oder «Final vN», darunter die Phase Vorplanung > 72 h / Planung 24–72 h / Final < 24 h) und
@@ -95,13 +98,15 @@ anlegen» bei gesperrten Briefings.
 Sechs Schritte mit Zurück/Weiter (Eingabetaste = Weiter); der Entwurf wird laufend
 gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
 
-1. **Ballon & Fahrt** — Heissluft (Kennung) oder Gas (Hülle × Korb), Typ der Fahrt mit
+1. **Ballon & Fahrt** — Heissluft (Kennung) oder Gas (Hülle × Korb und **Ausrüstung (kg)**:
+   Instrumente, Leinen, leere Säcke, Verpflegung; Vorgabe aus dem Korb, ca. 45 kg; zählt zur
+   Startmasse neben Pilot und Crew, 0.12.4), Typ der Fahrt mit
    **NVFR-Schalter** (bewusst geplante Nachtfahrt: keine Nacht-Warnungen, Nachtausrüstung
    wird gesetzt), Lufttransportführer, Anlass.
 2. **Ort & Zeit** — Favoriten-Chips (nur Startplätze, die zum Ballontyp passen;
    Kennzeichnung Heissluft/Gas in den Einstellungen) und **Ortswahl**: ins Ortsfeld
    tippen öffnet die Suche direkt. Kurzkoordinaten, Höhe, Land und Zeitzone werden
-   ermittelt (Open-Meteo, Nominatim); Datum, Startzeit, LT/UTC; Sonne/Dämmerung
+   ermittelt (Open-Meteo, Nominatim); Datum, Startzeit (10-min-Schritte), LT/UTC; Sonne/Dämmerung
    sofort, Warnung bei Nachtfahrt mit dem Schalter **«NVFR zulassen»** (macht den Flugplan C
    verbindlich und setzt die Nachtausrüstung; Hinweis «NVFR geplant»); Planungshorizont mit
    verfügbaren Modellen. «Als Favorit speichern» nur, wenn kein Favorit gewählt ist.
@@ -110,7 +115,9 @@ gespeichert, *Als Entwurf speichern* verlässt den Ablauf.
    keine Entscheidung. Mit «NVFR zulassen» entfällt das Kriterium «ausserhalb der
    bürgerlichen Dämmerung» in Start-Ampel und Meteogramm-Ampel (0.12.3); die
    Nachtkennzeichnung im Meteogramm bleibt.
-3. **Fahrtabsicht** — Start-Ampel, Dauer, Höhenband, Trajektorien-Niveaus; **Trajektorien-
+3. **Fahrtabsicht** — Start-Ampel, Dauer, Höhenband, Trajektorien-Niveaus; **Wettermodell**
+   wählbar (Vorgabe ICON-EU; Modelle, die die Fahrt nicht abdecken, mit ⚠ – bei der Warnung
+   «reicht nur … h voraus» hier umstellen, 0.12.4); **Trajektorien-
    Karte mit allen Niveaus** (Legende, Stundenpunkte, zeichnet bei Änderungen neu); ein
    Klick auf die Karte übernimmt den Punkt als **geplanten Landeraum** und füllt die
    Zielrichtung als `Ort · W266° · 25 km · ~1:30 h · ⌀ 1200 m AMSL` (Fahrzeit und
@@ -178,7 +185,7 @@ Panel-Arten:
 * **Berechnet** — Stammdaten, Sonne/Mond, Tragkraft/Ballast (Eingaben Temperatur,
   QNH, Feuchte, Hüllentemperatur; Knopf «aus Modell übernehmen»; Tanks je Briefing
   änderbar), Tagesplanung (Routing, Überschreibungen mit ↺ zurücksetzen),
-  Spezialausrüstung, Übergangshöhe (nach Land vorgekreuzt), Standard-Briefing PAX
+  Spezialausrüstung (Gasballon ohne Druckerhöhung und Heli-Bergung), Übergangshöhe (nach Land vorgekreuzt), Standard-Briefing PAX
   (Checkliste, AMC1 BOP.BAS.115, Zusatzpunkte Gasballon).
 * **Einfüge-Assistent** (Meteo, DABS, NOTAM, SIGWX …) — *Quelle öffnen ↗* führt
   zur Quelle (Einstellungen → Quellen), das Feld nimmt Text per Tastatur und
@@ -234,8 +241,8 @@ kurz danach).
 | Meteogramm | Grafik über Start −6 h … Landung +6 h mit beschrifteten Bändern (Temperatur/Taupunkt mit Extremwerten, Wind/Böen kt mit Fahnen, Bewölkung hoch/mittel/tief, Niederschlag mm/h + CAPE), Zeitachse LT mit Tageswechsel, Start-/Landemarke, Nacht- und Fahrtfenster-Schattierung, Ampelstreifen und Legende; dazu Stundentabelle mit Nebelrisiko und Wolkenbasis | Open-Meteo |
 | Radar | Live-Radar (RainViewer) auf der Karte (weit genug für die Niederschlagsgebiete), Startort und Landeraum markiert, **Webcams im Umkreis automatisch aus öffentlichen Quellen** (europaweit: Windy Webcams API mit Schlüssel, OpenStreetMap ohne; Umkreis in Einstellungen → Meteo, Standard 40 km um Start und Landeraum) plus eigene Liste, als Kamera-Symbol mit Popup (Vorschaubild, Link) und aufklappbarer Liste; Klickboxen Regen/Webcams/Sonden; **Klick auf eine Sonde** verkleinert die Karte und öffnet daneben Emagramm + Daten der Sonde; Links Windy/MeteoSchweiz/Blitzortung/Sat24 — nur am Bildschirm | RainViewer, Windy, OSM/Overpass; über Worker (`/api/wx/webcams`) |
 | Luftraum entlang des Fahrtwegs | **Luftraumanalyse** aus openAIP für die berechneten Trajektorien: je Luftraum *durchfahren* (Bahn innerhalb, Untergrenze unter der geplanten Maximalhöhe; km ab Start, ETA je Bahn), *nahe* (im Korridor, Standard 5 km, Einstellungen → Meteo) oder *oberhalb der Maximalhöhe* (eingeklappt); Typ (CTR, TMA, TMZ, RMZ, R/D/P, TRA/TSA, ATZ …), ICAO-Klasse, Unter-/Obergrenze, Zusatzcodes (NOTAM/REQ/AGRMT, Squawk, Frequenz); reine Klasse-E/G-Lufträume werden nicht gelistet; **Warnungen** Startort in CTR/ATZ und TMA/CTA tiefer als 900 ft über dem Startort (Experte); **FIR-Folge** je Bahn mit Wechselpunkt (km, LT, +h:mm ab Start); Karte mit Polygonen und Bahnen (Bildschirm), Nord-oben-Skizze (Druck). Braucht die Trajektorien (werden sonst mitberechnet) und den openAIP-Schlüssel («Zugänge: openaip» oder der Kachel-Schlüssel der Overlay-URL) | openAIP Core API über Worker `/api/wx/airspace` (6 h Cache je Ausschnitt) |
-| DABS | DABS-PDF (heute/morgen) automatisch holen; Seiten im kleinen Viewer mit Blättern (‹ ›, Pfeiltasten, Link zum PDF), im Druck alle Seiten bzw. als Beilage | skybriefing über Worker, R2 |
-| NOTAM | **autorouter** (wenn «autorouter Nutzer/Kennwort» hinterlegt; NOTAM je FIR der Fahrt – Startort, Landeraum, Lufträume – auf den Umkreis gefiltert) oder FAA-NOTAM-API (Rückfall, ein Wiederholungsversuch), wahlweise **Strecke** (Startort → Landeraum → Trajektorien-Endpunkte, Radius einstellbar) oder **Umkreis um Orte** (Ortswahl, Standard Startort, Radius 200 km); **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | autorouter NOTAM API (`api.autorouter.aero`, OAuth2 mit E-Mail/Kennwort, API-Freischaltung per Support-Ticket) · FAA NOTAM API (Zugänge in Einstellungen → Zugänge) |
+| DABS | nur sichtbar und Pflicht, wenn die Fahrt die Schweiz berührt (Startort/Landeraum in CH, FIR-Folge oder Bahn über der Schweiz – Umriss, kein Rechteck, 0.12.4); DABS-PDF (heute/morgen) automatisch holen; Seiten im kleinen Viewer mit Blättern (‹ ›, Pfeiltasten, Link zum PDF), im Druck alle Seiten bzw. als Beilage | skybriefing über Worker, R2 |
+| NOTAM | **autorouter** (wenn «autorouter Nutzer/Kennwort» hinterlegt; NOTAM je FIR der Fahrt – Startort, Landeraum, Lufträume – auf den Umkreis gefiltert) oder FAA-NOTAM-API (ein Wiederholungsversuch); **ohne Zugang** (0.12.4) zuerst **FAA DINS** (`notams.faa.gov`, FIR-NOTAMs der beteiligten Länder, Umkreis aus der Q-Zeile) und dann **FAA NOTAM Search** (`notams.aim.faa.gov`, Umkreis um Breite/Länge) – beide ohne Schlüssel, inoffiziell, 15 min Cache; wahlweise **Strecke** (Startort → Landeraum → Trajektorien-Endpunkte, Radius einstellbar) oder **Umkreis um Orte** (Ortswahl, Standard Startort, Radius 200 km); **VFR-Filter** (zeitlich, untere Grenze unter Höhenband + 2000 ft, keine reinen IFR-/Infrastruktur-NOTAM); übrige einklappbar | autorouter NOTAM API (`api.autorouter.aero`, OAuth2 mit E-Mail/Kennwort, API-Freischaltung per Support-Ticket) · FAA NOTAM API (Zugänge in Einstellungen → Zugänge) |
 
 **KI-Hinweis:** Knopf im Panel öffnet den Prompt (Fahrtkontext + Panel-Inhalt +
 Bilder, ohne Pax-Namen) zur Kontrolle, sendet ihn über den Worker an die
@@ -438,7 +445,7 @@ die Einstellungen (ohne Zugänge).
 | DABS | skybriefing `o/dabs?today|tomorrow` | Worker `/api/wx/dabs` → R2, Seiten mit pdf.js (vendored) gerendert |
 | Lufträume | openAIP Core API (`api.core.openaip.net/api/airspaces?bbox=…`) | Worker `/api/wx/airspace` mit `openaip`-Schlüssel aus «Zugänge» (Rückfall: Kachel-Schlüssel aus der Overlay-URL), Analyse im Browser (`js/calc/airspace.js`) |
 | Webcams | Windy Webcams API v3, OpenStreetMap/Overpass | Worker `/api/wx/webcams` (Schlüssel `windy_webcams` optional) |
-| NOTAM | autorouter NOTAM API (`api.autorouter.aero`, FIR-Kennungen je Land im Worker) · FAA NOTAM API (`external-api.faa.gov`) als Rückfall | Worker `/api/wx/notam` mit `autorouter_user/pass` bzw. `faa_client_id/secret` aus «Zugänge» |
+| NOTAM | autorouter NOTAM API (`api.autorouter.aero`, FIR-Kennungen je Land im Worker) · FAA NOTAM API (`external-api.faa.gov`) · ohne Zugang: FAA DINS (`notams.faa.gov/dinsQueryWeb`) und FAA NOTAM Search (`notams.aim.faa.gov/notamSearch`) | Worker `/api/wx/notam` mit `autorouter_user/pass` bzw. `faa_client_id/secret` aus «Zugänge», sonst die schlüssellosen Quellen |
 | KI-Hinweis | Anthropic API | Worker `/api/wx/ai` mit `anthropic`-Schlüssel aus «Zugänge» |
 | Radar | RainViewer public API | direkt aus dem Browser (nur Bildschirm) |
 

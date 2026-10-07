@@ -1,3 +1,4 @@
+import { placeLabel } from '../model.js';
 /* Fahrtbriefing — Ortswahl: Dialog mit Karte, Ortssuche, Koordinaten (ICAO-Kurzformat)
  * und Google-Maps-Link. Für Startort, Treffpunkt und geplanten Landeraum.
  *
@@ -24,7 +25,7 @@ export function mapsLink(lat, lon, label) {
 export function placeLine(p, opts = {}) {
   if (!p || p.lat == null) return h('span.muted', opts.empty || t('pick_none'));
   const parts = [];
-  if (p.name && !opts.noName) parts.push(h('span.pname', p.name));
+  if (p.name && !opts.noName) parts.push(h('span.pname', placeLabel(p)));
   parts.push(h('span.mono', icao(p.lat, p.lon)));
   if (opts.decimal) parts.push(h('span.muted.small', `${(+p.lat).toFixed(4)}, ${(+p.lon).toFixed(4)}`));
   if (p.elev != null && !opts.noElev) parts.push(h('span', `${Math.round(p.elev)} m`));
