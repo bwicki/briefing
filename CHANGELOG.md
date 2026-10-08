@@ -4,7 +4,7 @@
 
 * **Briefings-Seite:** zwei immer sichtbare Abschnitte **«Briefings in Arbeit»** und **«Archiv»** (statt Filter
   Geplant/Alle/Archiv). Vergangene Fahrten bleiben unbeschränkt im Archiv, sind unveränderlich (Ansicht, Druck) und
-  mit ⧉ als Vorlage kopierbar; Löschen im Archiv nur für den Supermaster. Der Worker lehnt Änderungen gesperrter
+  mit ⧉ als Vorlage kopierbar; kein Löschen im Archiv. Der Worker lehnt Änderungen und Löschen gesperrter
   Briefings ab (HTTP 423).
 * **Briefingsicht – drei Schriften:** Titel (linke Spalte), Beschriftungen (Mono, klein, grau; «Ordnungsnummer»
   heisst neu **«Briefingnummer»**) und Angaben (Sans 11.5 px) – auch für METAR/NOTAM-Texte, Tabellen, Hinweise.
@@ -14,6 +14,12 @@
   Assistent. Hinweis zu Radiosondierung/SondeHub (B3) über beide Spalten.
 * Warnsymbol «gegenwärtiger Stand» auch bei DABS und Radar/Webcams (Nachtrag 0.12.8).
 * Tests: Smoke «desktop» (Abschnitte der Briefings-Seite, Briefingnummer).
+
+### 0.12.9a — 2026-10-08 · Antworten auf die Rückfragen
+
+* **Archiv:** kein Löschen mehr (auch nicht Supermaster); der Worker lehnt Löschen und Ändern vergangener Fahrten mit
+  HTTP 423 ab (die Sperre in 0.12.9 griff nicht, weil `end_ms` nicht mitgelesen wurde – behoben, API-Test ergänzt).
+* **A4 Etappenübersicht (Briefingsicht):** Lufträume, Achtung und Kontakte als zweite Zeile je Etappe.
 
 ## 0.12.8 — 2026-10-08 · Rückmeldungen aus dem Test 0.12.7 (Oberfläche, A1/A2, Meldungen ausblenden, NOTAM-Karte, Warnsymbol)
 

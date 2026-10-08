@@ -856,6 +856,7 @@ table.pf-ballast tr.total td{font-weight:600;border-top:2px solid var(--line)}
 @media (max-width:599px){ .pf-layers{margin-left:0} .pf-toolbar .pf-hint{display:none} }
 .brief table.bp table.pf-ballast th,.brief table.bp table.pf-stages th{width:auto;background:none;border:0;border-bottom:1px solid #ccc;padding:2px 5px;font-size:10px;color:#444;vertical-align:bottom}
 .brief table.bp table.pf-ballast td,.brief table.bp table.pf-stages td{border:0;border-bottom:1px solid #e4e4e4;padding:2px 5px;font-size:10.5px;height:auto}
+.brief table.bp table.pf-stages.wrap{table-layout:auto}.brief table.bp table.pf-stages.wrap tr.st1 td{border-bottom:0;padding-bottom:0}.brief table.bp table.pf-stages.wrap tr.st2 td{padding:0 5px 3px 28px}.brief table.bp table.pf-stages.wrap tr.st2 .k{color:#555}   /* 0.12.9: Etappenübersicht in der Briefingsicht zweizeilig (Lufträume/Achtung/Kontakte) */
 .brief table.bp table.pf-ballast tr.total td{border-top:2px solid #ccc}
 :root{ --pf-water:#4f86c6; }
 :root[data-theme="light"]{ --pf-water:#5b9bd5; }

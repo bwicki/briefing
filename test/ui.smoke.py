@@ -290,6 +290,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         assert pg.query_selector('#view svg.ico-lock') is not None, 'Schloss in der Liste (Archiv)'
         if not mobile:
             assert pg.query_selector('table.tbl.list td.no .lock') is not None and pg.query_selector('table.tbl.list tr.locked .acts .edit') is None, 'Schloss hinter der Nummer, kein Stift bei Sperre'
+            assert pg.query_selector('table.tbl.list tr.locked button[title="Löschen"]') is None and pg.query_selector('table.tbl.list tr.locked button[title="Duplizieren als Vorlage"]') is not None, '0.12.9a: kein Papierkorb im Archiv, Kopieren möglich'
             hdrs = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list th', 'els => els.map(e => e.textContent)')]
             assert hdrs[0].startswith('#') and any(x.startswith('Status') for x in hdrs) and 'Phase' not in hdrs and 'Links' not in hdrs, 'Spalten der Liste: ' + str(hdrs)
             # 0.11.3: Sortierung (Standard Nummer absteigend) und Doppelklick → Briefingsicht
@@ -521,6 +522,7 @@ def run_gas(name):
         pg.goto(BASE + '#/v/' + bid); pg.wait_for_timeout(2500)
         assert pg.query_selector('.brief tr.row-A-profile svg.pf-svg') is not None and pg.query_selector('.brief tr.row-A-profile table.pf-ballast') is not None, 'Briefingsicht: Profil mit Ballasttabelle'
         assert pg.evaluate("() => document.querySelector('.brief tr.row-A-profile details.pf-fold.legend').open") and pg.query_selector('.brief tr.row-A-profile details.pf-fold.model') is not None, 'Briefingsicht: Legende immer offen, Modell der Schätzung nur weil im Panel aufgeklappt'
+        st = pg.query_selector_all('.brief tr.row-A-profile table.pf-stages.wrap tbody tr.st2'); assert len(st) >= 3 and 'Lufträume' in st[0].inner_text() and 'Kontakte' in st[0].inner_text() and pg.evaluate("() => { const t = document.querySelector('.brief tr.row-A-profile table.pf-stages.wrap'); return t.scrollWidth <= t.parentElement.clientWidth + 1; }"), '0.12.9a: Etappenübersicht zweizeilig, nicht breiter als die Zelle'
         pg.query_selector('.brief tr.row-A-profile').screenshot(path=f'{OUT}/{name}_05_view.png')
         bsx = pg.query_selector_all('.brief .bs.stage'); assert len(bsx) == 2 and 'E1' in bsx[0].inner_text() and 'Nacht' in bsx[1].inner_text() and len(pg.query_selector_all('.brief tr.row-B-meteogram')) == 2 and pg.text_content('.brief tr.row-B-meteogram .pno').startswith('E1-B'), 'Briefingsicht: Etappenköpfe E1 (Startetappe, 0.12.7) und E3 «Nacht», Panel-Nummern mit Etappe'
         pg.query_selector('.brief .bs.stage').scroll_into_view_if_needed(); pg.wait_for_timeout(300); pg.screenshot(path=f'{OUT}/{name}_07_view_stage.png')

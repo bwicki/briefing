@@ -421,14 +421,25 @@ export function stageRows(b, ctx) {
     return { ...w, firs, countries, as, hz, contacts };
   });
 }
-export function stageTable(b, ctx) {
+export function stageTable(b, ctx, o = {}) {
   const rows = stageRows(b, ctx); if (!rows.length) return null;
   const p = ensureProfile(b);
   const tz = tzName(b);
   const place = (q) => (q ? icao(q.lat, q.lon) : '–');
+  const asTxt = (w) => w.as.map((a) => `${a.name}${a.status === 'near' ? ' (' + t('as_near') + ')' : ''}${a.tmp ? ' (HX)' : ''}`).join(', ') || '–';
+  const hzTxt = (w) => w.hz.map((x) => `${hzLabel(x)} ${Math.round(x.km)}${(x.kmEnd ?? x.km) > x.km ? '–' + Math.round(x.kmEnd) : ''} km`).join(', ') || '–';
+  const ctTxt = (w) => (w.contacts.length ? w.contacts.map((c) => `${c.name}${c.freq ? ' ' + c.freq : ''}${c.phone ? ' · ' + c.phone : ''}`) : ['–']);
+  const main = (w, i) => [h('td.n', w.no), h('td', [w.name || '–', stageOps(p.stages, i) ? h('span.tag.pf-opstag', { title: t(i === 0 ? 'pf_opsStart' : 'pf_opsStage') }, 'B/C') : null]), h('td.mono', `${fmtTD(b, w.ms0)}–${fmtTD(b, w.ms1)}`), h('td.n', `${Math.round(w.km0)}–${Math.round(w.km1)}`), h('td.n', w.altMin != null ? `${w.altMin}–${w.altMax}` : '–'), h('td.mono', [place(w.from), h('br'), '→ ' + place(w.to)]), h('td', w.firs.map((f) => `${f.name}${f.country && f.country !== f.name ? ` (${f.country})` : ''}`).join(' → ') || '–')];
+  const head = [h('th', 'Nr.'), h('th', t('pf_stage')), h('th', t('pf_stFrom', { tz })), h('th.n', 'km'), h('th.n', t('pf_stAlt')), h('th', t('pf_stPlace')), h('th', t('pf_stCountry'))];
+  if (o.wrap) {   // 0.12.9: Briefingsicht – Lufträume/Achtung/Kontakte als zweite Zeile je Etappe (keine seitlich abgeschnittene Tabelle)
+    return h('div.pf-stages-wrap', [h('div.lbl', t('pf_stages')), h('table.pf-stages.no-lb.wrap', [
+      h('thead', h('tr', head)),
+      h('tbody', rows.flatMap((w, i) => [h('tr.st1', main(w, i)), h('tr.st2', h('td', { colSpan: 7 }, [h('span.k', t('pf_stAs') + ': '), asTxt(w), h('span.sep', ' · '), h('span.k', t('pf_stHz') + ': '), hzTxt(w), h('span.sep', ' · '), h('span.k', t('pf_stContacts') + ': '), ctTxt(w).join('; ')]))])),
+    ])]);
+  }
   return h('div.pf-stages-wrap', [h('div.lbl', t('pf_stages')), h('div.tscroll', h('table.pf-stages.no-lb', [
-    h('thead', h('tr', [h('th', 'Nr.'), h('th', t('pf_stage')), h('th', t('pf_stFrom', { tz })), h('th.n', 'km'), h('th.n', t('pf_stAlt')), h('th', t('pf_stPlace')), h('th', t('pf_stCountry')), h('th', t('pf_stAs')), h('th', t('pf_stHz')), h('th', t('pf_stContacts'))])),
-    h('tbody', rows.map((w, i) => h('tr', [h('td.n', w.no), h('td', [w.name || '–', stageOps(p.stages, i) ? h('span.tag.pf-opstag', { title: t(i === 0 ? 'pf_opsStart' : 'pf_opsStage') }, 'B/C') : null]), h('td.mono', `${fmtTD(b, w.ms0)}–${fmtTD(b, w.ms1)}`), h('td.n', `${Math.round(w.km0)}–${Math.round(w.km1)}`), h('td.n', w.altMin != null ? `${w.altMin}–${w.altMax}` : '–'), h('td.mono', [place(w.from), h('br'), '→ ' + place(w.to)]), h('td', w.firs.map((f) => `${f.name}${f.country && f.country !== f.name ? ` (${f.country})` : ''}`).join(' → ') || '–'), h('td', w.as.map((a) => `${a.name}${a.status === 'near' ? ' (' + t('as_near') + ')' : ''}${a.tmp ? ' (HX)' : ''}`).join(', ') || '–'), h('td', w.hz.map((x) => `${hzLabel(x)} ${Math.round(x.km)}${(x.kmEnd ?? x.km) > x.km ? '–' + Math.round(x.kmEnd) : ''} km`).join(', ') || '–'), h('td.ct', w.contacts.length ? w.contacts.map((c) => h('div', `${c.name}${c.freq ? ' ' + c.freq : ''}${c.phone ? ' · ' + c.phone : ''}`)) : '–')]))),   // 0.12.8: Orte zweizeilig, Kontakte je Zeile – Tabelle bricht in der Briefingsicht sauber um
+    h('thead', h('tr', [...head, h('th', t('pf_stAs')), h('th', t('pf_stHz')), h('th', t('pf_stContacts'))])),
+    h('tbody', rows.map((w, i) => h('tr', [...main(w, i), h('td', asTxt(w)), h('td', hzTxt(w)), h('td.ct', w.contacts.length ? ctTxt(w).map((x) => h('div', x)) : '–')]))),   // 0.12.8: Orte zweizeilig, Kontakte je Zeile
   ]))]);
 }
 export const standLine = (b, D) => (D ? t('pf_stand', { t: fmtDateTime(zoneOf(b), D.stand, getLang()), m: D.modelName || D.model || '', s: D.source || '' }) + (D.errors?.length ? ` · ${t('pf_errors', { e: D.errors.join('; ') })}` : '') : '');
@@ -472,7 +483,7 @@ export function profileView(b, ctx) {
   const svg = el('svg', { class: 'pf-svg', 'aria-label': t('pf_title') });
   drawChart(svg, { b, ctx, p, D, interactive: false, used });
   // Briefingsicht/Druck: Legende immer offen, Modell der Schätzung nur, wenn im Panel/Werkzeug aufgeklappt
-  return h('div.pf-view', [h('div.pf-chart', svg), legend(used, ctx, { p, print: true }), h('div.mini', standLine(b, D)), stageTable(b, ctx), ballastTable(b, ctx, { print: true })]);
+  return h('div.pf-view', [h('div.pf-chart', svg), legend(used, ctx, { p, print: true }), h('div.mini', standLine(b, D)), stageTable(b, ctx, { wrap: true }), ballastTable(b, ctx, { print: true })]);
 }
 
 // ---------------------------------------------------------------- Werkzeug (Vollbild-Dialog)

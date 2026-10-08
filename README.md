@@ -99,8 +99,8 @@ Aktionen als Symbole: ✎ Bearbeiten (gesperrt: 👁 Briefingsicht), ⧉ Duplizi
 Sortierung über die Spaltenköpfe (Standard: Nummer absteigend, jüngste zuoberst); Doppelklick auf
 eine Zeile öffnet die Briefingsicht. Seit 0.12.9 zwei immer sichtbare Abschnitte: **Briefings in Arbeit**
 (bevorstehend/laufend) und **Archiv** (Fahrt vorbei: unbeschränkt aufgeführt, unveränderlich – nur Ansicht,
-Druck und ⧉ Kopie als Vorlage; der Worker lehnt Änderungen gesperrter Briefings ab (423); Löschen im Archiv nur
-Supermaster); Suche über beide; Sichten *Meine Briefings*,
+Druck und ⧉ Kopie als Vorlage; kein Löschen; der Worker lehnt Änderungen und Löschen gesperrter Briefings ab (423));
+Suche über beide; Sichten *Meine Briefings*,
 *Alle Nutzer* (Supermaster) und *Fahrten mit meinem Material* (wenn Ballone
 freigegeben sind; fremde Briefings öffnen sich nur in der Briefingsicht). Rechts
 die nächste Fahrt mit Sonnenzeiten und der Knopf «Einstellungen» (0.12.8: ohne Rekapitulation der Stammdaten). **⧉** dupliziert ein Briefing als Vorlage (Ballon, Startort, PIC,
@@ -243,7 +243,8 @@ Panel-Arten:
   vom Öffnen wieder her; ✕ und Escape = speichern, 0.12.6).
   Die **Legende** (erste Zeile: Bedienhinweis) ist einklappbar und wird im Briefingdruck immer gedruckt.
   Darunter die **Etappenübersicht** (Zeit, km, Höhenband, Ort, Land/FIR, Lufträume, Achtung, Kontakte:
-  FIS-Sektoren aus openAIP entlang der Etappe, sonst die FIS-Kontakte je Land aus den Einstellungen) und die
+  FIS-Sektoren aus openAIP entlang der Etappe, sonst die FIS-Kontakte je Land aus den Einstellungen; in der
+  Briefingsicht stehen Lufträume, Achtung und Kontakte seit 0.12.9 als zweite Zeile je Etappe) und die
   **Schätzung Ballastverbrauch** (Manöver, Level-Out, Temperatur, Adiabatik; Balken gegen den Vorrat aus A3)
   mit dem einklappbaren Block **«Modell der Schätzung»** (Parameter und Bedeutung der Spalten; im
   Briefingdruck nur, wenn aufgeklappt). Im NOTAM-Panel («Umkreis um Orte») übernimmt «Orte aus Etappen» die

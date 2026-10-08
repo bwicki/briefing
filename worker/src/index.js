@@ -243,7 +243,7 @@ async function loadBriefing(env, id) {
 }
 /** Zugriff eines Benutzers auf ein Briefing: 'write' (Eigner), 'read' (Super, Materialeigner) oder null. */
 async function briefingAccess(env, user, id) {
-  const row = await env.DB.prepare('SELECT owner_id, material_owner FROM briefings WHERE id=?').bind(id).first();
+  const row = await env.DB.prepare('SELECT owner_id, material_owner, end_ms FROM briefings WHERE id=?').bind(id).first();
   if (!row) return { row: null, access: null };
   if (row.owner_id === user.id) return { row, access: 'write' };
   if (user.role === 'super' || row.material_owner === user.id) return { row, access: 'read' };
@@ -535,6 +535,7 @@ async function route(req, env, url, ctx) {
     if (req.method === 'GET') { const b = await loadBriefing(env, id); return json({ briefing: b, access }); }
     if (req.method === 'DELETE') {
       if (access !== 'write') return err('read only', 403);
+      if (row.end_ms && Date.now() > row.end_ms) return err('locked', 423);   // 0.12.9: Archiv – kein Löschen
       await env.DB.prepare('DELETE FROM briefings WHERE id=?').bind(id).run();
       await env.DB.prepare('DELETE FROM access_links WHERE briefing_id=?').bind(id).run();
       const files = await env.DB.prepare('SELECT key FROM files WHERE briefing_id=?').bind(id).all();

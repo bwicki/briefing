@@ -86,7 +86,7 @@ export async function renderList(view, ctx) {
         h('td.row-actions.acts', foreign(b) ? [h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(openHash(b)) }, icon('view'))] : [
           locked(b) ? h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(`#/v/${b.id}`) }, icon('view')) : h('button.btn.icon.small.edit', { type: 'button', title: t('edit'), onclick: () => ctx.navigate(`#/b/${b.id}`) }, icon('edit')),
           h('button.btn.icon.small', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, icon('dup')),
-          archive && !ctx.isSuper ? null : h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, icon('del')),   // Archiv: Löschen nur für den Supermaster (Testeinträge)
+          archive ? null : h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, icon('del')),   // 0.12.9: Archiv – kein Löschen (auch nicht Supermaster)
         ].filter(Boolean)),
       ].filter(Boolean))))]);
     return tbl;
