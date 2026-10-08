@@ -155,6 +155,8 @@ async function route() {
   const hash = (location.hash || '#/list').split('?')[0];
   const [, name, ...rest] = hash.split('/');
   const arg = rest.join('/') || undefined;
+  // 0.12.10: Nachtrag-Flag erlischt, sobald die Erarbeitung des Briefings verlassen wird (nächstes Öffnen = neuer Nachtrag)
+  try { for (const k of Object.keys(sessionStorage)) if (k.startsWith('fb.amend.') && !(name === 'b' && arg === k.slice(9))) sessionStorage.removeItem(k); } catch { /* ohne Sitzungsspeicher */ }
   document.getElementById('menu').classList.add('hidden');
   buildNav();
   try {

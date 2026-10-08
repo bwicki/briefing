@@ -72,7 +72,7 @@ async function setKv(env, k, v) { await env.DB.prepare('INSERT INTO kv (k,v,upda
 let schemaReady = false;
 async function ensureSchema(env) {
   if (schemaReady) return;
-  for (const col of ['no TEXT', 'progress INTEGER', 'end_ms INTEGER', 'edition INTEGER']) {
+  for (const col of ['no TEXT', 'progress INTEGER', 'end_ms INTEGER', 'edition INTEGER', 'frozen INTEGER']) {
     try { await env.DB.prepare(`ALTER TABLE briefings ADD COLUMN ${col}`).run(); } catch { /* Spalte besteht */ }
   }
   // Bestand ohne Nummer: je Jahr des Fahrtdatums fortlaufend nach Startzeit vergeben (einmalig)
@@ -91,6 +91,11 @@ async function ensureSchema(env) {
 /** Jahr des Fahrtdatums (Ablage nach Fahrt). */
 function yearOf(b) { const d = b?.time?.date; if (/^\d{4}-/.test(d || '')) return +d.slice(0, 4); return new Date(b?.time?.startMs || b?.createdAt || Date.now()).getUTCFullYear(); }
 /** Fahrtende für die Sperre: Start + max(6 h, Dauer + 2 h). */
+const LOCK_AFTER_START_MS = 3600000;   // 0.12.10: Sperre ab Start + 1 h (Nachtrag statt Bearbeitung)
+const rowArchived = (row) => !!row?.frozen || !!(row?.end_ms && Date.now() > row.end_ms);
+const newId = () => Array.from(crypto.getRandomValues(new Uint8Array(12))).map((x) => 'abcdefghijklmnopqrstuvwxyz0123456789'[x % 36]).join('');
+/** Briefingnummer des Nachtrags: «2026-008» → «2026-008a» → «2026-008b». */
+function nextAmendmentNo(no) { const m = /^(.*?)([a-z])?$/.exec(String(no || '')); const base = m ? m[1] : String(no || ''); const l = m && m[2] ? String.fromCharCode(m[2].charCodeAt(0) + 1) : 'a'; return base + (l > 'z' ? 'z' : l); }
 function endMsOf(b) { const start = b?.time?.startMs || 0; const dur = (b?.intent?.durationMin || 0) * 60000; return start + Math.max(6 * 3600000, dur + 2 * 3600000); }
 /** Nächste Ordnungsnummer «JJJJ-NNN» (Zähler je Jahr in kv; atomar via UPDATE … RETURNING). */
 async function nextNo(env, year) {
@@ -203,9 +208,9 @@ async function hasShare(env, from, to, category) {
 function summaryOf(b) {
   return { id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: endMsOf(b), tz: b.site?.tz, site: b.site?.name, icao: b.site?.icao, elev: b.site?.elev, balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo, progress: Number.isFinite(+b.progress) ? Math.round(+b.progress) : null, edition: Number.isFinite(+b.edition) ? Math.round(+b.edition) : null, revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy };
 }
-const rowOut = (r) => ({ id: r.id, no: r.no || null, startMs: r.start_ms, endMs: r.end_ms ?? null, tz: r.tz, site: r.site, icao: r.icao, elev: r.elev, reg: r.reg, balloon: r.balloon, kind: r.kind, status: r.status, finalNo: r.final_no, progress: r.progress ?? null, edition: r.edition ?? null, revision: r.revision, updatedAt: r.updated_at, updatedBy: r.updated_by, links: r.links ?? 0, owner: r.owner_id, ownerName: r.owner_name || r.owner_id, materialOwner: r.material_owner || null });
+const rowOut = (r) => ({ id: r.id, no: r.no || null, startMs: r.start_ms, endMs: r.end_ms ?? null, tz: r.tz, site: r.site, icao: r.icao, elev: r.elev, reg: r.reg, balloon: r.balloon, kind: r.kind, status: r.status, finalNo: r.final_no, progress: r.progress ?? null, edition: r.edition ?? null, frozen: !!r.frozen, revision: r.revision, updatedAt: r.updated_at, updatedBy: r.updated_by, links: r.links ?? 0, owner: r.owner_id, ownerName: r.owner_name || r.owner_id, materialOwner: r.material_owner || null });
 /** Speichern; ownerId nur beim Anlegen gesetzt; materialOwner = Eigner des Ballons (Freigabe nötig). */
-async function saveBriefing(env, ctx, b, who, ownerId, logUid) {
+async function saveBriefing(env, ctx, b, who, ownerId, logUid, opts = {}) {
   await ensureSchema(env);
   const row = await env.DB.prepare('SELECT revision, owner_id, final_no, no FROM briefings WHERE id=?').bind(b.id).first();
   const isNew = !row;
@@ -214,7 +219,8 @@ async function saveBriefing(env, ctx, b, who, ownerId, logUid) {
   if (!b.createdAt) b.createdAt = b.updatedAt;
   b.ownerId = owner;
   // Ordnungsnummer: bleibt, sobald vergeben; neu oder (Import) belegt → nächste Nummer des Fahrtjahres
-  if (row?.no) b.no = row.no;
+  if (opts.keepNo) { /* 0.12.10 Nachtrag: Nummer wie übergeben (Archivkopie behält die bisherige, das Briefing bekommt den Buchstaben) */ }
+  else if (row?.no) b.no = row.no;
   else {
     const taken = b.no ? await env.DB.prepare('SELECT id FROM briefings WHERE no=? AND id<>?').bind(b.no, b.id).first() : null;
     if (!b.no || taken) b.no = await nextNo(env, yearOf(b));
@@ -222,10 +228,10 @@ async function saveBriefing(env, ctx, b, who, ownerId, logUid) {
   let material = b.balloon?.ownerId && b.balloon.ownerId !== owner ? String(b.balloon.ownerId) : null;
   if (material && !(await hasShare(env, material, owner, 'balloons'))) material = null;
   const s = summaryOf(b);
-  await env.DB.prepare(`INSERT INTO briefings (id,json,revision,status,final_no,start_ms,tz,site,icao,elev,reg,balloon,kind,created_at,updated_at,updated_by,owner_id,material_owner,no,progress,end_ms,edition)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    ON CONFLICT(id) DO UPDATE SET json=excluded.json, revision=excluded.revision, status=excluded.status, final_no=excluded.final_no, start_ms=excluded.start_ms, tz=excluded.tz, site=excluded.site, icao=excluded.icao, elev=excluded.elev, reg=excluded.reg, balloon=excluded.balloon, kind=excluded.kind, updated_at=excluded.updated_at, updated_by=excluded.updated_by, material_owner=excluded.material_owner, no=excluded.no, progress=excluded.progress, end_ms=excluded.end_ms, edition=excluded.edition`)
-    .bind(b.id, JSON.stringify(b), b.revision, b.status || 'draft', b.finalNo || 0, s.startMs || null, s.tz || null, s.site || null, s.icao || null, s.elev ?? null, s.reg || null, s.balloon || null, s.kind || null, b.createdAt, b.updatedAt, b.updatedBy, owner, material, b.no, s.progress, s.endMs, s.edition).run();
+  await env.DB.prepare(`INSERT INTO briefings (id,json,revision,status,final_no,start_ms,tz,site,icao,elev,reg,balloon,kind,created_at,updated_at,updated_by,owner_id,material_owner,no,progress,end_ms,edition,frozen)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    ON CONFLICT(id) DO UPDATE SET json=excluded.json, revision=excluded.revision, status=excluded.status, final_no=excluded.final_no, start_ms=excluded.start_ms, tz=excluded.tz, site=excluded.site, icao=excluded.icao, elev=excluded.elev, reg=excluded.reg, balloon=excluded.balloon, kind=excluded.kind, updated_at=excluded.updated_at, updated_by=excluded.updated_by, material_owner=excluded.material_owner, no=excluded.no, progress=excluded.progress, end_ms=excluded.end_ms, edition=excluded.edition, frozen=excluded.frozen`)
+    .bind(b.id, JSON.stringify(b), b.revision, b.status || 'draft', b.finalNo || 0, s.startMs || null, s.tz || null, s.site || null, s.icao || null, s.elev ?? null, s.reg || null, s.balloon || null, s.kind || null, b.createdAt, b.updatedAt, b.updatedBy, owner, material, b.no, s.progress, s.endMs, s.edition, b.frozen ? 1 : 0).run();
   if (logUid) {
     logUsage(env, ctx, logUid, isNew ? 'briefing_create' : 'briefing_save', b.id);
     if ((b.finalNo || 0) > (row?.final_no || 0)) logUsage(env, ctx, logUid, 'release', `${b.id} v${b.finalNo}`);
@@ -243,7 +249,7 @@ async function loadBriefing(env, id) {
 }
 /** Zugriff eines Benutzers auf ein Briefing: 'write' (Eigner), 'read' (Super, Materialeigner) oder null. */
 async function briefingAccess(env, user, id) {
-  const row = await env.DB.prepare('SELECT owner_id, material_owner, end_ms FROM briefings WHERE id=?').bind(id).first();
+  const row = await env.DB.prepare('SELECT owner_id, material_owner, end_ms, frozen, start_ms, no FROM briefings WHERE id=?').bind(id).first();
   if (!row) return { row: null, access: null };
   if (row.owner_id === user.id) return { row, access: 'write' };
   if (user.role === 'super' || row.material_owner === user.id) return { row, access: 'read' };
@@ -359,6 +365,7 @@ async function route(req, env, url, ctx) {
     }
     if (req.method === 'PUT') {
       if (link.role !== 'edit') return err('read only', 403);
+      if (b.frozen || Date.now() > endMsOf(b)) return err('locked', 423);   // 0.12.10: Archiv auch über Links unveränderlich
       const { briefing, who } = await body();
       if (!briefing || briefing.id !== b.id) return err('bad briefing');
       // Mitarbeit darf weder Freigabe noch Berechtigungen ändern
@@ -382,7 +389,7 @@ async function route(req, env, url, ctx) {
     const marks = regs.map(() => '?').join(',');
     ctx.waitUntil(env.DB.prepare('UPDATE material_links SET last_opened_at=? WHERE token=?').bind(Date.now(), ml.token).run());
     if (!mm[2]) {
-      const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.edition,b.end_ms,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name
+      const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.edition,b.end_ms,b.frozen,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name
         FROM briefings b LEFT JOIN users u ON u.id=b.owner_id WHERE (b.owner_id=? OR b.material_owner=?) AND b.reg IN (${marks}) ORDER BY b.start_ms DESC`).bind(ml.user_id, ml.user_id, ...regs).all();
       logUsage(env, ctx, ml.user_id, 'link_open', `material ${ml.person}`);
       return json({ person: ml.person, regs, owner: owner.name, expiresAt: ml.expires_at, briefings: (rows.results || []).map(rowOut) });
@@ -508,7 +515,7 @@ async function route(req, env, url, ctx) {
     if (scope === 'all') { if (!isSuper) return err('forbidden', 403); where = '1=1'; args = []; }
     else if (scope === 'material') { where = 'b.material_owner=? AND b.owner_id<>?'; args = [user.id, user.id]; }
     await ensureSchema(env);
-    const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.edition,b.end_ms,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name,
+    const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.edition,b.end_ms,b.frozen,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name,
       (SELECT COUNT(*) FROM access_links a WHERE a.briefing_id=b.id AND a.revoked=0 AND a.expires_at>?) AS links FROM briefings b LEFT JOIN users u ON u.id=b.owner_id WHERE ${where} ORDER BY b.start_ms`).bind(Date.now(), ...args).all();
     return json({ briefings: (rows.results || []).map(rowOut), scope });
   }
@@ -527,7 +534,7 @@ async function route(req, env, url, ctx) {
       const { briefing, who } = await body();
       if (!briefing || briefing.id !== id) return err('bad briefing');
       if (row && access !== 'write') return err('read only', 403);
-      if (row && row.end_ms && Date.now() > row.end_ms) return err('locked', 423);   // 0.12.9: Fahrt vorbei → Briefing unveränderlich (Kopie anlegen)
+      if (row && rowArchived(row)) return err('locked', 423);   // 0.12.9: Fahrt vorbei (oder Archivkopie) → unveränderlich
       return json(await saveBriefing(env, ctx, briefing, who || user.name, user.id, user.id));
     }
     if (!row) return err('not found', 404);
@@ -535,15 +542,42 @@ async function route(req, env, url, ctx) {
     if (req.method === 'GET') { const b = await loadBriefing(env, id); return json({ briefing: b, access }); }
     if (req.method === 'DELETE') {
       if (access !== 'write') return err('read only', 403);
-      if (row.end_ms && Date.now() > row.end_ms) return err('locked', 423);   // 0.12.9: Archiv – kein Löschen
+      if (rowArchived(row)) return err('locked', 423);   // 0.12.9: Archiv – kein Löschen
       await env.DB.prepare('DELETE FROM briefings WHERE id=?').bind(id).run();
       await env.DB.prepare('DELETE FROM access_links WHERE briefing_id=?').bind(id).run();
-      const files = await env.DB.prepare('SELECT key FROM files WHERE briefing_id=?').bind(id).all();
-      for (const f of files.results || []) ctx.waitUntil(env.FILES.delete(f.key));
-      await env.DB.prepare('DELETE FROM files WHERE briefing_id=?').bind(id).run();
+      // 0.12.10: Bilder bleiben, solange eine Archivkopie (Nachtrag) darauf verweist
+      const refs = await env.DB.prepare('SELECT COUNT(*) AS n FROM briefings WHERE json LIKE ?').bind(`%"amendmentOf":"${id}"%`).first();
+      if (!(refs?.n > 0)) {
+        const files = await env.DB.prepare('SELECT key FROM files WHERE briefing_id=?').bind(id).all();
+        for (const f of files.results || []) ctx.waitUntil(env.FILES.delete(f.key));
+        await env.DB.prepare('DELETE FROM files WHERE briefing_id=?').bind(id).run();
+      }
       logUsage(env, ctx, user.id, 'briefing_delete', id);
       return new Response(null, { status: 204 });
     }
+  }
+  // ---- 0.12.10: Nachtrag während der laufenden Fahrt (Start + 1 h vorbei, Fahrtende noch nicht erreicht)
+  mm = m(/^\/api\/briefings\/([a-z0-9]+)\/amend$/);
+  if (mm && req.method === 'POST') {
+    const id = mm[1];
+    const { row, access } = await briefingAccess(env, user, id);
+    if (!row) return err('not found', 404);
+    if (access !== 'write') return err('read only', 403);
+    if (rowArchived(row)) return err('locked', 423);
+    if (!(Date.now() > (row.start_ms || 0) + LOCK_AFTER_START_MS)) return err('not running', 409);
+    const { who } = await body();
+    const b = await loadBriefing(env, id); if (!b) return err('not found', 404);
+    const now = Date.now();
+    const copy = JSON.parse(JSON.stringify(b));
+    copy.id = newId(); copy.frozen = true; copy.frozenAt = now; copy.amendmentOf = id; copy.no = b.no || null;
+    delete copy.access; delete copy.amendments; delete copy.materialOwner;
+    const oldNo = b.no || null;
+    b.no = nextAmendmentNo(b.no || ''); b.amendments = [...(b.amendments || []), { no: oldNo, copyId: copy.id, ts: now }]; b.amendedAt = now;
+    delete b.materialOwner;
+    await saveBriefing(env, ctx, b, who || user.name, user.id, null, { keepNo: true });
+    await saveBriefing(env, ctx, copy, who || user.name, user.id, null, { keepNo: true });
+    logUsage(env, ctx, user.id, 'briefing_amend', `${id} ${oldNo} → ${b.no} (Archivkopie ${copy.id})`);
+    return json({ no: b.no, copyId: copy.id });
   }
   mm = m(/^\/api\/briefings\/([a-z0-9]+)\/(files|log|access)(?:\/([A-Za-z0-9_-]+))?$/);
   if (mm) {

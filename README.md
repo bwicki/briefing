@@ -97,10 +97,14 @@ NN %» oder «Final vN», darunter die Phase Vorplanung > 72 h / Planung 24–72
 **Letzte Änderung** (Bearbeitungsstand vN · Datum · Bearbeiter, dazu 🔗 n aktive Freigabelinks).
 Aktionen als Symbole: ✎ Bearbeiten (gesperrt: 👁 Briefingsicht), ⧉ Duplizieren, 🗑 Löschen.
 Sortierung über die Spaltenköpfe (Standard: Nummer absteigend, jüngste zuoberst); Doppelklick auf
-eine Zeile öffnet die Briefingsicht. Seit 0.12.9 zwei immer sichtbare Abschnitte: **Briefings in Arbeit**
-(bevorstehend/laufend) und **Archiv** (Fahrt vorbei: unbeschränkt aufgeführt, unveränderlich – nur Ansicht,
-Druck und ⧉ Kopie als Vorlage; kein Löschen; der Worker lehnt Änderungen und Löschen gesperrter Briefings ab (423));
-Suche über beide; Sichten *Meine Briefings*,
+eine Zeile öffnet die Briefingsicht. Seit 0.12.10 drei Abschnitte: **Briefings in Arbeit** (bis Start + 1 h),
+**Laufende Fahrten** (Start + 1 h vorbei, Fahrtende noch nicht erreicht: gesperrt – Ansicht, Druck; Stift =
+**Nachtrag**: nach Rückfrage geht der bisherige Stand als eingefrorene Archivkopie mit der bisherigen Briefingnummer
+ins Archiv, das Briefing selbst erhält die Nummer mit Buchstabe «2026-008a», «…b» und ist in dieser Erarbeitung
+bearbeitbar; der Abschnitt erscheint nur, wenn eine Fahrt läuft) und **Archiv** (Fahrtende = Start + Fahrtdauer + 2 h,
+mindestens 6 h nach Start, sowie Archivkopien: unbeschränkt aufgeführt, unveränderlich – nur Ansicht, Druck und ⧉ Kopie
+als Vorlage; kein Löschen; der Worker lehnt Änderungen und Löschen archivierter Briefings ab (423), Nachträge laufen
+über `POST /api/briefings/:id/amend`); Suche über alle; Sichten *Meine Briefings*,
 *Alle Nutzer* (Supermaster) und *Fahrten mit meinem Material* (wenn Ballone
 freigegeben sind; fremde Briefings öffnen sich nur in der Briefingsicht). Rechts
 die nächste Fahrt mit Sonnenzeiten und der Knopf «Einstellungen» (0.12.8: ohne Rekapitulation der Stammdaten). **⧉** dupliziert ein Briefing als Vorlage (Ballon, Startort, PIC,

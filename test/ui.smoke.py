@@ -279,7 +279,30 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
             assert 'füllungsgrad' not in pg.inner_text('#panel-A\\.massperf .mp-sec.in').lower(), 'Heissluft: kein Füllungsgrad-Feld'
             pg.screenshot(path=f'{OUT}/{name}_20_lb_editor.png')
         # Sperre: Fahrt in die Vergangenheit legen → Erarbeitung leitet auf die Briefingsicht mit Hinweis um
-        pg.evaluate("""(id) => { const all = JSON.parse(localStorage.getItem('fb.briefings') || '{}'); const b = all[id]; b.time.startMs = Date.now() - 48 * 3600000; localStorage.setItem('fb.briefings', JSON.stringify(all)); }""", bid)
+        # 0.12.10: laufende Fahrt (Start vor 2 h): gesperrt, Abschnitt «Laufende Fahrten», Nachtrag nach Rückfrage → Archivkopie + Nummer mit Buchstabe
+        pg.evaluate("""(id) => { const all = JSON.parse(localStorage.getItem('fb.briefings') || '{}'); const b = all[id]; b.time.startMs = Date.now() - 2 * 3600000; b.intent.durationMin = 600; localStorage.setItem('fb.briefings', JSON.stringify(all)); }""", bid)
+        pg.goto(BASE + '#/list'); pg.wait_for_timeout(500)
+        pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1500)
+        assert '#/v/' in pg.evaluate('location.hash') and 'Fahrt läuft' in pg.inner_text('.lockbar') and 'Nachtrag' in pg.inner_text('.lockbar button'), 'laufende Fahrt → Briefingsicht mit Hinweis «Fahrt läuft» und Knopf «Nachtrag»'
+        pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
+        sects = [e.inner_text() for e in pg.query_selector_all('h3.list-sect')]
+        assert len(sects) == 3 and sects[1].upper().startswith('LAUFENDE FAHRTEN (1)') and sects[2].upper().startswith('ARCHIV (0)'), 'Abschnitt «Laufende Fahrten»: ' + str(sects)
+        no0 = pg.evaluate("(id) => JSON.parse(localStorage.getItem('fb.briefings'))[id].no", bid)
+        if not mobile:
+            assert pg.query_selector('table.tbl.list tr.locked button.amend') is not None and pg.query_selector('table.tbl.list tr.locked .acts .edit') is None, 'Laufende Fahrt: Nachtrag-Stift statt Bearbeiten'
+            pg.click('table.tbl.list tr.locked button.amend'); pg.wait_for_timeout(400)
+            assert pg.is_visible('.dialog') and no0 + 'a' in pg.inner_text('.dialog'), 'Rückfrage nennt die neue Briefingnummer ' + no0 + 'a'
+            pg.click('.dialog button:has-text("Nachtrag anlegen")'); pg.wait_for_timeout(1500)
+            assert pg.evaluate('location.hash') == f'#/b/{bid}' and pg.query_selector('.emain') is not None, 'Nachtrag: Erarbeitung öffnet sich trotz Sperre'
+            st = pg.evaluate("(id) => { const all = JSON.parse(localStorage.getItem('fb.briefings')); const b = all[id]; const c = Object.values(all).find((x) => x.amendmentOf === id); return { no: b.no, cno: c && c.no, frozen: c && c.frozen, n: Object.keys(all).length }; }", bid)
+            assert st['no'] == no0 + 'a' and st['cno'] == no0 and st['frozen'] is True, 'Archivkopie mit bisheriger Nummer, Briefing mit Buchstabe: ' + str(st)
+            pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
+            sects = [e.inner_text() for e in pg.query_selector_all('h3.list-sect')]
+            assert sects[1].upper().startswith('LAUFENDE FAHRTEN (1)') and sects[2].upper().startswith('ARCHIV (1)'), 'nach dem Nachtrag: Archivkopie im Archiv: ' + str(sects)
+            pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1200)
+            assert '#/v/' in pg.evaluate('location.hash'), 'Erarbeitung erneut nur über einen neuen Nachtrag (Flag erloschen)'
+        # Sperre: Fahrt in die Vergangenheit legen → Erarbeitung leitet auf die Briefingsicht mit Hinweis um; Archivkopie ebenfalls im Archiv
+        pg.evaluate("""(id) => { const all = JSON.parse(localStorage.getItem('fb.briefings') || '{}'); for (const b of Object.values(all)) if (b.id === id || b.amendmentOf === id) b.time.startMs = Date.now() - 48 * 3600000; localStorage.setItem('fb.briefings', JSON.stringify(all)); }""", bid)
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(500)
         pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1500)
         assert pg.query_selector('.lockbar') is not None and '#/v/' in pg.evaluate('location.hash'), 'gesperrtes Briefing → Briefingsicht mit Hinweis'

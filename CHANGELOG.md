@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.12.10 — 2026-10-08 · Laufende Fahrten und Nachträge
+
+* **Sperre ab Start + 1 h** (bisher erst nach Fahrtende): ab dann nur Ansicht und Druck. **Archiv** ab Fahrtende
+  (Start + Fahrtdauer + 2 h, mindestens 6 h nach Start) – unveränderlich, nicht löschbar.
+* **Briefings-Seite mit drei Abschnitten:** «Briefings in Arbeit» (bis Start + 1 h), **«Laufende Fahrten»** (gesperrt,
+  Nachtrag möglich; nur sichtbar, wenn eine Fahrt läuft) und «Archiv».
+* **Nachtrag während der laufenden Fahrt:** Stift in «Laufende Fahrten» bzw. Knopf «Nachtrag anlegen und bearbeiten» in der
+  Briefingsicht → Rückfrage; danach wird der bisherige Stand als **eingefrorene Archivkopie** (bisherige Briefingnummer) ins
+  Archiv gelegt, das Briefing selbst (gleiche Kennung, Links bleiben gültig) erhält die **Briefingnummer mit Buchstabe**
+  (2026-008 → 2026-008a → 2026-008b …) und ist in dieser Erarbeitung bearbeitbar. Verlassen der Erarbeitung beendet den
+  Nachtrag; ein weiteres Öffnen ist ein neuer Nachtrag (nächster Buchstabe). Die Archivkopie zeigt in der Briefingsicht
+  «Archivkopie – Stand … vor dem Nachtrag». Worker: `POST /api/briefings/:id/amend` (409 vor Start + 1 h, 423 im Archiv),
+  Spalte `frozen`; Bilder bleiben erhalten, solange eine Archivkopie darauf verweist; auch Mitarbeits-Links können
+  archivierte Briefings nicht mehr ändern (423). Lokaler Modus gleich.
+* Tests: Rechenkern (Sperre, Archiv, Nachtrag-Nummer, Datenfunktion), API (amend, 409/423), Oberfläche (Abschnitt
+  «Laufende Fahrten», Rückfrage, Erarbeitung nur im Nachtrag, Archivkopie).
+
 ## 0.12.9 — 2026-10-08 · Archiv unveränderlich, drei Schriften in der Briefingsicht
 
 * **Briefings-Seite:** zwei immer sichtbare Abschnitte **«Briefings in Arbeit»** und **«Archiv»** (statt Filter

@@ -1,11 +1,11 @@
 /* Fahrtbriefing — Briefingsicht: das fertige Briefing, Grundlage für Druck und Leselink. */
-import { h, clear, fmt, fmtSigned, textToNodes, dialog, toast, lightbox } from '../util.js';
+import { h, clear, fmt, fmtSigned, textToNodes, dialog, confirmDialog, toast, lightbox } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { APP } from '../version.js';
 import { SECTIONS, visiblePanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
 import { sunTables, twilightClass } from './parts.js';
-import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems, intentLine } from '../model.js';
+import { massPerf, fillFractionOf, scheduleFor, sunFor, upgradeBriefing, scheduleRowLabel, balloonImage, isLocked, isArchived, nextAmendmentNo, duplicateBriefing, titleLine, lastChangeLine, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems, intentLine } from '../model.js';
 import { fplView } from './fplpanel.js';
 import { profileView } from './profile.js';
 import { docsLine } from '../stamm.js';
@@ -29,10 +29,20 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const foreign = !shared && b.access === 'read';   // Briefing eines anderen Benutzers (Super / Materialeigner): nur lesen
   const canEdit = !foreign && (!shared || shared.role === 'edit');
   const locked = isLocked(b);
-  /** Fahrt vorbei: Hinweis mit «Kopieren und neu anlegen» (nur Eigner); das Briefing selbst bleibt unverändert. */
+  const archived = isArchived(b), running = locked && !archived;   // 0.12.10: laufende Fahrt (Start + 1 h vorbei) → Nachtrag; Archiv → Kopie als Vorlage
+  const startLT = `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)}`;
+  const lockTitle = b.frozen ? t('frozen_title') : running ? t('running_title') : t('locked_title');
+  const lockText = b.frozen ? t('frozen_text', { no: b.no || '–', t: b.frozenAt ? `${fmtDate(z, b.frozenAt, lang)} ${hhmm(z, b.frozenAt)}` : '–' }) : running ? t('running_text', { t: startLT }) : t('locked_text', { d: fmtDate(z, b.time.startMs, lang) });
+  /** Fahrt vorbei: Hinweis mit «Kopieren und neu anlegen» (nur Eigner); laufende Fahrt: «Nachtrag anlegen»; das Briefing selbst bleibt unverändert. */
   const lockDialog = async () => {
-    const copyBtn = !shared && !foreign;
-    const r = await dialog(t('locked_title'), h('p', t('locked_text', { d: fmtDate(z, b.time.startMs, lang) })), [{ label: t('close'), value: false }, copyBtn ? { label: t('locked_copy'), value: true, primary: true } : null].filter(Boolean));
+    const own = !shared && !foreign;
+    if (running && own) {
+      const ok = await confirmDialog(t('amend_title'), t('amend_q', { t: startLT, no: b.no || '–', newNo: nextAmendmentNo(b.no || '') }), { yes: t('amend_yes'), no: t('cancel') });
+      if (!ok) return;
+      try { const r = await ctx.store.amendBriefing(b.id, ctx.who); try { sessionStorage.setItem('fb.amend.' + b.id, '1'); } catch { /* ohne Sitzungsspeicher */ } toast(`${r.no} ✓`); ctx.navigate(`#/b/${b.id}`); } catch (e) { toast(t('amend_fail')); console.error(e); }
+      return;
+    }
+    const r = await dialog(lockTitle, h('p', lockText), [{ label: t('close'), value: false }, own ? { label: t('locked_copy'), value: true, primary: true } : null].filter(Boolean));
     if (r === true) { const c = duplicateBriefing(b, S); await ctx.store.saveBriefing(c, ctx.who); toast(`${c.no || ''} ✓`); ctx.navigate(`#/new/${c.id}`); }
   };
   const tools = [];
@@ -60,7 +70,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const menu = [{ label: t('more'), items: [{ label: paxCardTitle(S), fn: () => ctx.navigate(paxHash) }] }];
   const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
   setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${placeLabel(b.site)} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${locked ? ' · 🔒 ' + t('locked') : ''}${ownerNote}`, tools, menu });
-  if (locked) view.appendChild(h('div.card.lockbar.no-print', h('div.card-body.row-actions', [h('span', [icon('lock', 16), ` ${t('locked_title')}`]), h('span.note.small', t('locked_text', { d: fmtDate(z, b.time.startMs, lang) })), !shared && !foreign ? h('button.btn.small.primary', { type: 'button', onclick: lockDialog }, t('locked_copy')) : null])));
+  if (locked) view.appendChild(h('div.card.lockbar.no-print', h('div.card-body.row-actions', [h('span', [icon('lock', 16), ` ${lockTitle}`]), h('span.note.small', lockText), !shared && !foreign ? h('button.btn.small.primary', { type: 'button', onclick: lockDialog }, running ? t('amend') : t('locked_copy')) : null])));
   view.appendChild(brief);
   const attachments = [];   // [{ title, images }] → Beilagen am Schluss
   const sun = sunFor(b, S, ctx.racTable);

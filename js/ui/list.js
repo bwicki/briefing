@@ -1,9 +1,9 @@
 /* Fahrtbriefing — Übersicht der Briefings. */
-import { h, clear, toast, dialog } from '../util.js';
+import { h, clear, toast, dialog, confirmDialog } from '../util.js';
 import { t } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { fmtDate, hhmm, fmtDateTime } from '../calc/time.js';
-import { phaseOf, duplicateBriefing, sunFor, isLocked } from '../model.js';
+import { phaseOf, duplicateBriefing, sunFor, LOCK_AFTER_START_MS, archiveMs, nextAmendmentNo } from '../model.js';
 import { racFmt, racLookup } from '../calc/rac.js';
 import { isoDate } from '../calc/time.js';
 import { tag } from './widgets.js';
@@ -34,10 +34,11 @@ export async function renderList(view, ctx) {
   const side = h('div');
   view.appendChild(h('div.layout-2', [body, side]));
 
-  // 0.12.9: zwei Abschnitte statt Filter – «Briefings in Arbeit» (bevorstehend/laufend) und «Archiv» (Fahrt vorbei: gesperrt, unbeschränkt, unveränderlich; Kopie als Vorlage möglich)
+  // 0.12.9/0.12.10: drei Abschnitte statt Filter – «Briefings in Arbeit» (bis Start + 1 h), «Laufende Fahrten» (gesperrt; Nachtrag möglich)
+  // und «Archiv» (Fahrt vorbei oder Archivkopie: unbeschränkt, unveränderlich, nicht löschbar; Kopie als Vorlage möglich)
   function rows(group) {
     return sorted(all.filter((b) => {
-      if ((group === 'archive') !== locked(b)) return false;
+      if (groupOf(b) !== group) return false;
       if (q) { const s = `${b.no || ''} ${b.site || ''} ${b.reg || ''} ${b.balloon || ''} ${b.ownerName || ''} ${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)}`.toLowerCase(); if (!s.includes(q.toLowerCase())) return false; }
       return true;
     }));
@@ -54,15 +55,21 @@ export async function renderList(view, ctx) {
   const tableWrap = h('div');
   function drawTable() {
     clear(tableWrap);
-    const work = rows('work'), arch = rows('archive');
-    if (!work.length && !arch.length) { tableWrap.appendChild(h('div.note', t('noBriefings'))); return; }
+    const work = rows('work'), run = rows('running'), arch = rows('archive');
+    if (!work.length && !run.length && !arch.length) { tableWrap.appendChild(h('div.note', t('noBriefings'))); return; }
     tableWrap.appendChild(h('h3.list-sect', `${t('listWork')} (${work.length})`));
-    if (work.length) tableWrap.appendChild(groupTable(work, false)); else tableWrap.appendChild(h('div.note', t('noBriefings')));
+    if (work.length) tableWrap.appendChild(groupTable(work, 'work')); else tableWrap.appendChild(h('div.note', t('noBriefings')));
+    if (run.length) {   // 0.12.10: nur zeigen, wenn eine Fahrt läuft
+      tableWrap.appendChild(h('h3.list-sect.running', `${t('listRunning')} (${run.length})`));
+      tableWrap.appendChild(h('div.note.small', t('listRunningHint')));
+      tableWrap.appendChild(groupTable(run, 'running'));
+    }
     tableWrap.appendChild(h('h3.list-sect.archive', `${t('listArchive')} (${arch.length})`));
     tableWrap.appendChild(h('div.note.small', t('listArchiveHint')));
-    if (arch.length) tableWrap.appendChild(groupTable(arch, true));
+    if (arch.length) tableWrap.appendChild(groupTable(arch, 'archive'));
   }
-  function groupTable(rs, archive) {
+  function groupTable(rs, group) {
+    const archive = group === 'archive', running = group === 'running';
     const narrow = window.innerWidth < 700;
     if (narrow) {
       return h('div.cards-list', rs.map((b) => h('div.bcard', { onclick: () => ctx.navigate(openHash(b)) }, [
@@ -85,13 +92,28 @@ export async function renderList(view, ctx) {
         h('td', [h('div.l1', `v${b.edition ?? b.revision ?? 0} · ${b.updatedAt ? fmtDateTime(tz(b), b.updatedAt) : '–'}`), h('div.l2', [b.updatedBy || '', b.links ? h('span', { title: t('colLinks') }, [' · ', icon('link', 13), ` ${b.links}`]) : null])]),
         h('td.row-actions.acts', foreign(b) ? [h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(openHash(b)) }, icon('view'))] : [
           locked(b) ? h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(`#/v/${b.id}`) }, icon('view')) : h('button.btn.icon.small.edit', { type: 'button', title: t('edit'), onclick: () => ctx.navigate(`#/b/${b.id}`) }, icon('edit')),
+          running ? h('button.btn.icon.small.amend', { type: 'button', title: t('amend'), onclick: () => amend(b) }, icon('edit')) : null,   // 0.12.10: Nachtrag während der laufenden Fahrt
           h('button.btn.icon.small', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, icon('dup')),
           archive ? null : h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, icon('del')),   // 0.12.9: Archiv – kein Löschen (auch nicht Supermaster)
         ].filter(Boolean)),
       ].filter(Boolean))))]);
     return tbl;
   }
-  const locked = (b) => (b.endMs ? now > b.endMs : isLocked({ time: { startMs: b.startMs || 0 }, intent: {} }, now));
+  // 0.12.10: Sperre ab Start + 1 h; Archiv ab Fahrtende (endMs: Start + max(6 h, Dauer + 2 h)) oder bei eingefrorener Archivkopie
+  const archived = (b) => !!b.frozen || now > (b.endMs || archiveMs({ time: { startMs: b.startMs || 0 }, intent: {} }));
+  const locked = (b) => archived(b) || now > (b.startMs || 0) + LOCK_AFTER_START_MS;
+  const groupOf = (b) => (archived(b) ? 'archive' : locked(b) ? 'running' : 'work');
+  /** Nachtrag: Rückfrage, dann Archivkopie (bisherige Nummer) + Nummer mit Buchstabe; danach Erarbeitung öffnen. */
+  async function amend(b) {
+    const newNo = nextAmendmentNo(b.no || '');
+    const ok = await confirmDialog(t('amend_title'), t('amend_q', { t: `${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)} ${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)}`, no: b.no || '–', newNo }), { yes: t('amend_yes'), no: t('cancel') });
+    if (!ok) return;
+    try {
+      const r = await ctx.store.amendBriefing(b.id, ctx.who);
+      try { sessionStorage.setItem('fb.amend.' + b.id, '1'); } catch { /* ohne Sitzungsspeicher */ }
+      toast(`${r.no} ✓`); ctx.navigate(`#/b/${b.id}`);
+    } catch (e) { toast(t('amend_fail')); console.error(e); }
+  }
   /** Phase der Fahrt (Vorplanung/Planung/Final/vergangen) als kleines Etikett. */
   function phaseTag(b) {
     const ph = phaseOf(b.startMs || 0, now);

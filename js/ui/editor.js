@@ -6,7 +6,7 @@ import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
 import { sunBlock, massPerfEditor, scheduleEditor } from './parts.js';
 import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, panelNo, AMC1_BOP_BAS_115, GAS_BRIEFING_EXTRA } from '../panels.js';
-import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems, applicableTransitions, intentLine } from '../model.js';
+import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, isArchived, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems, applicableTransitions, intentLine } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
 import { meteoBar, autoBlock, askAi } from './autopanels.js';
@@ -22,12 +22,18 @@ import { icon, iconSvg } from './icons.js';
 import { stageSets, startPlanOff, startPlanBriefing, startPlanSig, planStale, stageWindowsOf, STAGE_REFRESH } from '../calc/stageplan.js';
 import { placeName } from '../net.js';
 
+/** 0.12.10: Nachtrag – die Briefings-Seite setzt nach der Rückfrage ein Sitzungs-Flag; es gilt für diese Erarbeitung (Reiter) und
+ * erlischt beim Verlassen (app.js). Archivierte Briefings öffnen sich nie. */
+export function amendOpen(b) {
+  if (!b || isArchived(b)) return false;
+  try { return sessionStorage.getItem('fb.amend.' + b.id) === '1'; } catch { return false; }
+}
 export async function renderEditor(view, ctx, id, opts = {}) {
   const shared = ctx.shared;
   const b = opts.briefing || await ctx.store.getBriefing(id);
   if (!b) { view.appendChild(h('div.err', 'not found')); return; }
   if (!shared && b.access === 'read') { ctx.navigate(`#/v/${b.id}`); return; }   // fremdes Briefing: nur Briefingsicht
-  if (isLocked(b)) { ctx.navigate(shared ? `#/s/${shared.token}/v` : `#/v/${b.id}`); return; }   // Fahrt vorbei: unverändert lassen (Hinweis in der Briefingsicht)
+  if (isLocked(b) && !amendOpen(b)) { ctx.navigate(shared ? `#/s/${shared.token}/v` : `#/v/${b.id}`); return; }   // Start + 1 h vorbei: nur Ansicht – ausser als Nachtrag (0.12.10, Flag aus der Briefings-Seite)
   upgradeBriefing(b);
   const S = ctx.settings, z = b.site.tz || 'Europe/Zurich', lang = getLang();
   const canOwn = !shared;

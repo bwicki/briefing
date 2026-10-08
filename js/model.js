@@ -399,19 +399,45 @@ export function completion(b, settings) {
   const n = ps.filter((p) => panelFilled(p, b)).length + sets.reduce((a, x) => a + visiblePanels(settings, x.bs).filter((p) => panelFilled(p, x.bs)).length, 0);
   return Math.round((100 * n) / total);
 }
-/** Ende der Fahrt für die Sperre: Start + max(6 h, Fahrtdauer + 2 h). */
-export function lockMs(b) {
+/** Archiv-Grenze (Fahrtende): Start + max(6 h, Fahrtdauer + 2 h) – danach ist das Briefing unveränderlich. */
+export function archiveMs(b) {
   const start = b?.time?.startMs || 0;
   const dur = (b?.intent?.durationMin || 0) * 60000;
   return start + Math.max(6 * 3600000, dur + 2 * 3600000);
 }
-/** Gesperrt: die Fahrt liegt zurück → Briefing bleibt unverändert (Kopie mit neuem Datum anlegen). */
+/** 0.12.10: Sperre ab Start + 1 h – ab dann nur noch Ansicht; Änderungen während der laufenden Fahrt als Nachtrag. */
+export const LOCK_AFTER_START_MS = 3600000;
+export const lockMs = (b) => (b?.time?.startMs || 0) + LOCK_AFTER_START_MS;
+/** Gesperrt: Start + 1 h vorbei (laufende oder vergangene Fahrt). */
 export const isLocked = (b, now = Date.now()) => now > lockMs(b);
+/** Archiv: Fahrt vorbei oder eingefrorene Archivkopie eines Nachtrags → unveränderlich, nicht löschbar. */
+export const isArchived = (b, now = Date.now()) => !!b?.frozen || now > archiveMs(b);
+/** Laufende Fahrt: gesperrt, aber noch nicht im Archiv → Nachtrag möglich. */
+export const isRunning = (b, now = Date.now()) => isLocked(b, now) && !isArchived(b, now);
+/** Briefingnummer des Nachtrags: «2026-008» → «2026-008a», «2026-008a» → «2026-008b». */
+export function nextAmendmentNo(no) {
+  const m = /^(.*?)([a-z])?$/.exec(String(no || ''));
+  const base = m ? m[1] : String(no || ''); const letter = m && m[2] ? String.fromCharCode(m[2].charCodeAt(0) + 1) : 'a';
+  return base + (letter > 'z' ? 'z' : letter);
+}
+/** Nachtrag während der laufenden Fahrt: der bisherige Stand wird als eingefrorene Kopie (bisherige Nummer) ins Archiv
+ * gelegt, das Briefing selbst (gleiche Kennung, Links bleiben gültig) erhält die Nummer mit Buchstabe und ist wieder bearbeitbar.
+ * Reine Datenfunktion – Speichern übernimmt der Aufrufer (lokal) bzw. der Worker. */
+export function amendBriefingData(b, now = Date.now()) {
+  const copy = deepCopy(b);
+  copy.id = uid(12); copy.frozen = true; copy.frozenAt = now; copy.amendmentOf = b.id; copy.no = b.no || null;
+  delete copy.access; delete copy.amendments;
+  const oldNo = b.no || null;
+  b.no = nextAmendmentNo(b.no || '');
+  b.amendments = [...(b.amendments || []), { no: oldNo, copyId: copy.id, ts: now }];
+  b.amendedAt = now;
+  return { copy, b };
+}
 /** Bezugszeit für «Alter» von Meldungen (METAR/TAF, Beobachtungen): der Publikationszeitpunkt des Briefings
  * (letzte Freigabe als Final); ohne Freigabe während der Erarbeitung «jetzt», nach der Fahrt (gesperrt) der Startzeitpunkt. */
 export function ageRefMs(b, now = Date.now()) {
   if (b?.status === 'final') { const v = (b.versions || []).slice(-1)[0]; if (v?.ts) return v.ts; }
-  if (b && isLocked(b, now)) return b.time?.startMs || now;
+  if (b && isArchived(b, now)) return b.time?.startMs || now;   // 0.12.10: während der laufenden Fahrt (Nachtrag) zählt «jetzt»
   return now;
 }
 /** Dateibasis «2026-017_Fahrtbriefing_HB-QWZ_2026-10-06» für PDF, JSON, ICS, FPL. */

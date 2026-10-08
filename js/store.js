@@ -9,7 +9,7 @@
  */
 import { load, save, del, uid } from './util.js';
 import { mergeSettings } from './defaults.js';
-import { briefingYear, formatNo, lockMs, placeLabel } from './model.js';
+import { briefingYear, formatNo, archiveMs, amendBriefingData, placeLabel } from './model.js';
 
 const cfg = (typeof window !== 'undefined' && window.BRIEFING_CONFIG) || {};
 const API = (cfg.apiBase || '').replace(/\/$/, '');
@@ -56,6 +56,15 @@ const local = {
     all[b.id] = b; save(LS.briefings, all); return b;
   },
   async deleteBriefing(id) { const all = load(LS.briefings, {}); delete all[id]; save(LS.briefings, all); },
+  /** 0.12.10: Nachtrag während der laufenden Fahrt – Archivkopie (bisherige Nummer, eingefroren) + Nummer mit Buchstabe. */
+  async amendBriefing(id, who) {
+    const all = load(LS.briefings, {}); const b = all[id]; if (!b) throw new Error('not found');
+    const { copy } = amendBriefingData(b);
+    copy.updatedAt = Date.now(); copy.updatedBy = who || 'local';
+    b.revision = (b.revision || 0) + 1; b.updatedAt = Date.now(); b.updatedBy = who || 'local';
+    all[copy.id] = copy; all[b.id] = b; save(LS.briefings, all);
+    return { no: b.no, copyId: copy.id };
+  },
   async uploadImage(briefingId, dataUrl) { return { url: dataUrl, key: uid(8) }; },
   async uploadDoc(dataUrl) { return { url: dataUrl, key: uid(8) }; },
   async listAccess() { return []; },
@@ -131,6 +140,7 @@ const remote = {
     return b;
   },
   async deleteBriefing(id) { await api(`/api/briefings/${id}`, { method: 'DELETE' }); },
+  async amendBriefing(id, who) { return api(`/api/briefings/${id}/amend`, { method: 'POST', body: { who } }); },
   async uploadImage(briefingId, dataUrl, shareToken) {
     const j = await api(`/api/briefings/${briefingId}/files${shareToken ? `?t=${shareToken}` : ''}`, { method: 'POST', body: { dataUrl } });
     return { url: API + j.url, key: j.key };
@@ -161,7 +171,7 @@ const remote = {
 
 function summary(b) {
   return {
-    id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: lockMs(b), tz: b.site?.tz, site: placeLabel(b.site), icao: b.site?.icao, elev: b.site?.elev,
+    id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: archiveMs(b), frozen: !!b.frozen, tz: b.site?.tz, site: placeLabel(b.site), icao: b.site?.icao, elev: b.site?.elev,
     balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo, progress: b.progress ?? null, edition: b.edition ?? null,
     revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy, links: (b.accessCount || 0),
   };
@@ -186,7 +196,7 @@ export const store = {
   cachedUser() { return load(LS.me, null); },
   idleExpired(ms = 2 * 60 * 60 * 1000) { const t = load(LS.touch, 0); return t && Date.now() - t > ms; },
 };
-for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'uploadImage', 'uploadDoc', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'getSecret', 'openShared', 'saveShared', 'getLog', 'data', 'exportAll',
+for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'amendBriefing', 'uploadImage', 'uploadDoc', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'getSecret', 'openShared', 'saveShared', 'getLog', 'data', 'exportAll',
   'me', 'listUsers', 'listShares', 'setShare', 'getSettingsOf', 'adminUsers', 'adminCreateUser', 'adminUpdateUser', 'adminStats', 'adminStatsCsv',
   'listMaterialLinks', 'createMaterialLink', 'revokeMaterialLink', 'openMaterial']) {
   store[k] = (...a) => store.impl[k](...a);

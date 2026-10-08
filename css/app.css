@@ -104,7 +104,7 @@ table.tbl td .sm,.item-box .sm{font-size:11.5px;color:var(--text-dim);font-famil
 .cards-list{display:flex;flex-direction:column;gap:8px;}
 .bcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:4px;}
 .bcard .t{font-weight:600;color:var(--text-strong);}
-.list-sect{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)} .list-sect.archive{margin-top:26px}   /* 0.12.9: Abschnitte der Briefings-Seite */
+.list-sect{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)} .list-sect.archive,.list-sect.running{margin-top:26px} .list-sect.running{color:var(--accent)} table.tbl.list button.amend{border-color:var(--accent);color:var(--accent)}   /* 0.12.10: Laufende Fahrten, Nachtrag-Stift */   /* 0.12.9: Abschnitte der Briefings-Seite */
 .bcard .m{font-size:12px;color:var(--text-dim);font-family:var(--mono);}
 .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.04em;padding:2px 7px;border-radius:5px;border:1px solid var(--line);color:var(--text-dim);white-space:nowrap;}
 .tag.auto{color:var(--dew);border-color:var(--dew);} .tag.calc{color:var(--green);border-color:var(--green);} .tag.half{color:var(--gafor-d);border-color:var(--gafor-d);} .tag.must{color:var(--temp);border-color:var(--temp);} .tag.final{color:var(--green);border-color:var(--green);}
