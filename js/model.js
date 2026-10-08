@@ -11,7 +11,7 @@ import { sunTimes, moonTimes, moonIllumination, parseDwdAstro } from './calc/sun
 import { racLookup } from './calc/rac.js';
 import { hotAir, gasBalloon } from './calc/aero.js';
 import { buildSchedule, scheduleWarnings, buildPlan, planTemplate, planToStops } from './calc/schedule.js';
-import { icao, bearing, distKm, compass, countryGuess } from './calc/geo.js';
+import { icao, bearing, distKm, compass, countryGuess, fixCountry } from './calc/geo.js';
 import { PANELS, touchesCH, visiblePanels, panelFilled } from './panels.js';
 import { stageSets, pruneStagePlans } from './calc/stageplan.js';
 import { tt, t as tr } from './i18n.js';
@@ -53,6 +53,7 @@ export const emptyPlace = () => ({ name: '', lat: null, lon: null, elev: null, i
 export function upgradeBriefing(b) {
   if (!b) return b;
   if (!b.landing) b.landing = emptyPlace();
+  fixCountry(b.site); fixCountry(b.landing); for (const st of b.schedule?.stops || []) fixCountry(st);   // 0.12.10: falsches Land (z. B. «CH» bei Orten in Deutschland) nach Koordinaten korrigieren
   if (!b.schedule.overrides) b.schedule.overrides = {};
   ensureStops(b.schedule);
   ensurePlan(b);
@@ -286,7 +287,7 @@ export function intentLine(b, tr, z, opts = {}) {
     if (g && m) { g.min = +m[2] * 60 + +m[3]; g.beyond = m[1] === '>'; if (a) g.altM = +a[1]; }
   }
   if (g) {
-    parts.push(`${tr('intent_dir')} ~${String(g.brg).padStart(3, '0')}°`, `${tr('intent_dist')} ${g.km} km`);
+    parts.push(`${tr('intent_dir')} ~${String(g.brg).padStart(3, '0')}°`, `${tr('intent_dist')} ~${g.km} km`);
     if (g.min != null) {
       const arr = b.time.startMs + g.min * 60000, wd = (ms) => new Intl.DateTimeFormat(opts.lang || 'de', { weekday: 'short', timeZone: z }).format(new Date(ms));
       parts.push(`${tr('intent_arr')} ${g.beyond ? '>' : '~'}${wd(arr) !== wd(b.time.startMs) ? wd(arr) + ' ' : ''}${hhmm(z, arr)} LT (${tr('intent_travel')} ${fmtDur(g.min)})`);

@@ -8,6 +8,7 @@ import { parseRacText, racValidity, linesFromPdfItems } from '../calc/rac.js';
 import { CYLINDER_CATALOG } from '../calc/aero.js';
 import { ACT_TYPES, ACT_DEFAULT_MIN } from '../calc/schedule.js';
 import { placeRow, mapsUrl } from './place.js';
+import { countryGuess } from '../calc/geo.js';
 import { exportAll } from './extras.js';
 import { COUNTRY_MATRIX, ROLES } from '../countries.js';
 import { usersSection, statsSection } from './users.js';
@@ -170,7 +171,7 @@ export async function renderSettings(view, ctx) {
       clear(sBox);
       S.sites.forEach((s, i) => sBox.appendChild(h('div.item-box', [
         h('div.head', [h('b', s.name), h('button.btn.icon', { type: 'button', onclick: () => { S.sites.splice(i, 1); drawS(); } }, icon('del'))]),
-        h('div.frow', [txtField(s, 'name', t('name')), placeRow(s, { label: t('coords'), title: t('site'), noName: true, onPick: (p) => { Object.assign(s, { lat: p.lat, lon: p.lon, elev: p.elev ?? s.elev, tz: p.tz || s.tz, country: p.country || s.country }); if (!s.name) s.name = p.name; drawS(); } })]),
+        h('div.frow', [txtField(s, 'name', t('name')), placeRow(s, { label: t('coords'), title: t('site'), noName: true, onPick: (p) => { Object.assign(s, { lat: p.lat, lon: p.lon, elev: p.elev ?? s.elev, tz: p.tz || s.tz, country: p.country || countryGuess(p.lat, p.lon) || s.country }); if (!s.name) s.name = p.name; drawS(); } })]),
         h('div.frow.c4', [numField(s, 'elev', t('s_elev')), txtField(s, 'country', t('s_country')), txtField(s, 'tz', t('s_tz')), field(t('s_meeting'), select([{ value: '', label: '–' }].concat(S.meetings.map((m) => ({ value: m.id, label: m.name }))), s.meetingId, { onchange: (e) => { s.meetingId = e.target.value; } }))]),
         h('div.frow', [field(t('s_fav'), check('', s.favorite, (v) => { s.favorite = v; })), field(t('s_types'), h('div.chips', ['hab', 'gas'].map((ty) => h('button.chip', { type: 'button', 'aria-pressed': !s.types?.length || s.types.includes(ty), title: t('s_typesHint'), onclick: (e) => {
           // leer = beide; Klick schaltet um; nie beide aus

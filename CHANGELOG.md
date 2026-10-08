@@ -16,6 +16,26 @@
   archivierte Briefings nicht mehr ändern (423). Lokaler Modus gleich.
 * Tests: Rechenkern (Sperre, Archiv, Nachtrag-Nummer, Datenfunktion), API (amend, 409/423), Oberfläche (Abschnitt
   «Laufende Fahrten», Rückfrage, Erarbeitung nur im Nachtrag, Archivkopie).
+* **Rückmeldungen Test 0.12.9:**
+  * Länderkennzeichen: ein gespeichertes Land, das eindeutig nicht zu den Koordinaten passt (z. B. «CH» bei einem
+    Stammdaten-Ort in Deutschland, Vorgabe beim Anlegen), wird beim Laden korrigiert (Stammdaten-Orte, Treffpunkte,
+    Start-/Landeort, Tagesplanungs-Stopps); Grenzband (Bodensee, Basel, Genf) bleibt unverändert – dort bitte das Land
+    in den Stammdaten prüfen. Orts-Auswahl in den Stammdaten setzt das Land aus den Koordinaten.
+  * METAR/TAF: Schreibfehler der NOAA-Stationsliste korrigiert (Augsberg → Augsburg, Koln → Köln, Nurnberg → Nürnberg,
+    Munich → München, Vienna → Wien, Geneva → Genf, Klammer-/Leerzeichenreste).
+  * Startzeit nur im 10-Minuten-Raster: Eingaben werden gerundet und ins Feld zurückgeschrieben (Browser-Picker hält das
+    Raster nicht ein).
+  * Assistent: Pflicht-Inhalte nicht mehr fett. A1 Fahrtabsicht: «Distanz ~15 km».
+  * **TAF:** Änderungsgruppen (BECMG/TEMPO/PROB/FM), deren Zeitraum den Fahrtzeitraum (Start … Start + Fahrtdauer)
+    berührt, erhalten einen feinen Rahmen – im Rohtext und im Klartext (Tooltip «Änderungsgruppe betrifft den
+    Fahrtzeitraum»); Monatswechsel berücksichtigt.
+  * **Aktualisierungswarnung** als rotes Warndreieck ohne Hintergrund **in der Titelzeile** des Panels (Erarbeitung und
+    Briefingsicht), nicht mehr in der Standzeile – bei allen Panels, deren Information den Fahrtzeitraum noch nicht
+    abdeckt: gegenwärtiger Stand (METAR/TAF, Beobachtungen, SIGMET, NOTAM, Lage, DABS, Radar/Webcams) bei Start > 6 h,
+    **Ballonprognose** (DWD-Vorhersagetag der Fahrt fehlt) und **Druckdifferenzprognose** (Reihen reichen nicht bis zur
+    Landung).
+  * KI-Zusammenfassung: Ergebnis erscheint nach dem Erstellen sofort in einem Dialog mit Hinweis, wo es steht (Karte
+    «Zusammenfassung» rechts unten; Briefingsicht im Kopfblock unter der Einschätzung); Fehler als Dialog statt Kurzmeldung.
 
 ## 0.12.9 — 2026-10-08 · Archiv unveränderlich, drei Schriften in der Briefingsicht
 

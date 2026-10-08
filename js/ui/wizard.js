@@ -254,7 +254,11 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     const ampel = ampelBox();
     const ampelSoon = debounce(() => ampel.redraw(), 900);
     function applyTime() {
-      const d = dateIn.value || b.time.date, tm = timeIn.value || b.time.time;
+      const d = dateIn.value || b.time.date;
+      let tm = timeIn.value || b.time.time;
+      // 0.12.10: Startzeit nur im 10-Minuten-Raster – Eingabe wird gerundet und ins Feld zurückgeschrieben (der Browser-Picker hält das Raster nicht ein)
+      const mm = /^(\d{1,2}):(\d{2})$/.exec(tm || '');
+      if (mm) { const tot = (Math.round(((+mm[1]) * 60 + (+mm[2])) / 10) * 10) % 1440; tm = `${String(Math.floor(tot / 60)).padStart(2, '0')}:${String(tot % 60).padStart(2, '0')}`; if (timeIn.value !== tm) timeIn.value = tm; }
       if (b.time.base === 'UTC') { b.time.date = d; b.time.time = tm; b.time.startMs = Date.UTC(...d.split('-').map((x, i) => i === 1 ? +x - 1 : +x), ...tm.split(':').map(Number)); b.time.date = isoDate(tz(), b.time.startMs); b.time.time = hhmm(tz(), b.time.startMs); }
       else setStart(b, d, tm);
       refreshSun(); persistSoon(); ampelSoon();
@@ -460,7 +464,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s3'))), h('div.card-body', kv([[t('duration'), fmtDur(b.intent.durationMin)], [t('altBand'), `${b.intent.altMinFt}–${b.intent.altMaxFt} ft`], [t('direction'), b.intent.direction || '–'], b.landing?.lat != null ? [t('landingSite'), placeLine(b.landing)] : null, [t('levels'), b.intent.levels.join(', ')]]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s4'))), h('div.card-body', kv([[t('pic'), b.persons.pic], ...(hasCopilot(b) ? [[t('copilot'), b.persons.copilot]] : []), [t('retrieve'), b.persons.retrieve || '–'], [t('pax'), b.persons.pax.map((p) => p.name).join(', ') || '–'], type === 'hab' ? [t('mp_takeoff'), `${fmt(r.takeoff)} kg (Δ ${fmtSigned(-r.massDelta)} kg)`] : [t('gb_ballast'), `${fmt(r.ballast)} kg`]]))]),
         h('div.card', [h('div.card-head', h('div.section-title', t('wiz_s5'))), h('div.card-body', kv([[t('meeting'), b.schedule.meetingLat != null ? placeLine({ name: b.schedule.meetingName, lat: b.schedule.meetingLat, lon: b.schedule.meetingLon }) : (b.schedule.meetingName || '–')]].concat(b.schedule.skip ? [[t('sch_title'), t('sch_skipped')]] : rows.map((row) => [hhmm(z, row.ms), scheduleRowLabel(row, b, t, S.activities?.custom)]))))]),
-        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_mandatory'))), h('div.card-body', [h('ul.mand', mandatoryPanels(S, b).map((p) => h('li', h('b', tt(p))))), h('div.note', t('wiz_createHint'))])]),
+        h('div.card', [h('div.card-head', h('div.section-title', t('wiz_mandatory'))), h('div.card-body', [h('ul.mand', mandatoryPanels(S, b).map((p) => h('li', tt(p)))), h('div.note', t('wiz_createHint'))])]),
       ]),
     );
   }

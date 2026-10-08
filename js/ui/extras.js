@@ -122,7 +122,9 @@ export async function assessmentDialog(b, ctx, onChange, opts = {}) {
     const res = await aiHint(ctx, b, { system: pr.system, prompt: user, images: [], model: ctx.settings.aiModel });
     b.assessment = { text: res.text, model: res.model, ts: Date.now(), who: ctx.who };
     onChange(); toast(t('ok'));
-  } catch (e) { toast(`${t('error')}: ${e.message}`); }
+    // 0.12.10: Ergebnis sofort zeigen und sagen, wo es steht (Karte «Zusammenfassung» rechts unten; Briefingsicht im Kopfblock unter der Einschätzung)
+    await dialog(t('summary_title'), h('div', [h('div.note.small', t('summary_where')), h('div', { style: { whiteSpace: 'pre-wrap', marginTop: '6px' } }, res.text || '–'), h('div.note.small', `${res.model || ''} · ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC`)]), [{ label: t('close'), value: true }], { cls: 'wide' });
+  } catch (e) { await dialog(t('error'), h('p', `${t('summary_fail')} ${e.message || e}`), [{ label: t('close'), value: true }]); }
 }
 
 // ---------------------------------------------------------------- Go/No-Go-Karte

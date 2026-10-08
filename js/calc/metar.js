@@ -175,6 +175,28 @@ function splitGroups(tokens, starts) {
   return out;
 }
 
+/** 0.12.10: Zeitfenster der TAF-Änderungsgruppen (UTC-ms), in der Reihenfolge der Klartextzeilen ab Zeile 2 (Zeile 1 = Kopf,
+ * Basisgruppe = null). refMs (Stand des Abrufs) liefert Monat/Jahr. FM-Gruppen gelten bis zur nächsten FM-Gruppe bzw. zum Ende der Gültigkeit. */
+export function tafGroupWindows(raw, refMs = Date.now()) {
+  const toks = String(raw || '').replace(/=$/, '').trim().split(/\s+/).filter(Boolean);
+  let i = 0; if (toks[i] === 'TAF') i++;
+  while (toks[i] === 'AMD' || toks[i] === 'COR') i++;
+  i++;   // Station
+  const ref = new Date(refMs || Date.now()); const Y = ref.getUTCFullYear(), M = ref.getUTCMonth(), D = ref.getUTCDate();
+  const at = (dd, hh, mi = 0) => { let ms = Date.UTC(Y, M, dd, hh, mi); if (dd < D - 15) ms = Date.UTC(Y, M + 1, dd, hh, mi); else if (dd > D + 15) ms = Date.UTC(Y, M - 1, dd, hh, mi); return ms; };
+  if (/^\d{6}Z$/.test(toks[i] || '')) i++;
+  let m = /^(\d{2})(\d{2})\/(\d{2})(\d{2})$/.exec(toks[i] || ''); let validEnd = null; if (m) { validEnd = at(+m[3], +m[4]); i++; }
+  const groups = splitGroups(toks.slice(i), ['BECMG', 'TEMPO']);
+  const out = groups.map((g) => {
+    const kw = g[0];
+    if (kw === '') return null;
+    if (/^FM\d{6}$/.test(kw)) return { from: at(+kw.slice(2, 4), +kw.slice(4, 6), +kw.slice(6)), to: validEnd, fm: true };
+    const per = /^(\d{2})(\d{2})\/(\d{2})(\d{2})$/.exec(g[1] || ''); if (!per) return null;
+    return { from: at(+per[1], +per[2]), to: at(+per[3], +per[4]) };
+  });
+  for (let k = 0; k < out.length; k++) if (out[k]?.fm) { const nx = out.slice(k + 1).find((x) => x?.fm); if (nx) out[k].to = nx.from; }
+  return out;
+}
 /** TAF → Zeilen in Klartext (Basis + Änderungsgruppen). */
 export function decodeTaf(raw, lang = 'de') {
   const s = L[lang] || L.de;

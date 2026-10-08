@@ -8,7 +8,7 @@ import { meteogram as meteogramSvg, windChart, stueveChart, mk } from '../auto/c
 import { trajSvg, TRAJ_COLORS, targetEstimate } from '../auto/traj.js';
 import { directionText, ageRefMs } from '../model.js';
 import { mapsLink } from './place.js';
-import { decodeMetar, decodeTaf, badToken, MARK0, MARK1 } from '../calc/metar.js';
+import { decodeMetar, decodeTaf, tafGroupWindows, badToken, MARK0, MARK1 } from '../calc/metar.js';
 import { bearing, compass } from '../calc/geo.js';
 import { placeName } from '../net.js';
 import { icon, iconSvg } from './icons.js';
@@ -23,12 +23,32 @@ const flyTxt = (lv) => (lv == null ? '–' : t('fly_' + lv));
 export const NOW_KINDS = new Set(['metar', 'obs', 'sigmet', 'notam', 'synoptic', 'dabs']);   // 0.12.8a: auch DABS; Radar/Webcams (live) über nowWarnLive()
 export const farStart = (b) => (b.time?.startMs || 0) - Date.now() > 6 * 3600000;
 export const staleNow = (snap, b) => NOW_KINDS.has(snap?.kind) && farStart(b);
-export const nowWarn = (snap, b) => (staleNow(snap, b) ? h('span.now-warn', { title: t('now_warn') }, '⚠') : null);
-export const nowWarnLive = (b) => (farStart(b) ? h('div.note.stand', [h('span.now-warn', { title: t('now_warn') }, '⚠'), t('now_live')]) : null);
+/** 0.12.10: Deckt der Schnappschuss den Fahrtzeitraum ab? true/false; null = nicht beurteilbar (kein Warnsymbol).
+ * Gegenwärtiger Stand (METAR, Beobachtungen, SIGMET, NOTAM, Lage, DABS): nur, wenn der Start weniger als 6 h entfernt ist.
+ * DWD-Ballonprognose: nur, wenn jeder UTC-Tag der Fahrt als Vorhersagetag vorhanden ist. Druckdifferenz: nur, wenn die Reihen bis zur Landung reichen. */
+export function snapCovers(snap, b) {
+  if (!snap || !b) return null;
+  const fw0 = b.time?.startMs || 0, fw1 = fw0 + Math.max(30, b.intent?.durationMin || 0) * 60000;
+  if (NOW_KINDS.has(snap.kind)) return !farStart(b);
+  const d = snap.data || {};
+  if (snap.kind === 'balloon') {
+    if (!d.dwd) return null;
+    const days = []; for (let ms = fw0; ms <= fw1 + 1; ms += 86400000) { const x = new Date(ms); days.push(`${String(x.getUTCDate()).padStart(2, '0')}.${String(x.getUTCMonth() + 1).padStart(2, '0')}.${x.getUTCFullYear()}`); }
+    const heads = (d.dwd.blocks || []).map((k) => k.heading || '').join(' ');
+    return days.every((dd) => heads.includes(dd));
+  }
+  if (snap.kind === 'pdiff') { const last = Math.max(0, ...(d.pairs || []).flatMap((p) => (p.rows || []).map((r) => r.ms || 0))); return last >= fw1 - 3600000; }
+  return null;
+}
+/** Rotes Warndreieck für die Titelzeile des Panels (0.12.10): Information deckt den Fahrtzeitraum noch nicht ab. */
+export const coverWarn = (snap, b) => (snapCovers(snap, b) === false ? h('span.now-warn', { title: t('now_warn') }, '⚠') : null);
+export const nowWarn = (snap, b) => null;   // bis 0.12.9 in der Standzeile; seit 0.12.10 in der Titelzeile (coverWarn)
+export const nowWarnLive = (b) => (farStart(b) ? h('div.note.stand', t('now_live')) : null);
+export const liveWarn = (b) => (farStart(b) ? h('span.now-warn', { title: t('now_warn') }, '⚠') : null);
 export function standLine(snap, b) {
   if (!snap) return null;
   const z = b.site.tz || 'Europe/Zurich';
-  return h('div.note.stand', [nowWarn(snap, b), `${t('stand')}: ${fmtDateTime(z, snap.stand, getLang())} LT · ${snap.modelName ? `${t('auto_model')}: ${snap.modelName} · ` : ''}${snap.source || ''}${snap.generated ? ` (${snap.generated.slice(0, 16).replace('T', ' ')} UTC)` : ''}`]);
+  return h('div.note.stand', [`${t('stand')}: ${fmtDateTime(z, snap.stand, getLang())} LT · ${snap.modelName ? `${t('auto_model')}: ${snap.modelName} · ` : ''}${snap.source || ''}${snap.generated ? ` (${snap.generated.slice(0, 16).replace('T', ' ')} UTC)` : ''}`]);
 }
 
 // ---------------------------------------------------------------- Meteogramm
@@ -348,12 +368,18 @@ export function renderMetar(snap, b, ctx, opts = {}) {
   // Ausgabezeit aus «ddhhmmZ» (Monat/Jahr aus dem Schnappschuss)
   const zMs = (raw) => { const m = /\b(\d{2})(\d{2})(\d{2})Z\b/.exec(raw || ''); if (!m) return null; const ref = new Date(snap.stand || Date.now()); let dt = Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth(), +m[1], +m[2], +m[3]); if (dt - ref.getTime() > 2 * 86400000) dt = Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth() - 1, +m[1], +m[2], +m[3]); return dt; };
   // kompakt: Rohtext links, Klartext rechts; erste Klartextzeile «METAR LSZH · … (vor 0:30 h)»; Änderungsgruppen («→») ohne Aufzählungspunkt
-  const pair = (label, raw, lines, issuedMs) => h('div.metar-cols.compact', [
-    h('div.raw', h('pre.report', rawNodes(raw))),
-    h('div.dec', h('ul.decoded', lines.map((x, i) => (i === 0 ? h('li.head', [label + ' ', ...marked(x), age(issuedMs)]) : h('li' + (x.startsWith('→') ? '.chg' : ''), marked(x)))))),
+  // 0.12.10: Änderungsgruppen, deren Zeitraum die Fahrt (Start … Start + Fahrtdauer) berührt, bekommen einen feinen Rahmen – im Rohtext und im Klartext
+  const fw0 = b.time?.startMs || 0, fw1 = fw0 + Math.max(30, b.intent?.durationMin || 0) * 60000;
+  const hitGroups = (raw) => { try { return tafGroupWindows(raw, snap.stand || Date.now()).map((w) => !!(w && w.from != null && w.to != null && w.from < fw1 && w.to > fw0)); } catch { return []; } };
+  const rawTaf = (raw, hits) => { const ls = raw.split('\n'); return ls.flatMap((ln, k) => { const nodes = rawNodes(ln); const hit = k > 0 && hits[k]; return [k ? '\n' : null, hit ? h('span.taf-hit', { title: t('taf_hit') }, nodes) : nodes].filter((x) => x != null); }); };
+  const pair = (label, raw, lines, issuedMs, hits = []) => h('div.metar-cols.compact', [
+    h('div.raw', h('pre.report', hits.length ? rawTaf(raw, hits) : rawNodes(raw))),
+    h('div.dec', h('ul.decoded', lines.map((x, i) => (i === 0 ? h('li.head', [label + ' ', ...marked(x), age(issuedMs)]) : h('li' + (x.startsWith('→') ? '.chg' : '') + (i >= 2 && hits[i - 1] ? '.taf-hit' : ''), { title: i >= 2 && hits[i - 1] ? t('taf_hit') : null }, marked(x)))))),
   ]);
   // Stationsnamen mit ICAO-Abkürzungen (AP = Airport, INTL, AB = Air Base, AFLD = Airfield)
-  const stName = (n) => String(n || '').replace(/\b(Arpt|Airport|Aprt|Apt)\b\.?/gi, 'AP').replace(/\bIntl\b\.?/gi, 'INTL').replace(/\b(Air Base|Airbase|AFB|AB)\b/g, 'AB').replace(/\b(Airfield|Aerodrome)\b/gi, 'AFLD').replace(/\s+/g, ' ').trim();
+  // 0.12.10: Schreibfehler/Eigenheiten der NOAA-Stationsliste korrigieren (Augsberg → Augsburg, Koln → Köln, Nurnberg → Nürnberg, «Arpt)», « ,»)
+  const NAME_FIX = [[/\bAugsberg\b/, 'Augsburg'], [/\bKoln\b/, 'Köln'], [/\bNurnberg\b/, 'Nürnberg'], [/\bMunich\b/, 'München'], [/\bMemmingerberg\b/, 'Memmingen'], [/\bDusseldorf\b/, 'Düsseldorf'], [/\bSaarbrucken\b/, 'Saarbrücken'], [/\bLubeck\b/, 'Lübeck'], [/\bZurich\b/, 'Zürich'], [/\bMunster\b/, 'Münster'], [/\bVienna\b/, 'Wien'], [/\bGeneva\b/, 'Genf'], [/\)(?=,|\s|$)/, ''], [/\s+,/g, ',']];
+  const stName = (n) => NAME_FIX.reduce((x, [re, to]) => x.replace(re, to), String(n || '')).replace(/\b(Arpt|Airport|Aprt|Apt)\b\.?/gi, 'AP').replace(/\bIntl\b\.?/gi, 'INTL').replace(/\b(Air Base|Airbase|AFB|AB)\b/g, 'AB').replace(/\b(Airfield|Aerodrome)\b/gi, 'AFLD').replace(/\s+/g, ' ').trim();
   const arrow = (m) => { if (m.lat == null || b.site.lat == null) return null; const brg = bearing(b.site.lat, b.site.lon, m.lat, m.lon); return h('span.dirarrow', { title: `${Math.round(brg).toString().padStart(3, '0')}° ${compass(brg, lang)}`, style: { transform: `rotate(${Math.round(brg) - 90}deg)` } }, '➜'); };
   return h('div.auto-wrap', [
     h('div.note', `${list.length} ${t('auto_metarWithin')} ${d.radiusKm || ''} km${hidden.size ? ` · ${t('hide_count', { n: hidden.size })}` : ''} · ${t('auto_badLegend')}`),
@@ -363,7 +389,7 @@ export function renderMetar(snap, b, ctx, opts = {}) {
       return h('div.metar', [
         h('div.mhead', [h('b', m.icaoId), ` ${stName(m.name)} · `, arrow(m), ` ${Math.round(m.distKm)} km`, obsMs ? h('span.muted.small', ` · ${new Date(obsMs).toISOString().slice(11, 16)} UTC${age(obsMs)}`) : null, hideBtn(opts, m.icaoId)]),
         pair('METAR', m.rawOb || '', decodeMetar(m.rawOb || '', lang), obsMs),
-        taf ? pair('TAF', tafFmt(taf.rawTAF), decodeTaf(taf.rawTAF || '', lang), zMs(taf.rawTAF)) : h('div.note', `${t('auto_noTaf')}`),
+        taf ? pair('TAF', tafFmt(taf.rawTAF), decodeTaf(taf.rawTAF || '', lang), zMs(taf.rawTAF), hitGroups(taf.rawTAF)) : h('div.note', `${t('auto_noTaf')}`),
       ]);
     }),
   ]);

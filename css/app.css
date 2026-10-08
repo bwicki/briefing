@@ -471,7 +471,7 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .metar .mhead .btn.icon.small{width:24px;height:24px;min-height:24px;font-size:11px}
 .notam-map{height:420px}
 .astro-grid{display:flex;flex-wrap:wrap;gap:6px 20px;align-items:flex-start} table.auto.astro{width:auto;font-size:11px} table.auto.astro th,table.auto.astro td{padding:1px 6px;line-height:1.3} table.auto.astro th:first-child{text-align:left;font-family:var(--mono);font-size:10px}   /* 0.12.8: A2 als Tabellen; 0.12.9: kompakter */
-.now-warn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:var(--amber);color:#1a1200;font-size:11px;margin-right:6px;cursor:help;vertical-align:-2px}   /* 0.12.8: Warnsymbol «gegenwärtiger Stand» */
+.now-warn{display:inline-block;background:none;color:#b91c1c;font-size:15px;line-height:1;margin-left:7px;cursor:help;vertical-align:-1px}   /* 0.12.8: Warnsymbol «gegenwärtiger Stand»; 0.12.10: rotes Dreieck ohne Hintergrund in der Titelzeile */
 .pre.small,pre.report.small{font-size:11px}
 .metar-cols ul.decoded{margin:4px 0 0;padding-left:16px;font-size:12.5px;line-height:1.4}
 .metar-cols ul.decoded li:first-child,.metar-cols ul.decoded li.head{list-style:none;margin-left:-16px}   /* 0.12.2: ohne Fettschrift */
@@ -897,3 +897,8 @@ details.pf-fold.model .pf-cols{margin:4px 0 0;padding-left:16px;display:grid;gap
 .pf-legend .pf-leghint{color:var(--text);flex-basis:100%}
 .pf-toolbar2[hidden]{display:none}
 .brief details.pf-fold>summary{color:#444}
+
+/* 0.12.10: TAF-Änderungsgruppen im Fahrtzeitraum – feiner Rahmen im Rohtext und Klartext */
+.taf-hit{outline:1px solid #b45309;outline-offset:1px;border-radius:3px}
+ul.decoded li.taf-hit{padding:1px 4px;margin-left:-5px}
+pre.report .taf-hit{padding:0 2px}

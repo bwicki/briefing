@@ -10,7 +10,7 @@ import { fplView } from './fplpanel.js';
 import { profileView } from './profile.js';
 import { docsLine } from '../stamm.js';
 import { placeLine } from './place.js';
-import { renderSnapshot, standLine } from './autorender.js';
+import { renderSnapshot, standLine, coverWarn, liveWarn } from './autorender.js';
 import { load, save } from '../util.js';
 import { goNoGo } from '../calc/gonogo.js';
 import { changesSinceFinal } from '../calc/diff.js';
@@ -160,7 +160,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       }
       if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b', t('ai') + ': '), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
-      return h('tr', { class: `row-${p.key.replace('.', '-')}${rowClass}` }, [h('th', [h('span.pno', panelNo(p, list, pfx(p, bb))), ' ', tt(p), bb === b && changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]);
+      return h('tr', { class: `row-${p.key.replace('.', '-')}${rowClass}` }, [h('th', [h('span.pno', panelNo(p, list, pfx(p, bb))), ' ', tt(p), p.kind === 'auto' ? (p.auto === 'radar' ? liveWarn(bb) : coverWarn(d.content?.auto, bb)) : null, bb === b && changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]);   // 0.12.10: Warndreieck in der Titelzelle
   }
   for (const s of SECTIONS) {
     const ps = panels.filter((p) => p.section === s.id);

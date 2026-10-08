@@ -29,7 +29,7 @@ import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, is
 import { carCode } from '../js/net.js';
 import { stageOps, canDropOps, ensureOps, coverPoints, countryAtKm, stagePlanBriefing, stageSets, startPlanOff, startPlanBriefing, startPlanSig, planStale, pruneStagePlans } from '../js/calc/stageplan.js';
 import { defaultStages, renameStartStage } from '../js/calc/profile.js';
-import { decodeMetar as dMetar, decodeTaf as dTaf } from '../js/calc/metar.js';
+import { decodeMetar as dMetar, decodeTaf as dTaf, tafGroupWindows } from '../js/calc/metar.js';
 
 let fails = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('  FAIL', msg); } else console.log('  ok  ', msg); };
@@ -430,6 +430,12 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(ml[0].startsWith('LSZH') && ml.some((x) => x.startsWith('→')), 'METAR-Klartext: Kopfzeile ohne Präfix (Präfix setzt die Anzeige), Änderungsgruppe mit →');
   const tl = dTaf('TAF LSZH 051025Z 0512/0618 24008KT 9999 SCT040 BECMG 0518/0521 VRB02KT=', 'de');
   ok(tl.length === 3 && tl[2].startsWith('→'), 'TAF-Klartext: Basis + Änderungsgruppe mit →');
+  // 0.12.10: Zeitfenster der Änderungsgruppen (Monat/Jahr aus dem Stand), FM bis zur nächsten FM-Gruppe
+  const ref = Date.UTC(2026, 9, 5, 11, 0);
+  const tw = tafGroupWindows('TAF LSZH 051025Z 0512/0618 24008KT 9999 SCT040 BECMG 0518/0521 VRB02KT PROB30 TEMPO 0603/0607 0800 FG FM061000 30005KT FM061500 27010KT=', ref);
+  ok(tw.length === 5 && tw[0] === null && tw[1].from === Date.UTC(2026, 9, 5, 18) && tw[1].to === Date.UTC(2026, 9, 5, 21) && tw[2].from === Date.UTC(2026, 9, 6, 3) && tw[3].from === Date.UTC(2026, 9, 6, 10) && tw[3].to === Date.UTC(2026, 9, 6, 15), 'TAF-Gruppenfenster: ' + JSON.stringify(tw));
+  const tw2 = tafGroupWindows('TAF EDDM 311720Z 3118/0124 BECMG 0103/0106 VRB02KT=', Date.UTC(2026, 9, 31, 18));
+  ok(tw2.length === 1 && tw2[0].from === Date.UTC(2026, 10, 1, 3) && tw2[0].to === Date.UTC(2026, 10, 1, 6), 'TAF-Gruppenfenster über den Monatswechsel (ohne Basisgruppe)');
 }
 
 // ---------------------------------------------------------------- 0.11.3: Kopie eines Briefings, NVFR → Flugplan Pflicht

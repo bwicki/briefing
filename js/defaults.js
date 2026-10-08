@@ -3,6 +3,7 @@
  * Einstellungen änderbar. Platzhalter sind als solche markiert.
  */
 import { CYLINDER_CATALOG } from './calc/aero.js';
+import { fixCountry } from './calc/geo.js';
 
 const cyl = (id, count) => ({ ...CYLINDER_CATALOG.find((c) => c.id === id), count });
 
@@ -233,5 +234,6 @@ export function mergeSettings(saved) {
     applyRegister(x);
   }
   for (const x of out.balloons?.envelopes || []) applyRegister(x);
+  for (const x of out.sites || []) fixCountry(x); for (const x of out.meetings || []) fixCountry(x);   // 0.12.10: Land nach Koordinaten korrigieren (Vorgabe «CH» bei Orten im Ausland)
   return out;
 }

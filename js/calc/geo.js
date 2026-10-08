@@ -82,6 +82,22 @@ export function countryGuess(lat, lon) {
   for (const [cc, s, n, w, e] of boxes) if (lat >= s && lat <= n && lon >= w && lon <= e) return cc;
   return '';
 }
+/** 0.12.10: Land nur, wenn die Koordinaten in genau einem Kasten liegen (sonst '') – zur Korrektur eines falsch gespeicherten Landes
+ * (z. B. Stammdaten-Ort in Deutschland mit Vorgabe «CH»); im Grenzband (Bodensee, Basel, Genf) bleibt der gespeicherte Wert. */
+export function countryGuessStrict(lat, lon) {
+  if (!Number.isFinite(+lat) || !Number.isFinite(+lon)) return '';
+  const hits = [['CH', 45.8, 47.9, 5.9, 10.6], ['LI', 47.0, 47.3, 9.4, 9.7], ['AT', 46.3, 49.1, 9.5, 17.2], ['DE', 47.2, 55.1, 5.8, 15.1], ['FR', 41.3, 51.2, -5.2, 9.6], ['IT', 36.6, 47.1, 6.6, 18.6]]
+    .filter(([, s, n, w, e]) => lat >= s && lat <= n && lon >= w && lon <= e).map(([cc]) => cc);
+  return hits.length === 1 ? hits[0] : '';
+}
+/** Gespeichertes Land gegen die Koordinaten prüfen: eindeutig anderes Land → korrigiert, sonst unverändert. */
+export function fixCountry(p) {
+  if (!p || p.lat == null || p.lon == null) return p;
+  const g = countryGuessStrict(p.lat, p.lon);
+  if (g && p.country && String(p.country).toUpperCase() !== g) p.country = g;
+  if (!p.country && g) p.country = g;
+  return p;
+}
 
 /** Himmelsrichtung (8 Sektoren) für Kurse: N, NE/NO, E/O, SE/SO, S, SW, W, NW. */
 export function compass(deg, lang = 'de') {
