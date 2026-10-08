@@ -206,5 +206,21 @@ with sync_playwright() as p:
     p3.click('#menu details.submenu summary:has-text("Mehr")'); p3.wait_for_timeout(200)
     p3.click('#menu button:has-text("Passagier Info-/Sicherheitskarte")'); p3.wait_for_timeout(1000)
     assert p3.evaluate('location.hash').endswith('/p'), 'Pax-Karte unter Material-Link: ' + p3.evaluate('location.hash')
+    # ---- 0.12.12: Supermaster blendet Archiv-Eintrag aus und wieder ein
+    pg.goto(BASE + '#/list?scope=all'); pg.wait_for_timeout(800)
+    pg.evaluate("""async () => { const t = JSON.parse(localStorage.getItem('fb.token')); const r = await fetch((window.BRIEFING_CONFIG.apiBase) + '/api/briefings/test0000hide', { method: 'PUT', headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ briefing: { id: 'test0000hide', status: 'draft', time: { startMs: 1700000000000 }, site: { name: 'Altdorf-Test', tz: 'Europe/Zurich' }, balloon: { label: 'HB-QWZ', reg: 'HB-QWZ' }, flight: { kind: 'private' }, panels: {}, log: [] }, who: 'test' }) }); if (!r.ok) throw new Error('PUT ' + r.status); }""")
+    pg.goto(BASE + '#/list'); pg.wait_for_timeout(300); pg.goto(BASE + '#/list?scope=all'); pg.wait_for_timeout(1000)
+    row = pg.query_selector('tr:has-text("Altdorf-Test")'); assert row is not None, 'Archiv-Eintrag sichtbar'
+    row.query_selector('button[title^="Ausblenden"]').click(); pg.wait_for_timeout(400)
+    pg.click('.dialog-foot button:has-text("Ausblenden")'); pg.wait_for_timeout(800)
+    assert pg.query_selector('tr:has-text("Altdorf-Test")') is None, 'nach Ausblenden nicht mehr gelistet'
+    pg.click('button.hidden-toggle'); pg.wait_for_timeout(900)
+    row = pg.query_selector('tr.hidden-row:has-text("Altdorf-Test")'); assert row is not None, 'ausgeblendeter Eintrag im Abschnitt «ausgeblendet»: ' + pg.inner_text('#view')[:400]
+    pg.screenshot(path=f'{OUT}/remote_list_hidden.png', full_page=True)
+    row.query_selector('button.unhide').click(); pg.wait_for_timeout(400)
+    pg.click('.dialog-foot button:has-text("Einblenden")'); pg.wait_for_timeout(800)
+    assert pg.query_selector('tr.hidden-row:has-text("Altdorf-Test")') is None and pg.query_selector('tr:has-text("Altdorf-Test")') is not None, 'nach Einblenden wieder im Archiv'
+    pg.goto(BASE + '#/list'); pg.wait_for_timeout(300); pg.goto(BASE + '#/list?scope=all'); pg.wait_for_timeout(1000)
+    assert pg.query_selector('tr:has-text("Altdorf-Test")') is not None, 'nach Neuladen weiterhin im Archiv'
     b.close()
 print('\n'.join(errors) if errors else 'OK – keine Seitenfehler')

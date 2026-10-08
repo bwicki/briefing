@@ -19,6 +19,9 @@ export async function renderList(view, ctx) {
   const want = (location.hash.split('?')[1] || '').replace(/^scope=/, '');
   let scope = scopes.includes(want) ? want : 'own';
   let all = await ctx.store.listBriefings(scope);
+  // 0.12.12: Supermaster kann ausgeblendete Archiv-Einträge einblenden (Umschalter im Archiv) und wieder sichtbar machen
+  const superRemote = remote && !!ctx.isSuper;
+  let showHidden = false, hiddenRows = null;
   const foreign = (b) => ctx.user && b.owner && b.owner !== ctx.user.id;
   const openHash = (b) => (foreign(b) ? `#/v/${b.id}` : `#/b/${b.id}`);
   let q = '';
@@ -64,12 +67,29 @@ export async function renderList(view, ctx) {
       tableWrap.appendChild(h('div.note.small', t('listRunningHint')));
       tableWrap.appendChild(groupTable(run, 'running'));
     }
-    tableWrap.appendChild(h('h3.list-sect.archive', `${t('listArchive')} (${arch.length})`));
+    tableWrap.appendChild(h('h3.list-sect.archive', [`${t('listArchive')} (${arch.length})`,
+      superRemote ? h('button.btn.small.hidden-toggle', { type: 'button', 'aria-pressed': showHidden, onclick: toggleHidden }, showHidden ? t('hide_hidden') : t('show_hidden')) : null]));
     tableWrap.appendChild(h('div.note.small', t('listArchiveHint')));
     if (arch.length) tableWrap.appendChild(groupTable(arch, 'archive'));
+    if (showHidden && hiddenRows) {
+      const hid = sorted(hiddenRows.filter((b) => !q || `${b.no || ''} ${b.site || ''} ${b.reg || ''} ${b.ownerName || ''}`.toLowerCase().includes(q.toLowerCase())));
+      tableWrap.appendChild(h('h3.list-sect.archive.hidden-sect', `${t('hidden_tag')} (${hid.length})`));
+      if (hid.length) tableWrap.appendChild(groupTable(hid, 'hidden')); else tableWrap.appendChild(h('div.note', t('noBriefings')));
+    }
+  }
+  async function toggleHidden() {
+    showHidden = !showHidden;
+    if (showHidden && !hiddenRows) { try { hiddenRows = await ctx.store.listHidden(); } catch (e) { console.error(e); hiddenRows = []; } }
+    drawTable();
+  }
+  async function unhide(id) {
+    if (!(await dialog(t('unhide_super'), h('p', t('unhide_superQ')), [{ label: t('cancel'), value: false }, { label: t('unhide_superDo'), value: true, primary: true }]))) return;
+    try { await ctx.store.unhideBriefing(id); } catch (e) { toast(t('error')); console.error(e); return; }
+    const i = (hiddenRows || []).findIndex((b) => b.id === id); if (i >= 0) { const [b] = hiddenRows.splice(i, 1); b.hidden = false; all.push(b); }
+    drawTable(); toast(t('ok'));
   }
   function groupTable(rs, group) {
-    const archive = group === 'archive', running = group === 'running';
+    const archive = group === 'archive', running = group === 'running', hiddenG = group === 'hidden';
     const narrow = window.innerWidth < 700;
     if (narrow) {
       return h('div.cards-list', rs.map((b) => h('div.bcard', { onclick: () => ctx.navigate(openHash(b)) }, [
@@ -83,7 +103,7 @@ export async function renderList(view, ctx) {
     // 0.12.10: feste Spaltenbreiten (colgroup) – die drei Abschnitte sind damit sauber untereinander ausgerichtet
     const cols = showOwner ? [10, 10, 13, 11, 8, 8, 12, 14, 14] : [10, 11, 17, 9, 9, 13, 16, 15];
     const tbl = h('table.tbl.list.fixed', [h('colgroup', cols.map((w) => h('col', { style: { width: w + '%' } }))), h('thead', h('tr', [th('no', '#'), th('date', t('colDate')), th('site', t('colSite')), showOwner ? th('owner', t('colOwner')) : null, th('reg', t('colBalloon')), th('kind', t('colType')), th('status', t('colStatus')), th('change', t('colChange')), h('th', '')].filter(Boolean))),
-      h('tbody', rs.map((b) => h('tr', { class: locked(b) ? 'locked' : '', title: t('view_brief'), ondblclick: (e) => { if (!e.target.closest('button')) ctx.navigate(`#/v/${b.id}`); } }, [
+      h('tbody', rs.map((b) => h('tr', { class: (locked(b) ? 'locked' : '') + (hiddenG ? ' hidden-row' : ''), title: t('view_brief'), ondblclick: (e) => { if (!e.target.closest('button')) ctx.navigate(`#/v/${b.id}`); } }, [
         h('td.mono.no', [b.no || '–', locked(b) ? h('span.lock', { title: t('locked') }, [' ', icon('lock', 14)]) : null]),
         h('td', [h('div.l1', fmtDate(tz(b), b.startMs || 0)), h('div.l2', `${hhmm(tz(b), b.startMs || 0)} LT`)]),
         h('td', [h('div.l1', b.site || '–'), h('div.l2', `${b.icao || ''}${b.elev != null ? ' · ' + Math.round(b.elev) + '\u00a0m' : ''}`)]),
@@ -92,7 +112,10 @@ export async function renderList(view, ctx) {
         h('td.nowrap', t('kind_' + (b.kind || 'commercial'))),
         h('td', [h('div.l1', statusTag(b)), h('div.l2', phaseTag(b))]),
         h('td', [h('div.l1', `v${b.edition ?? b.revision ?? 0} · ${b.updatedAt ? fmtDateTime(tz(b), b.updatedAt) : '–'}`), h('div.l2', [b.updatedBy || '', b.links ? h('span', { title: t('colLinks') }, [' · ', icon('link', 13), ` ${b.links}`]) : null])]),
-        h('td.row-actions.acts', foreign(b) ? [h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(openHash(b)) }, icon('view'))] : [
+        h('td.row-actions.acts', hiddenG ? [
+          h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(`#/v/${b.id}`) }, icon('view')),
+          h('button.btn.icon.small.unhide', { type: 'button', title: t('unhide_super'), onclick: () => unhide(b.id) }, icon('restore')),
+        ] : foreign(b) ? [h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(openHash(b)) }, icon('view'))] : [
           locked(b) ? h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(`#/v/${b.id}`) }, icon('view')) : h('button.btn.icon.small.edit', { type: 'button', title: t('edit'), onclick: () => ctx.navigate(`#/b/${b.id}`) }, icon('edit')),
           running ? h('button.btn.icon.small.amend', { type: 'button', title: t('amend'), onclick: () => amend(b) }, icon('edit')) : null,   // 0.12.10: Nachtrag während der laufenden Fahrt
           h('button.btn.icon.small', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, icon('dup')),
@@ -139,7 +162,7 @@ export async function renderList(view, ctx) {
   async function delB(id, hide = false) {
     if (!(await dialog(hide ? t('hide_super') : t('delete'), h('p', hide ? t('hide_superQ') : t('confirmDelete')), [{ label: t('cancel'), value: false }, { label: hide ? t('hide_superDo') : t('delete'), value: true, primary: true }]))) return;
     await ctx.store.deleteBriefing(id);
-    const i = all.findIndex((b) => b.id === id); if (i >= 0) all.splice(i, 1);
+    const i = all.findIndex((b) => b.id === id); if (i >= 0) { const [b] = all.splice(i, 1); if (hide && hiddenRows) { b.hidden = true; hiddenRows.push(b); } }
     drawTable(); toast(t('ok'));
   }
 

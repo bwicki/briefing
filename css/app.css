@@ -903,3 +903,6 @@ details.pf-fold.model .pf-cols{margin:4px 0 0;padding-left:16px;display:grid;gap
 .taf-hit{outline:1px solid #b45309;outline-offset:1px;border-radius:3px}
 ul.decoded li.taf-hit{padding:1px 4px;margin-left:-5px}
 pre.report .taf-hit{padding:0 2px}
+/* 0.12.12: Supermaster – ausgeblendete Archiv-Einträge einblenden */
+.list-sect.archive{display:flex;align-items:center;justify-content:space-between;gap:10px} .list-sect .hidden-toggle{font-family:var(--sans);text-transform:none;letter-spacing:0;font-size:12px;padding:2px 8px} .list-sect.hidden-sect{margin-top:14px;border-bottom-style:dashed}
+table.tbl.list tr.hidden-row td{opacity:.6} table.tbl.list tr.hidden-row td.acts{opacity:1} table.tbl.list button.unhide{border-color:var(--accent);color:var(--accent)}

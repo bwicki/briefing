@@ -29,6 +29,7 @@ const P = {
   down: 'M6 9l6 6 6-6',
   grip: 'M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01',
   back: 'M15 18l-6-6 6-6',
+  restore: 'M3 12a9 9 0 1 0 2.6-6.4 M3 4v5h5',   // 0.12.12: wieder einblenden
 };
 
 /** SVG-Markup eines Symbols (für innerHTML, Leaflet-Controls, Druck). */

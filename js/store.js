@@ -48,6 +48,8 @@ const local = {
   async getSettings() { return mergeSettings(load(LS.settings, null)); },
   async saveSettings(s) { save(LS.settings, s); return s; },
   async listBriefings(scope = 'own') { if (scope !== 'own') return []; return Object.values(load(LS.briefings, {})).map(summary).sort((a, b) => (a.startMs || 0) - (b.startMs || 0)); },
+  async listHidden() { return []; },
+  async unhideBriefing() {},
   async getBriefing(id) { const all = load(LS.briefings, {}); return all[id] || null; },
   async saveBriefing(b, who) {
     const all = load(LS.briefings, {});
@@ -133,6 +135,8 @@ const remote = {
   },
   async saveSettings(s) { await api('/api/settings', { method: 'PUT', body: { settings: s } }); return s; },
   async listBriefings(scope = 'own') { return (await api(`/api/briefings?scope=${scope}`)).briefings; },
+  async listHidden() { return (await api('/api/briefings?scope=all&hidden=1')).briefings; },   // 0.12.12: ausgeblendete Archiv-Einträge (Supermaster)
+  async unhideBriefing(id) { await api(`/api/briefings/${id}/unhide`, { method: 'POST' }); },
   async getBriefing(id) { const j = await api(`/api/briefings/${id}`); if (j.briefing) j.briefing.access = j.access || 'write'; return j.briefing; },
   async saveBriefing(b, who) {
     const j = await api(`/api/briefings/${b.id}`, { method: 'PUT', body: { briefing: b, who } });
@@ -196,7 +200,7 @@ export const store = {
   cachedUser() { return load(LS.me, null); },
   idleExpired(ms = 2 * 60 * 60 * 1000) { const t = load(LS.touch, 0); return t && Date.now() - t > ms; },
 };
-for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'amendBriefing', 'uploadImage', 'uploadDoc', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'getSecret', 'openShared', 'saveShared', 'getLog', 'data', 'exportAll',
+for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'amendBriefing', 'listHidden', 'unhideBriefing', 'uploadImage', 'uploadDoc', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'getSecret', 'openShared', 'saveShared', 'getLog', 'data', 'exportAll',
   'me', 'listUsers', 'listShares', 'setShare', 'getSettingsOf', 'adminUsers', 'adminCreateUser', 'adminUpdateUser', 'adminStats', 'adminStatsCsv',
   'listMaterialLinks', 'createMaterialLink', 'revokeMaterialLink', 'openMaterial']) {
   store[k] = (...a) => store.impl[k](...a);

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.12.12 — 2026-10-08 · Ausgeblendete Archiv-Einträge wieder einblenden
+
+* **Supermaster:** Knopf «Ausgeblendete anzeigen» im Archiv-Titel listet die ausgeblendeten Einträge (abgeblendet, eigener
+  Abschnitt) mit Ansicht und «Wieder einblenden» (Rückfrage). Worker: `GET /api/briefings?scope=all&hidden=1`,
+  `POST /api/briefings/:id/unhide` (beides nur Supermaster, Protokoll `briefing_unhide`); Listenzeilen tragen `hidden`.
+* **FAA NMS:** Erreichbarkeits-Diagnose `src=faa&diag=1` (Status der Token- und NOTAM-Endpunkte aus dem Worker, ohne
+  Zugangsdaten). Befund 08.10.2026: `api-nms.aim.faa.gov` antwortet dem Cloudflare-Worker mit 403 (aus dem Browser
+  erreichbar) – Freigabe bei der FAA angefragt; die App bleibt bei autorouter → DINS → NOTAM Search.
+* **Landesgrenzen:** Natural Earth 1:10m bleibt die Grundlage (Entscheid: Genauigkeit ~1 km genügt).
+* Tests: API (hidden/unhide), Remote-UI (Ausblenden → anzeigen → einblenden), Smoke.
+
 ## 0.12.11b — 2026-10-08 · FAA NMS API
 
 * **FAA NOTAM über das NMS** (NOTAM Management System, `api-nms.aim.faa.gov`): OAuth2 `client_credentials` mit Client

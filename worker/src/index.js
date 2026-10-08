@@ -214,7 +214,7 @@ async function hasShare(env, from, to, category) {
 function summaryOf(b) {
   return { id: b.id, no: b.no || null, startMs: b.time?.startMs, endMs: endMsOf(b), tz: b.site?.tz, site: b.site?.name, icao: b.site?.icao, elev: b.site?.elev, balloon: b.balloon?.label, reg: b.balloon?.reg, kind: b.flight?.kind, status: b.status, finalNo: b.finalNo, progress: Number.isFinite(+b.progress) ? Math.round(+b.progress) : null, edition: Number.isFinite(+b.edition) ? Math.round(+b.edition) : null, revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy };
 }
-const rowOut = (r) => ({ id: r.id, no: r.no || null, startMs: r.start_ms, endMs: r.end_ms ?? null, tz: r.tz, site: r.site, icao: r.icao, elev: r.elev, reg: r.reg, balloon: r.balloon, kind: r.kind, status: r.status, finalNo: r.final_no, progress: r.progress ?? null, edition: r.edition ?? null, frozen: !!r.frozen, revision: r.revision, updatedAt: r.updated_at, updatedBy: r.updated_by, links: r.links ?? 0, owner: r.owner_id, ownerName: r.owner_name || r.owner_id, materialOwner: r.material_owner || null });
+const rowOut = (r) => ({ id: r.id, no: r.no || null, startMs: r.start_ms, endMs: r.end_ms ?? null, tz: r.tz, site: r.site, icao: r.icao, elev: r.elev, reg: r.reg, balloon: r.balloon, kind: r.kind, status: r.status, finalNo: r.final_no, progress: r.progress ?? null, edition: r.edition ?? null, frozen: !!r.frozen, hidden: !!r.hidden, revision: r.revision, updatedAt: r.updated_at, updatedBy: r.updated_by, links: r.links ?? 0, owner: r.owner_id, ownerName: r.owner_name || r.owner_id, materialOwner: r.material_owner || null });
 /** Speichern; ownerId nur beim Anlegen gesetzt; materialOwner = Eigner des Ballons (Freigabe nötig). */
 async function saveBriefing(env, ctx, b, who, ownerId, logUid, opts = {}) {
   await ensureSchema(env);
@@ -520,7 +520,10 @@ async function route(req, env, url, ctx) {
     let where = 'b.owner_id=?', args = [user.id];
     if (scope === 'all') { if (!isSuper) return err('forbidden', 403); where = '1=1'; args = []; }
     else if (scope === 'material') { where = 'b.material_owner=? AND b.owner_id<>?'; args = [user.id, user.id]; }
-    where = `(${where}) AND COALESCE(b.hidden,0)=0`;   // 0.12.10a: vom Supermaster ausgeblendete Archiv-Einträge
+    // 0.12.10a: vom Supermaster ausgeblendete Archiv-Einträge; 0.12.12: Supermaster kann sie mit hidden=1 auflisten (und wieder einblenden)
+    const wantHidden = url.searchParams.get('hidden') === '1';
+    if (wantHidden && !isSuper) return err('forbidden', 403);
+    where = `(${where}) AND COALESCE(b.hidden,0)=${wantHidden ? 1 : 0}`;
     await ensureSchema(env);
     const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.edition,b.end_ms,b.frozen,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name,
       (SELECT COUNT(*) FROM access_links a WHERE a.briefing_id=b.id AND a.revoked=0 AND a.expires_at>?) AS links FROM briefings b LEFT JOIN users u ON u.id=b.owner_id WHERE ${where} ORDER BY b.start_ms`).bind(Date.now(), ...args).all();
@@ -567,6 +570,15 @@ async function route(req, env, url, ctx) {
       logUsage(env, ctx, user.id, 'briefing_delete', id);
       return new Response(null, { status: 204 });
     }
+  }
+  // ---- 0.12.12: ausgeblendeten Archiv-Eintrag wieder einblenden (nur Supermaster)
+  mm = m(/^\/api\/briefings\/([a-z0-9]+)\/unhide$/);
+  if (mm && req.method === 'POST') {
+    if (!isSuper) return err('forbidden', 403);
+    const r = await env.DB.prepare('UPDATE briefings SET hidden=0 WHERE id=?').bind(mm[1]).run();
+    if (!r.meta?.changes) return err('not found', 404);
+    logUsage(env, ctx, user.id, 'briefing_unhide', mm[1]);
+    return new Response(null, { status: 204 });
   }
   // ---- 0.12.10: Nachtrag während der laufenden Fahrt (Start + 1 h vorbei, Fahrtende noch nicht erreicht)
   mm = m(/^\/api\/briefings\/([a-z0-9]+)\/amend$/);
