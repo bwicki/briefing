@@ -1,80 +1,83 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-599
-FBEU40 EDZB 081200
+257
+FBEU40 EDZB 081800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 08.10.2026, 12.00 UTC bis 09.10.2026, 09.00 UTC
+gültig vom 08.10.2026, 18.00 UTC bis 09.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Die Kaltfront eines Tiefs über der zentralen Ostsee überquert das
-Vorhersagegebiet bis zum Abend ostwärts. Auf ihrer Rückseite wird mit
-westlicher Strömung kühlere und leicht labil geschichtete Meeresluft
-herangeführt.
+Ein Tief zieht von der Ostsee ins Baltikum. Rückseitig der
+dazugehörigen Kaltfront wird mit westlicher Strömung kühlere und
+leicht labil geschichtete Meeresluft herangeführt. Am
+Freitagnachmittag nähert sich die Warmfront eines neuen Tiefs.
 
 Wettergeschehen:
-Am frühen Nachmittag verbreitet BKN/OVC SC/AS/CS, teils NS zwischen
-2000 FT AMSL und FL245, daraus zeitweise Regen. Durch eingelagerte
-TCU/CB mit Tops bis FL270 örtlich schauerartig verstärkt. Unterhalb
-der höheren Schichtbewölkung gebietsweise SC/BKN ST in 500-1000 FT
-AMSL, insbesondere in der Nordhälfte. Bergland oberhalb 2000 FT AMSL
-in Wolken.
+Zu Beginn im äußersten Osten noch Frontbewölkung mit OVC NS mit
+Untergrenzen bei 1500-2000 FT AMSL, Tops über FL245 und Regen, rasch
+abziehend. Postfrontal deutliche Auflockerungen zu SCT, örtlich BKN
+SC/CU um 4000 FT AMSL, flache Tops um FL055 sowie FEW/SCT TCU/CB mit
+Tops bis FL120 und einzelne Schauer. Darüber wolkenfrei und im
+Nachtverlauf auch den o.g. äußersten Osten erreichend.
 
-Im Nachmittagsverlauf zunächst in der Westhälfte abklingende
-Niederschläge. Bewölkung zu SCT/BKN CS/AS oberhalb FL100 und SCT/BKN
-SC/CU zwischen 2000 und 5000 ausschichtend. Am Abend auch im Osten
-abklingender Regen.
-In der Nacht im gesamten Bereich SCT/BKN SC zwischen 2500 und 4000 FT
-AMSL, Obergrenzen bis FL070. Vereinzelt TCU/CB mit Tops bis FL140 und
-Schauer. Im Vormittagsverlauf von Westen Aufzug von BKN CS/AS
-oberhalb FL100.
+Am Freitag im Vormittagsverlauf von Westen neuer Warmfront-Aufzug von
+BKN AS/CS oberhalb FL100. Ab dem Nachmittag im Westen Übergang zu
+BKN/OVC NS mit Untergrenzen bei 1000 FT AGL, teils mit ST-Fetzen bei
+nur 700 FT AGL und einsetzender Regen, bis Berichtsende eine Linie
+mittleres Mecklenburg - Prignitz - Leipziger Land - Ostthüringen
+erreichend. Bergland in Wolken. Östlich davon noch meist trocken oder
+geringe Tropfen bei BKN SC/AS/AC/CS/CI ab 5000 FT AMSL aufwärts über
+FL245.
 
 Sichtweite:
 20 bis 40 km, im Niederschlag 2 bis 5 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  15 UTC  |  06 UTC  |
- 500FT | 300/20KT  12C | 250/15KT  08C |
-1000FT | 300/25KT  11C | 250/25KT  07C |
-1500FT | 310/30KT  09C | 280/35KT  06C |
-2000FT | 310/30KT  09C | 280/35KT  06C |
-3000FT | 310/30KT  06C | 290/30KT  04C |
-5000FT | 300/30KT  03C | 290/30KT  00C |
-FL100  | 260/30KT M04C | 300/40KT M05C |
+AMSL  |  21 UTC  |  09 UTC  |
+ 500FT | 270/20KT  09C | 250/20KT  10C |
+1000FT | 280/25KT  08C | 250/20KT  08C |
+1500FT | 290/35KT  06C | 260/30KT  07C |
+2000FT | 290/35KT  06C | 260/30KT  06C |
+3000FT | 300/35KT  04C | 270/35KT  04C |
+5000FT | 300/35KT  01C | 270/30KT  01C |
+FL100  | 290/35KT M08C | 270/35KT M05C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 310/25KT  12C | 240/20KT  07C |
-1500FT | 320/30KT  10C | 260/30KT  07C |
-2000FT | 320/30KT  10C | 270/30KT  06C |
-3000FT | 330/40KT  07C | 280/25KT  05C |
-5000FT | 310/25KT  05C | 290/25KT  01C |
-FL100  | 280/25KT M03C | 290/35KT M03C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 270/20KT  09C | 240/20KT  09C |
+1500FT | 290/25KT  08C | 240/20KT  07C |
+2000FT | 300/30KT  07C | 240/20KT  06C |
+3000FT | 300/30KT  03C | 260/25KT  05C |
+5000FT | 310/30KT  02C | 260/30KT  02C |
+FL100  | 290/30KT M08C | 270/35KT M04C |
 
 Turbulenz:
-Im Frontbereich lokal MOD bis FL140, selten bis FL180. Unterhalb 5000
-FT AMSL LOC LGT/MOD bei Böen mit 25-35 KT aus W bis NW. In TCU/CB.
+Anfangs im Frontbereich lokal MOD bis FL140, selten bis FL180. Am
+Freitag unterhalb 5000 FT AMSL LOC LGT/MOD bei Böen mit 25-35 KT aus
+SW sowie in TCU/CB.
 
 Vereisung:
-Im Frontbereich teils MOD unterhalb FL200. In TCU/CB.
+Im Frontbereich MOD/SEV zwischen FL080 und FL200 sowie in TCU/CB.
 
 Nullgradgrenze:
-Im Osten noch um FL100, mit der Front auf FL070, in der Nacht auf
-5000 FT AMSL absinkend.
+Im Osten noch um FL090, mit der Front auf FL070, in der Nacht auf
+5000 FT AMSL absinkend. Mit neuer Warmfront am Freitagmittag wieder
+von Westen ansteigend auf FL070 grenznah zu Polen und bis FL100 im
+Westen.
 
 Inversionen:
 Nicht signifikant.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Berlin  16.27 | 17.00  | 04.46 | 05.20
-Leipzig  16.33 | 17.07  | 04.50 | 05.24
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Berlin  04.46 | 05.20 | 16.25 | 16.58
+Leipzig  04.50 | 05.24 | 16.31 | 17.04
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 09.10.2026 um
+02.00/05.00 UTC
 
-Luftfahrtberatungszentrale Berlin/bg
+Luftfahrtberatungszentrale Berlin/SB
