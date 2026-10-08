@@ -600,25 +600,61 @@ async function notam(env, decrypt, ctx, q) {
     }
     return err(`NOTAM-Quellen ohne Schlüssel nicht erreichbar (${errors.join('; ')}) – Zugang hinterlegen (Einstellungen → Zugänge: autorouter oder FAA)`, 502);
   }
-  const fetchFaa = async () => {
+  // 0.12.11a: FAA NMS API (OAuth2 client_credentials, api-nms.aim.faa.gov) – der frühere API-Portal-Zugang (external-api.faa.gov, Header client_id/client_secret) bleibt als zweiter Versuch
+  const nmsToken = async () => {
+    const basic = btoa(`${id.trim()}:${secret.trim()}`);
+    const r = await fetch('https://api-nms.aim.faa.gov/v1/auth/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Basic ${basic}`, Accept: 'application/json', 'User-Agent': UA }, body: 'grant_type=client_credentials' });
+    if (!r.ok) throw new Error(`Token HTTP ${r.status}: ${(await r.text()).replace(/\s+/g, ' ').slice(0, 200)}`);
+    const j = await r.json();
+    if (!j.access_token) throw new Error('Token: keine access_token in der Antwort');
+    return { token: j.access_token, exp: Date.now() + Math.max(60, (+j.expires_in || 3600) - 120) * 1000 };
+  };
+  const nmsNormalize = (f) => {
+    const p = f.properties || f; const core = p.coreNOTAMData?.notam || p.notam || p; const tr = p.coreNOTAMData?.notamTranslation?.[0] || p.notamTranslation?.[0] || {};
+    const geom = f.geometry || null; let glat = null, glon = null;
+    if (geom?.type === 'Point' && Array.isArray(geom.coordinates)) { glon = +geom.coordinates[0]; glat = +geom.coordinates[1]; }
+    return { id: core.id || core.nmsId || p.id, number: core.number || core.notamNumber, type: core.type, location: core.location, icao: core.icaoLocation || core.icaoId || core.location, start: core.effectiveStart || core.effectiveStartDate, end: core.effectiveEnd || core.effectiveEndDate, classification: core.classification, text: core.text || core.icaoMessage || core.traditionalMessage || '', minFL: core.minimumFL, maxFL: core.maximumFL, radius: core.radius, coordinates: core.coordinates, lat: core.lat ?? glat, lon: core.lon ?? glon, formatted: tr.formattedText || tr.simpleText || '', geometry: geom };
+  };
+  const fetchNms = async () => {
+    let tk = await cached(ctx, 'faa/nms-token', 2400, nmsToken);
+    if (!tk?.token || tk.exp < Date.now()) tk = await nmsToken();
+    const url = `https://api-nms.aim.faa.gov/nmsapi/v1/notams?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&radius=${radius}`;
+    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 25000);
+    let j;
+    try {
+      const r = await fetch(url, { headers: { Authorization: `Bearer ${tk.token}`, nmsResponseFormat: 'GEOJSON', Accept: 'application/json', 'User-Agent': UA }, signal: ctl.signal });
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).replace(/\s+/g, ' ').slice(0, 200)}`);
+      j = await r.json();
+    } finally { clearTimeout(tm); }
+    const raw = j?.data?.geojson || j?.data?.features || j?.features || j?.items || (Array.isArray(j) ? j : []);
+    const items = raw.map(nmsNormalize);
+    const out = { items, total: items.length, source: 'FAA NMS API', generated: new Date().toISOString() };
+    if (src === 'faa') out.sample = JSON.stringify(raw[0] ?? j).slice(0, 1500);   // Diagnose: Rohform des ersten Treffers
+    return out;
+  };
+  const fetchFaaLegacy = async () => {
     const url = `https://external-api.faa.gov/notamapi/v1/notams?locationLatitude=${lat.toFixed(4)}&locationLongitude=${lon.toFixed(4)}&locationRadius=${radius}&pageSize=1000&sortBy=effectiveStartDate&sortOrder=Asc`;
     let j;
     for (let k = 0; k < 2; k++) {
       try {
         const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 20000);
         try {
-          const r = await fetch(url, { headers: { client_id: id, client_secret: secret, Accept: 'application/json', 'User-Agent': UA }, signal: ctl.signal });
+          const r = await fetch(url, { headers: { client_id: id.trim(), client_secret: secret.trim(), Accept: 'application/json', 'User-Agent': UA }, signal: ctl.signal });
           if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).replace(/\s+/g, ' ').slice(0, 200)}`);   // 0.12.11: Antworttext für die Diagnose (401/403/429)
           j = await r.json();
         } finally { clearTimeout(tm); }
         break;
       } catch (e) { if (k || /HTTP 4\d\d/.test(e.message)) throw e; }
     }
-    const items = (j.items || []).map((it) => {
-      const core = it.properties?.coreNOTAMData?.notam || {}; const tr = it.properties?.coreNOTAMData?.notamTranslation?.[0] || {};
-      return { id: core.id, number: core.number, type: core.type, location: core.location, icao: core.icaoLocation, start: core.effectiveStart, end: core.effectiveEnd, classification: core.classification, text: core.text, minFL: core.minimumFL, maxFL: core.maximumFL, radius: core.radius, coordinates: core.coordinates, lat: core.lat, lon: core.lon, formatted: tr.formattedText || tr.simpleText || '', geometry: it.geometry };
-    });
+    const items = (j.items || []).map(nmsNormalize);
     return { items, total: j.totalCount, source: 'FAA NOTAM API', generated: new Date().toISOString() };
+  };
+  const fetchFaa = async () => {
+    try { return await fetchNms(); }
+    catch (e1) {
+      try { const r = await fetchFaaLegacy(); return { ...r, errors: [`NMS: ${e1.message}`] }; }
+      catch (e2) { throw new Error(`NMS: ${e1.message} | API-Portal: ${e2.message}`); }
+    }
   };
   if (src === 'faa') { try { return json(await fetchFaa()); } catch (e) { return err(`FAA NOTAM API: ${e.message}`, 502); } }
   const data = await cached(ctx, `notam/${lat.toFixed(2)},${lon.toFixed(2)},${radius}`, 900, fetchFaa);

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.11b — 2026-10-08 · FAA NMS API
+
+* **FAA NOTAM über das NMS** (NOTAM Management System, `api-nms.aim.faa.gov`): OAuth2 `client_credentials` mit Client
+  Key/Secret (Token ~40 min zwischengespeichert), Abfrage `nmsapi/v1/notams?latitude&longitude&radius` als GeoJSON.
+  Der frühere API-Portal-Zugang (`external-api.faa.gov`, Header `client_id`/`client_secret`) bleibt als zweiter
+  Versuch. Key/Secret werden ohne Randleerzeichen verwendet. Zugänge: «FAA NMS Client Key/Secret».
+
 ## 0.12.11a — 2026-10-08 · FAA-NOTAM-Test
 
 * **NOTAM-Quelle erzwingbar:** `GET /api/wx/notam?...&src=autorouter|faa|dins|search` liefert genau diese Quelle
