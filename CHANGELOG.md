@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.12.13 — 2026-10-08 · Rückmeldungen Test 0.12.12 (Navigation, Warnmarkierung, Panels B10/B14, C1, C3, C4)
+
+* **Linke Spalte:** Abschnittstitel mit hängendem Einzug (Umbruch bündig unter dem Text, nicht unter dem Kennbuchstaben);
+  **Panelnummern stets zweistellig** («B04», auch in den Panelköpfen, der Briefingsicht und den Nummern mit Etappe «E1-B04»);
+  das «!»-Symbol entfällt – offene Pflicht-Panels stehen **rot** (zusammen mit dem roten Punkt).
+* **Aktualitätswarnung:** Warndreieck als dünnes Strich-Symbol (wie die übrigen Symbole); betroffene Panels tragen links eine
+  **dünne rote Schraffur** mit derselben Mitteilung beim Darüberfahren. Abdeckung gilt als erfüllt, sobald die Information
+  **bis Start + 1 h** reicht (METAR/TAF: ein TAF gilt bis dahin; Ballonprognose: Vorhersagetag von Start/Start + 1 h;
+  Druckdifferenz: Reihen bis Start + 1 h; gegenwärtiger Stand: Start < 6 h entfernt).
+* **Eigener Text / Kommentar:** nur noch **ein** Knopf (Text-Symbol, in der Titelzeile links vom AUTO-Vermerk); der
+  Kommentar-PIC-Knopf entfällt (bestehende Kommentare bleiben sichtbar). Das Kästchen hat oben rechts ein **Schliesssymbol**:
+  ohne Inhalt schliesst es sofort, mit Inhalt Rückfrage «Wirklich schliessen?» (Inhalt wird verworfen).
+* **KI:** überall das Sternsymbol statt «KI» (Knöpfe «Kommentar», «Zusammenfassung erstellen», Kopfzeilen, Modell-Feld,
+  Nutzer-Freigabe); Violett gedämpft (`--violet` #7a6aa5 hell / #a894c9 dunkel).
+* **B10 SIGWX low Alps:** reines Einfügefeld (Datei / Zwischenablage) für die Karte aus skybriefing. **B14 Warnungen:**
+  SIGMET/AIRMET (z. B. TURB SEV) automatisch, je Meldung ✕ (ausblenden) und Karten-Knopf (Polygon der Meldung, Fahrtweg,
+  Start, Landeraum); amtliche Warnungen darunter einfügen. Bestehende SIGMET-Schnappschüsse wandern beim Öffnen von B10 nach B14.
+  **B12** heisst nur noch «Meteogramm».
+* **C1 Lufträume** (neuer Titel): FIR-Folge als Tabelle (Niveau · FIR · ab km · ETA · nach Start, Darstellung wie A02);
+  Luftraumtabelle mit **ETA** als erster und **km ab Start** als zweiter Spalte; **✕ je Zeile** blendet einen Luftraum aus
+  (beim Aktualisieren Rückfrage wie bei NOTAM); Schriftgrössen wie der übrige Panelinhalt.
+* **C3 NOTAM:** Auswahl «Breite des Korridors · 25 NM» statt «Strecke»; Statistikzeile entfällt; der Korridor nennt
+  Startort → Ortschaften auf dem Fahrtweg (Kreise um die Bahn-Endpunkte tragen den Ortsnamen) → Landeraum; **Kartenübersicht**
+  oberhalb der Meldungen (alle NOTAM mit echtem Ort, rot = VFR-relevant; Klick auf ein Symbol öffnet die Meldung;
+  FIR-weite NOTAM nicht auf der Karte).
+* **C4:** «Fahrt über Landesgrenze» statt «Grenzüberschreitung» (auch Länderhinweise). **A01:** NVFR-Kästchen steht
+  unmittelbar links von «NVFR», mit Abstand zu «VFR».
+* Tests: calc 274 (TAF-Gültigkeitsende), Smoke (Schliessen mit/ohne Inhalt, zweistellige Nummern), API, Remote-UI.
+
 ## 0.12.12 — 2026-10-08 · Ausgeblendete Archiv-Einträge wieder einblenden
 
 * **Supermaster:** Knopf «Ausgeblendete anzeigen» im Archiv-Titel listet die ausgeblendeten Einträge (abgeblendet, eigener

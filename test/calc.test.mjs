@@ -29,7 +29,7 @@ import { balloonImage, formatNo, sunFor, countriesLine, briefingYear, lockMs, is
 import { carCode } from '../js/net.js';
 import { stageOps, canDropOps, ensureOps, coverPoints, countryAtKm, stagePlanBriefing, stageSets, startPlanOff, startPlanBriefing, startPlanSig, planStale, pruneStagePlans } from '../js/calc/stageplan.js';
 import { defaultStages, renameStartStage } from '../js/calc/profile.js';
-import { decodeMetar as dMetar, decodeTaf as dTaf, tafGroupWindows } from '../js/calc/metar.js';
+import { decodeMetar as dMetar, decodeTaf as dTaf, tafGroupWindows, tafValidEnd } from '../js/calc/metar.js';
 
 let fails = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('  FAIL', msg); } else console.log('  ok  ', msg); };
@@ -302,7 +302,7 @@ ok(requirementKey({ typeKey: 'TMA', cls: 'E' }) === 'classE' && requirementKey({
   const bFir = { ...bDE, panels: { 'C.airspace': { content: { auto: { data: { firs: [{ seq: [{ country: 'DE' }, { country: 'CH' }] }] } } } } } };
   ok(touchesCH(bFir), 'FIR-Folge mit CH → DABS');
   const vis = visiblePanels({ panels: { hidden: [] } }, { site: { country: 'CH' }, panels: {} });
-  ok(panelNo(vis[0], vis) === 'A1' && panelNo(vis.find((p) => p.key === 'C.dabs'), vis) === 'C2' && panelNo(vis.find((p) => p.key === 'B.metar'), vis) === 'B2', 'Panel-Nummern A1 / B2 / C2');
+  ok(panelNo(vis[0], vis) === 'A01' && panelNo(vis.find((p) => p.key === 'C.dabs'), vis) === 'C02' && panelNo(vis.find((p) => p.key === 'B.metar'), vis) === 'B02', 'Panel-Nummern A01 / B02 / C02');
   const t0 = Date.UTC(2026, 9, 10, 4, 0);
   const mk = (altM, brg) => ({ altM, points: Array.from({ length: 13 }, (_, k) => { const km = k * 2; const r = km / 111; return { ms: t0 + k * 10 * 60000, lat: 47 + r * Math.cos(brg * Math.PI / 180), lon: 8 + r * Math.sin(brg * Math.PI / 180) / Math.cos(47 * Math.PI / 180) }; }) });
   const trs = [mk(800, 80), mk(1500, 100)];
@@ -450,6 +450,8 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(tw.length === 5 && tw[0] === null && tw[1].from === Date.UTC(2026, 9, 5, 18) && tw[1].to === Date.UTC(2026, 9, 5, 21) && tw[2].from === Date.UTC(2026, 9, 6, 3) && tw[3].from === Date.UTC(2026, 9, 6, 10) && tw[3].to === Date.UTC(2026, 9, 6, 15), 'TAF-Gruppenfenster: ' + JSON.stringify(tw));
   const tw2 = tafGroupWindows('TAF EDDM 311720Z 3118/0124 BECMG 0103/0106 VRB02KT=', Date.UTC(2026, 9, 31, 18));
   ok(tw2.length === 1 && tw2[0].from === Date.UTC(2026, 10, 1, 3) && tw2[0].to === Date.UTC(2026, 10, 1, 6), 'TAF-Gruppenfenster über den Monatswechsel (ohne Basisgruppe)');
+  // 0.12.13: Ende der TAF-Gültigkeit (Abdeckung bis Start + 1 h)
+  ok(tafValidEnd('TAF LSZH 051025Z 0512/0618 24008KT 9999 SCT040=', ref) === Date.UTC(2026, 9, 6, 18) && tafValidEnd('TAF AMD EDDM 311720Z 3118/0124 VRB02KT=', Date.UTC(2026, 9, 31, 18)) === Date.UTC(2026, 10, 1, 24) && tafValidEnd('LSZH 051025Z NIL=', ref) === null, 'TAF-Gültigkeitsende (auch über den Monatswechsel; NIL → null)');
 }
 
 // ---------------------------------------------------------------- 0.11.3: Kopie eines Briefings, NVFR → Flugplan Pflicht
@@ -655,7 +657,7 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(startPlanBriefing(b) === b, 'ohne Planung bei der Startetappe keine Sicht');
   b.profile.stages[0].ops = true;
   const vis = visiblePanels(S, b);
-  ok(panelNo(vis.find((p) => p.key === 'C.notam'), vis, 'E1-') === 'E1-' + panelNo(vis.find((p) => p.key === 'C.notam'), vis) && panelNo(vis[0], vis) === 'A1', 'Panel-Nummer mit Etappe: «E1-C‹n›»');
+  ok(panelNo(vis.find((p) => p.key === 'C.notam'), vis, 'E1-') === 'E1-' + panelNo(vis.find((p) => p.key === 'C.notam'), vis) && panelNo(vis[0], vis) === 'A01', 'Panel-Nummer mit Etappe: «E1-C‹n›»');
   const fis = mergeSettings({ fisContacts: [{ cc: 'CH', name: 'Zürich Information (FIS)', freq: '124.700', phone: '' }, { cc: 'DE', name: 'alt', freq: '', phone: '' }] }).fisContacts;
   ok(fis.some((c) => c.cc === 'DE' && c.freq === '128.950') && fis.some((c) => c.cc === 'FR' && c.freq === '130.905') && mergeSettings({ fisContacts: [{ cc: 'DE', name: 'eigen', freq: '123.000', phone: '' }] }).fisContacts.length === 1, 'FIS-Liste: alte Platzhalter → neue Standardwerte; eigene Werte bleiben');
 }

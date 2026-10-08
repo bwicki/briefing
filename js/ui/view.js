@@ -104,7 +104,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
   const lastV = (b.versions || []).slice(-1)[0];
   if (gn.level != null || b.assessment?.text || lastV?.pdfUrl) brief.appendChild(h('div.bsum', [
     gn.level != null ? h('div', [h('b', `${t('gn_title')}: `), h('span.tag.' + ['neg', 'half', 'pos'][gn.level], t('gn_' + gn.level)), gn.reasons.length ? ` – ${gn.reasons.join('; ')}` : '', h('span.mini', ` (${gn.model || ''}, ${t('gn_disclaimer')})`)]) : null,
-    b.assessment?.text ? h('div', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, [h('b', `${t('ass_title')} (${t('ai')}, ${fmtDateTime(z, b.assessment.ts, lang)}): `), b.assessment.text]) : null,
+    b.assessment?.text ? h('div', { style: { marginTop: '4px', whiteSpace: 'pre-wrap' } }, [h('b.ai-lbl', [`${t('ass_title')} (`, icon('ai', 12), ` ${t('ai')}, ${fmtDateTime(z, b.assessment.ts, lang)}): `]), b.assessment.text]) : null,
     lastV?.pdfUrl ? h('div.mini.no-print', [h('a', { href: lastV.pdfUrl, target: '_blank', rel: 'noopener' }, `Final v${lastV.no} PDF ↗`)]) : null,
   ]));
   const panels = visiblePanels(S, b);
@@ -158,7 +158,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
         for (const im of d.extra.images || []) ex.appendChild(h('figure', { style: { margin: '4px 0' } }, [h('img.pimg', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]));
         cell.appendChild(ex);
       }
-      if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b', t('ai') + ': '), d.ai.text]));
+      if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b.ai-lbl', [icon('ai', 12), ' ' + t('ai') + ': ']), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
       return h('tr', { class: `row-${p.key.replace('.', '-')}${rowClass}` }, [h('th', [h('span.pno', panelNo(p, list, pfx(p, bb))), ' ', tt(p), p.kind === 'auto' ? (p.auto === 'radar' ? liveWarn(bb) : coverWarn(d.content?.auto, bb)) : null, bb === b && changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]);   // 0.12.10: Warndreieck in der Titelzelle
   }

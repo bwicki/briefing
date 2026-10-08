@@ -32,7 +32,7 @@ export const COUNTRY_MATRIX = {
       overflight: ['DABS Pflicht (CH-Luftraum)', 'Übergangshöhe 7000 ft / TMA-Grenzen'],
       landing: ['ARR-Meldung an ARO, wenn Flugplan aufgegeben'],
     },
-    notes: ['Gasfahrten: Grenzüberschreitung praktisch immer → Flugplan', 'Flugplan für VFR nach DE/AT/FR/IT Pflicht (AIP CH ENR 1.10 § 1.3.2)'],
+    notes: ['Gasfahrten: Fahrt über die Landesgrenze praktisch immer → Flugplan', 'Flugplan für VFR nach DE/AT/FR/IT Pflicht (AIP CH ENR 1.10 § 1.3.2)'],
   },
   LI: {
     name: { de: 'Liechtenstein', en: 'Liechtenstein' },
@@ -48,7 +48,7 @@ export const COUNTRY_MATRIX = {
     airspace: 'openAIP · DFS AIP (ED-R, TMZ/RMZ)',
     notam: 'FAA-NOTAM (ED)',
     dabs: '–',
-    fpl: 'VFR-Flugplan bei Grenzüberschreitung; Aufgabe über skybriefing (Start CH) oder AIS-C DFS',
+    fpl: 'VFR-Flugplan bei Fahrt über die Landesgrenze; Aufgabe über skybriefing (Start CH) oder AIS-C DFS',
     contacts: 'DFS AIS-C (Flugplan-Aufgabe) · FIS-Frequenz regional – Nummern in den Notizen ergänzen',
     panels: ['B.balloon', 'B.fwp'],
     roles: {
@@ -65,7 +65,7 @@ export const COUNTRY_MATRIX = {
     sun: 'berechnet (NOAA-Verfahren)',
     airspace: 'openAIP · AIP Austria',
     notam: 'FAA-NOTAM (LO)',
-    dabs: '–', fpl: 'VFR-Flugplan bei Grenzüberschreitung', contacts: 'Austro Control AIS – Nummer in den Notizen ergänzen',
+    dabs: '–', fpl: 'VFR-Flugplan bei Fahrt über die Landesgrenze', contacts: 'Austro Control AIS – Nummer in den Notizen ergänzen',
     panels: [],
     roles: { start: ['FXOS-Bulletin der Region'], overflight: ['Alpenquerung: Föhn/Talwinde, Föhnlagen in FXOS'], landing: ['Bulletin des Zielgebiets'] },
     notes: ['Bulletins im Volltext frei abrufbar (Vorbild GaforCast at/meta.json)'],
@@ -75,7 +75,7 @@ export const COUNTRY_MATRIX = {
     official: { label: 'Météo-France Aéronautique', url: 'https://aviation.meteo.fr', access: 'login', reports: 'nur nach Anmeldung (Einfügen)' },
     model: 'AROME (Météo-France, 1,5 km)',
     sun: 'berechnet', airspace: 'openAIP · SIA (AIP France)', notam: 'FAA-NOTAM (LF)', dabs: '–',
-    fpl: 'VFR-Flugplan bei Grenzüberschreitung Pflicht', contacts: 'BRIA (Bureau régional d’information aéronautique)',
+    fpl: 'VFR-Flugplan bei Fahrt über die Landesgrenze Pflicht', contacts: 'BRIA (Bureau régional d’information aéronautique)',
     panels: [], roles: { start: ['Bericht manuell einfügen'], overflight: ['Zonen R/P (SIA) prüfen'], landing: ['–'] }, notes: ['Berichte nur mit Login – Einfügefeld'],
   },
   IT: {
@@ -83,7 +83,7 @@ export const COUNTRY_MATRIX = {
     official: { label: 'Aeronautica Militare (meteoam.it)', url: 'https://www.meteoam.it', access: 'frei', reports: 'GAFOR FBIY61 (13 Gebiete), Klartext' },
     model: 'ICON-2I (ItaliaMeteo/Arpae, 2,2 km)',
     sun: 'berechnet', airspace: 'openAIP · ENAV AIP', notam: 'FAA-NOTAM (LI)', dabs: '–',
-    fpl: 'VFR-Flugplan bei Grenzüberschreitung Pflicht', contacts: 'ENAV ARO',
+    fpl: 'VFR-Flugplan bei Fahrt über die Landesgrenze Pflicht', contacts: 'ENAV ARO',
     panels: [], roles: { start: ['GAFOR FBIY61'], overflight: ['Alpensüdseite: Talwinde, Nebel Po-Ebene'], landing: ['GAFOR des Zielgebiets'] }, notes: ['GAFOR frei abrufbar (Vorbild GaforCast it/meta.json)'],
   },
   '*': {

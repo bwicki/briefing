@@ -62,6 +62,8 @@ export function upgradeBriefing(b) {
   for (const p of b.persons.pax || []) if (/^(Pax|Passenger) \d+$/.test(p.name || '')) p.name = '';   // alte Platzhalter-Namen
   if (b.flight && b.flight.nvfr == null) b.flight.nvfr = b.intent?.dayNight === 'night' || b.intent?.dayNight === 'both';   // 0.8.1: NVFR-Schalter statt Tag/Nacht in der Absicht
   for (const p of PANELS) if (!b.panels[p.key]) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
+  // 0.12.13: SIGMET/AIRMET-Schnappschuss von «SIGWX low Alps» nach «Warnungen» verschieben (B.sigwx ist nur noch Einfügefeld)
+  { const sx = b.panels['B.sigwx'], wn = b.panels['B.warnings']; if (sx?.content?.auto?.kind === 'sigmet') { if (wn && !wn.content?.auto) { wn.content = { ...(wn.content || {}), auto: sx.content.auto, hidden: sx.content.hidden || [] }; } delete sx.content.auto; delete sx.content.hidden; } }
   // 0.11.2: Bearbeitungsstand «vN» (Sitzungen) – Bestand übernimmt den bisherigen Speicherzähler
   if (b.edition == null) b.edition = b.revision || 0;
   // 0.12.5: Planungen je Etappe (Ops-Briefing); verwaiste Datensätze gelöschter Etappen entfernen

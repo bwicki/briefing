@@ -335,10 +335,12 @@ export async function notam(ctx, b, opts = {}) {
     if (!pts.length) pts = [{ lat: b.site.lat, lon: b.site.lon, name: b.site.name, nm }];
   } else {
     const nm = opts.nm || ctx.settings.notamRadiusNm || 25;
-    pts = [{ lat: b.site.lat, lon: b.site.lon, name: b.site.name, nm }];
-    if (b.landing?.lat != null) pts.push({ lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name, nm });
+    pts = [{ lat: b.site.lat, lon: b.site.lon, name: b.site.name, nm, kind: 'site' }];
     const trj = b.panels['B.traj']?.content?.auto?.data?.tracks || [];
-    for (const tr of trj) if (tr.end) pts.push({ lat: tr.end.lat, lon: tr.end.lon, name: `${t('auto_trajEnd')} ${tr.label}`, nm });
+    for (const tr of trj) if (tr.end) pts.push({ lat: tr.end.lat, lon: tr.end.lon, name: `${t('auto_trajEnd')} ${tr.label}`, nm, kind: 'traj' });
+    if (b.landing?.lat != null) pts.push({ lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name, nm, kind: 'landing' });
+    // 0.12.13: Kreise um die Bahn-Endpunkte tragen den Namen der Ortschaft (statt «Endpunkt 3000 ft»)
+    await Promise.all(pts.filter((p) => p.kind === 'traj').map(async (p) => { try { const n = await placeName(p.lat, p.lon, b.site.country || 'CH'); if (n) p.name = typeof n === 'string' ? n : n.name || p.name; } catch { /* Name bleibt */ } }));
   }
   const nm = pts[0].nm;
   // Länder der Fahrt (FIR-Auswahl für autorouter): Startort, Landeraum, Lufträume der Analyse
@@ -402,7 +404,7 @@ export async function airspace(ctx, b) {
 }
 
 /** Alle automatischen Panels eines Briefings nacheinander; onStep(key, status, err). */
-export const AUTO_FETCHERS = { 'B.thermal': thermal, 'B.meteogram': meteogram, 'B.wind': wind, 'B.temps': temps, 'B.traj': traj, 'B.balloon': balloon, 'B.pdiff': pdiff, 'B.metar': metar, 'B.obs': obs, 'B.sigwx': sigmet, 'B.fwp': fwp, 'C.airspace': airspace, 'C.notam': notam };
+export const AUTO_FETCHERS = { 'B.thermal': thermal, 'B.meteogram': meteogram, 'B.wind': wind, 'B.temps': temps, 'B.traj': traj, 'B.balloon': balloon, 'B.pdiff': pdiff, 'B.metar': metar, 'B.obs': obs, 'B.warnings': sigmet, 'B.fwp': fwp, 'C.airspace': airspace, 'C.notam': notam };
 export async function refreshAll(ctx, b, keys, onStep) {
   const out = {};
   for (const k of keys) {

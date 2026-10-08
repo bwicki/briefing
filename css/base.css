@@ -18,7 +18,7 @@
   --temp: #ff5f56;
   --dew: #4fd0e7;
   --green: #3fbf7f;
-  --violet: #b98fd1;
+  --violet: #a894c9;   /* 0.12.13: gedämpfter */
 
   /* GAFOR flight-condition colours (C/O/D/M/X) */
   --gafor-c: #3fbf7f;   /* Charlie  — open */
@@ -50,7 +50,7 @@
   --temp: #c9271f;
   --dew: #0f7fa0;
   --green: #1d8a56;
-  --violet: #8a4fae;
+  --violet: #7a6aa5;   /* 0.12.13: gedämpfter */
 
   --gafor-c: #1d8a56;
   --gafor-o: #6d9418;

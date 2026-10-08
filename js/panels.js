@@ -38,14 +38,14 @@ export const PANELS = [
   { key: 'B.balloon', section: 'B', kind: 'auto', auto: 'balloon', de: 'Ballonprognose', en: 'Balloon forecast', grade: 'auto', link: 'dwdBallon', phase2: 'DWD Gebietsvorhersage Ballonsport, eigene Stundentabelle' },
   { key: 'B.pdiff', section: 'B', kind: 'auto', auto: 'pdiff', de: 'Druckdifferenzprognose', en: 'Pressure difference forecast', grade: 'auto', link: 'meteoswiss', phase2: 'Bise/Föhn aus Modell und SwissMetNet' },
   { key: 'B.traj', section: 'B', kind: 'auto', auto: 'traj', de: 'Trajektorien', en: 'Trajectories', grade: 'auto', link: 'meteoblue', phase2: 'eigene Berechnung, Szenarien, Ensemble' },
-  { key: 'B.sigwx', section: 'B', kind: 'auto', auto: 'sigmet', de: 'SIGWX low Alps', en: 'SIGWX low Alps', grade: 'half', link: 'skybriefing', phase2: 'SIGMET/AIRMET automatisch' },
+  { key: 'B.sigwx', section: 'B', kind: 'paste', de: 'SIGWX low Alps', en: 'SIGWX low Alps', grade: 'half', link: 'skybriefing' },   // 0.12.13: nur noch Einfügefeld (Karte aus skybriefing); SIGMET/AIRMET → B.warnings
   { key: 'B.thermal', section: 'B', kind: 'auto', auto: 'thermal', de: 'Thermik', en: 'Thermals', grade: 'auto', phase2: 'eigene Abschätzung aus Modellwerten (Strahlung, Grenzschicht): Einsetzen, Stärke, Abschwächen' },
-  { key: 'B.meteogram', section: 'B', kind: 'auto', auto: 'meteogram', de: 'Meteogramm, Take-off Forecast o. ä.', en: 'Meteogram, take-off forecast', grade: 'auto', link: 'meteoblue', phase2: 'meteoblue Images API, eigenes Meteogramm' },
+  { key: 'B.meteogram', section: 'B', kind: 'auto', auto: 'meteogram', de: 'Meteogramm', en: 'Meteogram', grade: 'auto', link: 'meteoblue', phase2: 'meteoblue Images API, eigenes Meteogramm' },
   { key: 'B.radar', section: 'B', kind: 'auto', auto: 'radar', de: 'Radar / Blitz / Satellit / Webcams', en: 'Radar / lightning / satellite / webcams', grade: 'auto', link: 'windy', phase2: 'RainViewer, EUMETSAT, Windy-Webcams', optional: true },
-  { key: 'B.warnings', section: 'B', kind: 'paste', de: 'Warnungen', en: 'Warnings', grade: 'auto', link: 'meteoswiss', phase2: 'MeteoSchweiz/DWD-Warnungen', optional: true },
+  { key: 'B.warnings', section: 'B', kind: 'auto', auto: 'sigmet', de: 'Warnungen', en: 'Warnings', grade: 'half', link: 'meteoswiss', phase2: 'SIGMET/AIRMET automatisch; MeteoSchweiz/DWD-Warnungen einfügen', optional: true },   // 0.12.13: SIGMET/AIRMET (TURB SEV …) hier, mit ✕ und Karte
   { key: 'B.remarks', section: 'B', kind: 'text', de: 'Bemerkungen', en: 'Remarks', grade: 'manual' },
   // C
-  { key: 'C.airspace', section: 'C', kind: 'auto', auto: 'airspace', de: 'Luftraum entlang des Fahrtwegs', en: 'Airspace along the route', grade: 'auto', phase2: 'openAIP: Lufträume entlang der Trajektorien, Höhenband, Korridor, FIR-Folge' },
+  { key: 'C.airspace', section: 'C', kind: 'auto', auto: 'airspace', de: 'Lufträume', en: 'Airspaces', grade: 'auto', phase2: 'openAIP: Lufträume entlang der Trajektorien, Höhenband, Korridor, FIR-Folge' },
   { key: 'C.dabs', section: 'C', kind: 'auto', auto: 'dabs', de: 'DABS', en: 'DABS', grade: 'auto', link: 'skybriefingDabs', phase2: 'DABS-PDF automatisch (CH)', chOnly: true },
   { key: 'C.notam', section: 'C', kind: 'auto', auto: 'notam', de: 'NOTAM (VFR-relevant)', en: 'NOTAM (VFR relevant)', grade: 'auto', link: 'skybriefing', phase2: 'FAA-NOTAM-API: Strecke (Start → Landeraum/Trajektorien) oder Umkreis um gewählte Orte, VFR-Filter' },
   { key: 'C.fpl', section: 'C', kind: 'fpl', de: 'Flugplan', en: 'Flight plan', grade: 'manual', defaultText: { de: 'keiner', en: 'none' } },
@@ -92,7 +92,7 @@ export function touchesCH(b) {
 export function panelNo(p, list, prefix = '') {   // prefix (0.12.7): Etappe, z. B. «E1-» → «E1-C3»
   const same = (list || PANELS).filter((x) => x.section === p.section);
   const k = same.findIndex((x) => x.key === p.key);
-  return `${prefix}${p.section}${k >= 0 ? k + 1 : ''}`;
+  return `${prefix}${p.section}${k >= 0 ? String(k + 1).padStart(2, '0') : ''}`;   // 0.12.13: stets zweistellig («B04»)
 }
 /** «A1 · Stammdaten» */
 export const panelTitle = (p, list, tr) => `${panelNo(p, list)} · ${tr(p)}`;

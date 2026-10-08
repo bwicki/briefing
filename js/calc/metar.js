@@ -197,6 +197,18 @@ export function tafGroupWindows(raw, refMs = Date.now()) {
   for (let k = 0; k < out.length; k++) if (out[k]?.fm) { const nx = out.slice(k + 1).find((x) => x?.fm); if (nx) out[k].to = nx.from; }
   return out;
 }
+/** 0.12.13: Ende der TAF-Gültigkeit (UTC-ms) oder null. */
+export function tafValidEnd(raw, refMs = Date.now()) {
+  const toks = String(raw || '').replace(/=$/, '').trim().split(/\s+/).filter(Boolean);
+  let i = 0; if (toks[i] === 'TAF') i++;
+  while (toks[i] === 'AMD' || toks[i] === 'COR') i++;
+  i++; if (/^\d{6}Z$/.test(toks[i] || '')) i++;
+  const m = /^(\d{2})(\d{2})\/(\d{2})(\d{2})$/.exec(toks[i] || ''); if (!m) return null;
+  const ref = new Date(refMs || Date.now()); const Y = ref.getUTCFullYear(), M = ref.getUTCMonth(), D = ref.getUTCDate();
+  const dd = +m[3], hh = +m[4];
+  let ms = Date.UTC(Y, M, dd, hh); if (dd < D - 15) ms = Date.UTC(Y, M + 1, dd, hh); else if (dd > D + 15) ms = Date.UTC(Y, M - 1, dd, hh);
+  return ms;
+}
 /** TAF → Zeilen in Klartext (Basis + Änderungsgruppen). */
 export function decodeTaf(raw, lang = 'de') {
   const s = L[lang] || L.de;

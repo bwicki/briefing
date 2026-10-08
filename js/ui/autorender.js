@@ -8,7 +8,7 @@ import { meteogram as meteogramSvg, windChart, stueveChart, mk } from '../auto/c
 import { trajSvg, TRAJ_COLORS, targetEstimate } from '../auto/traj.js';
 import { directionText, ageRefMs } from '../model.js';
 import { mapsLink } from './place.js';
-import { decodeMetar, decodeTaf, tafGroupWindows, badToken, MARK0, MARK1 } from '../calc/metar.js';
+import { decodeMetar, decodeTaf, tafGroupWindows, tafValidEnd, badToken, MARK0, MARK1 } from '../calc/metar.js';
 import { bearing, compass } from '../calc/geo.js';
 import { placeName } from '../net.js';
 import { icon, iconSvg } from './icons.js';
@@ -24,27 +24,34 @@ export const NOW_KINDS = new Set(['metar', 'obs', 'sigmet', 'notam', 'synoptic',
 export const farStart = (b) => (b.time?.startMs || 0) - Date.now() > 6 * 3600000;
 export const staleNow = (snap, b) => NOW_KINDS.has(snap?.kind) && farStart(b);
 /** 0.12.10: Deckt der Schnappschuss den Fahrtzeitraum ab? true/false; null = nicht beurteilbar (kein Warnsymbol).
- * Gegenwärtiger Stand (METAR, Beobachtungen, SIGMET, NOTAM, Lage, DABS): nur, wenn der Start weniger als 6 h entfernt ist.
- * DWD-Ballonprognose: nur, wenn jeder UTC-Tag der Fahrt als Vorhersagetag vorhanden ist. Druckdifferenz: nur, wenn die Reihen bis zur Landung reichen. */
+ * 0.12.13: Es genügt die Anfangsphase – Gültigkeit bis Start + 1 h. Gegenwärtiger Stand (Beobachtungen, SIGMET, NOTAM, Lage, DABS):
+ * nur, wenn der Start weniger als 6 h entfernt ist; METAR/TAF zusätzlich, wenn ein TAF bis Start + 1 h gilt.
+ * DWD-Ballonprognose: der UTC-Tag von Start bzw. Start + 1 h als Vorhersagetag vorhanden. Druckdifferenz: Reihen bis Start + 1 h. */
+export const COVER_UNTIL_MS = 3600000;
 export function snapCovers(snap, b) {
   if (!snap || !b) return null;
-  const fw0 = b.time?.startMs || 0, fw1 = fw0 + Math.max(30, b.intent?.durationMin || 0) * 60000;
-  if (NOW_KINDS.has(snap.kind)) return !farStart(b);
+  const fw0 = b.time?.startMs || 0, need = fw0 + COVER_UNTIL_MS;
   const d = snap.data || {};
+  if (snap.kind === 'metar') {
+    if (!farStart(b)) return true;
+    const tafs = Object.values(d.taf || {}).map((x) => (typeof x === 'string' ? x : x?.rawTAF || x?.raw || ''));
+    return tafs.some((raw) => { const e = tafValidEnd(raw, snap.stand || Date.now()); return e != null && e >= need; });
+  }
+  if (NOW_KINDS.has(snap.kind)) return !farStart(b);
   if (snap.kind === 'balloon') {
     if (!d.dwd) return null;
-    const days = []; for (let ms = fw0; ms <= fw1 + 1; ms += 86400000) { const x = new Date(ms); days.push(`${String(x.getUTCDate()).padStart(2, '0')}.${String(x.getUTCMonth() + 1).padStart(2, '0')}.${x.getUTCFullYear()}`); }
+    const days = []; for (const ms of [fw0, need]) { const x = new Date(ms); const k = `${String(x.getUTCDate()).padStart(2, '0')}.${String(x.getUTCMonth() + 1).padStart(2, '0')}.${x.getUTCFullYear()}`; if (!days.includes(k)) days.push(k); }
     const heads = (d.dwd.blocks || []).map((k) => k.heading || '').join(' ');
     return days.every((dd) => heads.includes(dd));
   }
-  if (snap.kind === 'pdiff') { const last = Math.max(0, ...(d.pairs || []).flatMap((p) => (p.rows || []).map((r) => r.ms || 0))); return last >= fw1 - 3600000; }
+  if (snap.kind === 'pdiff') { const last = Math.max(0, ...(d.pairs || []).flatMap((p) => (p.rows || []).map((r) => r.ms || 0))); return last >= need; }
   return null;
 }
 /** Rotes Warndreieck für die Titelzeile des Panels (0.12.10): Information deckt den Fahrtzeitraum noch nicht ab. */
-export const coverWarn = (snap, b) => (snapCovers(snap, b) === false ? h('span.now-warn', { title: t('now_warn') }, '⚠') : null);
+export const coverWarn = (snap, b) => (snapCovers(snap, b) === false ? h('span.now-warn', { title: t('now_warn') }, icon('warn', 14)) : null);   // 0.12.13: Strich-Icon statt fettem Glyph
 export const nowWarn = (snap, b) => null;   // bis 0.12.9 in der Standzeile; seit 0.12.10 in der Titelzeile (coverWarn)
 export const nowWarnLive = (b) => (farStart(b) ? h('div.note.stand', t('now_live')) : null);
-export const liveWarn = (b) => (farStart(b) ? h('span.now-warn', { title: t('now_warn') }, '⚠') : null);
+export const liveWarn = (b) => (farStart(b) ? h('span.now-warn', { title: t('now_warn') }, icon('warn', 14)) : null);
 export function standLine(snap, b) {
   if (!snap) return null;
   const z = b.site.tz || 'Europe/Zurich';
@@ -152,32 +159,41 @@ export function renderAirspace(snap, b, ctx, opts = {}) {
   for (const w of d.warns || []) firParts.push(h('div.warn', `⚠ ${w.kind === 'ctr' ? t('as_warnCtr', { n: `${w.name} (${w.typeKey}${w.cls ? ' ' + w.cls : ''}, ${w.lowerTxt}–${w.upperTxt})` }) : t('as_warnTma', { n: `${w.name} (${w.typeKey}${w.cls ? ' ' + w.cls : ''})`, l: w.lowerTxt, d: w.aglFt })}`));
   for (const w of d.landWarns || []) firParts.push(h('div.note', `${t('as_landCtr', { n: `${w.name} (${w.typeKey}${w.cls ? ' ' + w.cls : ''})` })}`));
   if (d.firs?.length) {
-    // gleiche FIR-Folgen zusammenfassen: «SFC, 1000 ft AGL: CH» · «5000 ft: CH → DE ab 80 km, +1:30»
-    const seqTxt = (f) => f.seq.map((s, i) => `${s.name}${s.country ? ` (${s.country})` : ''}${i ? ` ${t('as_fromKm')} ${s.fromKm} km, ${hhmm(z, s.fromMs)} LT (+${fmtDur(Math.round((s.fromMs - b.time.startMs) / 60000))})` : ''}`).join(' → ');
+    // 0.12.13: FIR-Folge als Tabelle (wie die astronomischen Daten): gleiche Folgen je Niveau zusammengefasst – Niveau | FIR | ab km | ETA LT | nach Start
     const groups = [];
     for (const f of d.firs) { const key = f.seq.map((s) => s.name).join('|'); const g = groups.find((x) => x.key === key); if (g) g.labels.push(f.label); else groups.push({ key, labels: [f.label], f }); }
-    firParts.push(h('div.as-fir', [h('b', `${t('as_fir')}: `), groups.length === 1 ? seqTxt(groups[0].f) : groups.map((g, i) => h('span', [i ? ' · ' : '', h('span.muted', `${g.labels.join(', ')}: `), seqTxt(g.f)]))]));
+    const rows = [];
+    for (const g of groups) g.f.seq.forEach((sq, i) => rows.push(h('tr', [h('th', i ? '' : (groups.length === 1 ? t('as_allLevels') : g.labels.join(', '))), h('td', `${sq.name}${sq.country ? ` (${sq.country})` : ''}`), h('td.mono', i ? `${sq.fromKm} km` : '0 km'), h('td.mono', i ? `${hhmm(z, sq.fromMs)} LT` : `${hhmm(z, b.time.startMs)} LT`), h('td.mono', i ? `+${fmtDur(Math.round((sq.fromMs - b.time.startMs) / 60000))}` : t('as_start'))])));
+    firParts.push(h('div.as-fir', [h('table.auto.astro.as-firtbl', [h('thead', h('tr', [h('th', t('as_fir')), h('th', 'FIR'), h('th', t('as_fromKmHead')), h('th', 'ETA'), h('th', t('as_afterStart'))])), h('tbody', rows)])]));
   }
   const hitsTxt = (x) => {
     if (x.hits.length > 3) { const a = Math.min(...x.hits.map((hh) => hh.entryKm)), e = Math.max(...x.hits.map((hh) => hh.exitKm)); return `${x.hits.length} ${t('as_tracks')}: ${a}–${e} km`; }
     return x.hits.map((hh) => `${hh.label}: ${hh.entryKm} km ${hhmm(z, hh.entryMs)}${hh.exitKm > hh.entryKm ? `–${hh.exitKm} km ${hhmm(z, hh.exitMs)}` : ''}`).join(' · ');
   };
   const flags = (as) => [as.flags?.byNotam ? 'NOTAM' : '', as.flags?.onRequest ? 'REQ' : '', as.flags?.specialAgreement ? 'AGRMT' : '', as.transponder ? `SQ ${as.transponder}` : '', ...(as.freqs || []).slice(0, 2).map((f) => `${f.name ? f.name + ' ' : ''}${f.value}`)].filter(Boolean).join(' · ');
+  // 0.12.13: ETA und km als eigene Spalten; ✕ je Zeile blendet den Luftraum aus (wie NOTAM; beim Aktualisieren Rückfrage)
+  const hidden = new Set(opts.hidden || []);
+  const asId = (x) => String(x.as.id || x.as.name);
+  const vis = (list) => list.filter((x) => !hidden.has(asId(x)));
   const row = (x) => h('tr', { class: `as-${x.status}` }, [
-    h('td.mono', x.firstKm != null ? [`${x.firstKm} km`, h('br'), `${hhmm(z, x.firstMs)} LT`] : [`${t('as_near')}`, h('br'), `${x.minDistKm} km`]),
+    h('td.mono.nowrap', x.firstKm != null ? `${hhmm(z, x.firstMs)} LT` : '–'),
+    h('td.mono.nowrap', x.firstKm != null ? `${x.firstKm} km` : `${t('as_near')} ${x.minDistKm} km`),
     h('td', [h('b', x.as.name), x.hits.length > 1 || (x.hits.length === 1 && d.tracks.length > 1) ? h('div.small.muted', hitsTxt(x)) : null, flags(x.as) ? h('div.small.muted.mono', flags(x.as)) : null]),
     h('td.mono', `${x.as.typeKey}${x.as.cls ? ' ' + x.as.cls : ''}`),
     h('td.mono', x.as.lowerTxt), h('td.mono', x.as.upperTxt),
-  ]);
-  const thead = h('thead', h('tr', [h('th', t('as_km')), h('th', t('name')), h('th', t('as_type')), h('th', t('as_lower')), h('th', t('as_upper'))]));
-  const table = h('table.auto.as-tbl', [thead, h('tbody', [...d.crossed.map(row), ...d.near.map(row)])]);
-  const empty = !d.crossed.length && !d.near.length ? h('div.note', t('as_noneCrossed')) : null;
+    opts.interactive && opts.onHide ? h('td.acts', hideBtn(opts, asId(x))) : null,
+  ].filter(Boolean));
+  const thead = () => h('thead', h('tr', [h('th', 'ETA'), h('th', t('as_kmHead')), h('th', t('name')), h('th', t('as_type')), h('th', t('as_lower')), h('th', t('as_upper')), opts.interactive && opts.onHide ? h('th', '') : null].filter(Boolean)));
+  const crossed = vis(d.crossed), near = vis(d.near), above = vis(d.above);
+  const table = h('table.auto.as-tbl', [thead(), h('tbody', [...crossed.map(row), ...near.map(row)])]);
+  const hid = hidden.size ? h('div.note', t('hide_count', { n: hidden.size })) : null;
+  const empty = !crossed.length && !near.length ? h('div.note', t('as_noneCrossed')) : null;
   const svg = airspaceSvg(d, b);
   const mapEl = opts.interactive ? h('div.map.traj.as-map') : null;
   const grid = h('div.traj-grid' + (mapEl ? '.maponly' : ''), [svg, mapEl]);
   const legend = h('div.traj-legend', [h('span.item', [h('span.sw', { style: { background: AS_COL.cross } }), ` ${t('as_crossed')}`]), h('span.item', [h('span.sw', { style: { background: AS_COL.near } }), ` ${t('as_near')} (${d.corridorKm} km)`]), ...d.tracks.map((tr, k) => h('span.item', [h('span.sw', { style: { background: TRAJ_COLORS[k % TRAJ_COLORS.length] } }), ` ${tr.label} · ${tr.altFt} ft`]))]);
-  const above = d.above.length ? h('details', [h('summary.small', `${t('as_above')} (> ${d.altMaxFt} ft): ${d.above.length}`), h('div.tbl-scroll', h('table.auto.as-tbl', [thead.cloneNode(true), h('tbody', d.above.map(row))]))]) : null;
-  const wrap = h('div.auto-wrap', [head, ...firParts, legend, grid, empty, d.crossed.length || d.near.length ? h('div.tbl-scroll', table) : null, above, h('div.note', `${t('as_note')} ${t('as_noteEG')}`)]);
+  const aboveEl = above.length ? h('details', [h('summary.small', `${t('as_above')} (> ${d.altMaxFt} ft): ${above.length}`), h('div.tbl-scroll', h('table.auto.as-tbl', [thead(), h('tbody', above.map(row))]))]) : null;
+  const wrap = h('div.auto-wrap', [head, ...firParts, legend, grid, empty, crossed.length || near.length ? h('div.tbl-scroll', table) : null, aboveEl, hid, h('div.note', `${t('as_note')} ${t('as_noteEG')}`)]);
   if (mapEl) setTimeout(() => { if (mapEl.isConnected) drawAirspaceMap(mapEl, d, b); }, 0);
   return wrap;
 }
@@ -396,10 +412,43 @@ export function renderMetar(snap, b, ctx, opts = {}) {
 }
 
 // ---------------------------------------------------------------- SIGMET
-export function renderSigmet(snap) {
-  const d = snap.data;
-  if (!d.list?.length) return h('div.note', t('auto_noSigmet'));
-  return h('div.auto-wrap', d.list.map((s) => h('div.metar', [h('div', [h('b', `${s.fir || ''} ${s.hazard || ''} ${s.qualifier || ''}`), h('span.muted.small', ` · ${s.validFrom || ''} – ${s.validTo || ''}${s.base != null || s.top != null ? ` · ${s.base ?? 'SFC'}–${s.top ?? '?'} ft` : ''}`)]), h('pre.report', s.raw || '')])));
+/** 0.12.13: SIGMET/AIRMET im Panel «Warnungen» – je Meldung ✕ (ausblenden) und Karte (Polygon aus den Koordinaten). */
+export function sigmetGeo(s) { const c = (s.coords || []).map((q) => [+q.lat, +q.lon]).filter((q) => isFinite(q[0]) && isFinite(q[1])); return c.length >= 3 ? c : null; }
+export async function sigmetMapDialog(s, b) {
+  const poly = sigmetGeo(s); if (!poly) return;
+  await geoMapDialog(`${s.fir || ''} ${s.hazard || ''} ${s.qualifier || ''}`.trim(), (s.raw || '').trim().slice(0, 600), b, (map, pts) => {
+    L.polygon(poly, { color: '#c0392b', weight: 2, fillOpacity: .12 }).addTo(map).bindTooltip(`${s.hazard || ''} ${s.qualifier || ''} · ${s.validFrom || ''} – ${s.validTo || ''}`);
+    pts.push(...poly);
+  });
+}
+export function renderSigmet(snap, b, ctx, opts = {}) {
+  const d = snap.data, hidden = new Set(opts.hidden || []);
+  const list = (d.list || []).filter((s, i) => !hidden.has(s.id || `${s.fir}-${i}`));
+  const hid = hidden.size ? h('div.note', t('hide_count', { n: hidden.size })) : null;
+  if (!list.length) return h('div', [h('div.note', t('auto_noSigmet')), hid]);
+  const mapBtn = (s) => (sigmetGeo(s) && typeof L !== 'undefined' ? h('button.btn.icon.small.map-x.no-print', { type: 'button', title: t('notam_map'), onclick: (e) => { e.stopPropagation(); sigmetMapDialog(s, b); } }, icon('map', 14)) : null);
+  return h('div.auto-wrap', [...list.map((s, i) => h('div.metar', [h('div.mhead', [h('b', `${s.fir || ''} ${s.hazard || ''} ${s.qualifier || ''}`), h('span.muted.small', ` · ${s.validFrom || ''} – ${s.validTo || ''}${s.base != null || s.top != null ? ` · ${s.base ?? 'SFC'}–${s.top ?? '?'} ft` : ''}`), h('span.mh-btns', [mapBtn(s), hideBtn(opts, s.id || `${s.fir}-${i}`)])]), h('pre.report', s.raw || '')])), hid]);
+}
+
+/** 0.12.13: Kartenfenster mit Fahrtweg (Profilbahn, sonst Trajektorien), Startort und Landeraum; addLayers(map, pts) zeichnet das Objekt. */
+export async function geoMapDialog(title, text, b, addLayers) {
+  if (typeof L === 'undefined') return;
+  const mapEl = h('div.map.notam-map');
+  const box = dialog(title, h('div', [mapEl, text ? h('pre.report.small', text) : null]), [{ label: t('close'), value: true }], { cls: 'wide' });
+  await new Promise((r) => setTimeout(r, 30));
+  const map = L.map(mapEl, { zoomControl: true });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenStreetMap' }).addTo(map);   // 0.12.10: OSM statt CARTO (Schlüsselpflicht)
+  const pts = [];
+  addLayers(map, pts);
+  const track = b.profile?.data?.track?.points;
+  if (track?.length) { const ll = track.map((q) => [q.lat, q.lon]); L.polyline(ll, { color: '#b8640f', weight: 3 }).addTo(map).bindTooltip(t('pf_title')); pts.push(...ll); }
+  else for (const tr of b.panels?.['B.traj']?.content?.auto?.data?.tracks || []) { if (tr.belowGround || !tr.points?.length) continue; const ll = tr.points.map((q) => [q.lat, q.lon]); L.polyline(ll, { color: '#2f6f9f', weight: 2, dashArray: '4 3' }).addTo(map).bindTooltip(`${tr.label} · ${tr.altFt} ft`); pts.push(...ll); }
+  if (b.site?.lat != null) { L.marker([b.site.lat, b.site.lon]).addTo(map).bindTooltip(`${t('site')}: ${b.site.name || ''}`); pts.push([b.site.lat, b.site.lon]); }
+  if (b.landing?.lat != null) { L.marker([b.landing.lat, b.landing.lon], { icon: L.divIcon({ className: 'land-dot', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(map).bindTooltip(`${t('landingSite')}: ${b.landing.name || ''}`); pts.push([b.landing.lat, b.landing.lon]); }
+  if (pts.length) map.fitBounds(pts, { padding: [24, 24], maxZoom: 11 }); else map.setView([47, 8], 7);
+  setTimeout(() => map.invalidateSize(), 150);
+  await box;
+  map.remove();
 }
 
 // ---------------------------------------------------------------- NOTAM
@@ -421,24 +470,34 @@ export function notamGeo(x) {
 }
 /** Kartenfenster zu einem NOTAM: Kreis/Punkt des NOTAM, geplanter Fahrtweg (Profilbahn, sonst Trajektorien), Startort und Landeraum. */
 export async function notamMapDialog(x, b) {
-  const g = notamGeo(x); if (!g || typeof L === 'undefined') return;
-  const mapEl = h('div.map.notam-map');
-  const box = dialog(`${x.icao || x.location || ''} ${x.number || ''}`, h('div', [mapEl, h('pre.report.small', (x.text || '').trim().slice(0, 600))]), [{ label: t('close'), value: true }], { cls: 'wide' });
-  await new Promise((r) => setTimeout(r, 30));
-  const map = L.map(mapEl, { zoomControl: true });
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenStreetMap' }).addTo(map);   // 0.12.10: OSM statt CARTO (Schlüsselpflicht)
-  const pts = [[g.lat, g.lon]];
-  if (g.radiusNm) L.circle([g.lat, g.lon], { radius: g.radiusNm * 1852, color: '#c0392b', weight: 2, fillOpacity: .12 }).addTo(map).bindTooltip(`${x.number || ''} · ${g.radiusNm} NM`);
-  L.circleMarker([g.lat, g.lon], { radius: 5, color: '#c0392b', fillColor: '#fff', fillOpacity: 1, weight: 2 }).addTo(map);
+  const g = notamGeo(x); if (!g) return;
+  await geoMapDialog(`${x.icao || x.location || ''} ${x.number || ''}`, (x.text || '').trim().slice(0, 600), b, (map, pts) => {
+    pts.push([g.lat, g.lon]);
+    if (g.radiusNm) L.circle([g.lat, g.lon], { radius: g.radiusNm * 1852, color: '#c0392b', weight: 2, fillOpacity: .12 }).addTo(map).bindTooltip(`${x.number || ''} · ${g.radiusNm} NM`);
+    L.circleMarker([g.lat, g.lon], { radius: 5, color: '#c0392b', fillColor: '#fff', fillOpacity: 1, weight: 2 }).addTo(map);
+  });
+}
+/** 0.12.13: Kartenübersicht über den NOTAM – alle Meldungen mit echtem Ort (FIR-weite nicht), Klick öffnet die Meldung; Fahrtweg, Start, Landeraum. */
+function notamOverviewMap(el, items, b) {
+  if (typeof L === 'undefined') return;
+  const map = L.map(el, { zoomControl: true });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenStreetMap' }).addTo(map);
+  const pts = [];
+  const show = (x) => dialog(`${x.icao || x.location || ''} ${x.number || ''}`, h('div', [h('div.note', `${(x.start || '').slice(0, 16)} – ${(x.end || '').slice(0, 16)}${x.minFL != null || x.maxFL != null ? ` · FL${x.minFL ?? '000'}–FL${x.maxFL ?? '?'}` : ''}`), h('pre.report', (x.formatted || x.text || '').trim())]), [{ label: t('close'), value: true }], { cls: 'wide' });
+  for (const x of items) {
+    const g = notamGeo(x); if (!g) continue;
+    const col = x.vfr?.relevant ? '#c0392b' : '#7c8aa0';
+    const tip = `${x.icao || x.location || ''} ${x.number || ''}${x.vfr?.why?.length ? ' · ' + x.vfr.why.join(', ') : ''}`;
+    if (g.radiusNm) L.circle([g.lat, g.lon], { radius: g.radiusNm * 1852, color: col, weight: 1.5, fillOpacity: .1 }).addTo(map).bindTooltip(tip).on('click', () => show(x));
+    L.circleMarker([g.lat, g.lon], { radius: 6, color: col, fillColor: '#fff', fillOpacity: 1, weight: 2 }).addTo(map).bindTooltip(tip).on('click', () => show(x));
+    pts.push([g.lat, g.lon]);
+  }
   const track = b.profile?.data?.track?.points;
   if (track?.length) { const ll = track.map((q) => [q.lat, q.lon]); L.polyline(ll, { color: '#b8640f', weight: 3 }).addTo(map).bindTooltip(t('pf_title')); pts.push(...ll); }
   else for (const tr of b.panels?.['B.traj']?.content?.auto?.data?.tracks || []) { if (tr.belowGround || !tr.points?.length) continue; const ll = tr.points.map((q) => [q.lat, q.lon]); L.polyline(ll, { color: '#2f6f9f', weight: 2, dashArray: '4 3' }).addTo(map).bindTooltip(`${tr.label} · ${tr.altFt} ft`); pts.push(...ll); }
   if (b.site?.lat != null) { L.marker([b.site.lat, b.site.lon]).addTo(map).bindTooltip(`${t('site')}: ${b.site.name || ''}`); pts.push([b.site.lat, b.site.lon]); }
   if (b.landing?.lat != null) { L.marker([b.landing.lat, b.landing.lon], { icon: L.divIcon({ className: 'land-dot', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(map).bindTooltip(`${t('landingSite')}: ${b.landing.name || ''}`); pts.push([b.landing.lat, b.landing.lon]); }
-  map.fitBounds(pts, { padding: [24, 24], maxZoom: 11 });
-  setTimeout(() => map.invalidateSize(), 150);
-  await box;
-  map.remove();
+  setTimeout(() => { map.invalidateSize(); if (pts.length) map.fitBounds(pts, { padding: [20, 20], maxZoom: 10 }); else map.setView([47, 8], 7); }, 60);
 }
 export function renderNotam(snap, b, ctx, opts = {}) {
   const d = snap.data, hidden = new Set(opts.hidden || []);
@@ -447,8 +506,11 @@ export function renderNotam(snap, b, ctx, opts = {}) {
   const mapBtn = (x) => (notamGeo(x) ? h('button.btn.icon.small.map-x.no-print', { type: 'button', title: t('notam_map'), onclick: (e) => { e.stopPropagation(); notamMapDialog(x, b); } }, icon('map', 14)) : null);
   const item = (x) => h('div.metar', [h('div.mhead', [h('b', `${x.icao || x.location || ''} ${x.number || ''}`), h('span.muted.small', ` · ${(x.start || '').slice(0, 16)} – ${(x.end || '').slice(0, 16)}${x.minFL != null || x.maxFL != null ? ` · FL${x.minFL ?? '000'}–FL${x.maxFL ?? '?'}` : ''}`), x.vfr?.why?.length ? h('span.muted.small', ` · ${x.vfr.why.join(', ')}`) : null, h('span.mh-btns', [mapBtn(x), hideBtn(opts, x.id)])]), h('pre.report', (x.formatted || x.text || '').trim())]);
   const hid = hidden.size ? ` · ${t('hide_count', { n: hidden.size })}` : '';
-  const parts = [h('div.note', (d.mode === 'places' ? `${t('notam_places')}: ${(d.points || []).map((p) => `${p.name || ''} (${Math.round((p.nm || d.nm) * 1.852)} km)`).join(', ')} · ${rel.length} ${t('auto_notamRelevant')}, ${other.length} ${t('auto_notamOther')}` : `${t('auto_notamCorridor')}: ${(d.points || []).map((p) => p.name || '').filter(Boolean).join(' → ')} · ${d.nm} NM · ${rel.length} ${t('auto_notamRelevant')}, ${other.length} ${t('auto_notamOther')}`) + hid)];
+  // 0.12.13: ohne Statistik; Korridor nennt Startort → Ortschaften auf dem Fahrtweg → Landeraum (keine «Endpunkte» in der Höhe)
+  const corridorNames = () => { const ps = d.points || []; const site = ps[0]?.name || b.site?.name || ''; const land = b.landing?.lat != null ? (ps.find((p) => p.kind === 'landing')?.name || b.landing.name || '') : ''; const mid = ps.filter((p, i) => i > 0 && p.kind !== 'landing' && p.name && !/^(Endpunkt|End point)\b/.test(p.name)).map((p) => p.name); return [site, ...mid, land].filter(Boolean).join(' → '); };
+  const parts = [h('div.note', (d.mode === 'places' ? `${t('notam_places')}: ${(d.points || []).map((p) => `${p.name || ''} (${Math.round((p.nm || d.nm) * 1.852)} km)`).join(', ')}` : `${t('auto_notamCorridor')} ${d.nm} NM: ${corridorNames()}`) + hid)];
   if (d.errors?.length) parts.push(h('div.warn', d.errors.join(' · ')));
+  if (opts.interactive && typeof L !== 'undefined' && items.some((x) => notamGeo(x))) { const mapEl = h('div.map.notam-ov'); parts.push(mapEl); setTimeout(() => { if (mapEl.isConnected) notamOverviewMap(mapEl, items, b); }, 0); }
   parts.push(...rel.map(item));
   if (other.length && opts.interactive) parts.push(h('details', [h('summary.small', `${t('auto_notamOther')} (${other.length})`), ...other.map(item)]));
   return h('div.auto-wrap', parts);

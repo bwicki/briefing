@@ -132,14 +132,14 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
             pg.click('#panel-B\\.metar .ptools button:has-text("Aktualisieren")'); pg.wait_for_timeout(400)
             assert pg.is_visible('.dialog') and 'Selektion' in pg.inner_text('.dialog'), 'Rückfrage beim Aktualisieren mit ausgeblendeten Meldungen'
             pg.click('.dialog-foot button:has-text("Selektion")'); pg.wait_for_timeout(2500)
-            assert first not in pg.inner_text('#panel-B\\.metar') and pg.query_selector('#panel-B\\.metar .now-warn') is not None, 'Selektion bleibt; Warnsymbol gegenwärtiger Stand'
+            assert first not in pg.inner_text('#panel-B\\.metar'), 'Selektion bleibt'   # 0.12.13: Warnsymbol nur, wenn kein TAF bis Start + 1 h gilt (tagesaktuelle Daten decken den Teststart meist ab)
             pg.click('#panel-B\\.metar .ptools button:has-text("Aktualisieren")'); pg.wait_for_timeout(400); pg.click('.dialog-foot button:has-text("Alle Meldungen")'); pg.wait_for_timeout(2500)
             assert len(pg.query_selector_all('#panel-B\\.metar .metar')) == n_st, 'Alle Meldungen wieder da'
             assert 'DWD' not in pg.inner_text('#panel-B\\.balloon').split('EIGENE')[0].split('Stand:')[-1][:60] or True
         pg.wait_for_timeout(1500)
         assert '4725N00816E' in pg.inner_text('#panel-A\\.landing'), 'Landeraum im Editor'
         # 0.9.2: Panel-Nummerierung, «Astronomische Daten» ohne KI-Knopf, DABS nur bei CH-Berührung, Flugplan-Schalter
-        assert pg.inner_text('#panel-A\\.core .panel-head .ttl').startswith('A1') and pg.inner_text('#panel-A\\.sun .panel-head .ttl').startswith('A2'), 'Panel-Nummern A1/A2'
+        assert pg.inner_text('#panel-A\\.core .panel-head .ttl').startswith('A01') and pg.inner_text('#panel-A\\.sun .panel-head .ttl').startswith('A02'), 'Panel-Nummern A1/A2'
         assert 'Astronomische Daten' in pg.inner_text('#panel-A\\.sun .panel-head') and pg.query_selector('#panel-A\\.sun .aibtns') is None and pg.query_selector('#panel-A\\.core .aibtns') is None, 'Astronomische Daten ohne KI-Knopf'
         assert pg.query_selector('#panel-C\\.dabs') is not None, 'DABS vorhanden (Landeraum in CH)'
         assert pg.query_selector('#panel-C\\.fpl input[type=checkbox]') is not None, 'Flugplan-Schalter'
@@ -207,7 +207,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.fill('.settings .item-box input[type=text]', 'HB-QWZ'); pg.wait_for_timeout(200)
         pg.click('#tools button.save'); pg.wait_for_timeout(600)
         pg.goto(BASE + '#/settings?panels'); pg.wait_for_timeout(600)
-        assert pg.query_selector('table.panels-tbl') is not None and 'A1' in pg.inner_text('table.panels-tbl .pno'), 'Panel-Tabelle mit Nummern'
+        assert pg.query_selector('table.panels-tbl') is not None and 'A01' in pg.inner_text('table.panels-tbl .pno'), 'Panel-Tabelle mit Nummern'
         pg.screenshot(path=f'{OUT}/{name}_13_panels.png', full_page=True)
         pg.goto(BASE + '#/settings?expert'); pg.wait_for_timeout(600)
         assert pg.query_selector('table.cm-tbl') is not None and 'DABS' in pg.inner_text('table.cm-tbl'), 'Länder-Matrix im Expertenbereich'
@@ -255,12 +255,20 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         if not mobile:
             opened = pg.eval_on_selector_all('.enav details', 'els => els.map(e => e.open)')
             assert opened.count(True) == 1, 'Akkordeon: genau ein Abschnitt offen: ' + str(opened)
-            pg.click('#panel-C\\.fpl .panel-head .addrow .add.cmt'); pg.wait_for_timeout(300)
-            assert pg.query_selector('#panel-C\\.fpl .panel-body > .sub.cmt textarea') is not None, 'Kommentar-PIC-Box nach Klick'
+            # 0.12.13: nur noch ein Knopf (Eigener Text) in der Titelzeile; Kommentar-Knopf entfällt; Schliessen ohne Inhalt sofort, mit Inhalt Rückfrage
+            assert pg.query_selector('#panel-C\\.fpl .panel-head .add.cmt') is None, 'kein Kommentar-Knopf mehr'
             assert pg.query_selector('#panel-B\\.metar .panel-body > .sub.extra') is None, 'Zusatzbox ohne Inhalt nicht sichtbar'
-            pg.click('#panel-B\\.metar .panel-head .addrow .add.extra'); pg.wait_for_timeout(300)
+            pg.click('#panel-B\\.metar .panel-head .rrow .add.extra'); pg.wait_for_timeout(300)
             assert pg.query_selector('#panel-B\\.metar .panel-body > .sub.extra textarea') is not None, 'Zusatzbox nach Klick'
-            assert pg.query_selector('#menuBtn svg.ico-menu') is not None and pg.query_selector('#tools button.print svg.ico-print') is not None and pg.query_selector('#panel-C\\.fpl .panel-head .addrow .add.extra svg.ico-text') is not None, 'SVG-Symbole (Menü, Drucken, Zusatzbox)'
+            pg.click('#panel-B\\.metar .panel-body > .sub.extra .sub-close'); pg.wait_for_timeout(300)
+            assert pg.query_selector('#panel-B\\.metar .panel-body > .sub.extra') is None and pg.query_selector('.dialog') is None, 'Zusatzbox ohne Inhalt schliesst ohne Rückfrage'
+            pg.click('#panel-B\\.metar .panel-head .rrow .add.extra'); pg.wait_for_timeout(300)
+            pg.fill('#panel-B\\.metar .panel-body > .sub.extra textarea', 'Notiz'); pg.wait_for_timeout(200)
+            pg.click('#panel-B\\.metar .panel-body > .sub.extra .sub-close'); pg.wait_for_timeout(300)
+            assert pg.query_selector('.dialog') is not None, 'Rückfrage bei Inhalt'
+            pg.click('.dialog-foot button:has-text("Abbrechen")'); pg.wait_for_timeout(200)
+            assert pg.input_value('#panel-B\\.metar .panel-body > .sub.extra textarea') == 'Notiz', 'Abbrechen behält den Text'
+            assert pg.query_selector('#menuBtn svg.ico-menu') is not None and pg.query_selector('#tools button.print svg.ico-print') is not None and pg.query_selector('#panel-C\\.fpl .panel-head .rrow .add.extra svg.ico-text') is not None, 'SVG-Symbole (Menü, Drucken, Zusatzbox)'
             pg.screenshot(path=f'{OUT}/{name}_18_boxes.png')
             # 0.11.3: Tragkraft-Grafik mit Obergrenze, Max. Hüllentemperatur mit Vorgabe, Niveauliste der Trajektorien
             assert 'obergrenze' in (pg.text_content('#panel-A\\.massperf svg.curve') or '').lower(), 'Obergrenze in der Tragkraft-Grafik'
@@ -522,7 +530,7 @@ def run_gas(name):
         assert len(heads) == 2 and 'E1' in heads[0].inner_text() and 'Nacht' in heads[1].inner_text() and 'Ort der Planung' in pg.inner_text('.sect-sub >> nth=1'), 'Etappenköpfe E1 (Startetappe = B/C) und E3 «Nacht» mit Zeitfenster/Ort (0.12.6)'
         assert len(pg.query_selector_all('.sect-title.sub')) == 4, 'B/C als Untertitel je Etappe'
         sub1 = pg.inner_text('.sect-sub >> nth=0'); assert 'Etappe 1 bis km' in sub1 and 'nur ihr Bereich' in sub1, '0.12.7: Planung der Startetappe nur auf ihren Bereich: ' + sub1
-        assert pg.text_content('#panel-B\\.metar .pno').startswith('E1-B') and pg.text_content('.panel[id^="panel-st"][id$="-C.notam"] .pno').startswith('E3-C') and pg.text_content('#panel-A\\.core .pno') == 'A1' and pg.text_content('.enav details[data-sect="E1"] .it .pno').startswith('E1-'), '0.12.7: Panel-Nummern mit Etappe («E1-B2», «E3-C3»), A ohne'
+        assert pg.text_content('#panel-B\\.metar .pno').startswith('E1-B') and pg.text_content('.panel[id^="panel-st"][id$="-C.notam"] .pno').startswith('E3-C') and pg.text_content('#panel-A\\.core .pno') == 'A01' and pg.text_content('.enav details[data-sect="E1"] .it .pno').startswith('E1-'), '0.12.7: Panel-Nummern mit Etappe («E1-B2», «E3-C3»), A ohne'
         sb = pg.query_selector_all('.refresh-all .stage-btn'); assert len(sb) == 2 and 'E1' in sb[0].inner_text() and 'Nacht' in sb[1].inner_text(), 'Etappen-Knöpfe in der haftenden Zeile'
         sb[1].click(); pg.wait_for_timeout(900)
         assert pg.evaluate("() => document.getElementById('sect-E3').getBoundingClientRect().top < 260"), 'Knopf springt zum Etappenkopf E3'
@@ -532,7 +540,7 @@ def run_gas(name):
         assert es == 'E3' and pg.query_selector(f'.enav details[data-sect="{es}"]') is not None and 'Nacht' in pg.text_content(f'.enav details[data-sect="{es}"] summary'), 'Navigation mit Abschnitt ' + es
         order = pg.evaluate("() => [...document.querySelectorAll('.sect-title')].map(e => e.querySelector('.id').textContent)")
         assert order == ['A', 'B', 'E1', 'B', 'C', 'E3', 'B', 'C', 'D'], 'Reihenfolge A · B(ganze Fahrt, 0.12.8) · E1(B C) · E3(B C) · D: ' + str(order)
-        assert pg.query_selector('#sect-W') is not None and 'Ganze Fahrt' in pg.inner_text('#sect-W') and pg.text_content('#panel-B\\.synoptic .pno') == 'B1' and pg.query_selector('.enav details[data-sect="W"]') is not None, '0.12.8: Allgemeine Lage vor der Startetappe (Abschnitt «Ganze Fahrt», Nummer ohne Etappe)'
+        assert pg.query_selector('#sect-W') is not None and 'Ganze Fahrt' in pg.inner_text('#sect-W') and pg.text_content('#panel-B\\.synoptic .pno') == 'B01' and pg.query_selector('.enav details[data-sect="W"]') is not None, '0.12.8: Allgemeine Lage vor der Startetappe (Abschnitt «Ganze Fahrt», Nummer ohne Etappe)'
         for _ in range(40):
             pg.wait_for_timeout(300)
             if pg.query_selector('.panel[id$="-B.meteogram"] svg, .panel[id$="-B.meteogram"] table'): break

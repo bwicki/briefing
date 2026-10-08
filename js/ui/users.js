@@ -9,6 +9,7 @@ import { field, input, select, check } from './widgets.js';
 import { SHARE_CATEGORIES } from '../stamm.js';
 import { fmtDate, fmtDateTime } from '../calc/time.js';
 import { showQr } from './access.js';
+import { icon } from './icons.js';
 
 const fmtMb = (b) => (b ? (b / 1048576).toFixed(b > 10485760 ? 0 : 1) : '0');
 
@@ -103,7 +104,7 @@ function adminCard(ctx, onUsersChanged) {
   const roleSel = select([{ value: 'master', label: t('role_master') }, { value: 'super', label: t('role_super') }], 'master');
   const copySel = select([{ value: '', label: t('us_copyNone') }], '');
   const flags = { ai: true, notam: true, pdf: true };
-  const flagBoxes = h('div.chips', ['ai', 'notam', 'pdf'].map((f) => check(t('flag_' + f), true, (v) => { flags[f] = v; })));
+  const flagBoxes = h('div.chips', ['ai', 'notam', 'pdf'].map((f) => check(f === 'ai' ? [icon('ai', 12), ' ', t('flag_' + f)] : t('flag_' + f), true, (v) => { flags[f] = v; })));
   const createBtn = h('button.btn.primary', { type: 'button', onclick: async () => {
     const id = idIn.value.trim().toLowerCase();
     if (!/^[a-z0-9][a-z0-9_.-]{1,30}$/.test(id)) { toast(t('us_badId')); return; }
@@ -124,7 +125,7 @@ function adminCard(ctx, onUsersChanged) {
     try { users = await ctx.store.adminUsers(); } catch (e) { list.appendChild(h('div.err', e.message)); return; }
     for (const o of [...copySel.options].slice(1)) o.remove();
     for (const u of users) copySel.appendChild(h('option', { value: u.id }, `${u.name} (${u.id})`));
-    const flagsOf = (u) => h('div.chips', ['ai', 'notam', 'pdf'].map((f) => check(t('flag_' + f), u.flags?.[f] !== false, async (v) => { try { await ctx.store.adminUpdateUser(u.id, { flags: { [f]: v } }); toast(t('set_saved')); } catch (e) { toast(e.message); } })));
+    const flagsOf = (u) => h('div.chips', ['ai', 'notam', 'pdf'].map((f) => check(f === 'ai' ? [icon('ai', 12), ' ', t('flag_' + f)] : t('flag_' + f), u.flags?.[f] !== false, async (v) => { try { await ctx.store.adminUpdateUser(u.id, { flags: { [f]: v } }); toast(t('set_saved')); } catch (e) { toast(e.message); } })));
     const actionsOf = (u) => h('div.row-actions', [
       h('button.btn', { type: 'button', onclick: () => viewStamm(ctx, u) }, t('us_viewStamm')),
       h('button.btn', { type: 'button', onclick: () => resetPw(ctx, u, drawList) }, t('us_setPw')),

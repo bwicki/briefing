@@ -161,6 +161,10 @@ table.tbl td .sm,.item-box .sm{font-size:11.5px;color:var(--text-dim);font-famil
 .enav details{margin-bottom:6px;}
 .enav summary{cursor:pointer;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-strong);padding:7px 4px;border-bottom:1px solid var(--line);margin-bottom:2px;}   /* 0.12.8: Zwischentitel deutlicher */
 .enav details.stage>summary{color:var(--pf-stage)}
+/* 0.12.13: hängender Einzug der Abschnittstitel (Dreieck | Kennung | Text), offene Pflicht-Panels rot */
+.enav summary{display:grid;grid-template-columns:10px auto minmax(0,1fr);column-gap:6px;align-items:start;list-style:none;line-height:1.3}
+.enav summary::-webkit-details-marker{display:none} .enav summary::before{content:'▸';font-size:11px;line-height:1.3} .enav details[open]>summary::before{content:'▾'}
+.enav summary .sl{white-space:nowrap} .enav .it.must .nm{color:var(--temp)}
 /* 0.12.8: Zeile als Raster Punkt · Nummer · Titel – Nummer bricht nicht um, Titel linksbündig, alle gleich gross, weniger Einzug */
 .enav .it{display:grid;grid-template-columns:9px auto minmax(0,1fr);align-items:start;column-gap:6px;padding:4px 4px;border-radius:6px;cursor:pointer;color:var(--text);font-size:12.5px;line-height:1.3;}
 .enav .it .dot{margin-top:4px}
@@ -469,9 +473,10 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .metar .mhead .hide-x,.metar .mhead .mh-btns{margin-left:auto}   /* 0.12.8: Karte/Schliessen rechts in der Kopfzeile */
 .metar .mhead .mh-btns{display:inline-flex;gap:4px}
 .metar .mhead .btn.icon.small{width:24px;height:24px;min-height:24px;font-size:11px}
-.notam-map{height:420px}
+.notam-map{height:420px} .map.notam-ov{height:320px;margin:6px 0 8px;border-radius:8px}   /* 0.12.13: Kartenübersicht über den NOTAM */
 .astro-grid{display:flex;flex-wrap:wrap;gap:6px 20px;align-items:flex-start} table.auto.astro{width:auto;font-size:11px} table.auto.astro th,table.auto.astro td{padding:1px 6px;line-height:1.3} table.auto.astro th:first-child{text-align:left;font-family:var(--mono);font-size:10px}   /* 0.12.8: A2 als Tabellen; 0.12.9: kompakter */
-.now-warn{display:inline-block;background:none;color:#b91c1c;font-size:15px;line-height:1;margin-left:7px;cursor:help;vertical-align:-1px}   /* 0.12.8: Warnsymbol «gegenwärtiger Stand»; 0.12.10: rotes Dreieck ohne Hintergrund in der Titelzeile */
+.now-warn{display:inline-flex;align-items:center;background:none;color:#b91c1c;line-height:1;margin-left:7px;cursor:help;vertical-align:-2px} .now-warn .ico{stroke-width:1.6}
+.panel.cover-warn{position:relative} .panel .cover-stripe{position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:var(--r) 0 0 var(--r);background:repeating-linear-gradient(135deg,rgba(185,28,28,.55) 0 2px,transparent 2px 5px);cursor:help}   /* 0.12.13: Schraffur links, Tooltip */   /* 0.12.8: Warnsymbol «gegenwärtiger Stand»; 0.12.10: rotes Dreieck ohne Hintergrund in der Titelzeile */
 .pre.small,pre.report.small{font-size:11px}
 .metar-cols ul.decoded{margin:4px 0 0;padding-left:16px;font-size:12.5px;line-height:1.4}
 .metar-cols ul.decoded li:first-child,.metar-cols ul.decoded li.head{list-style:none;margin-left:-16px}   /* 0.12.2: ohne Fettschrift */
@@ -591,7 +596,9 @@ details.wxtext pre.report.wx{white-space:pre-wrap;font-size:12.5px;line-height:1
 .pax-qr{margin:0;flex:0 0 auto;text-align:center} .pax-qr svg{width:96px;height:96px;display:block}
 .paxsheet .copy{display:none}
 
-table.auto.as-tbl{white-space:normal;width:100%}.as-tbl td,.as-tbl th{vertical-align:top}.as-tbl td:first-child{white-space:nowrap}.as-tbl td:nth-child(3),.as-tbl td:nth-child(4),.as-tbl td:nth-child(5){white-space:nowrap}.as-tbl td:nth-child(2){min-width:140px}.as-tbl td:nth-child(6){min-width:160px}.as-tbl tr.as-cross td:first-child{border-left:3px solid #c2481a}.as-tbl tr.as-near td:first-child{border-left:3px solid #d08a1a}.as-tbl tr.as-above{color:var(--text-dim)}.as-fir{margin:4px 0 6px;font-size:.95em}
+table.auto.as-tbl{white-space:normal;width:100%}.as-tbl td,.as-tbl th{vertical-align:top}.as-tbl td:first-child,.as-tbl td:nth-child(2){white-space:nowrap}.as-tbl td:nth-child(4),.as-tbl td:nth-child(5),.as-tbl td:nth-child(6){white-space:nowrap}.as-tbl td:nth-child(3){min-width:140px}.as-tbl tr.as-cross td:first-child{border-left:3px solid #c2481a}.as-tbl tr.as-near td:first-child{border-left:3px solid #d08a1a}.as-tbl tr.as-above{color:var(--text-dim)}.as-fir{margin:4px 0 6px}
+/* 0.12.13: Schriftgrössen wie der übrige Panelinhalt; FIR-Folge als Tabelle (wie A02); ✕-Spalte */
+table.auto.as-tbl{font-size:12.5px} table.auto.as-tbl td.acts{white-space:nowrap;text-align:right} table.auto.as-tbl .btn.icon.small.hide-x{width:22px;height:22px;min-height:22px;font-size:11px} table.auto.astro.as-firtbl{font-size:12.5px} table.auto.astro.as-firtbl th:first-child{font-size:11px}
 .brief table.bp table.auto th{width:auto;font-size:10px}.brief table.bp table.auto td{overflow-wrap:normal}.brief .as-tbl td,.brief .as-tbl th{border:0;border-bottom:1px solid #d1d5db;padding:3px 6px}
 
 .chip-sep{display:inline-block;width:1px;height:26px;background:var(--line);margin:0 4px;align-self:center}
@@ -612,7 +619,8 @@ table.auto td.pd-half{background:rgba(214,138,0,.28);color:var(--text-strong)}ta
 
 /* KI-Kommentar: Knöpfe im Titelbalken, Text unter dem Panelinhalt */
 .aibtns{display:inline-flex;gap:0;margin-left:4px}
-.aibtns .btn.ai{height:26px;min-height:26px;padding:0 9px;font-size:11.5px;border-radius:6px 0 0 6px;background:var(--violet,#6b4fb5);color:#fff;border-color:transparent}
+.aibtns .btn.ai{height:26px;min-height:26px;padding:0 9px;font-size:11.5px;border-radius:6px 0 0 6px;background:var(--violet,#7a6aa5);color:#fff;border-color:transparent}
+.btn.ai .ico,.ai-lbl .ico{vertical-align:-2px;margin-right:4px}   /* 0.12.13: Sternsymbol statt «KI» */
 .aibtns .btn.ai.more{border-radius:0 6px 6px 0;padding:0 7px;border-left:1px solid rgba(255,255,255,.35)}
 .aibtns .btn.ai:disabled{opacity:.6}
 .sub.ai{border-left:3px solid var(--violet,#6b4fb5);padding-left:10px;margin-top:8px}
@@ -691,7 +699,7 @@ table.panels-tbl tr.off td.nm{color:var(--text-dim)}
 table.panels-tbl input[type=checkbox]{width:16px;height:16px;margin:0;vertical-align:middle}
 
 /* 0.11: KI-Knopf «erneuern» violett schraffiert (anders als «erzeugen») */
-.btn.ai.renew,.aibtns .btn.ai.renew{background:repeating-linear-gradient(135deg,var(--violet,#6b4fb5) 0 6px,#8f78d1 6px 12px);color:#fff;border-color:transparent}
+.btn.ai.renew,.aibtns .btn.ai.renew{background:repeating-linear-gradient(135deg,var(--violet,#7a6aa5) 0 6px,color-mix(in srgb,var(--violet,#7a6aa5) 72%,#fff) 6px 12px);color:#fff;border-color:transparent}
 /* 0.11: Kopf der Briefingsicht — rechts Logo oben, darunter Titelzeile rechtsbündig, letzte Änderung, Status */
 /* 0.11: Sperre (Fahrt vorbei) */
 .lockbar{margin:0 0 10px;border-color:#d9a400;background:#fff8e1}
@@ -729,7 +737,8 @@ table.tbl.list .tag{font-size:9.5px;padding:1px 6px}
 /* 0.11.2: Zusatzboxen (📝 blau · 💬 gelb) und Symbolknöpfe im Panelkopf */
 .panel-head .addrow{display:flex;gap:4px;justify-content:flex-end;margin-top:4px}
 .btn.icon.small.add{width:26px;height:26px;min-height:26px;font-size:13px;border-radius:6px;padding:0}
-.btn.icon.small.add.extra{border-color:var(--dew);background:color-mix(in srgb,var(--dew) 14%,transparent)}
+.btn.icon.small.add.extra{border-color:var(--line);background:transparent;color:var(--text-dim)} .btn.icon.small.add.extra:hover{color:var(--dew);border-color:var(--dew)}   /* 0.12.13: wie die übrigen Symbolknöpfe */
+.sub .sub-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px} .sub .sub-head .lbl{margin:0} .sub-close{width:22px;height:22px}
 .btn.icon.small.add.cmt{border-color:var(--amber);background:color-mix(in srgb,var(--amber) 14%,transparent)}
 .sub.extra{border-left:3px solid var(--dew);padding-left:10px}
 .sub.cmt{border-left:3px solid var(--amber);padding-left:10px}
@@ -773,7 +782,7 @@ table.tbl.list tbody tr{cursor:default}
 .btn.icon.small .ico{width:16px;height:16px}
 .btn.icon.print .ico{width:20px;height:20px}
 #menuBtn .ico{width:22px;height:22px}
-.btn.icon.small.add.extra{color:var(--dew)} .btn.icon.small.add.cmt{color:var(--amber)}
+
 .btn.icon.small.add .ico{width:17px;height:17px;stroke-width:2.2}
 .sub.ai .lbl .ico{color:var(--violet)}
 table.tbl.list td.acts .btn.icon.small .ico{width:15px;height:15px}
@@ -906,3 +915,6 @@ pre.report .taf-hit{padding:0 2px}
 /* 0.12.12: Supermaster – ausgeblendete Archiv-Einträge einblenden */
 .list-sect.archive{display:flex;align-items:center;justify-content:space-between;gap:10px} .list-sect .hidden-toggle{font-family:var(--sans);text-transform:none;letter-spacing:0;font-size:12px;padding:2px 8px} .list-sect.hidden-sect{margin-top:14px;border-bottom-style:dashed}
 table.tbl.list tr.hidden-row td{opacity:.6} table.tbl.list tr.hidden-row td.acts{opacity:1} table.tbl.list button.unhide{border-color:var(--accent);color:var(--accent)}
+
+/* 0.12.13: A01 Regeln – Kästchen unmittelbar links von NVFR, Abstand zu VFR */
+.rules{display:inline-flex;align-items:center;gap:14px} .rules .nvfr-lbl{display:inline-flex;align-items:center;gap:4px;cursor:pointer}

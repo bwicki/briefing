@@ -1,6 +1,6 @@
 /* Fahrtbriefing — Erarbeitungssicht: Navigation, Panels, Zusatzinfo/KI/Kommentar,
  * Freigabe-Checkliste, Berechtigungen. Für Owner und Mitarbeit-Links. */
-import { h, clear, toast, dialog, debounce, uid, textToNodes, lightbox } from '../util.js';
+import { h, clear, toast, dialog, confirmDialog, debounce, uid, textToNodes, lightbox } from '../util.js';
 import { t, tt, getLang } from '../i18n.js';
 import { setHeader, printButton } from '../app.js';
 import { field, input, textarea, check, pasteArea, kv, tag } from './widgets.js';
@@ -141,11 +141,13 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     if (!activeSect) activeSect = SECTIONS.find((s) => panels.some((p) => p.section === s.id))?.id || 'A';
     // Gruppe in der Navigation: parts = [{ sub (Zwischentitel, optional), ps, X }]
     const navSect = (id, label, parts, cls = '') => {
-      const det = h('details' + cls, { 'data-sect': id }, [h('summary', label)]);
+      // 0.12.13: Titel mit hängendem Einzug – Kennbuchstabe und Text in eigenen Spalten, Umbruch bündig unter dem Text
+      const m = /^(\S+)\s·\s([\s\S]+)$/.exec(label);
+      const det = h('details' + cls, { 'data-sect': id }, [h('summary', m ? [h('span.sl', m[1] + ' ·'), h('span.st', m[2])] : [h('span.sl'), h('span.st', label)])]);
       det.addEventListener('toggle', () => { if (det.dataset.auto) { delete det.dataset.auto; return; } if (det.open) { navOpen.add(id); if (closedActive === id) closedActive = null; } else { navOpen.delete(id); if (id === activeSect) closedActive = id; } });
       for (const part of parts) {
         if (part.sub) det.appendChild(h('div.subhead', part.sub));
-        for (const p of part.ps) { const key = part.X.id(p); det.appendChild(h('div.it', { 'data-key': key, onclick: () => { setActive(key); document.getElementById('panel-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p, part.X)), h('span.pno', pno(p, part.X)), h('span.nm', [tt(p), part.X.mandatory.has(p.key) ? h('span.tag.must', { style: { marginLeft: '6px' } }, '!') : null])])); }
+        for (const p of part.ps) { const key = part.X.id(p); det.appendChild(h('div.it' + (panelStatus(p, part.X) === 'must' ? '.must' : ''), { 'data-key': key, onclick: () => { setActive(key); document.getElementById('panel-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, [h('span.dot.' + panelStatus(p, part.X)), h('span.pno', pno(p, part.X)), h('span.nm', tt(p))])); }
       }
       e.appendChild(det);
     };
@@ -200,7 +202,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const nvfr = h('input', { type: 'checkbox', checked: !!b.flight.nvfr, disabled: !canEdit, onchange: () => { b.flight.nvfr = nvfr.checked; touched(); drawPanels(); } });
     const basics = h('div.card.basics', [h('div.card-head', h('div.section-title', t('side_basics'))), h('div.card-body', h('div.kv.small', [
       [t('core_date'), `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT`], [t('site'), placeLabel(b.site)], [t('core_reg'), b.balloon.reg || b.balloon.label || '–'], [t('intent_dur'), fmtDur(b.intent.durationMin)],
-      [t('core_landing'), b.landing?.lat != null ? placeLabel(b.landing) : '–'], [t('side_rules'), h('label.inline', [h('span', 'VFR'), ' ', nvfr, ' NVFR'])],
+      [t('core_landing'), b.landing?.lat != null ? placeLabel(b.landing) : '–'], [t('side_rules'), h('span.rules', [h('span', 'VFR'), h('label.inline.nvfr-lbl', [nvfr, ' NVFR'])])],   // 0.12.13: Kästchen gehört zu NVFR (Abstand zu VFR)
     ].map(([k, v]) => [h('div.k', k), h('div.v', v)])))]);
     side.append(...[
       h('div.card', [h('div.card-head', h('div.section-title', t('horizon'))), h('div.card-body', [h('div', `${fmtDate(z, b.time.startMs, lang)} ${hhmm(z, b.time.startMs)} LT · ${hhmm('UTC', b.time.startMs)} UTC`), h('div.note', `${hrs >= 0 ? '+' : ''}${hrs} h → ${t('phase_' + phaseOf(b.time.startMs))}`)])]),
@@ -218,7 +220,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       a?.text ? h('div.note', { style: { whiteSpace: 'pre-wrap' } }, a.text) : h('div.note.small', t('summary_hint')),
       a?.text ? h('div.note.small', `${a.model || ''} · ${fmtDateTime(z, a.ts, lang)}`) : null,
       canAi ? h('span.aibtns', { style: { marginTop: '6px', display: 'inline-flex' } }, [
-        h('button.btn.small.ai' + (a?.text ? '.renew' : ''), { type: 'button', title: t('ai_direct'), onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }, { edit: false }) }, a?.text ? t('summary_renew') : t('summary_make')),
+        h('button.btn.small.ai' + (a?.text ? '.renew' : ''), { type: 'button', title: t('ai_direct'), onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }, { edit: false }) }, [icon('ai', 13), ' ', a?.text ? t('summary_renew') : t('summary_make')]),
         h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => assessmentDialog(b, ctx, () => { touched(); drawSide(); }, { edit: true }) }, icon('more', 14)),
       ]) : null,
     ])]);
@@ -230,7 +232,17 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   // oder nach Klick auf den Symbolknopf im Panelkopf; KI-Kommentar dazwischen (violett)
   const openBoxes = new Set();
   function extraBox(p, d, X = main) {
-    return h('div.sub.extra', [h('div.lbl', t('extra')), pasteArea(d.extra, (v) => { d.extra = v; touched(p.key, X); }, upload, { placeholder: t('extraHint'), rows: 2 })]);
+    // 0.12.13: Schliesssymbol oben rechts – mit Inhalt Rückfrage (Inhalt wird verworfen), ohne Inhalt sofort zu
+    const box = h('div.sub.extra');
+    const close = async () => {
+      const has = !!((d.extra?.text || '').trim() || (d.extra?.images || []).length);
+      if (has && !(await confirmDialog(t('extra_closeQ_t'), t('extra_closeQ'), { yes: t('extra_closeYes'), no: t('cancel') }))) return;
+      if (has) { d.extra = { text: '', images: [] }; touched(p.key, X); }
+      openBoxes.delete(X.id(p) + ':extra'); box.remove();
+    };
+    box.append(h('div.sub-head', [h('div.lbl', t('extra')), shared?.role === 'read' ? null : h('button.btn.icon.small.sub-close', { type: 'button', title: t('close'), 'aria-label': t('close'), onclick: close }, icon('close'))]),
+      pasteArea(d.extra, (v) => { d.extra = v; touched(p.key, X); }, upload, { placeholder: t('extraHint'), rows: 2 }));
+    return box;
   }
   function commentBox(p, d, X = main) {
     const ro = shared?.role === 'read';
@@ -248,7 +260,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       const ed = textarea(d.ai.text, { rows: 4, oninput: (e) => { d.ai.text = e.target.value; d.ai.edited = true; txt.textContent = e.target.value; touched(p.key, X); } }); ed.hidden = true;
       ai = h('div.sub.ai', [h('div.row-actions', [h('span.lbl', [icon('ai', 14), ` ${t('ai')} · ${d.ai.model || ''} · ${d.ai.ts ? fmtDateTime(z, d.ai.ts, lang) : ''}${d.ai.edited ? ' · ' + t('ai_edited') : ''}`]), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_edit'), onclick: () => { ed.hidden = !ed.hidden; txt.hidden = !ed.hidden; if (!ed.hidden) ed.focus(); } }, icon('edit')), ro ? null : h('button.btn.icon', { type: 'button', title: t('ai_discard'), onclick: () => { d.ai = null; touched(p.key, X); drawPanels(); } }, icon('close'))]), txt, ed]);
     }
-    const comment = (d.comment || '').trim() || openBoxes.has(X.id(p) + ':cmt') ? commentBox(p, d, X) : null;
+    const comment = (d.comment || '').trim() ? commentBox(p, d, X) : null;   // 0.12.13: nur noch bestehende Kommentare (kein eigener Knopf mehr)
     return [extra, ai, comment];
   }
   /** Symbolknöpfe im Panelkopf: 📝 Eigener Text/Bilder/Daten · 💬 Kommentar PIC – fügen die Box unter dem Inhalt an und setzen den Fokus. */
@@ -264,10 +276,8 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       }
       box.querySelector('textarea')?.focus();
     };
-    return h('div.addrow', [
-      h('button.btn.icon.small.add.extra', { type: 'button', title: t('extra_add'), 'aria-label': t('extra_add'), onclick: () => open('extra') }, icon('text')),
-      h('button.btn.icon.small.add.cmt', { type: 'button', title: t('comment_add'), 'aria-label': t('comment_add'), onclick: () => open('cmt') }, icon('comment')),
-    ]);
+    // 0.12.13: ein Knopf (Eigener Text/Bilder/Daten) in der Titelzeile links vom AUTO-Vermerk; der Kommentar-Knopf entfällt
+    return h('button.btn.icon.small.add.extra', { type: 'button', title: t('extra_add'), 'aria-label': t('extra_add'), onclick: () => open('extra') }, icon('text'));
   }
   /** Quelle eines Panels: Link aus den Einstellungen (p.link) oder aus dem Schnappschuss (PDF, Bild-URL, Quelle). */
   function sourceUrlOf(p, d) {
@@ -287,11 +297,11 @@ export async function renderEditor(view, ctx, id, opts = {}) {
       h('div.rgt', [
         h('div.rrow', [
           X.mandatory.has(p.key) ? tag('must', t('panel_mandatory')) : null,
+          addButtons(p, d, X),
           p.grade === 'auto' ? tag('auto', 'AUTO') : p.grade === 'half' ? tag('half', 'LINK + EINFÜGEN') : p.grade === 'calc' ? tag('calc', 'CALC') : null,
           p.noAi ? null : aiButtons(p, d, X),
         ]),
         srcUrl ? h('a.srclink', { href: srcUrl, target: '_blank', rel: 'noopener', title: srcUrl }, shortUrl(srcUrl)) : null,
-        addButtons(p, d, X),
       ]),
     ]);
     const body = h('div.panel-body');
@@ -348,7 +358,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     if (!hasContent) return null;
     const run = async (edit) => { const btn = wrap.querySelector('button'); btn.disabled = true; btn.textContent = t('ai_working'); await askAi(p, d, X.b, ctx, () => touched(p.key, X), drawPanels, { edit }); btn.disabled = false; btn.textContent = d.ai?.text ? t('ai_again') : t('ai_ask'); btn.classList.toggle('renew', !!d.ai?.text); };
     const wrap = h('span.aibtns', [
-      h('button.btn.small.ai' + (d.ai?.text ? '.renew' : ''), { type: 'button', title: t('ai_direct'), onclick: () => run(false) }, d.ai?.text ? t('ai_again') : t('ai_ask')),
+      h('button.btn.small.ai' + (d.ai?.text ? '.renew' : ''), { type: 'button', title: t('ai_direct'), onclick: () => run(false) }, [icon('ai', 13), ' ', d.ai?.text ? t('ai_again') : t('ai_ask')]),
       h('button.btn.small.ai.more', { type: 'button', title: t('ai_withPrompt'), 'aria-label': t('ai_withPrompt'), onclick: () => run(true) }, icon('more', 14)),
     ]);
     return wrap;

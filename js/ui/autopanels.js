@@ -46,7 +46,8 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   const status = h('span.note');
   const setSnap = (snap) => { d.content.auto = snap; onChange(); draw(); };
   /** Warndreieck in der Titelzeile (.panel-head .ttl) setzen/entfernen – auch nach «Aktualisieren». */
-  const syncWarn = (el, n = 0) => { const ttl = body.closest('.panel')?.querySelector('.panel-head .ttl'); if (!ttl) { if (n < 5) setTimeout(() => syncWarn(el, n + 1), 50); return; } ttl.querySelector('.now-warn')?.remove(); if (el) ttl.appendChild(el); };
+  // 0.12.13: zusätzlich eine dünne rote Schraffur am linken Panelrand (mit Tooltip), solange die Information Start + 1 h nicht abdeckt
+  const syncWarn = (el, n = 0) => { const pn = body.closest('.panel'); const ttl = pn?.querySelector('.panel-head .ttl'); if (!ttl) { if (n < 5) setTimeout(() => syncWarn(el, n + 1), 50); return; } ttl.querySelector('.now-warn')?.remove(); pn.querySelector('.cover-stripe')?.remove(); pn.classList.toggle('cover-warn', !!el); if (el) { ttl.appendChild(el); pn.appendChild(h('div.cover-stripe', { title: t('now_warn') })); } };
   async function run(auto = false) {
     if (auto && !wrap.isConnected) return;   // Sicht inzwischen verlassen (Timer) → nichts laden
     // 0.12.8: einzelne Meldungen/Stationen wurden ausgeblendet → beim Aktualisieren fragen, ob die Auswahl bleibt
@@ -281,7 +282,7 @@ export async function askAi(p, d, b, ctx, onChange, redraw, opts = {}) {
   let user = prompt.user;
   if (opts.edit) {
     const edit = textarea(prompt.user, { rows: 10 });
-    const ok = await dialog(t('ai_title'), h('div', [h('div.note', t('ai_hint')), edit]), [{ label: t('cancel'), value: false }, { label: t('ai_send'), value: true, primary: true }], { cls: 'wide' });
+    const ok = await dialog(h('span.ai-lbl', [icon('ai', 14), ' ', t('ai_title')]), h('div', [h('div.note', t('ai_hint')), edit]), [{ label: t('cancel'), value: false }, { label: t('ai_send'), value: true, primary: true }], { cls: 'wide' });
     if (!ok) return;
     user = edit.value;
   }
