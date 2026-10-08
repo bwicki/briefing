@@ -10,7 +10,7 @@ import { sunFor, scheduleFor } from '../model.js';
 import { thermalHours, thermalSummary, classOf, THERMAL_DEFAULTS } from '../calc/thermal.js';
 import { normalizeAirspace, analyzeAirspaces, thinRing, siteWarnings } from '../calc/airspace.js';
 import { isoDate, hhmm, fmtDur } from '../calc/time.js';
-import { distKm, bearing, icao } from '../calc/geo.js';
+import { distKm, bearing, icao, setDeRings } from '../calc/geo.js';
 import { t, getLang } from '../i18n.js';
 import { dataFile, placeName } from '../net.js';
 import { coverPoints } from '../calc/stageplan.js';
@@ -222,8 +222,13 @@ function inRing(lat, lon, ring) {
   return inside;
 }
 let gaforAreasP = null;
+/** GAFOR-Gebiete laden (einmalig); liefert zugleich den Deutschland-Umriss für countryGuess (0.12.10). */
+export function loadGaforAreas() {
+  gaforAreasP = gaforAreasP || dataFile('gafor-areas.geojson', 20000).then((g) => { try { setDeRings(g.features); } catch { /* ohne Umriss */ } return g; });
+  return gaforAreasP;
+}
 export function gaforArea(lat, lon) {
-  gaforAreasP = gaforAreasP || dataFile('gafor-areas.geojson', 20000);
+  gaforAreasP = loadGaforAreas();
   return gaforAreasP.then((g) => {
     for (const f of g.features || []) {
       const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];

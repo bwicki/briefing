@@ -17,10 +17,18 @@
 * Tests: Rechenkern (Sperre, Archiv, Nachtrag-Nummer, Datenfunktion), API (amend, 409/423), Oberfläche (Abschnitt
   «Laufende Fahrten», Rückfrage, Erarbeitung nur im Nachtrag, Archivkopie).
 * **Rückmeldungen Test 0.12.9:**
-  * Länderkennzeichen: ein gespeichertes Land, das eindeutig nicht zu den Koordinaten passt (z. B. «CH» bei einem
-    Stammdaten-Ort in Deutschland, Vorgabe beim Anlegen), wird beim Laden korrigiert (Stammdaten-Orte, Treffpunkte,
-    Start-/Landeort, Tagesplanungs-Stopps); Grenzband (Bodensee, Basel, Genf) bleibt unverändert – dort bitte das Land
-    in den Stammdaten prüfen. Orts-Auswahl in den Stammdaten setzt das Land aus den Koordinaten.
+  * Länderkennzeichen: Land aus Koordinaten neu mit **Schweiz-Umriss** (vereinfachtes Polygon), **Deutschland aus den
+    GAFOR-Gebieten** und groben Regeln für AT/FR/IT (bisher nur Kästen – «Illmensee» galt als CH). Ein gespeichertes
+    Land, das eindeutig (4 km Abstand zur Grenze) nicht zu den Koordinaten passt, wird beim Laden korrigiert
+    (Stammdaten-Orte, Treffpunkte, Start-/Landeort, Stopps); im Grenzband bleibt der gespeicherte Wert – dort das Land
+    in den Stammdaten prüfen. Orts-Auswahl setzt das Land aus den Koordinaten.
+  * A1: Beschriftung «Startort» (ohne «(Koordinaten)»).
+  * Karten: **OpenStreetMap-Kacheln statt CARTO** (CARTO verlangt neu einen Schlüssel) – NOTAM-Karte, Höhenprofil-Werkzeug
+    «Neutral» und «ICAO/Luftraum».
+  * NOTAM-Karte (Symbol) nur bei Meldungen mit echtem Ort: Koordinaten im Meldungstext oder Q-Zeilen-Radius < 999 NM;
+    FIR-weite Meldungen ohne Karte.
+  * Briefings-Seite: feste Spaltenbreiten – die drei Abschnitte sind untereinander ausgerichtet.
+  (Die Punkte Land/Startort/Karten/NOTAM-Karte/Spaltenbreiten sind in 0.12.10a nachgeliefert.)
   * METAR/TAF: Schreibfehler der NOAA-Stationsliste korrigiert (Augsberg → Augsburg, Koln → Köln, Nurnberg → Nürnberg,
     Munich → München, Vienna → Wien, Geneva → Genf, Klammer-/Leerzeichenreste).
   * Startzeit nur im 10-Minuten-Raster: Eingaben werden gerundet und ins Feld zurückgeschrieben (Browser-Picker hält das

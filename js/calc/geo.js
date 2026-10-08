@@ -69,26 +69,48 @@ export const ftToM = (ft) => ft * 0.3048;
 export const ktToKmh = (kt) => kt * 1.852;
 export const kmhToKt = (kmh) => kmh / 1.852;
 
-/** Ländercode aus einer groben Bounding-Box-Liste (nur für Regelwerk-Vorbelegung). */
-export function countryGuess(lat, lon) {
-  const boxes = [
-    ['CH', 45.8, 47.9, 5.9, 10.6],
-    ['LI', 47.0, 47.3, 9.4, 9.7],
-    ['AT', 46.3, 49.1, 9.5, 17.2],
-    ['DE', 47.2, 55.1, 5.8, 15.1],
-    ['FR', 41.3, 51.2, -5.2, 9.6],
-    ['IT', 36.6, 47.1, 6.6, 18.6],
-  ];
-  for (const [cc, s, n, w, e] of boxes) if (lat >= s && lat <= n && lon >= w && lon <= e) return cc;
-  return '';
+/** Punkt-in-Polygon (Ring als [lon, lat]-Paare wie GeoJSON). */
+export function inRing(lat, lon, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if (((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / ((yj - yi) || 1e-12) + xi)) inside = !inside;
+  }
+  return inside;
 }
-/** 0.12.10: Land nur, wenn die Koordinaten in genau einem Kasten liegen (sonst '') – zur Korrektur eines falsch gespeicherten Landes
- * (z. B. Stammdaten-Ort in Deutschland mit Vorgabe «CH»); im Grenzband (Bodensee, Basel, Genf) bleibt der gespeicherte Wert. */
+/** 0.12.10: vereinfachter Umriss der Schweiz ([lon, lat], im Uhrzeigersinn ab Basel; Genauigkeit wenige km, Enklaven Büsingen/Campione nicht berücksichtigt). */
+const CH_RING = [[7.59, 47.59], [7.80, 47.56], [8.06, 47.56], [8.24, 47.61], [8.30, 47.59], [8.52, 47.57], [8.55, 47.62], [8.60, 47.80], [8.70, 47.75], [8.86, 47.66], [9.05, 47.68], [9.15, 47.665], [9.17, 47.655], [9.22, 47.64], [9.38, 47.60], [9.50, 47.52], [9.60, 47.46], [9.66, 47.39], [9.57, 47.32], [9.50, 47.26], [9.47, 47.05], [9.52, 47.03], [9.65, 47.07], [9.70, 47.05], [10.10, 46.90], [10.36, 46.96], [10.49, 46.85], [10.47, 46.63], [10.44, 46.55], [10.20, 46.50], [10.14, 46.23], [9.52, 46.33], [9.33, 46.51], [9.15, 46.25], [9.10, 46.00], [9.03, 45.83], [8.93, 45.85], [8.86, 45.97], [8.76, 46.03], [8.70, 46.12], [8.60, 46.16], [8.45, 46.22], [8.14, 46.20], [8.08, 46.25], [8.30, 46.37], [8.37, 46.45], [8.50, 46.42], [8.65, 46.33], [8.60, 46.20], [8.45, 46.22], [8.14, 46.20], [7.98, 46.00], [7.87, 45.93], [7.66, 45.98], [7.17, 45.87], [7.04, 45.92], [6.93, 46.07], [6.80, 46.39], [6.24, 46.30], [6.30, 46.24], [6.19, 46.17], [6.04, 46.14], [5.96, 46.13], [5.97, 46.19], [6.07, 46.46], [6.14, 46.60], [6.35, 46.71], [6.46, 46.90], [6.60, 46.98], [6.72, 47.06], [6.70, 47.07], [6.95, 47.26], [6.95, 47.33], [7.01, 47.50], [7.07, 47.49], [7.26, 47.42], [7.40, 47.48], [7.52, 47.55]];
+let DE_RINGS = null;
+/** Deutschland-Umriss aus den GAFOR-Gebieten (data/gafor-areas.geojson), von auto/data.js nach dem Laden gesetzt. */
+export function setDeRings(features) { DE_RINGS = []; for (const f of features || []) { const g = f.geometry || {}; const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []; for (const poly of polys) if (poly?.[0]) DE_RINGS.push(poly[0]); } }
+/** Ländercode zu Koordinaten: Liechtenstein (Kasten), Schweiz (Umriss), Deutschland (GAFOR-Gebiete, sonst Rhein-Grenze zu Frankreich), danach grobe Kästen AT/FR/IT/DE.
+ * Nur für die Vorbelegung des Landes – im Grenzband kann die Angabe abweichen; sie lässt sich in den Stammdaten überschreiben. */
+export function countryGuess(lat, lon) {
+  if (!Number.isFinite(+lat) || !Number.isFinite(+lon)) return '';
+  if (lat >= 47.048 && lat <= 47.27 && lon >= 9.50 && lon <= 9.64) return 'LI';
+  if (inRing(lat, lon, CH_RING)) return 'CH';
+  if (DE_RINGS && DE_RINGS.some((r) => inRing(lat, lon, r))) return 'DE';
+  // grobe Nachbarschaft ohne GAFOR-Daten: Oberrhein (Rhein = Grenze FR/DE), Bayern/Vorarlberg–Tirol, Jura/Savoyen, Lombardei/Südtirol
+  if (lat >= 47.5) {
+    if (lat <= 49.1 && lon < 7.59 + (lat - 47.59) * (8.23 - 7.59) / (49.0 - 47.59) && lon > 4.5) return 'FR';
+    if (lon >= 9.6 && lon < 10.2 && lat <= (lon < 9.8 ? 47.53 : 47.6)) return 'AT';   // Vorarlberg (Lindau bleibt DE)
+    if (lon >= 10.2 && lon < 12.8 && lat <= 47.6) return 'AT';   // Tirol-Nordrand
+    if (lon >= 12.8 && lon <= 17.2 && lat <= 48.8) return 'AT';
+    if (lon >= 5.8 && lon <= 15.1 && lat <= 55.1) return 'DE';
+    return '';
+  }
+  if (lon > 9.5) { if (lon <= 17.2 && lat >= (lon > 12 ? 46.4 : 46.8) && lat <= 49.1) return 'AT'; return lat >= 36.6 && lon <= 18.6 ? 'IT' : ''; }
+  if (lon < 6.9 || (lat >= 46.4 && lon < 7.0)) return lat >= 41.3 ? 'FR' : '';
+  return lat >= 36.6 ? 'IT' : '';
+}
+/** 0.12.10: Land nur, wenn es auch 4 km rundherum dasselbe ist (sonst '') – zur Korrektur eines falsch gespeicherten Landes
+ * (z. B. Stammdaten-Ort in Deutschland mit Vorgabe «CH»); im Grenzband bleibt der gespeicherte Wert. */
 export function countryGuessStrict(lat, lon) {
   if (!Number.isFinite(+lat) || !Number.isFinite(+lon)) return '';
-  const hits = [['CH', 45.8, 47.9, 5.9, 10.6], ['LI', 47.0, 47.3, 9.4, 9.7], ['AT', 46.3, 49.1, 9.5, 17.2], ['DE', 47.2, 55.1, 5.8, 15.1], ['FR', 41.3, 51.2, -5.2, 9.6], ['IT', 36.6, 47.1, 6.6, 18.6]]
-    .filter(([, s, n, w, e]) => lat >= s && lat <= n && lon >= w && lon <= e).map(([cc]) => cc);
-  return hits.length === 1 ? hits[0] : '';
+  const c0 = countryGuess(+lat, +lon); if (!c0) return '';
+  const dLat = 4 / 111.2, dLon = 4 / (111.2 * Math.cos(rad(+lat)));
+  for (const [a, o] of [[dLat, 0], [-dLat, 0], [0, dLon], [0, -dLon]]) if (countryGuess(+lat + a, +lon + o) !== c0) return '';
+  return c0;
 }
 /** Gespeichertes Land gegen die Koordinaten prüfen: eindeutig anderes Land → korrigiert, sonst unverändert. */
 export function fixCountry(p) {

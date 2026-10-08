@@ -488,10 +488,10 @@ export function profileView(b, ctx) {
 
 // ---------------------------------------------------------------- Werkzeug (Vollbild-Dialog)
 const BASES = {
-  neutral: { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attr: '© OpenStreetMap, © CARTO', max: 18 },
+  neutral: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', attr: '© OpenStreetMap', max: 17 },   // 0.12.10: OSM statt CARTO (Schlüsselpflicht)
   osm: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', attr: '© OpenStreetMap', max: 17 },
   topo: { url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', attr: '© OpenStreetMap, SRTM · OpenTopoMap (CC-BY-SA)', max: 16 },
-  icao: { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attr: '© OpenStreetMap, © CARTO · Luftraum: openAIP', max: 14, openaip: true },
+  icao: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', attr: '© OpenStreetMap · Luftraum: openAIP', max: 14, openaip: true },
   sat: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attr: 'Esri, Maxar, Earthstar Geographics', max: 17 },
 };
 export function openProfileTool(b0, ctx, o = {}) {

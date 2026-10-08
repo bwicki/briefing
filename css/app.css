@@ -717,6 +717,7 @@ table.tbl.list{font-size:12px}
 table.tbl.list th{padding:6px 8px;font-size:9.5px}
 table.tbl.list td{padding:6px 8px;line-height:1.3;vertical-align:middle}
 table.tbl.list td.nowrap,table.tbl.list td.no{white-space:nowrap}
+table.tbl.list.fixed{table-layout:fixed}table.tbl.list.fixed td,table.tbl.list.fixed th{overflow:hidden;text-overflow:ellipsis}table.tbl.list.fixed td.acts{overflow:visible;white-space:nowrap;flex-wrap:nowrap;justify-content:flex-end}   /* 0.12.10: Abschnitte untereinander ausgerichtet */
 table.tbl.list .l1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
 table.tbl.list .l2{white-space:nowrap;font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:2px;overflow:hidden;text-overflow:ellipsis;max-width:220px}
 table.tbl.list td.acts{white-space:nowrap;flex-wrap:nowrap;display:table-cell}

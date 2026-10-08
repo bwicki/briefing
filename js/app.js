@@ -23,6 +23,7 @@ import { renderShared } from './ui/shared.js';
 import { renderMaterial } from './ui/material.js';
 import { mergedStamm } from './stamm.js';
 import { icon, iconSvg } from './ui/icons.js';
+import { loadGaforAreas } from './auto/data.js';
 
 const GATE_IDLE_MS = 2 * 60 * 60 * 1000;
 
@@ -196,6 +197,7 @@ async function main() {
   if (store.mode === 'local') { badge.hidden = false; badge.textContent = t('localMode'); badge.classList.add('local'); }
   ctx.racDefault = await fetch('data/rac/rac-ch.json').then((r) => r.json()).catch(() => null);
   // PWA: Service Worker (App-Hülle offline, zuletzt geöffnete Briefings lesbar)
+  loadGaforAreas().catch(() => null);   // 0.12.10: Deutschland-Umriss für die Länder-Vorbelegung (countryGuess)
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js', { type: 'module' }).catch((e) => console.warn('sw', e));
 
   $('gateForm').onsubmit = async (e) => {

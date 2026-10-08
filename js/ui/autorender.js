@@ -407,6 +407,9 @@ export function renderSigmet(snap) {
 export function notamGeo(x) {
   const txt = `${x.formatted || ''}\n${x.text || ''}`;
   let lat = x.lat, lon = x.lon, radiusNm = x.radius;
+  // 0.12.10: nur ein echter Ort (Koordinaten im Text) oder ein Q-Zeilen-Radius < 999 NM – FIR-weite Meldungen (Radius 999 oder nur FIR-Mitte) bekommen keine Karte
+  const hasCoords = /(\d{2})(\d{2})(\d{2})\s*[NS]\s*(\d{3})(\d{2})(\d{2})\s*[EW]/.test(x.text || '') || /\b\d{4}[NS]\d{5}[EW]\b/.test(x.text || '');
+  if (!hasCoords && !(radiusNm != null && radiusNm < 999 && (x.scope == null || !/^F$/i.test(String(x.scope))))) return null;
   if (lat == null || lon == null) {
     const m = /(\d{2})(\d{2})(\d{2})\s*([NS])\s*(\d{3})(\d{2})(\d{2})\s*([EW])/.exec(txt) || null;
     if (m) { lat = (+m[1] + m[2] / 60 + m[3] / 3600) * (m[4] === 'S' ? -1 : 1); lon = (+m[5] + m[6] / 60 + m[7] / 3600) * (m[8] === 'W' ? -1 : 1); }
@@ -423,7 +426,7 @@ export async function notamMapDialog(x, b) {
   const box = dialog(`${x.icao || x.location || ''} ${x.number || ''}`, h('div', [mapEl, h('pre.report.small', (x.text || '').trim().slice(0, 600))]), [{ label: t('close'), value: true }], { cls: 'wide' });
   await new Promise((r) => setTimeout(r, 30));
   const map = L.map(mapEl, { zoomControl: true });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, attribution: '© OpenStreetMap, © CARTO' }).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenStreetMap' }).addTo(map);   // 0.12.10: OSM statt CARTO (Schlüsselpflicht)
   const pts = [[g.lat, g.lon]];
   if (g.radiusNm) L.circle([g.lat, g.lon], { radius: g.radiusNm * 1852, color: '#c0392b', weight: 2, fillOpacity: .12 }).addTo(map).bindTooltip(`${x.number || ''} · ${g.radiusNm} NM`);
   L.circleMarker([g.lat, g.lon], { radius: 5, color: '#c0392b', fillColor: '#fff', fillOpacity: 1, weight: 2 }).addTo(map);

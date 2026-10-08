@@ -386,11 +386,12 @@ def run_gas(name):
         assert 'Kurt Frieden' in pg.inner_text('#panel-A\\.core') and '2. Pilot' in pg.inner_text('#panel-A\\.core'), 'Stammdaten mit 2. Pilot'
         # 0.12.6: Übergangshöhen automatisch nach Ländern der Fahrt (CH: ZH + CH angeklickt, automatisch), von Hand → «wieder automatisch»
         tr = pg.query_selector('#panel-C\\.transition')
-        assert tr is not None and 'automatisch' in tr.inner_text() and pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=0') and pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=1') and not pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=5'), 'Übergangshöhen CH vorgekreuzt, automatisch'
-        pg.click('#panel-C\\.transition input[type=checkbox] >> nth=5'); pg.wait_for_timeout(400)
+        # nth=4 = Frankreich (nie auf der Bahn); nth=5 = Deutschland kann je nach Bahn/GAFOR-Umriss automatisch gesetzt sein (0.12.10)
+        assert tr is not None and 'automatisch' in tr.inner_text() and pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=0') and pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=1') and not pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=4'), 'Übergangshöhen CH vorgekreuzt, automatisch'
+        pg.click('#panel-C\\.transition input[type=checkbox] >> nth=4'); pg.wait_for_timeout(400)
         assert 'von Hand' in pg.inner_text('#panel-C\\.transition') and pg.query_selector('#panel-C\\.transition button:has-text("wieder automatisch")') is not None, 'Handänderung erkannt'
         pg.click('#panel-C\\.transition button:has-text("wieder automatisch")'); pg.wait_for_timeout(400)
-        assert not pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=5'), 'wieder automatisch'
+        assert not pg.is_checked('#panel-C\\.transition input[type=checkbox] >> nth=4') and 'von Hand' not in pg.inner_text('#panel-C\\.transition'), 'wieder automatisch'
         pg.query_selector('#panel-A\\.profile').scroll_into_view_if_needed(); pg.wait_for_timeout(300)
         pg.screenshot(path=f'{OUT}/{name}_00_sticky.png')   # haftende Zeile mit «Alle verfügbaren Daten aktualisieren» und «Pflichtinhalte ergänzen»
         pg.click('#panel-A\\.profile button:has-text("Daten aufbereiten")')

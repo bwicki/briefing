@@ -80,7 +80,9 @@ export async function renderList(view, ctx) {
     }
     const showOwner = scope !== 'own';
     const tz = (b) => b.tz || 'Europe/Zurich';
-    const tbl = h('table.tbl.list', [h('thead', h('tr', [th('no', '#'), th('date', t('colDate')), th('site', t('colSite')), showOwner ? th('owner', t('colOwner')) : null, th('reg', t('colBalloon')), th('kind', t('colType')), th('status', t('colStatus')), th('change', t('colChange')), h('th', '')].filter(Boolean))),
+    // 0.12.10: feste Spaltenbreiten (colgroup) – die drei Abschnitte sind damit sauber untereinander ausgerichtet
+    const cols = showOwner ? [10, 10, 13, 11, 8, 8, 12, 14, 14] : [10, 11, 17, 9, 9, 13, 16, 15];
+    const tbl = h('table.tbl.list.fixed', [h('colgroup', cols.map((w) => h('col', { style: { width: w + '%' } }))), h('thead', h('tr', [th('no', '#'), th('date', t('colDate')), th('site', t('colSite')), showOwner ? th('owner', t('colOwner')) : null, th('reg', t('colBalloon')), th('kind', t('colType')), th('status', t('colStatus')), th('change', t('colChange')), h('th', '')].filter(Boolean))),
       h('tbody', rs.map((b) => h('tr', { class: locked(b) ? 'locked' : '', title: t('view_brief'), ondblclick: (e) => { if (!e.target.closest('button')) ctx.navigate(`#/v/${b.id}`); } }, [
         h('td.mono.no', [b.no || '–', locked(b) ? h('span.lock', { title: t('locked') }, [' ', icon('lock', 14)]) : null]),
         h('td', [h('div.l1', fmtDate(tz(b), b.startMs || 0)), h('div.l2', `${hhmm(tz(b), b.startMs || 0)} LT`)]),

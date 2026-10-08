@@ -5,7 +5,7 @@ import { hotAir, gasBalloon, reserveMinutes, CYLINDER_CATALOG } from '../js/calc
 import { sunTimes, moonTimes, moonIllumination, moonPhaseName } from '../js/calc/sun.js';
 import { parseRacText, racLookup } from '../js/calc/rac.js';
 import { fromLocal, hhmm, localParts, tzOffsetMin, isoDate } from '../js/calc/time.js';
-import { icao, parseIcao, distKm } from '../js/calc/geo.js';
+import { icao, parseIcao, distKm, countryGuess, countryGuessStrict, fixCountry, setDeRings } from '../js/calc/geo.js';
 import { touchesCH, panelNo, visiblePanels, mandatoryPanels, panelFilled, panelByKey } from '../js/panels.js';
 import { targetEstimate } from '../js/auto/traj.js';
 import { buildFpl, fplMessage, fplCheck, firCode, fplName, fplPlace, fplPerson, fplPhone, fplLevel, driftWords, eetFromFirs } from '../js/calc/fpl.js';
@@ -373,6 +373,14 @@ console.log('Ordnungsnummer, Fortschritt, Sperre (0.11.0)');
   ok(lockMs(bh) === t0 + 3600000 && !isLocked(bh, t0 + 50 * 60000) && isLocked(bh, t0 + 61 * 60000), '0.12.10: Sperre ab Start + 1 h');
   ok(isRunning(bh, t0 + 2 * 3600000) && !isArchived(bh, t0 + 2 * 3600000) && isArchived(bh, t0 + 7 * 3600000) && !isRunning(bh, t0 + 7 * 3600000) && isRunning(bg, t0 + 20 * 3600000), 'laufende Fahrt zwischen Start + 1 h und Fahrtende');
   ok(isArchived({ ...bh, frozen: true }, t0) && !isLocked(bh, t0), 'Archivkopie ist immer archiviert; vor der Fahrt nicht gesperrt');
+  // 0.12.10: Land aus Koordinaten – Schweiz-Umriss, Deutschland aus GAFOR-Gebieten, Nachbarn grob; «strict» nur mit 4 km Abstand zur Grenze
+  const gj = JSON.parse(readFileSync(new URL('../data/gafor-areas.geojson', import.meta.url), 'utf8')); setDeRings(gj.features);
+  const cg = [['Illmensee', 47.87, 9.37, 'DE'], ['Oberlunkhofen', 47.32, 8.39, 'CH'], ['Gladbeck', 51.57, 6.98, 'DE'], ['Colmar', 48.08, 7.36, 'FR'], ['Freiburg', 48.0, 7.85, 'DE'], ['Bregenz', 47.50, 9.75, 'AT'], ['Lindau', 47.55, 9.69, 'DE'], ['Como', 45.81, 9.08, 'IT'], ['Lugano', 46.0, 8.95, 'CH'], ['Vaduz', 47.14, 9.52, 'LI'], ['Genf', 46.2, 6.15, 'CH'], ['Annemasse', 46.19, 6.24, 'FR'], ['Samedan', 46.53, 9.87, 'CH'], ['Innsbruck', 47.26, 11.39, 'AT'], ['Bozen', 46.5, 11.35, 'IT'], ['Pontarlier', 46.9, 6.35, 'FR'], ['Kreuzlingen', 47.645, 9.17, 'CH'], ['Konstanz', 47.665, 9.18, 'DE']];
+  const bad = cg.filter(([, la, lo, cc]) => countryGuess(la, lo) !== cc).map(([n, la, lo]) => `${n}=${countryGuess(la, lo)}`);
+  ok(!bad.length, 'Land aus Koordinaten: ' + (bad.join(', ') || 'alle richtig'));
+  ok(countryGuessStrict(47.87, 9.37) === 'DE' && countryGuessStrict(47.665, 9.18) === '' && countryGuessStrict(47.56, 7.59) === '', 'strict: Illmensee DE, Konstanz/Basel im Grenzband offen');
+  const lp = fixCountry({ name: 'Illmensee', lat: 47.87, lon: 9.37, country: 'CH' }); const kp = fixCountry({ name: 'Konstanz', lat: 47.665, lon: 9.18, country: 'CH' });
+  ok(lp.country === 'DE' && kp.country === 'CH', 'fixCountry: CH→DE bei Illmensee, Konstanz bleibt wie gespeichert');
   ok(nextAmendmentNo('2026-008') === '2026-008a' && nextAmendmentNo('2026-008a') === '2026-008b' && nextAmendmentNo('') === 'a', 'Nachtrag-Nummer mit Buchstabe');
   { const src = { id: 'abc', no: '2026-008', time: { startMs: t0 }, intent: { durationMin: 120 }, panels: { x: 1 } };
     const { copy, b: am } = amendBriefingData(src, t0 + 2 * 3600000);
