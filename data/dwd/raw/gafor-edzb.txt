@@ -1,92 +1,80 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-047
-FBEU40 EDZB 080600
+599
+FBEU40 EDZB 081200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 08.10.2026, 06.00 UTC bis 09.10.2026, 03.00 UTC
+gültig vom 08.10.2026, 12.00 UTC bis 09.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Ein Tief bei Dänemark verlagert sich zögerlich Richtung Baltikum. Die
-zugehörige Frontalzone mit teils hochreichend feuchter, aber
-weitgehend stabil geschichteter Luft hat den Westen des
-Vorhersagebereichs erreicht, kommt bis zum Mittag unter Verstärkung
-etwa in die Mitte voran und zieht mit Übergang in die Nacht zum
-Freitag über Oder/Neiße ostwärts ab.
+Die Kaltfront eines Tiefs über der zentralen Ostsee überquert das
+Vorhersagegebiet bis zum Abend ostwärts. Auf ihrer Rückseite wird mit
+westlicher Strömung kühlere und leicht labil geschichtete Meeresluft
+herangeführt.
 
 Wettergeschehen:
-Verbreitet BKN/OVC AS/CI-Aufzugsbewölkung oberhalb FL140-180,
-Richtung Westhälfte mit weiter absinkenden Untergrenzen bzw. SCT/BKN
-SC bei FL050-080. Daraus von Mecklenburg bis ins Westerzgebirge
-gebietsweise leichter, später durch lokalen Übergang zu NS-Bewölkung
-teils mäßiger Regen. Zu Beginn im Niederschlag selten absinkende
-Untergrenzen auf 3000-4000 FT AMSL.
+Am frühen Nachmittag verbreitet BKN/OVC SC/AS/CS, teils NS zwischen
+2000 FT AMSL und FL245, daraus zeitweise Regen. Durch eingelagerte
+TCU/CB mit Tops bis FL270 örtlich schauerartig verstärkt. Unterhalb
+der höheren Schichtbewölkung gebietsweise SC/BKN ST in 500-1000 FT
+AMSL, insbesondere in der Nordhälfte. Bergland oberhalb 2000 FT AMSL
+in Wolken.
 
-Bis zum Mittag kommen Wolken und Niederschläge etwa auf eine Linie
-Vorpommern Westsachsen voran, bei lokalem Übergang zu NS teils mäßig.
-Durch weiderholte Niederschläge dann von Westen mit weiter
-absinkenden Untergrenzen auf 1500-2000 FT AGL, insbesondere im Norden
-teils um 500-1000 FT AGL.
-
-Am Nachmittag erreichen Wolken und Niederschläge auch die östlichen
-Gebiete bzw. Oder/Neiße, gleichzeitig von Westen nachlassende
-Niederschläge mit Ausschichten hoher und mittelhoher
-Bewölkungsanteile bzw. Übergang zu SCT/BKN SC bei 2000-3000 FT AMSL,
-Obergrenzen um FL050, darüber Durchzug von AS-Feldern zwischen FL100
-und FL160.
-
-Mit Übergang zur Nacht ziehen letzte Niederschläge über Oder/Neiße
-ostwärts ab und von Westen zunehmend größere Wolkenlücken mit
-Durchzug lokaler FEW/SCT SC-Felder zwischen 2500 und 5000 FT AMSL.
+Im Nachmittagsverlauf zunächst in der Westhälfte abklingende
+Niederschläge. Bewölkung zu SCT/BKN CS/AS oberhalb FL100 und SCT/BKN
+SC/CU zwischen 2000 und 5000 ausschichtend. Am Abend auch im Osten
+abklingender Regen.
+In der Nacht im gesamten Bereich SCT/BKN SC zwischen 2500 und 4000 FT
+AMSL, Obergrenzen bis FL070. Vereinzelt TCU/CB mit Tops bis FL140 und
+Schauer. Im Vormittagsverlauf von Westen Aufzug von BKN CS/AS
+oberhalb FL100.
 
 Sichtweite:
-20 bis 40 km, im Niederschlag 2 bis 5 km. Am Morgen in
-Mecklenburg-Vorpommern und Brandenburg örtlich Dunst mit 2 bis 4 km.
+20 bis 40 km, im Niederschlag 2 bis 5 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  09 UTC  |  21 UTC  |
- 500FT | 200/10KT  13C | 270/20KT  09C |
-1000FT | 210/20KT  13C | 280/30KT  08C |
-1500FT | 240/25KT  12C | 280/35KT  06C |
-2000FT | 240/25KT  12C | 290/35KT  06C |
-3000FT | 240/25KT  11C | 300/40KT  04C |
-5000FT | 230/20KT  09C | 300/35KT  01C |
-FL100  | 220/30KT  01C | 290/35KT M09C |
+AMSL  |  15 UTC  |  06 UTC  |
+ 500FT | 300/20KT  12C | 250/15KT  08C |
+1000FT | 300/25KT  11C | 250/25KT  07C |
+1500FT | 310/30KT  09C | 280/35KT  06C |
+2000FT | 310/30KT  09C | 280/35KT  06C |
+3000FT | 310/30KT  06C | 290/30KT  04C |
+5000FT | 300/30KT  03C | 290/30KT  00C |
+FL100  | 260/30KT M04C | 300/40KT M05C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 210/15KT  17C | 270/25KT  09C |
-1500FT | 220/15KT  15C | 290/25KT  08C |
-2000FT | 230/25KT  15C | 290/30KT  07C |
-3000FT | 250/30KT  13C | 300/35KT  04C |
-5000FT | 240/25KT  10C | 300/30KT  01C |
-FL100  | 230/30KT  01C | 280/30KT M09C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 310/25KT  12C | 240/20KT  07C |
+1500FT | 320/30KT  10C | 260/30KT  07C |
+2000FT | 320/30KT  10C | 270/30KT  06C |
+3000FT | 330/40KT  07C | 280/25KT  05C |
+5000FT | 310/25KT  05C | 290/25KT  01C |
+FL100  | 280/25KT M03C | 290/35KT M03C |
 
 Turbulenz:
-Im Frontbereich lokal MOD bis FL140, selten bis FL180, am Boden mit
-Böen um 25-30 KT aus W bis NW.
+Im Frontbereich lokal MOD bis FL140, selten bis FL180. Unterhalb 5000
+FT AMSL LOC LGT/MOD bei Böen mit 25-35 KT aus W bis NW. In TCU/CB.
 
 Vereisung:
-Im Frontbereich teils MOD zwischen FL080-100 und FL200, bei NS
-MOD/SEV.
+Im Frontbereich teils MOD unterhalb FL200. In TCU/CB.
 
 Nullgradgrenze:
-Um FL100, mit der Front etwa auf FL080, frontrückseitig auf FL050-060
-absinkend.
+Im Osten noch um FL100, mit der Front auf FL070, in der Nacht auf
+5000 FT AMSL absinkend.
 
 Inversionen:
-In der Osthälfte nächtliche Bodeninversion bis 2000 FT, morgens rasch
-auflöst.
+Nicht signifikant.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Berlin  04.44 | 05.19 | 16.27 | 17.00
-Leipzig  04.49 | 05.23 | 16.33 | 17.07
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Berlin  16.27 | 17.00  | 04.46 | 05.20
+Leipzig  16.33 | 17.07  | 04.50 | 05.24
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Luftfahrtberatungszentrale Berlin/KS
+Luftfahrtberatungszentrale Berlin/bg
