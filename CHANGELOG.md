@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.11a — 2026-10-08 · FAA-NOTAM-Test
+
+* **NOTAM-Quelle erzwingbar:** `GET /api/wx/notam?...&src=autorouter|faa|dins|search` liefert genau diese Quelle
+  (ohne Cache) und bei Fehlern den Klartext (z. B. `FAA NOTAM API: HTTP 401 …`) – zum Vergleich der Quellen und zum
+  Test des FAA-Zugangs. Ohne `src` unverändert: autorouter → FAA → DINS → NOTAM Search.
+* **Zugänge:** Beschriftung «FAA NOTAM Client Key» (statt Client ID); Schlüssel unverändert `faa_client_id`.
+
 ## 0.12.11 — 2026-10-08 · Abschnittsregeln, Ausblenden im Archiv, präzise Landesgrenzen
 
 * **Abschnitte der Briefings-Seite (Antworten auf die Rückfragen):** «Briefings in Arbeit» = Startzeitpunkt in der

@@ -580,11 +580,18 @@ async function notam(env, decrypt, ctx, q) {
   if (!isFinite(lat) || !isFinite(lon)) return err('lat/lon');
   const cc = String(q.get('cc') || '').split(',').map((x) => x.trim()).filter(Boolean);
   // 1) autorouter, wenn Zugang hinterlegt (Einstellungen → Zugänge); scheitert der Abruf, wandert der Grund als Hinweis in die Antwort der Ersatzquelle (0.12.7)
+  // 0.12.11: src=autorouter|faa|dins|search erzwingt eine Quelle (Vergleich der Quellen; ohne Cache)
+  const src = String(q.get('src') || '').toLowerCase();
   let arErr = null;
-  try { const ar = await notamAutorouter(env, decrypt, ctx, lat, lon, radius, cc); if (ar) return json(ar); }
-  catch (e) { console.warn('autorouter', e.message); arErr = `autorouter: ${e.message}`; }
+  if (!src || src === 'autorouter') {
+    try { const ar = await notamAutorouter(env, decrypt, ctx, lat, lon, radius, cc); if (ar) return json(ar); if (src) return err('autorouter: kein Zugang hinterlegt', 424); }
+    catch (e) { console.warn('autorouter', e.message); arErr = `autorouter: ${e.message}`; if (src) return err(arErr, 502); }
+  }
+  if (src === 'dins') { try { return json(await notamDins(ctx, lat, lon, radius, cc)); } catch (e) { return err(`DINS: ${e.message}`, 502); } }
+  if (src === 'search') { try { return json(await notamSearch(ctx, lat, lon, radius)); } catch (e) { return err(`NOTAM Search: ${e.message}`, 502); } }
   // 2) FAA NOTAM API (ein Wiederholungsversuch, da der Dienst oft nicht antwortet); ohne Schlüssel → 3) DINS, 4) FAA NOTAM Search (beide ohne Schlüssel, 0.12.4)
   const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
+  if (src === 'faa' && (!id || !secret)) return err('FAA: Client Key/Secret fehlen (Einstellungen → Zugänge)', 424);
   if (!id || !secret) {
     const errors = arErr ? [arErr] : [];
     for (const [name, fn] of [['DINS', () => notamDins(ctx, lat, lon, radius, cc)], ['NOTAM Search', () => notamSearch(ctx, lat, lon, radius)]]) {
@@ -593,16 +600,28 @@ async function notam(env, decrypt, ctx, q) {
     }
     return err(`NOTAM-Quellen ohne Schlüssel nicht erreichbar (${errors.join('; ')}) – Zugang hinterlegen (Einstellungen → Zugänge: autorouter oder FAA)`, 502);
   }
-  const data = await cached(ctx, `notam/${lat.toFixed(2)},${lon.toFixed(2)},${radius}`, 900, async () => {
+  const fetchFaa = async () => {
     const url = `https://external-api.faa.gov/notamapi/v1/notams?locationLatitude=${lat.toFixed(4)}&locationLongitude=${lon.toFixed(4)}&locationRadius=${radius}&pageSize=1000&sortBy=effectiveStartDate&sortOrder=Asc`;
     let j;
-    for (let k = 0; k < 2; k++) { try { j = await (await get(url, { headers: { client_id: id, client_secret: secret } }, 20000)).json(); break; } catch (e) { if (k) throw e; } }
+    for (let k = 0; k < 2; k++) {
+      try {
+        const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 20000);
+        try {
+          const r = await fetch(url, { headers: { client_id: id, client_secret: secret, Accept: 'application/json', 'User-Agent': UA }, signal: ctl.signal });
+          if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).replace(/\s+/g, ' ').slice(0, 200)}`);   // 0.12.11: Antworttext für die Diagnose (401/403/429)
+          j = await r.json();
+        } finally { clearTimeout(tm); }
+        break;
+      } catch (e) { if (k || /HTTP 4\d\d/.test(e.message)) throw e; }
+    }
     const items = (j.items || []).map((it) => {
       const core = it.properties?.coreNOTAMData?.notam || {}; const tr = it.properties?.coreNOTAMData?.notamTranslation?.[0] || {};
       return { id: core.id, number: core.number, type: core.type, location: core.location, icao: core.icaoLocation, start: core.effectiveStart, end: core.effectiveEnd, classification: core.classification, text: core.text, minFL: core.minimumFL, maxFL: core.maximumFL, radius: core.radius, coordinates: core.coordinates, lat: core.lat, lon: core.lon, formatted: tr.formattedText || tr.simpleText || '', geometry: it.geometry };
     });
     return { items, total: j.totalCount, source: 'FAA NOTAM API', generated: new Date().toISOString() };
-  });
+  };
+  if (src === 'faa') { try { return json(await fetchFaa()); } catch (e) { return err(`FAA NOTAM API: ${e.message}`, 502); } }
+  const data = await cached(ctx, `notam/${lat.toFixed(2)},${lon.toFixed(2)},${radius}`, 900, fetchFaa);
   return json(arErr ? { ...data, errors: [arErr, ...(data.errors || [])] } : data);
 }
 
