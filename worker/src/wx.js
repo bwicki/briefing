@@ -592,6 +592,14 @@ async function notam(env, decrypt, ctx, q) {
   // 2) FAA NOTAM API (ein Wiederholungsversuch, da der Dienst oft nicht antwortet); ohne Schlüssel → 3) DINS, 4) FAA NOTAM Search (beide ohne Schlüssel, 0.12.4)
   const id = await getSecret(env, decrypt, 'faa_client_id'), secret = await getSecret(env, decrypt, 'faa_client_secret');
   if (src === 'faa' && (!id || !secret)) return err('FAA: Client Key/Secret fehlen (Einstellungen → Zugänge)', 424);
+  if (src === 'faa' && q.get('diag')) {   // 0.12.11b: Erreichbarkeits-Diagnose (ohne Zugangsdaten)
+    const probe = async (url, ua, init = {}) => { try { const r = await fetch(url, { ...init, headers: { ...(init.headers || {}), 'User-Agent': ua, Accept: 'application/json' } }); return `${r.status} ${(await r.text()).replace(/\s+/g, ' ').slice(0, 80)}`; } catch (e) { return `ERR ${e.message}`; } };
+    const bua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
+    return json({ notams_ua: await probe('https://api-nms.aim.faa.gov/nmsapi/v1/notams', UA), notams_browser: await probe('https://api-nms.aim.faa.gov/nmsapi/v1/notams', bua),
+      token_ua: await probe('https://api-nms.aim.faa.gov/v1/auth/token', UA, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=client_credentials' }),
+      token_browser: await probe('https://api-nms.aim.faa.gov/v1/auth/token', bua, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=client_credentials' }),
+      root_browser: await probe('https://api-nms.aim.faa.gov/', bua), nms_site: await probe('https://nms.aim.faa.gov/', bua) });
+  }
   if (!id || !secret) {
     const errors = arErr ? [arErr] : [];
     for (const [name, fn] of [['DINS', () => notamDins(ctx, lat, lon, radius, cc)], ['NOTAM Search', () => notamSearch(ctx, lat, lon, radius)]]) {
