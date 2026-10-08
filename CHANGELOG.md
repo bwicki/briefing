@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.11 — 2026-10-08 · Abschnittsregeln, Ausblenden im Archiv, präzise Landesgrenzen
+
+* **Abschnitte der Briefings-Seite (Antworten auf die Rückfragen):** «Briefings in Arbeit» = Startzeitpunkt in der
+  Zukunft; **«Laufende Fahrten»** = Start vorbei bis **geplante Landung (Start + Fahrtdauer) + 6 h**, Sperre ab
+  Startzeitpunkt (bisher Start + 1 h), Nachtrag je Öffnung; **«Archiv»** = alles Ältere. Worker rechnet `end_ms`
+  des Bestands einmalig neu (Landung + 6 h).
+* **Supermaster** kann Archiv-Einträge aller Nutzer **ausblenden** (Papierkorb im Archiv, Rückfrage «Es wird nichts
+  gelöscht»): Spalte `hidden`, Eintrag verschwindet aus allen Übersichten, Daten bleiben erhalten. Löschen in «Laufende
+  Fahrten» bleibt möglich.
+* **Landesgrenzen präzise:** `data/countries.geojson` (Natural Earth 1:10m, public domain; CH/LI/DE/AT/FR/IT auf
+  ~500 m vereinfacht, NL/BE/LU/CZ/PL/DK/SK/HU/SI/HR/ES/MC/SM ~2 km; 146 KB) wird beim Start geladen (max. 2.5 s
+  gewartet) und bestimmt das Land aus Koordinaten; Grenzband für die automatische Korrektur 2 km. Rückfall ohne
+  Datei: Umriss/GAFOR/Regeln aus 0.12.10a. Hinweis: Natural Earth liegt an einzelnen Stellen bis ~1 km neben der
+  amtlichen Grenze (z. B. Konstanz-Altstadt) – dort bleibt das gespeicherte Land und ist in den Stammdaten zu setzen.
+
 ## 0.12.10 — 2026-10-08 · Laufende Fahrten und Nachträge
 
 * **Sperre ab Start + 1 h** (bisher erst nach Fahrtende): ab dann nur Ansicht und Druck. **Archiv** ab Fahrtende

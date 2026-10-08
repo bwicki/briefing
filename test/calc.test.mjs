@@ -5,7 +5,7 @@ import { hotAir, gasBalloon, reserveMinutes, CYLINDER_CATALOG } from '../js/calc
 import { sunTimes, moonTimes, moonIllumination, moonPhaseName } from '../js/calc/sun.js';
 import { parseRacText, racLookup } from '../js/calc/rac.js';
 import { fromLocal, hhmm, localParts, tzOffsetMin, isoDate } from '../js/calc/time.js';
-import { icao, parseIcao, distKm, countryGuess, countryGuessStrict, fixCountry, setDeRings } from '../js/calc/geo.js';
+import { icao, parseIcao, distKm, countryGuess, countryGuessStrict, fixCountry, setDeRings, setCountryRings } from '../js/calc/geo.js';
 import { touchesCH, panelNo, visiblePanels, mandatoryPanels, panelFilled, panelByKey } from '../js/panels.js';
 import { targetEstimate } from '../js/auto/traj.js';
 import { buildFpl, fplMessage, fplCheck, firCode, fplName, fplPlace, fplPerson, fplPhone, fplLevel, driftWords, eetFromFirs } from '../js/calc/fpl.js';
@@ -369,9 +369,9 @@ console.log('Ordnungsnummer, Fortschritt, Sperre (0.11.0)');
   ok(briefingYear({ time: { date: '2027-01-03', startMs: Date.UTC(2026, 11, 31) } }) === 2027 && briefingYear({ time: {}, createdAt: Date.UTC(2026, 5, 1) }) === 2026, 'Jahr aus dem Fahrtdatum, sonst Erstellung');
   const t0 = Date.UTC(2026, 9, 6, 4, 30);
   const bh = { time: { startMs: t0 }, intent: { durationMin: 120 } }, bg = { time: { startMs: t0 }, intent: { durationMin: 1440 } };
-  ok(archiveMs(bh) === t0 + 6 * 3600000 && archiveMs(bg) === t0 + 26 * 3600000, 'Archiv: Start + max(6 h, Dauer + 2 h)');
-  ok(lockMs(bh) === t0 + 3600000 && !isLocked(bh, t0 + 50 * 60000) && isLocked(bh, t0 + 61 * 60000), '0.12.10: Sperre ab Start + 1 h');
-  ok(isRunning(bh, t0 + 2 * 3600000) && !isArchived(bh, t0 + 2 * 3600000) && isArchived(bh, t0 + 7 * 3600000) && !isRunning(bh, t0 + 7 * 3600000) && isRunning(bg, t0 + 20 * 3600000), 'laufende Fahrt zwischen Start + 1 h und Fahrtende');
+  ok(archiveMs(bh) === t0 + 8 * 3600000 && archiveMs(bg) === t0 + 30 * 3600000, '0.12.10a: Archiv ab geplanter Landung + 6 h');
+  ok(lockMs(bh) === t0 && !isLocked(bh, t0 - 60000) && isLocked(bh, t0 + 60000), '0.12.10a: Sperre ab Startzeitpunkt');
+  ok(isRunning(bh, t0 + 2 * 3600000) && !isArchived(bh, t0 + 7 * 3600000) && isArchived(bh, t0 + 9 * 3600000) && !isRunning(bh, t0 + 9 * 3600000) && isRunning(bg, t0 + 29 * 3600000), 'laufende Fahrt zwischen Start und Landung + 6 h');
   ok(isArchived({ ...bh, frozen: true }, t0) && !isLocked(bh, t0), 'Archivkopie ist immer archiviert; vor der Fahrt nicht gesperrt');
   // 0.12.10: Land aus Koordinaten – Schweiz-Umriss, Deutschland aus GAFOR-Gebieten, Nachbarn grob; «strict» nur mit 4 km Abstand zur Grenze
   const gj = JSON.parse(readFileSync(new URL('../data/gafor-areas.geojson', import.meta.url), 'utf8')); setDeRings(gj.features);
@@ -381,6 +381,12 @@ console.log('Ordnungsnummer, Fortschritt, Sperre (0.11.0)');
   ok(countryGuessStrict(47.87, 9.37) === 'DE' && countryGuessStrict(47.665, 9.18) === '' && countryGuessStrict(47.56, 7.59) === '', 'strict: Illmensee DE, Konstanz/Basel im Grenzband offen');
   const lp = fixCountry({ name: 'Illmensee', lat: 47.87, lon: 9.37, country: 'CH' }); const kp = fixCountry({ name: 'Konstanz', lat: 47.665, lon: 9.18, country: 'CH' });
   ok(lp.country === 'DE' && kp.country === 'CH', 'fixCountry: CH→DE bei Illmensee, Konstanz bleibt wie gespeichert');
+  // 0.12.10a: präzise Landesgrenzen (Natural Earth 1:10m, ~500 m vereinfacht) – Grenzband 2 km
+  setCountryRings(JSON.parse(readFileSync(new URL('../data/countries.geojson', import.meta.url), 'utf8')).features);
+  const cg2 = [...cg, ['Chamonix', 45.92, 6.87, 'FR'], ['Kufstein', 47.58, 12.17, 'AT'], ['Konstanz-Nord', 47.68, 9.19, 'DE'], ['Saint-Louis', 47.59, 7.56, 'FR'], ['Salzburg', 47.8, 13.04, 'AT'], ['Rosenheim', 47.85, 12.12, 'DE'], ['Luxemburg', 49.61, 6.13, 'LU'], ['Prag', 50.08, 14.44, 'CZ']].filter(([n]) => n !== 'Konstanz');
+  const bad2 = cg2.filter(([, la, lo, cc]) => countryGuess(la, lo) !== cc).map(([n, la, lo]) => `${n}=${countryGuess(la, lo)}`);
+  ok(!bad2.length, 'Land aus Landesgrenzen: ' + (bad2.join(', ') || 'alle richtig'));
+  ok(countryGuessStrict(47.87, 9.37) === 'DE' && countryGuessStrict(47.665, 9.18) === '' && countryGuessStrict(47.56, 7.59) === 'CH' && countryGuessStrict(47.14, 9.52) === '', 'strict mit Grenzen: Illmensee DE, Konstanz-Zentrum offen, Basel CH, Vaduz offen (LI < 4 km breit)');
   ok(nextAmendmentNo('2026-008') === '2026-008a' && nextAmendmentNo('2026-008a') === '2026-008b' && nextAmendmentNo('') === 'a', 'Nachtrag-Nummer mit Buchstabe');
   { const src = { id: 'abc', no: '2026-008', time: { startMs: t0 }, intent: { durationMin: 120 }, panels: { x: 1 } };
     const { copy, b: am } = amendBriefingData(src, t0 + 2 * 3600000);

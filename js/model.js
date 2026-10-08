@@ -400,16 +400,17 @@ export function completion(b, settings) {
   const n = ps.filter((p) => panelFilled(p, b)).length + sets.reduce((a, x) => a + visiblePanels(settings, x.bs).filter((p) => panelFilled(p, x.bs)).length, 0);
   return Math.round((100 * n) / total);
 }
-/** Archiv-Grenze (Fahrtende): Start + max(6 h, Fahrtdauer + 2 h) – danach ist das Briefing unveränderlich. */
+/** Archiv-Grenze: geplante Landung (Start + Fahrtdauer) + 6 h – danach ist das Briefing unveränderlich (0.12.10a). */
+export const ARCHIVE_AFTER_LANDING_MS = 6 * 3600000;
 export function archiveMs(b) {
   const start = b?.time?.startMs || 0;
   const dur = (b?.intent?.durationMin || 0) * 60000;
-  return start + Math.max(6 * 3600000, dur + 2 * 3600000);
+  return start + dur + ARCHIVE_AFTER_LANDING_MS;
 }
-/** 0.12.10: Sperre ab Start + 1 h – ab dann nur noch Ansicht; Änderungen während der laufenden Fahrt als Nachtrag. */
-export const LOCK_AFTER_START_MS = 3600000;
+/** 0.12.10a: Sperre ab Startzeitpunkt – ab dann nur noch Ansicht; Änderungen während der laufenden Fahrt als Nachtrag. */
+export const LOCK_AFTER_START_MS = 0;
 export const lockMs = (b) => (b?.time?.startMs || 0) + LOCK_AFTER_START_MS;
-/** Gesperrt: Start + 1 h vorbei (laufende oder vergangene Fahrt). */
+/** Gesperrt: Startzeitpunkt vorbei (laufende oder vergangene Fahrt). */
 export const isLocked = (b, now = Date.now()) => now > lockMs(b);
 /** Archiv: Fahrt vorbei oder eingefrorene Archivkopie eines Nachtrags → unveränderlich, nicht löschbar. */
 export const isArchived = (b, now = Date.now()) => !!b?.frozen || now > archiveMs(b);

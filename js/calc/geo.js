@@ -81,12 +81,27 @@ export function inRing(lat, lon, ring) {
 /** 0.12.10: vereinfachter Umriss der Schweiz ([lon, lat], im Uhrzeigersinn ab Basel; Genauigkeit wenige km, Enklaven Büsingen/Campione nicht berücksichtigt). */
 const CH_RING = [[7.59, 47.59], [7.80, 47.56], [8.06, 47.56], [8.24, 47.61], [8.30, 47.59], [8.52, 47.57], [8.55, 47.62], [8.60, 47.80], [8.70, 47.75], [8.86, 47.66], [9.05, 47.68], [9.15, 47.665], [9.17, 47.655], [9.22, 47.64], [9.38, 47.60], [9.50, 47.52], [9.60, 47.46], [9.66, 47.39], [9.57, 47.32], [9.50, 47.26], [9.47, 47.05], [9.52, 47.03], [9.65, 47.07], [9.70, 47.05], [10.10, 46.90], [10.36, 46.96], [10.49, 46.85], [10.47, 46.63], [10.44, 46.55], [10.20, 46.50], [10.14, 46.23], [9.52, 46.33], [9.33, 46.51], [9.15, 46.25], [9.10, 46.00], [9.03, 45.83], [8.93, 45.85], [8.86, 45.97], [8.76, 46.03], [8.70, 46.12], [8.60, 46.16], [8.45, 46.22], [8.14, 46.20], [8.08, 46.25], [8.30, 46.37], [8.37, 46.45], [8.50, 46.42], [8.65, 46.33], [8.60, 46.20], [8.45, 46.22], [8.14, 46.20], [7.98, 46.00], [7.87, 45.93], [7.66, 45.98], [7.17, 45.87], [7.04, 45.92], [6.93, 46.07], [6.80, 46.39], [6.24, 46.30], [6.30, 46.24], [6.19, 46.17], [6.04, 46.14], [5.96, 46.13], [5.97, 46.19], [6.07, 46.46], [6.14, 46.60], [6.35, 46.71], [6.46, 46.90], [6.60, 46.98], [6.72, 47.06], [6.70, 47.07], [6.95, 47.26], [6.95, 47.33], [7.01, 47.50], [7.07, 47.49], [7.26, 47.42], [7.40, 47.48], [7.52, 47.55]];
 let DE_RINGS = null;
+let COUNTRY_RINGS = null;   // 0.12.10a: [{ cc, rings }] aus data/countries.geojson (Natural Earth 1:10m, vereinfacht ~500 m) – präzise Landesgrenzen
+/** Landesgrenzen setzen (GeoJSON-Features mit properties.cc, MultiPolygon). Kleine Länder zuerst (LI, MC, SM), damit Enklaven gewinnen. */
+export function setCountryRings(features) {
+  const list = [];
+  for (const f of features || []) { const g = f.geometry || {}; const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []; const rings = polys.map((p) => p?.[0]).filter(Boolean); if (rings.length) list.push({ cc: String(f.properties?.cc || '').toUpperCase(), rings, box: bbox(rings) }); }
+  const small = new Set(['LI', 'MC', 'SM', 'VA']);
+  list.sort((a, b) => (small.has(a.cc) ? 0 : 1) - (small.has(b.cc) ? 0 : 1));
+  COUNTRY_RINGS = list;
+}
+export const countryRingsLoaded = () => !!COUNTRY_RINGS;
+function bbox(rings) { let w = 999, e = -999, s = 999, n = -999; for (const r of rings) for (const [x, y] of r) { if (x < w) w = x; if (x > e) e = x; if (y < s) s = y; if (y > n) n = y; } return [w, s, e, n]; }
 /** Deutschland-Umriss aus den GAFOR-Gebieten (data/gafor-areas.geojson), von auto/data.js nach dem Laden gesetzt. */
 export function setDeRings(features) { DE_RINGS = []; for (const f of features || []) { const g = f.geometry || {}; const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []; for (const poly of polys) if (poly?.[0]) DE_RINGS.push(poly[0]); } }
 /** Ländercode zu Koordinaten: Liechtenstein (Kasten), Schweiz (Umriss), Deutschland (GAFOR-Gebiete, sonst Rhein-Grenze zu Frankreich), danach grobe Kästen AT/FR/IT/DE.
  * Nur für die Vorbelegung des Landes – im Grenzband kann die Angabe abweichen; sie lässt sich in den Stammdaten überschreiben. */
 export function countryGuess(lat, lon) {
   if (!Number.isFinite(+lat) || !Number.isFinite(+lon)) return '';
+  if (COUNTRY_RINGS) {   // präzise Grenzen, sobald geladen
+    for (const c of COUNTRY_RINGS) { const [w, s, e, n] = c.box; if (lon < w || lon > e || lat < s || lat > n) continue; if (c.rings.some((r) => inRing(lat, lon, r))) return c.cc; }
+    return '';
+  }
   if (lat >= 47.048 && lat <= 47.27 && lon >= 9.50 && lon <= 9.64) return 'LI';
   if (inRing(lat, lon, CH_RING)) return 'CH';
   if (DE_RINGS && DE_RINGS.some((r) => inRing(lat, lon, r))) return 'DE';
@@ -103,12 +118,12 @@ export function countryGuess(lat, lon) {
   if (lon < 6.9 || (lat >= 46.4 && lon < 7.0)) return lat >= 41.3 ? 'FR' : '';
   return lat >= 36.6 ? 'IT' : '';
 }
-/** 0.12.10: Land nur, wenn es auch 4 km rundherum dasselbe ist (sonst '') – zur Korrektur eines falsch gespeicherten Landes
+/** 0.12.10: Land nur, wenn es auch 2 km rundherum dasselbe ist (sonst '') – zur Korrektur eines falsch gespeicherten Landes
  * (z. B. Stammdaten-Ort in Deutschland mit Vorgabe «CH»); im Grenzband bleibt der gespeicherte Wert. */
 export function countryGuessStrict(lat, lon) {
   if (!Number.isFinite(+lat) || !Number.isFinite(+lon)) return '';
   const c0 = countryGuess(+lat, +lon); if (!c0) return '';
-  const dLat = 4 / 111.2, dLon = 4 / (111.2 * Math.cos(rad(+lat)));
+  const km = COUNTRY_RINGS ? 2 : 4; const dLat = km / 111.2, dLon = km / (111.2 * Math.cos(rad(+lat)));
   for (const [a, o] of [[dLat, 0], [-dLat, 0], [0, dLon], [0, -dLon]]) if (countryGuess(+lat + a, +lon + o) !== c0) return '';
   return c0;
 }

@@ -96,7 +96,7 @@ export async function renderList(view, ctx) {
           locked(b) ? h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(`#/v/${b.id}`) }, icon('view')) : h('button.btn.icon.small.edit', { type: 'button', title: t('edit'), onclick: () => ctx.navigate(`#/b/${b.id}`) }, icon('edit')),
           running ? h('button.btn.icon.small.amend', { type: 'button', title: t('amend'), onclick: () => amend(b) }, icon('edit')) : null,   // 0.12.10: Nachtrag während der laufenden Fahrt
           h('button.btn.icon.small', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, icon('dup')),
-          archive ? null : h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, icon('del')),   // 0.12.9: Archiv – kein Löschen (auch nicht Supermaster)
+          archive ? (ctx.isSuper && ctx.store.mode === 'remote' ? h('button.btn.icon.small', { type: 'button', title: t('hide_super'), onclick: () => delB(b.id, true) }, icon('del')) : null) : h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, icon('del')),   // 0.12.10a: Archiv – nur der Supermaster blendet aus (nichts wird gelöscht)
         ].filter(Boolean)),
       ].filter(Boolean))))]);
     return tbl;
@@ -136,8 +136,8 @@ export async function renderList(view, ctx) {
     await ctx.store.saveBriefing(b, ctx.who);
     ctx.navigate(`#/new/${b.id}`);
   }
-  async function delB(id) {
-    if (!(await dialog(t('delete'), h('p', t('confirmDelete')), [{ label: t('cancel'), value: false }, { label: t('delete'), value: true, primary: true }]))) return;
+  async function delB(id, hide = false) {
+    if (!(await dialog(hide ? t('hide_super') : t('delete'), h('p', hide ? t('hide_superQ') : t('confirmDelete')), [{ label: t('cancel'), value: false }, { label: hide ? t('hide_superDo') : t('delete'), value: true, primary: true }]))) return;
     await ctx.store.deleteBriefing(id);
     const i = all.findIndex((b) => b.id === id); if (i >= 0) all.splice(i, 1);
     drawTable(); toast(t('ok'));

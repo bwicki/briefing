@@ -72,8 +72,14 @@ async function setKv(env, k, v) { await env.DB.prepare('INSERT INTO kv (k,v,upda
 let schemaReady = false;
 async function ensureSchema(env) {
   if (schemaReady) return;
-  for (const col of ['no TEXT', 'progress INTEGER', 'end_ms INTEGER', 'edition INTEGER', 'frozen INTEGER']) {
+  for (const col of ['no TEXT', 'progress INTEGER', 'end_ms INTEGER', 'edition INTEGER', 'frozen INTEGER', 'hidden INTEGER']) {
     try { await env.DB.prepare(`ALTER TABLE briefings ADD COLUMN ${col}`).run(); } catch { /* Spalte besteht */ }
+  }
+  // 0.12.10a: Archiv-Grenze neu Landung + 6 h → end_ms des Bestands einmalig neu rechnen
+  if (!(await getKv(env, 'endms_v2'))) {
+    const rows = (await env.DB.prepare('SELECT id, json FROM briefings').all()).results || [];
+    for (const r of rows) { try { const b = JSON.parse(r.json); await env.DB.prepare('UPDATE briefings SET end_ms=? WHERE id=?').bind(endMsOf(b), r.id).run(); } catch { /* Zeile überspringen */ } }
+    await setKv(env, 'endms_v2', '1');
   }
   // Bestand ohne Nummer: je Jahr des Fahrtdatums fortlaufend nach Startzeit vergeben (einmalig)
   if (!(await getKv(env, 'no_migrated'))) {
@@ -91,12 +97,12 @@ async function ensureSchema(env) {
 /** Jahr des Fahrtdatums (Ablage nach Fahrt). */
 function yearOf(b) { const d = b?.time?.date; if (/^\d{4}-/.test(d || '')) return +d.slice(0, 4); return new Date(b?.time?.startMs || b?.createdAt || Date.now()).getUTCFullYear(); }
 /** Fahrtende für die Sperre: Start + max(6 h, Dauer + 2 h). */
-const LOCK_AFTER_START_MS = 3600000;   // 0.12.10: Sperre ab Start + 1 h (Nachtrag statt Bearbeitung)
+const LOCK_AFTER_START_MS = 0;   // 0.12.10a: Sperre ab Startzeitpunkt (Nachtrag statt Bearbeitung)
 const rowArchived = (row) => !!row?.frozen || !!(row?.end_ms && Date.now() > row.end_ms);
 const newId = () => Array.from(crypto.getRandomValues(new Uint8Array(12))).map((x) => 'abcdefghijklmnopqrstuvwxyz0123456789'[x % 36]).join('');
 /** Briefingnummer des Nachtrags: «2026-008» → «2026-008a» → «2026-008b». */
 function nextAmendmentNo(no) { const m = /^(.*?)([a-z])?$/.exec(String(no || '')); const base = m ? m[1] : String(no || ''); const l = m && m[2] ? String.fromCharCode(m[2].charCodeAt(0) + 1) : 'a'; return base + (l > 'z' ? 'z' : l); }
-function endMsOf(b) { const start = b?.time?.startMs || 0; const dur = (b?.intent?.durationMin || 0) * 60000; return start + Math.max(6 * 3600000, dur + 2 * 3600000); }
+function endMsOf(b) { const start = b?.time?.startMs || 0; const dur = (b?.intent?.durationMin || 0) * 60000; return start + dur + 6 * 3600000; }   // 0.12.10a: Landung + 6 h
 /** Nächste Ordnungsnummer «JJJJ-NNN» (Zähler je Jahr in kv; atomar via UPDATE … RETURNING). */
 async function nextNo(env, year) {
   const k = `seq:${year}`;
@@ -514,6 +520,7 @@ async function route(req, env, url, ctx) {
     let where = 'b.owner_id=?', args = [user.id];
     if (scope === 'all') { if (!isSuper) return err('forbidden', 403); where = '1=1'; args = []; }
     else if (scope === 'material') { where = 'b.material_owner=? AND b.owner_id<>?'; args = [user.id, user.id]; }
+    where = `(${where}) AND COALESCE(b.hidden,0)=0`;   // 0.12.10a: vom Supermaster ausgeblendete Archiv-Einträge
     await ensureSchema(env);
     const rows = await env.DB.prepare(`SELECT b.id,b.no,b.progress,b.edition,b.end_ms,b.frozen,b.start_ms,b.tz,b.site,b.icao,b.elev,b.reg,b.balloon,b.kind,b.status,b.final_no,b.revision,b.updated_at,b.updated_by,b.owner_id,b.material_owner,u.name AS owner_name,
       (SELECT COUNT(*) FROM access_links a WHERE a.briefing_id=b.id AND a.revoked=0 AND a.expires_at>?) AS links FROM briefings b LEFT JOIN users u ON u.id=b.owner_id WHERE ${where} ORDER BY b.start_ms`).bind(Date.now(), ...args).all();
@@ -541,8 +548,13 @@ async function route(req, env, url, ctx) {
     if (!access) return err('forbidden', 403);
     if (req.method === 'GET') { const b = await loadBriefing(env, id); return json({ briefing: b, access }); }
     if (req.method === 'DELETE') {
-      if (access !== 'write') return err('read only', 403);
-      if (rowArchived(row)) return err('locked', 423);   // 0.12.9: Archiv – kein Löschen
+      if (access !== 'write' && !(isSuper && rowArchived(row))) return err('read only', 403);
+      if (rowArchived(row)) {   // 0.12.9: Archiv – kein Löschen; 0.12.10a: der Supermaster blendet Archiv-Einträge aus (nichts wird gelöscht)
+        if (!isSuper) return err('locked', 423);
+        await env.DB.prepare('UPDATE briefings SET hidden=1 WHERE id=?').bind(id).run();
+        logUsage(env, ctx, user.id, 'briefing_hide', id);
+        return new Response(null, { status: 204 });
+      }
       await env.DB.prepare('DELETE FROM briefings WHERE id=?').bind(id).run();
       await env.DB.prepare('DELETE FROM access_links WHERE briefing_id=?').bind(id).run();
       // 0.12.10: Bilder bleiben, solange eine Archivkopie (Nachtrag) darauf verweist

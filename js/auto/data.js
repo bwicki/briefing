@@ -10,7 +10,7 @@ import { sunFor, scheduleFor } from '../model.js';
 import { thermalHours, thermalSummary, classOf, THERMAL_DEFAULTS } from '../calc/thermal.js';
 import { normalizeAirspace, analyzeAirspaces, thinRing, siteWarnings } from '../calc/airspace.js';
 import { isoDate, hhmm, fmtDur } from '../calc/time.js';
-import { distKm, bearing, icao, setDeRings } from '../calc/geo.js';
+import { distKm, bearing, icao, setDeRings, setCountryRings } from '../calc/geo.js';
 import { t, getLang } from '../i18n.js';
 import { dataFile, placeName } from '../net.js';
 import { coverPoints } from '../calc/stageplan.js';
@@ -226,6 +226,12 @@ let gaforAreasP = null;
 export function loadGaforAreas() {
   gaforAreasP = gaforAreasP || dataFile('gafor-areas.geojson', 20000).then((g) => { try { setDeRings(g.features); } catch { /* ohne Umriss */ } return g; });
   return gaforAreasP;
+}
+let countriesP = null;
+/** 0.12.10a: Landesgrenzen (data/countries.geojson) für countryGuess laden – einmalig, beim Start. */
+export function loadCountries() {
+  countriesP = countriesP || dataFile('countries.geojson', 20000).then((g) => { setCountryRings(g.features); return g; });
+  return countriesP;
 }
 export function gaforArea(lat, lon) {
   gaforAreasP = loadGaforAreas();
