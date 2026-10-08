@@ -24,7 +24,7 @@ export const PANELS = [
   // 0.12: Gasfahrt – Fahrthöhen, Etappen und Ballast im Höhenprofil-Werkzeug; Nachfahrer-Abschnitt ab 12 h Fahrtdauer
   { key: 'A.profile', section: 'A', kind: 'profile', de: 'Fahrtprofil: Höhen, Etappen, Ballast', en: 'Flight profile: altitudes, stages, ballast', grade: 'calc', gasOnly: true, noAi: true },
   { key: 'A.retrieve', section: 'A', kind: 'text', de: 'Nachfahrer: Route, Maut, Übernachtung, Grenze', en: 'Retrieve crew: route, tolls, overnight, border', grade: 'manual', gasOnly: true, minDurationMin: 720, defaultText: { de: 'Route Nachfahrer: …\nMaut / Vignetten: …\nÜbernachtung: …\nGrenzdokumente (ID, Fahrzeugpapiere, Ballonpapiere): …\nTreffpunkt / Erreichbarkeit: …', en: 'Retrieve route: …\nTolls / vignettes: …\nOvernight stay: …\nBorder documents (ID, vehicle papers, balloon papers): …\nMeeting point / reachability: …' } },
-  { key: 'A.landing', section: 'A', kind: 'landing', de: 'Geplante Landeorte, Besonderheiten', en: 'Planned landing areas, particulars', grade: 'manual' },
+  { key: 'A.landing', section: 'A', kind: 'landing', de: 'Geplanter Landeraum', en: 'Planned landing area', grade: 'manual' },
   { key: 'A.equipment', section: 'A', kind: 'equipment', de: 'Erforderliche Spezialausrüstung', en: 'Special equipment required', grade: 'calc' },
   { key: 'A.schedule', section: 'A', kind: 'schedule', de: 'Tagesplanung (LT)', en: 'Day schedule (LT)', grade: 'calc', always: true },
   { key: 'A.remarks', section: 'A', kind: 'text', de: 'Bemerkungen', en: 'Remarks', grade: 'manual' },

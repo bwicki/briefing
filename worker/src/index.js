@@ -527,6 +527,7 @@ async function route(req, env, url, ctx) {
       const { briefing, who } = await body();
       if (!briefing || briefing.id !== id) return err('bad briefing');
       if (row && access !== 'write') return err('read only', 403);
+      if (row && row.end_ms && Date.now() > row.end_ms) return err('locked', 423);   // 0.12.9: Fahrt vorbei → Briefing unveränderlich (Kopie anlegen)
       return json(await saveBriefing(env, ctx, briefing, who || user.name, user.id, user.id));
     }
     if (!row) return err('not found', 404);

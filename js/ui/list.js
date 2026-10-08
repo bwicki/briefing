@@ -21,7 +21,7 @@ export async function renderList(view, ctx) {
   let all = await ctx.store.listBriefings(scope);
   const foreign = (b) => ctx.user && b.owner && b.owner !== ctx.user.id;
   const openHash = (b) => (foreign(b) ? `#/v/${b.id}` : `#/b/${b.id}`);
-  let filter = 'planned', q = '';
+  let q = '';
   const now = Date.now();
   // Sortierung: Standard Ordnungsnummer absteigend (jüngste zuoberst); Klick auf die Spaltenköpfe wechselt
   let sortKey = 'no', sortDir = -1;
@@ -34,11 +34,10 @@ export async function renderList(view, ctx) {
   const side = h('div');
   view.appendChild(h('div.layout-2', [body, side]));
 
-  function rows() {
+  // 0.12.9: zwei Abschnitte statt Filter – «Briefings in Arbeit» (bevorstehend/laufend) und «Archiv» (Fahrt vorbei: gesperrt, unbeschränkt, unveränderlich; Kopie als Vorlage möglich)
+  function rows(group) {
     return sorted(all.filter((b) => {
-      const ph = phaseOf(b.startMs || 0, now);
-      if (filter === 'planned' && ph === 'past') return false;
-      if (filter === 'archive' && ph !== 'past') return false;
+      if ((group === 'archive') !== locked(b)) return false;
       if (q) { const s = `${b.no || ''} ${b.site || ''} ${b.reg || ''} ${b.balloon || ''} ${b.ownerName || ''} ${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)}`.toLowerCase(); if (!s.includes(q.toLowerCase())) return false; }
       return true;
     }));
@@ -46,8 +45,7 @@ export async function renderList(view, ctx) {
   function draw() {
     clear(body);
     const search = h('input', { type: 'search', placeholder: t('search'), value: q, oninput: (e) => { q = e.target.value; drawTable(); } });
-    const chips = h('div.chips', ['all', 'planned', 'archive'].map((f) => h('button.chip.lg', { type: 'button', 'aria-pressed': filter === f, onclick: () => { filter = f; draw(); } }, t(f === 'all' ? 'filterAll' : f === 'planned' ? 'filterPlanned' : 'filterArchive'))));
-    body.appendChild(h('div.list-head', [h('h2', t('briefings')), chips]));
+    body.appendChild(h('div.list-head', [h('h2', t('briefings'))]));
     if (scopes.length > 1) body.appendChild(h('div.chips.scopes', scopes.map((sc) => h('button.chip', { type: 'button', 'aria-pressed': scope === sc, onclick: async () => { scope = sc; all = await ctx.store.listBriefings(scope); draw(); } }, t('scope_' + sc)))));
     body.appendChild(h('div', { style: { marginBottom: '10px' } }, search));
     body.appendChild(tableWrap);
@@ -56,16 +54,22 @@ export async function renderList(view, ctx) {
   const tableWrap = h('div');
   function drawTable() {
     clear(tableWrap);
-    const rs = rows();
-    if (!rs.length) { tableWrap.appendChild(h('div.note', t('noBriefings'))); return; }
+    const work = rows('work'), arch = rows('archive');
+    if (!work.length && !arch.length) { tableWrap.appendChild(h('div.note', t('noBriefings'))); return; }
+    tableWrap.appendChild(h('h3.list-sect', `${t('listWork')} (${work.length})`));
+    if (work.length) tableWrap.appendChild(groupTable(work, false)); else tableWrap.appendChild(h('div.note', t('noBriefings')));
+    tableWrap.appendChild(h('h3.list-sect.archive', `${t('listArchive')} (${arch.length})`));
+    tableWrap.appendChild(h('div.note.small', t('listArchiveHint')));
+    if (arch.length) tableWrap.appendChild(groupTable(arch, true));
+  }
+  function groupTable(rs, archive) {
     const narrow = window.innerWidth < 700;
     if (narrow) {
-      tableWrap.appendChild(h('div.cards-list', rs.map((b) => h('div.bcard', { onclick: () => ctx.navigate(openHash(b)) }, [
+      return h('div.cards-list', rs.map((b) => h('div.bcard', { onclick: () => ctx.navigate(openHash(b)) }, [
         h('div.t', `${b.no ? b.no + ' · ' : ''}${fmtDate(b.tz || 'Europe/Zurich', b.startMs || 0)} · ${hhmm(b.tz || 'Europe/Zurich', b.startMs || 0)} LT · ${b.reg || ''}`),
         h('div', `${b.site || '–'}${scope !== 'own' ? ` · ${b.ownerName || b.owner || ''}` : ''}`),
         h('div.m', [locked(b) ? icon('lock', 13) : null, ' ', phaseTag(b), ' ', statusText(b)]),
-      ]))));
-      return;
+      ])));
     }
     const showOwner = scope !== 'own';
     const tz = (b) => b.tz || 'Europe/Zurich';
@@ -82,10 +86,10 @@ export async function renderList(view, ctx) {
         h('td.row-actions.acts', foreign(b) ? [h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(openHash(b)) }, icon('view'))] : [
           locked(b) ? h('button.btn.icon.small', { type: 'button', title: t('view_brief'), onclick: () => ctx.navigate(`#/v/${b.id}`) }, icon('view')) : h('button.btn.icon.small.edit', { type: 'button', title: t('edit'), onclick: () => ctx.navigate(`#/b/${b.id}`) }, icon('edit')),
           h('button.btn.icon.small', { type: 'button', title: t('duplicate'), onclick: () => dup(b.id) }, icon('dup')),
-          h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, icon('del')),
-        ]),
+          archive && !ctx.isSuper ? null : h('button.btn.icon.small', { type: 'button', title: t('delete'), onclick: () => delB(b.id) }, icon('del')),   // Archiv: Löschen nur für den Supermaster (Testeinträge)
+        ].filter(Boolean)),
       ].filter(Boolean))))]);
-    tableWrap.appendChild(tbl);
+    return tbl;
   }
   const locked = (b) => (b.endMs ? now > b.endMs : isLocked({ time: { startMs: b.startMs || 0 }, intent: {} }, now));
   /** Phase der Fahrt (Vorplanung/Planung/Final/vergangen) als kleines Etikett. */

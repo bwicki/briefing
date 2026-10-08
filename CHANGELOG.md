@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.9 — 2026-10-08 · Archiv unveränderlich, drei Schriften in der Briefingsicht
+
+* **Briefings-Seite:** zwei immer sichtbare Abschnitte **«Briefings in Arbeit»** und **«Archiv»** (statt Filter
+  Geplant/Alle/Archiv). Vergangene Fahrten bleiben unbeschränkt im Archiv, sind unveränderlich (Ansicht, Druck) und
+  mit ⧉ als Vorlage kopierbar; Löschen im Archiv nur für den Supermaster. Der Worker lehnt Änderungen gesperrter
+  Briefings ab (HTTP 423).
+* **Briefingsicht – drei Schriften:** Titel (linke Spalte), Beschriftungen (Mono, klein, grau; «Ordnungsnummer»
+  heisst neu **«Briefingnummer»**) und Angaben (Sans 11.5 px) – auch für METAR/NOTAM-Texte, Tabellen, Hinweise.
+  Grafiken und das Höhenprofil-Werkzeug unverändert. A2-Tabellen kompakter.
+* **A4** heisst **«Geplanter Landeraum»** (ohne fette Wiederholung in der Zelle). **A3:** Startgewicht nicht mehr fett;
+  neue Zeile **«Δ max. Startgewicht»** = zulässig − Start (schwarz bei ≥ 0, rot bei negativ) – auch in Erarbeitung und
+  Assistent. Hinweis zu Radiosondierung/SondeHub (B3) über beide Spalten.
+* Warnsymbol «gegenwärtiger Stand» auch bei DABS und Radar/Webcams (Nachtrag 0.12.8).
+* Tests: Smoke «desktop» (Abschnitte der Briefings-Seite, Briefingnummer).
+
 ## 0.12.8 — 2026-10-08 · Rückmeldungen aus dem Test 0.12.7 (Oberfläche, A1/A2, Meldungen ausblenden, NOTAM-Karte, Warnsymbol)
 
 * **Oberfläche:** Briefings-Seite ohne Stammdaten-Rekapitulation (Knopf «Einstellungen» bleibt); «Nächste

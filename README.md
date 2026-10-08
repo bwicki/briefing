@@ -86,7 +86,10 @@ Distanz 755 km · Ankunft ~Do 19:25 LT (Fahrzeit 20:55 h) · ⌀ Fahrthöhe 2210
 **A2 Astronomische Daten** als zwei Tabellen: Sonne (BCMT · SR · SS · ECET; Zeilen LT, UTC, bei RAC
 astronomisch) und Mond (Aufgang · Untergang in LT/UTC, Phase); Quelle als Fussnote, ohne NVFR-Anmerkung.
 METAR-Klartext: Änderungsgruppen («→ BECMG …») stehen bündig unter dem Text, auf den sie sich beziehen, mit
-hängendem Einzug.
+hängendem Einzug. **Drei Schriften in der Briefingsicht (0.12.9):** Titel der linken Spalte (wie «Stammdaten»),
+Beschriftungen (wie «Briefingnummer»: Mono, klein, grau) und Angaben (wie «2'600 m³»: Sans 11.5 px, schwarz) – auch
+für METAR/NOTAM-Texte, Tabellen und Hinweise; Grafiken und das Höhenprofil-Werkzeug sind davon nicht berührt.
+A2-Tabellen kompakt.
 
 Alle Briefings kompakt (zwei Zeilen je Zelle): **#** (Ordnungsnummer, 🔒 bei Sperre), Datum
 und Startzeit, Startort (ICAO-Kurzkoordinaten, Höhe), Ballon, Fahrttyp, **Status** («in Arbeit
@@ -94,7 +97,10 @@ NN %» oder «Final vN», darunter die Phase Vorplanung > 72 h / Planung 24–72
 **Letzte Änderung** (Bearbeitungsstand vN · Datum · Bearbeiter, dazu 🔗 n aktive Freigabelinks).
 Aktionen als Symbole: ✎ Bearbeiten (gesperrt: 👁 Briefingsicht), ⧉ Duplizieren, 🗑 Löschen.
 Sortierung über die Spaltenköpfe (Standard: Nummer absteigend, jüngste zuoberst); Doppelklick auf
-eine Zeile öffnet die Briefingsicht. Filter *Geplant / Alle / Archiv*, Suche; Sichten *Meine Briefings*,
+eine Zeile öffnet die Briefingsicht. Seit 0.12.9 zwei immer sichtbare Abschnitte: **Briefings in Arbeit**
+(bevorstehend/laufend) und **Archiv** (Fahrt vorbei: unbeschränkt aufgeführt, unveränderlich – nur Ansicht,
+Druck und ⧉ Kopie als Vorlage; der Worker lehnt Änderungen gesperrter Briefings ab (423); Löschen im Archiv nur
+Supermaster); Suche über beide; Sichten *Meine Briefings*,
 *Alle Nutzer* (Supermaster) und *Fahrten mit meinem Material* (wenn Ballone
 freigegeben sind; fremde Briefings öffnen sich nur in der Briefingsicht). Rechts
 die nächste Fahrt mit Sonnenzeiten und der Knopf «Einstellungen» (0.12.8: ohne Rekapitulation der Stammdaten). **⧉** dupliziert ein Briefing als Vorlage (Ballon, Startort, PIC,

@@ -233,7 +233,7 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         hdr = pg.inner_text('.brief .bh .tline') + ' | ' + pg.inner_text('.brief .bh')
         assert hdr.startswith('Fahrtbriefing · 20') and 'Start:' in hdr and 'Letzte Änderung' in hdr, 'Titelzeile und letzte Änderung: ' + hdr[:80]
         assert pg.evaluate("(() => { const e = document.querySelector('.brief .bh .tline'); return e.getBoundingClientRect().height < 1.8 * parseFloat(getComputedStyle(e).fontSize); })()"), 'Titelzeile einzeilig'
-        assert 'Ordnungsnummer' in pg.inner_text('.brief tr.row-A-core') and 'Pax:' in pg.inner_text('.brief tr.row-A-core'), 'Nummer und Pax-Zeile in den Stammdaten'
+        assert 'Briefingnummer' in pg.inner_text('.brief tr.row-A-core') and 'Pax:' in pg.inner_text('.brief tr.row-A-core'), 'Nummer und Pax-Zeile in den Stammdaten'
         core = pg.inner_text('.brief tr.row-A-core'); assert 'Landeort (geplant)' in core and 'Fahrtdauer' in core and 'Fahrthöhen' in core and 'CH-' in core, '0.12.8: Landeort-Zeile, Fahrtabsicht neu gegliedert, Länderkennzeichen auch CH: ' + core[:300]
         assert len(pg.query_selector_all('.brief tr.row-A-sun table.auto.astro')) == 2, 'A2 als zwei Tabellen (Sonne, Mond)'
         pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1200)
@@ -284,18 +284,19 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.goto(BASE + f'#/b/{bid}'); pg.wait_for_timeout(1500)
         assert pg.query_selector('.lockbar') is not None and '#/v/' in pg.evaluate('location.hash'), 'gesperrtes Briefing → Briefingsicht mit Hinweis'
         pg.goto(BASE + '#/list'); pg.wait_for_timeout(600)
-        pg.click('.list-head button.chip:has-text("Archiv")'); pg.wait_for_timeout(400)
+        # 0.12.9: zwei Abschnitte «Briefings in Arbeit» und «Archiv» (immer sichtbar, Archiv ohne Stift)
+        sects = [e.inner_text() for e in pg.query_selector_all('h3.list-sect')]
+        assert len(sects) == 2 and sects[0].upper().startswith('BRIEFINGS IN ARBEIT') and sects[1].upper().startswith('ARCHIV (') and pg.query_selector('.list-head button.chip') is None, 'Abschnitte der Briefings-Seite: ' + str(sects)
         assert pg.query_selector('#view svg.ico-lock') is not None, 'Schloss in der Liste (Archiv)'
         if not mobile:
             assert pg.query_selector('table.tbl.list td.no .lock') is not None and pg.query_selector('table.tbl.list tr.locked .acts .edit') is None, 'Schloss hinter der Nummer, kein Stift bei Sperre'
             hdrs = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list th', 'els => els.map(e => e.textContent)')]
             assert hdrs[0].startswith('#') and any(x.startswith('Status') for x in hdrs) and 'Phase' not in hdrs and 'Links' not in hdrs, 'Spalten der Liste: ' + str(hdrs)
             # 0.11.3: Sortierung (Standard Nummer absteigend) und Doppelklick → Briefingsicht
-            pg.click('.list-head button.chip:has-text("Alle")'); pg.wait_for_timeout(400)
-            nos = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list td.no', 'els => els.map(e => e.textContent)')]
+            nos = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list:first-of-type td.no', 'els => els.map(e => e.textContent)')]
             assert nos == sorted(nos, reverse=True), 'Liste absteigend nach Nummer: ' + str(nos)
             pg.click('table.tbl.list th.sortable >> nth=0'); pg.wait_for_timeout(300)
-            nos2 = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list td.no', 'els => els.map(e => e.textContent)')]
+            nos2 = [x.strip() for x in pg.eval_on_selector_all('table.tbl.list:first-of-type td.no', 'els => els.map(e => e.textContent)')]
             assert nos2 == sorted(nos2), 'Klick auf # → aufsteigend: ' + str(nos2)
             pg.dblclick('table.tbl.list tbody tr >> nth=0 >> td >> nth=1'); pg.wait_for_timeout(800)
             assert pg.evaluate('location.hash').startswith('#/v/'), 'Doppelklick öffnet die Briefingsicht: ' + pg.evaluate('location.hash')
@@ -446,7 +447,7 @@ def run_gas(name):
         n0 = len(pg.query_selector_all('.pf-tool svg .pf-pt')); pg.mouse.dblclick(box['x'] + 500 * sx, box['y'] + 200 * sy); pg.wait_for_timeout(2500); idle()
         assert len(pg.query_selector_all('.pf-tool svg .pf-pt')) == n0 + 1, 'Doppelklick setzt einen Punkt'
         # 0.12.5: Klick auf die Zeitzeile öffnet den Dialog «Neue Etappe» (Name, Klickbox «Ops-Briefing für Etappe»)
-        s0 = len(pg.query_selector_all('.pf-tool svg .pf-sh')); ops0 = len(pg.query_selector_all('.pf-tool svg .pf-ops')); ab = pg.query_selector('.pf-tool svg .pf-axis').bounding_box(); pg.mouse.click(ab['x'] + ab['width'] * 0.6, ab['y'] + ab['height'] / 2); pg.wait_for_timeout(600)
+        s0 = len(pg.query_selector_all('.pf-tool svg .pf-sh')); ops0 = len(pg.query_selector_all('.pf-tool svg .pf-ops')); ab = pg.query_selector('.pf-tool svg .pf-axis').bounding_box(); shs = [e.bounding_box() for e in pg.query_selector_all('.pf-tool svg .pf-sh')]; cx = (shs[0]['x'] + shs[0]['width'] / 2 + shs[-1]['x'] + shs[-1]['width'] / 2) / 2 if len(shs) >= 2 else ab['x'] + ab['width'] * 0.6; pg.mouse.click(cx, ab['y'] + ab['height'] / 2); pg.wait_for_timeout(600)   # zwischen den Etappengriffen → «Nacht» wird E3 (unabhängig von Tageslänge)
         assert ops0 == 1 and pg.is_visible('.pf-menu.pf-newstage') and 'Ops-Briefing' in pg.inner_text('.pf-menu.pf-newstage') and len(pg.query_selector_all('.pf-tool svg .pf-sh')) == s0, 'Startetappe mit Marke B/C; Dialog «Neue Etappe» mit Klickbox, noch keine Grenze gesetzt'
         pg.fill('.pf-menu.pf-newstage input[type=text]', 'Nacht'); pg.check('.pf-menu.pf-newstage input[type=checkbox]'); pg.click('.pf-menu.pf-newstage button:has-text("Etappe anlegen")'); pg.wait_for_timeout(600)
         assert len(pg.query_selector_all('.pf-tool svg .pf-sh')) == s0 + 1 and 'Nacht' in pg.text_content('.pf-tool svg.pf-svg') and len(pg.query_selector_all('.pf-tool svg .pf-ops')) == 2, 'Etappe «Nacht» mit Planung angelegt (Griff, Name, Marke B/C)'

@@ -104,6 +104,7 @@ table.tbl td .sm,.item-box .sm{font-size:11.5px;color:var(--text-dim);font-famil
 .cards-list{display:flex;flex-direction:column;gap:8px;}
 .bcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:4px;}
 .bcard .t{font-weight:600;color:var(--text-strong);}
+.list-sect{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)} .list-sect.archive{margin-top:26px}   /* 0.12.9: Abschnitte der Briefings-Seite */
 .bcard .m{font-size:12px;color:var(--text-dim);font-family:var(--mono);}
 .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.04em;padding:2px 7px;border-radius:5px;border:1px solid var(--line);color:var(--text-dim);white-space:nowrap;}
 .tag.auto{color:var(--dew);border-color:var(--dew);} .tag.calc{color:var(--green);border-color:var(--green);} .tag.half{color:var(--gafor-d);border-color:var(--gafor-d);} .tag.must{color:var(--temp);border-color:var(--temp);} .tag.final{color:var(--green);border-color:var(--green);}
@@ -353,7 +354,17 @@ details.exp summary{cursor:pointer;font-weight:600;padding:8px 0;}
 .brief .kv .k{color:#555;} .brief .kv .v{color:#111;}
 .brief .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .brief .ns{color:#b45309;font-weight:600;}
+.neg-val{color:#b91c1c}   /* 0.12.9: Δ max. Startgewicht negativ */
 .brief .mini{font-size:10.5px;color:#555;}
+/* 0.12.9: drei Schriften in der Briefingsicht – Titel (linke Spalte, wie «Stammdaten»), Beschriftungen (wie «Briefingnummer»: mono, klein, grau)
+   und Angaben (wie «2'600 m³»: Sans 11.5 px, schwarz) – auch für METAR/NOTAM-Texte, Tabellen und Hinweise. Grafiken (SVG) und das Höhenprofil-Werkzeug bleiben unberührt. */
+.brief table.bp td, .brief table.bp td pre.report, .brief table.bp td .mono, .brief table.bp td table.auto, .brief table.bp td table.auto td, .brief table.bp td table.inner td, .brief table.bp td ul.decoded, .brief table.bp td .metar, .brief table.bp td .note, .brief table.bp td .ex, .brief table.bp td .aiN, .brief table.bp td .cm, .brief table.bp td .wxtext, .brief table.bp td .pline, .brief table.bp td table.pf-stages td, .brief table.bp td table.pf-ballast td{font-family:var(--sans);font-size:11.5px;color:#111;}
+.brief table.bp td pre.report{line-height:1.45;}
+.brief table.bp td .kv .k, .brief table.bp td div.lbl, .brief table.bp td table.auto th, .brief table.bp td table.inner th, .brief table.bp td table.pf-stages th, .brief table.bp td table.pf-ballast th, .brief table.bp td .mhead, .brief table.bp td .note.stand{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:#555;text-transform:none;font-weight:400;}
+.brief table.bp td .mhead b{font-weight:600;color:#333;}
+.brief table.bp td .mini, .brief table.bp td .muted.small, .brief table.bp td figcaption.mini{font-family:var(--sans);font-size:11px;letter-spacing:0;color:#555;}   /* Nebenangaben (Distanz, Dauer, Bildunterschrift): Angaben-Schrift, grau */
+.brief table.bp td .pline .pname{font-weight:400;color:inherit;}   /* 0.12.9: A4 Geplanter Landeraum – Ortsname nicht fett */
+.brief table.bp td .bad, .brief table.bp td .warn, .brief table.bp td .ns{color:#b91c1c;}
 .brief table.inner{border-collapse:collapse;width:100%;font-size:11px;}
 .brief table.inner td,.brief table.inner th{border:1px solid #d1d5db;padding:2px 5px;text-align:right;}
 .brief table.inner th:first-child,.brief table.inner td:first-child{text-align:left;}
@@ -459,7 +470,7 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .metar .mhead .mh-btns{display:inline-flex;gap:4px}
 .metar .mhead .btn.icon.small{width:24px;height:24px;min-height:24px;font-size:11px}
 .notam-map{height:420px}
-.astro-grid{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:flex-start} table.auto.astro{width:auto} table.auto.astro th:first-child{text-align:left;font-family:var(--mono);font-size:10.5px}   /* 0.12.8: A2 als Tabellen */
+.astro-grid{display:flex;flex-wrap:wrap;gap:6px 20px;align-items:flex-start} table.auto.astro{width:auto;font-size:11px} table.auto.astro th,table.auto.astro td{padding:1px 6px;line-height:1.3} table.auto.astro th:first-child{text-align:left;font-family:var(--mono);font-size:10px}   /* 0.12.8: A2 als Tabellen; 0.12.9: kompakter */
 .now-warn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:var(--amber);color:#1a1200;font-size:11px;margin-right:6px;cursor:help;vertical-align:-2px}   /* 0.12.8: Warnsymbol «gegenwärtiger Stand» */
 .pre.small,pre.report.small{font-size:11px}
 .metar-cols ul.decoded{margin:4px 0 0;padding-left:16px;font-size:12.5px;line-height:1.4}
