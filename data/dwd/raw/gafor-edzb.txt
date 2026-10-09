@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-062
-FBEU40 EDZB 090300
+741
+FBEU40 EDZB 090600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 09.10.2026, 03.00 UTC bis 10.10.2026, 00.00 UTC
+gültig vom 09.10.2026, 06.00 UTC bis 10.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
@@ -39,11 +39,11 @@ absinkend. In der Osthälfte bis zum Abend auch aufkommender Regen mit
 der SC/AS-Bewölkung um 2500-4000 FT AMSL.
 
 In der Nacht zum Samstag verbreitet leichter bis mäßiger Regen bei
-BKN/OVC ST/SC/AS, teils NS, in 1000-2500 FT AMSL. Die höheren
+BKN/OVC ST/SC/AS, teils NS, in 1000-3000 FT AMSL. Die höheren
 Untergrenzen vor allem in der Südhälfte abseits der Mittelgebirge. In
 der Nordhälfte dagegen meist BKN/OVC ST in 600-1000 FT AMSL.
 Mittelgebirge in Wolken.
-In der zweiten Nachthälfte in Mecklenburg allmählich nachlassender
+In der zweiten Nachthälfte im Nordwesten allmählich nachlassender
 Regen und Ausschichten der Bewölkung und zum Berichtsende allmählich
 in BKN ST/SC/CU übergehend in 1000-15000 FT AMSL. Dabei lokal TCU mit
 Tops um Fl130 und Schauern möglich.
@@ -53,23 +53,23 @@ Sichtweite:
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 250/20KT  08C | 200/20KT  09C |
-1000FT | 250/25KT  07C | 210/25KT  08C |
-1500FT | 270/35KT  06C | 220/30KT  08C |
-2000FT | 270/35KT  06C | 230/35KT  07C |
-3000FT | 280/35KT  04C | 260/35KT  08C |
-5000FT | 290/35KT  01C | 260/25KT  07C |
-FL100  | 290/40KT M05C | 270/30KT M01C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 240/15KT  09C | 230/20KT  10C |
+1000FT | 240/20KT  08C | 240/30KT  09C |
+1500FT | 250/30KT  07C | 240/35KT  09C |
+2000FT | 260/35KT  07C | 250/35KT  09C |
+3000FT | 260/35KT  04C | 280/40KT  09C |
+5000FT | 260/30KT  01C | 290/35KT  07C |
+FL100  | 280/30KT M05C | 270/35KT M01C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 230/20KT  07C | 220/20KT  09C |
-1500FT | 250/25KT  07C | 230/35KT  08C |
-2000FT | 260/25KT  06C | 230/35KT  07C |
-3000FT | 280/30KT  04C | 260/45KT  07C |
-5000FT | 280/25KT  01C | 280/35KT  07C |
-FL100  | 290/35KT M04C | 280/30KT M00C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 230/15KT  09C | 220/20KT  09C |
+1500FT | 230/20KT  07C | 230/30KT  08C |
+2000FT | 240/30KT  06C | 240/35KT  08C |
+3000FT | 260/30KT  05C | 270/45KT  09C |
+5000FT | 250/30KT  02C | 270/40KT  08C |
+FL100  | 270/30KT M06C | 280/35KT M00C |
 
 Turbulenz:
 Am Freitag unterhalb 5000 FT AMSL LOC LGT/MOD bei Böen mit 25-35 KT
@@ -93,6 +93,6 @@ Leipzig  04.50 | 05.24 | 16.31 | 17.04
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Luftfahrtberatungszentrale Berlin/Hi

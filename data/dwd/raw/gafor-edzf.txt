@@ -1,31 +1,31 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-060
-FBEU40 EDZF 090300
+750
+FBEU40 EDZF 090600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 09.10.2026, 03.00 UTC bis 10.10.2026, 00.00 UTC
+gültig vom 09.10.2026, 06.00 UTC bis 10.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Zunächst ist im gesamten Bereich Zwischenhocheinfluss
-wetterbstimmend. In der Nacht hat sich verbreitet eine feuchte
-Grundschicht gebildet, die sich am Vormittag abtrocknet. Im Laufe des
-Vormittages nähert sich von Nordwesten die Warmfront eines Tiefs über
-dem Europäischem Nordmeer, sie greift am späteren Vormittag auf den
-Norden und Nordwesten über und zieht im weiteren Verlauf südostwärts
-über den Vorhersagebereich hinweg. Am Abend ist sie vor allem in
+Zunächst ist noch leichter Zwischenhocheinfluss wetterbstimmend. In
+der Nacht hat sich verbreitet eine feuchte Grundschicht gebildet, die
+am Vormittag wieder abtrocknet. Im Laufe des Vormittages nähert sich
+von Nordwesten die Warmfront eines Tiefs über dem Europäischem
+Nordmeer, sie greift am späteren Vormittag auf den Norden und
+Nordwesten über und zieht im weiteren Verlauf südostwärts über den
+Vorhersagebereich hinweg. Am Abend ist sie vor allem in
 Baden-Württemberg wetterwirksam und zieht in der ersten Nachthälfte
 aus dem Vorhersagebereich ab. Nach kurzer Wetterberuhigung im
 Warmsektor folgt am Abend und in der Nacht die zugehörige Kaltfront
-von Nordwest. Sie erreicht Ausgangs der Nacht eine den
+von Nordwest. Sie erreicht Ausgangs der Nacht den
 Baden-Württembergischen Bereich, während RLP, das Saarland und Hessen
 auf die Rückseite der Kaltfront gelangen.
 
 Wettergeschehen:
-Am Morgen ist es in Baden-Württemberg meist wolkenfrei, nördlich ist
-bereits teils dichtere CI-Bewölkung oberhalb von FL180-220
+Zunächst ist es in Baden-Württemberg meist wolkenfrei, nördlich ist
+bereits teils dichtere CI-Bewölkung oberhalb von FL160-220
 aufgezogen. In der Nacht hat sich in Flussniederungen und Tallagen
 örtlich Dunst oder flacher Nebel gebildet, in Mittel- und Nordhessen
 auch etwas verbreiteter BKN/OVC ST/SC in 1000-1500 FT AMSL und
@@ -34,7 +34,7 @@ Obergrenzen in 3000-5000 FT AMSL.
 Am Vormittag lösen sich Dunst, Nebel zögerlich auf, teils mit
 Übergang zu ST-Bewölkung in wenigen Hunderten FT AGL. Auch die
 BKN/OVC ST/SC Bewölkung in Mittel- und Nordhessen hebt zunächst etwas
-an auf 1500-2000 FT AMSL, bevor sie sich gegen Mittag auflöst.
+an auf 2000-2500 FT AMSL, bevor sie sich gegen Mittag auflöst.
 Gleichzeitig zieht von Nordwesten eine BKN/OVC AS/CS/CI Bewölkung
 oberhalb von FL070-100 auf, die bis zum Mittag über RLP, Hessen und
 dem nördlichen Baden-Württemberg liegt. Die Obergrenzen liegen meist
@@ -78,22 +78,22 @@ nach Intensität 4-15 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 210/10KT  08C | 210/15KT  10C |
-1500FT | 230/20KT  07C | 220/25KT  08C |
-2000FT | 230/25KT  06C | 220/30KT  07C |
-3000FT | 250/25KT  04C | 260/35KT  09C |
-5000FT | 250/30KT  01C | 270/35KT  07C |
-FL100  | 270/30KT M03C | 270/40KT M00C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 210/15KT  08C | 200/15KT  10C |
+1500FT | 220/20KT  06C | 210/25KT  08C |
+2000FT | 220/25KT  05C | 220/30KT  07C |
+3000FT | 240/35KT  04C | 260/40KT  09C |
+5000FT | 250/30KT  02C | 270/45KT  07C |
+FL100  | 290/35KT M01C | 260/45KT M02C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 230/10KT  08C | 210/25KT  11C |
-1500FT | 250/10KT  07C | 210/30KT  09C |
-2000FT | 250/15KT  07C | 220/30KT  09C |
-3000FT | 240/15KT  04C | 260/30KT  07C |
-5000FT | 250/15KT  02C | 280/30KT  07C |
-FL100  | 290/15KT M00C | 290/25KT M00C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 230/10KT  09C | 210/25KT  11C |
+1500FT | 210/15KT  08C | 210/35KT  09C |
+2000FT | 220/20KT  07C | 220/35KT  10C |
+3000FT | 230/20KT  04C | 260/30KT  08C |
+5000FT | 250/20KT  03C | 270/30KT  07C |
+FL100  | 310/20KT M01C | 270/25KT M00C |
 
 Turbulenz:
 Ab Mittag etwa nördlich der Mainlinie mäßig unterhalb FL060.
@@ -116,6 +116,6 @@ Karlsruhe  05.06 | 05.38 | 16.49 | 17.20
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Flugwetterzentrale Frankfurt/He

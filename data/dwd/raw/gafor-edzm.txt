@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-069
-FBEU40 EDZM 090300
+749
+FBEU40 EDZM 090600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 09.10.2026, 03.00 UTC bis 10.10.2026, 00.00 UTC
+gültig vom 09.10.2026, 06.00 UTC bis 10.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
@@ -20,21 +20,19 @@ folgt die zugehörige Kaltfront nach.
 
 Wettergeschehen:
 An den Alpen liegt BKN/OVC SC/AC mit tiefer Basis zwischen 3000 und
-4000 FT AMSL und Obergrenze zwischen FL080 und FL110. Daraus fällt
-gebietsweise leichter Sprühregen, oberhalb etwa 6000 FT AMSL Schnee.
-
-Daran nach Norden anschließend zieht im südlichen Alpenvorland
-SCT/BKN SC durch, im nördlichen Alpenvorland FEW, örtlich SCT SC,
-Basis zwischen 3000 und 4000 FT AMSL. Darüber zeigt sich SCT/BKN AC
-zwischen FL080 und FL100.
-Die SC/AC-Bewölkung im Alpenvorland abseits der Alpen lockert bis in
-die Morgenstunden weiter auf und es bilden sich örtlich flache Nebel-
-oder Dunstfelder aus.
-Nördlich der Donau ziehen nur noch örtlich SC-Felder zwischen 3000
-und 4000 FT AMSL durch, darüber CI-Felder oberhalb FL180. Von
-Oberfranken bis in die Oberpfalz sowie an der NW-Kante der
-Schwäbischen Alb hat sich darunter gebietsweise SCT/BKN ST mit Basis
-um 2000 FT AMSL gebildet, sonst örtlich flacher Nebel oder Dunst.
+4000 FT AMSL und Obergrenze zwischen FL080 und FL100. Daraus fällt
+noch vereinzelt leichter Sprühregen, oberhalb etwa 6000 FT AMSL
+Schnee. Daran nach Norden anschließend zieht im Alpenvorland noch
+gebietsweise FEW, vereinzelt SCT SC durch, Basis zwischen 3000 und
+4000 FT AMSL. Darüber zeigt sich vor allem im südlichen Alpenvorland
+SCT AC zwischen FL080 und FL100. Mit den Auflockerungen haben sich
+von Norden örtlich flache Nebel- oder Dunstfelder ausgebildet.
+Nördlich der Donau ziehen nur noch entlang der östlichen
+Mittelgebirge SC-Felder zwischen 3000 und 4000 FT AMSL durch, darüber
+gebietsweise CI-Felder oberhalb FL180. Von Oberfranken bis in die
+Oberpfalz sowie an der NW-Kante der Schwäbischen Alb hat sich
+darunter gebietsweise SCT/BKN ST mit Basis um 2000 FT AMSL gebildet,
+sonst örtlich Nebel oder Dunst.
 
 Am Vormittag lösen sich Nebel und Dunst auf. ST und SC gehen
 verbreitet in CU über, an den Alpen BKN, im nördlichen Franken und an
@@ -83,19 +81,19 @@ oder unter tiefem ST gebietsweise auch nur 2 bis 8 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  06 UTC  |  18 UTC  |
-1500FT | 240/10KT  07C | 220/15KT  10C |
-2000FT | 260/10KT  07C | 230/15KT  09C |
-3000FT | 260/15KT  03C | 250/25KT  05C |
-5000FT | 280/20KT  01C | 280/35KT  06C |
-FL100  | 280/20KT M01C | 290/30KT  00C |
+AMSL  |  09 UTC  |  21 UTC  |
+1500FT | 220/10KT  08C | 220/10KT  09C |
+2000FT | 220/10KT  07C | 230/15KT  09C |
+3000FT | 260/25KT  04C | 270/30KT  07C |
+5000FT | 260/20KT  02C | 270/30KT  07C |
+FL100  | 270/25KT M00C | 260/30KT M00C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  06 UTC  |  18 UTC  |
-2000FT | 280/05KT  07C | 250/15KT  13C |
-3000FT | 280/10KT  04C | 260/20KT  09C |
-5000FT | 270/10KT  03C | 270/25KT  06C |
-FL100  | 270/20KT M02C | 280/20KT M00C |
+AMSL  |  09 UTC  |  21 UTC  |
+2000FT | 250/05KT  08C | 240/15KT  11C |
+3000FT | 250/10KT  05C | 260/35KT  08C |
+5000FT | 260/15KT  04C | 260/25KT  07C |
+FL100  | 260/10KT  00C | 280/20KT M00C |
 
 Turbulenz:
 Ab dem Vormittag von Nordwesten aufkommende mäßige, örtlich auch
@@ -115,10 +113,10 @@ frontalen Bewölkungsbändern direkt oberhalb der Nullgradgrenze lokal
 starke Vereisung nicht ausgeschlossen.
 
 Nullgradgrenze:
-Zunächst zwischen FL055 im nördlichen Franken und FL070 im Südwesten
-und an den Alpen. Im Tagesverlauf stark ansteigend auf verbreitet
-FL095 bis FL105. In der Nacht zum Samstag wieder auf FL085 bis FL095
-absinkend.
+Zunächst zwischen FL055 an den östlichen Mittelgebirgen und FL070 im
+Südwesten und an den Alpen. Im Tagesverlauf stark ansteigend auf
+verbreitet FL095 bis FL105. In der Nacht zum Samstag wieder auf FL085
+bis FL095 absinkend.
 
 Inversionen:
 In Gebieten mit größeren und länger andauernden Wolkenlücken
@@ -135,6 +133,6 @@ München  04.53 | 05.23 | 16.36 | 17.07
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Luftfahrtberatungszentrale München/ip

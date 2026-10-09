@@ -1,40 +1,41 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzh_node.html
 
-068
-FBEU40 EDZH 090300
+739
+FBEU40 EDZH 090600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Nord
-gültig vom 09.10.2026, 03.00 UTC bis 10.10.2026, 00.00 UTC
+gültig vom 09.10.2026, 06.00 UTC bis 10.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 00 bis 10
 
 Wetterlage und -entwicklung:
 Mit einer westlichen Strömung fließt anfangs noch kühle, leicht labil
-geschichtete Meeresluft in den Vorhersagebereich. Gegen Morgen greift
-die Warmfront eines Tiefs mit Kern bei Island auf den Westen über.
-Sie verlagert sich ostwärts und zieht am Nachmittag aus dem Bereich
-ab. Dabei fließt mit einer südwestlichen Strömung hochreichend
-feuchte, milde Luft ein. Die zugehörige Kaltfront erreicht am
-Nachmittag den äußersten Nordwesten und verlagert sich am Abend und
-in der Nacht südostwärts über den Bereich hinweg. Im Bereich der
-Kaltfront und rückseitig fließt kühlere, labil geschichtete
-Meeresluft ein.
+geschichtete Meeresluft in den östlichen Vorhersagebereich. Die
+Warmfront eines Tiefs mit Kern bei Island hat auf den Westen
+übergegriffen. Sie verlagert sich ostwärts und zieht am Nachmittag
+aus dem Bereich ab. Dabei fließt mit einer südwestlichen Strömung
+hochreichend feuchte, milde Luft ein. Die zugehörige Kaltfront
+erreicht am Nachmittag den äußersten Nordwesten und verlagert sich am
+Abend und in der Nacht südostwärts über den Bereich hinweg. Im
+Bereich der Kaltfront und rückseitig fließt kühlere, labil
+geschichtete Meeresluft ein.
 
 Wettergeschehen:
-Gebietsweise SCT/BKN CU/SC mit Untergrenzen zwischen 2500 und 4000 FT
+Anfangs etwa östlich einer Linie Helgoland-Münster SCT/BKN CU/SC mit
+Untergrenzen zwischen 2000 und 4000 FT AMSL, örtlich auch im 1500 FT
 AMSL, Obergrenzen bei FL080-FL100. Vor allem im Norden können daraus
-noch bis zum Vormittag Schauer auftreten.
-Von Westen zieht darüber BKKN/OVC AS/AC/CI oberhalb von FL080-FL120
-auf. Gegen Sonnenaufgang verdichtet sich die Bewölkung im äußersten
-Westen weiter zu OVC SC/AC/AS/CI mit Untergrenzen bei 1500-2500 FT
-AMSL und es setzt Regen ein, der teilweise auch mit Sprühregen
-vermischt sein kann. Der frontale Niederschlag kommt ostwärts voran
-und erreicht am frühen Nachmittag auch den Osten des Bereichs. Ab dem
-Vormittag bildet sich im Niederschlag zunehmend BKN/OVC ST mit
-Untergrenzen zwischen 300 und 800 FT AGL, der bis zum späten
-Nachmittag weite Teile des Vorhersagebereichs erfasst.
+noch bis zum Vormittag Schauer auftreten. Darüber zieht von Westen
+BKN/OVC AS/AC/CI oberhalb von FL080-FL120 auf.
+Westlich der o.g. Linie hat sich die Bewölkung zu OVC SC/AC/AS/CI mit
+Untergrenzen bei 1500-2500 FT AMSL verdichtet, Obergrenzen oberhalb
+von FL245. Daraus fällt verbreitet Regen, der teilweise auch mit
+Sprühregen vermischt sein kann. Der frontale Niederschlag kommt
+ostwärts voran und erreicht am frühen Nachmittag auch den Osten des
+Bereichs. Ab dem Vormittag bildet sich im Niederschlag zunehmend
+BKN/OVC ST mit Untergrenzen zwischen 300 und 800 FT AGL, der bis zum
+späten Nachmittag weite Teile des Vorhersagebereichs erfasst.
 Im äußersten Nordwesten erfolgt im Nachmittagsverlauf ein Übergang zu
-BKN/OVC CU/SC/AC mit Untergrenzen zwischen 1200 und 2500 FT AMSL bei
+BKN/OVC CU/SC/AC mit Untergrenzen zwischen 1200 und 2000 FT AMSL bei
 Obergrenzen um FL140. Es fällt zeitweise Regen, der durch
 eingelagerte CB mit Tops bis FL260 schauerartig verstärkt wird.
 Vereinzelt sind Gewitter möglich. Im Niederschlag sinken die
@@ -46,44 +47,49 @@ Rückseitig der Kaltfront erfolgt am Abend im Nordwesten ein Übergang
 zu SCT/BKN CU/SC mit Untergrenzen um 1500 FT AMSL und Obergrenzen um
 FL080. Zeitweise können sich TCU/CB mit Tops um FL150 entwickeln und
 es treten Schauer auf. Diese Bedingungen dehnen sich in der Nacht
-etwa bis zu einer Linie Kiel-Münster südostwärts aus.
+etwa bis zu einer Linie Boizenburg-Paderborn südostwärts aus. Über
+der Nordsee und im Küstenbereich können die Tops der CB teils bei
+FL220 liegen, dabei sind dann auch einzelne Gewitter möglich. Im
+Niederschlag sinken die Untergrenzen zeitweise auf 800-1200 FT AGL
+ab.
 
 Sichtweite:
-20-40 km, im Niederschlag auf 3-8 km zurückgehend, bei Sprühregen
-teils auch um 2 km.
+20-40 km, im Niederschlag auf 3-8 km zurückgehend, bei Sprühregen und
+in Gewittern teils auch um 2 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 00-04:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 250/10KT  10C | 210/20KT  10C |
-1000FT | 270/15KT  09C | 220/25KT  10C |
-1500FT | 280/20KT  07C | 240/35KT  11C |
-2000FT | 280/20KT  07C | 260/35KT  12C |
-3000FT | 270/30KT  04C | 270/30KT  10C |
-5000FT | 270/30KT  01C | 270/30KT  09C |
-FL100  | 280/35KT M06C | 270/25KT M01C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 200/15KT  10C | 220/20KT  14C |
+1000FT | 210/20KT  08C | 230/30KT  13C |
+1500FT | 230/30KT  08C | 250/30KT  12C |
+2000FT | 240/30KT  07C | 250/35KT  11C |
+3000FT | 240/25KT  04C | 260/35KT  10C |
+5000FT | 240/25KT  01C | 260/35KT  07C |
+FL100  | 280/40KT M04C | 260/40KT M02C |
 
 GAFOR-Gebiete 05-10:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 230/15KT  09C | 230/20KT  12C |
-1000FT | 240/25KT  08C | 230/30KT  10C |
-1500FT | 260/35KT  08C | 240/40KT  10C |
-2000FT | 260/35KT  07C | 260/40KT  11C |
-3000FT | 260/35KT  04C | 270/40KT  10C |
-5000FT | 260/30KT  01C | 270/45KT  08C |
-FL100  | 270/30KT M04C | 270/40KT M01C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 220/20KT  10C | 230/20KT  13C |
+1000FT | 230/25KT  08C | 230/30KT  12C |
+1500FT | 230/25KT  06C | 240/40KT  10C |
+2000FT | 240/35KT  05C | 260/45KT  10C |
+3000FT | 250/35KT  04C | 270/45KT  10C |
+5000FT | 260/30KT  02C | 270/40KT  08C |
+FL100  | 290/35KT M02C | 270/40KT M01C |
 
 Turbulenz:
 Überwiegend mäßig unterhalb von 2000-3000 FT AGL. Außerdem im Bereich
 von TCU/CB.
 
 Vereisung:
-Oberhalb der Nullgradgrenze in der von Westen heranziehende frontalen
-Bewölkung meist mäßig bis FL220. Außerdem in TCU/CB.
+Oberhalb der Nullgradgrenze in der Warmfrontbewölkung überwiegend
+mäßig bis FL220, in der Kaltfrontbewölkung noch bis FL140. Außerdem
+in TCU/CB.
 
 Nullgradgrenze:
-4500-5500 FT AMSL, ab dem Morgen von Südwesten her auf FL090 bis
-FL100 ansteigend, rückseitig der Kaltfront auf FL055-FL065 absinkend.
+4500-5500 FT AMSL, von Südwesten her auf FL090 bis FL100 ansteigend,
+rückseitig der Kaltfront auf FL055-FL065 absinkend.
 
 Inversionen:
 Über Land verbreitet schwach unterhalb von 1000 FT AGL, am Vormittag
@@ -96,6 +102,6 @@ Hannover  05.01 | 05.36 | 16.40 | 17.13
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
-Luftfahrtberatungszentrale Hamburg/NI
+Luftfahrtberatungszentrale Hamburg/**
