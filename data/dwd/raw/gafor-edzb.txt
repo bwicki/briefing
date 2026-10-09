@@ -1,72 +1,88 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-257
-FBEU40 EDZB 081800
+062
+FBEU40 EDZB 090300
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 08.10.2026, 18.00 UTC bis 09.10.2026, 15.00 UTC
+gültig vom 09.10.2026, 03.00 UTC bis 10.10.2026, 00.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Ein Tief zieht von der Ostsee ins Baltikum. Rückseitig der
-dazugehörigen Kaltfront wird mit westlicher Strömung kühlere und
-leicht labil geschichtete Meeresluft herangeführt. Am
-Freitagnachmittag nähert sich die Warmfront eines neuen Tiefs.
+Anfangs ist ein schwacher Zwischenhocheinfluss wetterbestimmend.
+Ausgehend von einem Tiefdruckgebiet über dem Europäischen Nordmeer
+wird zunehmend mit einer starken westlichen Höhenströmung
+hochreichend feuchte Luft herangeführt. Dessen okkludierendes
+Frontensystem überquert ab Freitagmittag bis in die Nacht zum Samstag
+das Vorhersagegebiet. Rückseitig wird die Luftmasse etwas
+labilisiert.
 
 Wettergeschehen:
-Zu Beginn im äußersten Osten noch Frontbewölkung mit OVC NS mit
-Untergrenzen bei 1500-2000 FT AMSL, Tops über FL245 und Regen, rasch
-abziehend. Postfrontal deutliche Auflockerungen zu SCT, örtlich BKN
-SC/CU um 4000 FT AMSL, flache Tops um FL055 sowie FEW/SCT TCU/CB mit
-Tops bis FL120 und einzelne Schauer. Darüber wolkenfrei und im
-Nachtverlauf auch den o.g. äußersten Osten erreichend.
+Zu Beginn stellenweise FEW/SCT ST/SC in 2000-4000 FT AMSL, vereinzelt
+in der Nordhälfte und im westlichen Thüringer Becken um 1000 FT AMSL
+mit zeitweise schwachen Schauern aus TCU mit Tops um FL100.
+Andernorts oftmals größere Wolkenlücken mit CI-Bewölkung oberhalb
+FL240. Mittelgebirge an den Kammlagen angestaut.
 
-Am Freitag im Vormittagsverlauf von Westen neuer Warmfront-Aufzug von
-BKN AS/CS oberhalb FL100. Ab dem Nachmittag im Westen Übergang zu
-BKN/OVC NS mit Untergrenzen bei 1000 FT AGL, teils mit ST-Fetzen bei
-nur 700 FT AGL und einsetzender Regen, bis Berichtsende eine Linie
-mittleres Mecklenburg - Prignitz - Leipziger Land - Ostthüringen
-erreichend. Bergland in Wolken. Östlich davon noch meist trocken oder
-geringe Tropfen bei BKN SC/AS/AC/CS/CI ab 5000 FT AMSL aufwärts über
-FL245.
+Im Laufe des Freitages von Nordwesten Aufzug von mittelhoher BKN/OVC
+AS-Bewölkung oberhalb FL100-FL150, bis zum Mittag im Nordwesten bis
+auf FL070 absinkend, in der Oberlausitz um FL120. Darunter
+stellenweise Bildung von SCT/BKN SC/CU, teils ST, Bewölkung mit stark
+schwankender Basis zwischen 1000-3500 FT AMSL. Dabei meist trocken.
+Am Nachmittag weiter absinkende Untergrenzen, in der Nordwesthälfte
+allmählich BKN/OVC SC/AS, teils NS, in 2500-4000 FT AMSL mit Regen,
+in der Südosthälfte meist noch trocken bei BKN AS/CI oberhalb FL070.
+Zum späten Nachmittag/Abend in der Westhälfte dann häufig BKN/OVC
+ST/NS in 1000-2500 FT AMSL, dabei leichter bis mäßiger Regen, an den
+Mittelgebirgen und im Nordwesten Untergrenze auf 500-1000 FT AMSL
+absinkend. In der Osthälfte bis zum Abend auch aufkommender Regen mit
+der SC/AS-Bewölkung um 2500-4000 FT AMSL.
+
+In der Nacht zum Samstag verbreitet leichter bis mäßiger Regen bei
+BKN/OVC ST/SC/AS, teils NS, in 1000-2500 FT AMSL. Die höheren
+Untergrenzen vor allem in der Südhälfte abseits der Mittelgebirge. In
+der Nordhälfte dagegen meist BKN/OVC ST in 600-1000 FT AMSL.
+Mittelgebirge in Wolken.
+In der zweiten Nachthälfte in Mecklenburg allmählich nachlassender
+Regen und Ausschichten der Bewölkung und zum Berichtsende allmählich
+in BKN ST/SC/CU übergehend in 1000-15000 FT AMSL. Dabei lokal TCU mit
+Tops um Fl130 und Schauern möglich.
 
 Sichtweite:
-20 bis 40 km, im Niederschlag 2 bis 5 km.
+20 bis 40 km, im Niederschlag und unterm ST 2 bis 5 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  21 UTC  |  09 UTC  |
- 500FT | 270/20KT  09C | 250/20KT  10C |
-1000FT | 280/25KT  08C | 250/20KT  08C |
-1500FT | 290/35KT  06C | 260/30KT  07C |
-2000FT | 290/35KT  06C | 260/30KT  06C |
-3000FT | 300/35KT  04C | 270/35KT  04C |
-5000FT | 300/35KT  01C | 270/30KT  01C |
-FL100  | 290/35KT M08C | 270/35KT M05C |
+AMSL  |  06 UTC  |  18 UTC  |
+ 500FT | 250/20KT  08C | 200/20KT  09C |
+1000FT | 250/25KT  07C | 210/25KT  08C |
+1500FT | 270/35KT  06C | 220/30KT  08C |
+2000FT | 270/35KT  06C | 230/35KT  07C |
+3000FT | 280/35KT  04C | 260/35KT  08C |
+5000FT | 290/35KT  01C | 260/25KT  07C |
+FL100  | 290/40KT M05C | 270/30KT M01C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 270/20KT  09C | 240/20KT  09C |
-1500FT | 290/25KT  08C | 240/20KT  07C |
-2000FT | 300/30KT  07C | 240/20KT  06C |
-3000FT | 300/30KT  03C | 260/25KT  05C |
-5000FT | 310/30KT  02C | 260/30KT  02C |
-FL100  | 290/30KT M08C | 270/35KT M04C |
+AMSL  |  06 UTC  |  18 UTC  |
+1000FT | 230/20KT  07C | 220/20KT  09C |
+1500FT | 250/25KT  07C | 230/35KT  08C |
+2000FT | 260/25KT  06C | 230/35KT  07C |
+3000FT | 280/30KT  04C | 260/45KT  07C |
+5000FT | 280/25KT  01C | 280/35KT  07C |
+FL100  | 290/35KT M04C | 280/30KT M00C |
 
 Turbulenz:
-Anfangs im Frontbereich lokal MOD bis FL140, selten bis FL180. Am
-Freitag unterhalb 5000 FT AMSL LOC LGT/MOD bei Böen mit 25-35 KT aus
-SW sowie in TCU/CB.
+Am Freitag unterhalb 5000 FT AMSL LOC LGT/MOD bei Böen mit 25-35 KT
+aus SW. LGT/MOD in der Nähe von TCU.
 
 Vereisung:
-Im Frontbereich MOD/SEV zwischen FL080 und FL200 sowie in TCU/CB.
+In der kompakten Schichtbewölkung MOD zwischen FL080 und FL200. MOD
+in TCU.
 
 Nullgradgrenze:
-Im Osten noch um FL090, mit der Front auf FL070, in der Nacht auf
-5000 FT AMSL absinkend. Mit neuer Warmfront am Freitagmittag wieder
-von Westen ansteigend auf FL070 grenznah zu Polen und bis FL100 im
-Westen.
+Zu Beginn um FL050. Am Freitag von Westen ansteigend, bis zum späten
+Nachmittag/Abend im gesamten Gebiet auf FL100-FL080. In der zweiten
+Nachthälfte zum Samstag im Nordwesten wieder absinkend auf FL070.
 
 Inversionen:
 Nicht signifikant.
@@ -77,7 +93,6 @@ Leipzig  04.50 | 05.24 | 16.31 | 17.04
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt am 09.10.2026 um
-02.00/05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
 
-Luftfahrtberatungszentrale Berlin/SB
+Luftfahrtberatungszentrale Berlin/Hi
