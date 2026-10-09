@@ -88,7 +88,7 @@ async function waterLocal(p) {
 /** Datenabrufe im lokalen Modus (ohne Worker): Open-Meteo direkt, METAR/TAF und DWD aus der eigenen Kopie. */
 export async function localData(kind, p = {}) {
   switch (kind) {
-    case 'om': return getJson(`https://api.open-meteo.com/v1/forecast?${p.query}`, 15000);
+    case 'om': return getJson(p.api === 'ensemble' ? `https://ensemble-api.open-meteo.com/v1/ensemble?${p.query}` : `https://api.open-meteo.com/v1/forecast?${p.query}`, 15000);
     case 'elevation': return getJson(`https://api.open-meteo.com/v1/elevation?latitude=${p.lat}&longitude=${p.lon}`, 15000);
     case 'water': return waterLocal(p);
     case 'metar': {

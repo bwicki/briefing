@@ -52,7 +52,8 @@ export async function getForecastAt(ctx, b, lat, lon, modelOverride) {
   return p;
 }
 
-const standOf = (j, b) => ({ stand: Date.now(), model: j._model, modelName: OM.modelName(j._model), source: 'Open-Meteo', fetched: j._fetched, elevModel: j.elevation });
+const standOf = (j, b) => ({ stand: Date.now(), model: j._model, modelName: OM.modelName(j._model) + (j._levelModel ? ` (${t('auto_levelsFrom')} ${OM.modelName(j._levelModel)})` : ''), source: 'Open-Meteo', fetched: j._fetched, elevModel: j.elevation });   // 0.12.14: Ersatzmodell für Druckflächen
+const hoursAhead = (b) => (b.time.startMs + (b.intent.durationMin || 0) * 60000 - Date.now()) / 3600000;
 const lightFn = (b, ctx) => { const sun = sunFor(b, ctx.settings, ctx.racTable); return (ms) => (sun ? ms >= sun.official.bcmt - 1800000 && ms <= sun.official.ecet + 1800000 : true); };
 /** Ampel-Kriterium «Tageslicht»: bei zugelassener Nachtfahrt (NVFR) entfällt es (0.12.3); die Nachtkennzeichnung im Meteogramm bleibt. */
 const lightForRating = (b, light) => (b.flight?.nvfr ? () => true : light);
@@ -127,8 +128,77 @@ export async function wind(ctx, b) {
   const top = (b.intent.altMaxFt || 6000) + 3000;
   for (const h of hours) h.profile = h.profile.filter((l) => l.ft <= Math.max(top, 8000) + 2000);
   const z = b.site.tz || 'Europe/Zurich';
-  const text = hours.map((h) => `${hhmm(z, h.ms)} LT: ` + h.profile.slice().reverse().map((l) => `${l.ft} ft ${l.dir != null ? Math.round(l.dir).toString().padStart(3, '0') : '–'}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ')).join('\n');
-  return { kind: 'wind', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { hours, elev }, text };
+  // 0.12.14: Modellvergleich zur Startzeit (bis 2 weitere Modellfamilien) und Ensemble-Spannweite
+  const compare = await modelCompare(ctx, b, j, hours[0], elev).catch((e) => ({ error: e.message, models: [] }));
+  const ensemble = await ensembleSpread(ctx, b, elev).catch((e) => ({ error: e.message }));
+  const text = hours.map((h) => `${hhmm(z, h.ms)} LT: ` + h.profile.slice().reverse().map((l) => `${l.ft} ft ${l.dir != null ? Math.round(l.dir).toString().padStart(3, '0') : '–'}/${Math.round(l.spd * OM.MS_TO_KT)} kt`).join(' · ')).join('\n')
+    + (compare?.rows?.length ? `\n${t('auto_modelCompare')} ${hhmm(z, hours[0].ms)} LT: ` + compare.rows.filter((r) => r.spreadDir != null).map((r) => `${r.ft} ft: ${compare.models.map((m, k) => `${m.name} ${r.cells[k] ? `${String(Math.round(r.cells[k].dir)).padStart(3, '0')}/${Math.round(r.cells[k].spd * OM.MS_TO_KT)}` : '–'}`).join(', ')} (Δ ${r.spreadDir}°, ${Math.round(r.spdMin * OM.MS_TO_KT)}–${Math.round(r.spdMax * OM.MS_TO_KT)} kt)`).join(' · ') : '')
+    + (ensemble?.rows?.length ? `\n${t('auto_ensemble')} ${ensemble.label}: ` + ensemble.rows.map((r) => `${r.label}: ${Math.round(r.spd[0] * OM.MS_TO_KT)}–${Math.round(r.spd[1] * OM.MS_TO_KT)}–${Math.round(r.spd[2] * OM.MS_TO_KT)} kt, ${String(Math.round(r.dirMean)).padStart(3, '0')}° ±${r.dirSpread}°`).join(' · ') : '');
+  return { kind: 'wind', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { hours, elev, compare, ensemble }, text };
+}
+/** 0.12.14: Windprofil zur Startzeit aus weiteren Modellen, auf die Höhen des Hauptprofils interpoliert; Spannweite je Niveau. */
+async function modelCompare(ctx, b, j, hour0, elev) {
+  const main = j._levelModel || j._model || '';
+  const keys = OM.compareModels(main, hoursAhead(b), 2);
+  const models = [{ key: main, name: OM.modelName(main) }];
+  const profs = [hour0.profile];
+  for (const k of keys) {
+    try { const jj = await getForecast(ctx, b, k, { allowShort: true }); const i = OM.indexAt(jj, hour0.ms); if (i < 0) continue; models.push({ key: k, name: OM.modelName(k) }); profs.push(OM.profile(jj, i, elev)); }
+    catch (e) { console.warn('compare', k, e.message); }
+  }
+  if (profs.length < 2) return { models, rows: [] };
+  const angDiff = (a, c) => Math.abs(((a - c + 540) % 360) - 180);
+  const rows = hour0.profile.map((l) => {
+    const cells = profs.map((pr, k) => { if (k === 0) return { dir: l.dir, spd: l.spd }; const w = OM.windAt(pr, l.m); if (!w) return null; const ds = OM.uvToDirSpd(w.u, w.v); return { dir: ds.dir, spd: ds.spd }; });
+    const ok = cells.filter(Boolean);
+    const dirs = ok.map((c) => c.dir).filter((v) => v != null), spds = ok.map((c) => c.spd);
+    let spreadDir = null; for (let a = 0; a < dirs.length; a++) for (let c = a + 1; c < dirs.length; c++) spreadDir = Math.max(spreadDir ?? 0, angDiff(dirs[a], dirs[c]));
+    return { label: l.label, ft: l.ft, cells, spreadDir: spreadDir != null ? Math.round(spreadDir) : null, spdMin: Math.min(...spds), spdMax: Math.max(...spds) };
+  });
+  return { models, atMs: hour0.ms, rows };
+}
+/** 0.12.14: Ensemble-Spannweite am Startort – Bodenschicht (10–180 m AGL) aus ICON-D2-EPS (≤ 46 h) bzw. ICON-EU-EPS, Druckflächen aus ECMWF ENS (51 Member);
+ * je Niveau p10/p50/p90 der Geschwindigkeit und mittlere Richtung ± Streuung (p90 der Abweichung), zur Startzeit und zur Landung. */
+async function ensembleSpread(ctx, b, elev) {
+  const landing = b.time.startMs + (b.intent.durationMin || 0) * 60000;
+  const startDate = isoDate('UTC', Math.min(b.time.startMs, Date.now())), endDate = isoDate('UTC', Math.max(landing, b.time.startMs + 3600000));
+  const ha = hoursAhead(b);
+  const sfcModel = ha <= 42 ? 'icon_d2_eps' : ha <= 114 ? 'icon_eu_eps' : null;
+  const top = (b.intent.altMaxFt || 6000) + 3000;
+  const lv = [['10m', 10, null], ['80m', 80, null], ['180m', 180, null], ['925hPa', null, 925], ['850hPa', null, 850], ['700hPa', null, 700]].filter(([, agl, hpa]) => (agl != null ? ((elev || 0) + agl) * OM.M_TO_FT : OM.stdHeight(hpa) * OM.M_TO_FT) <= Math.max(top, 8000) + 2000);
+  const fetchEns = async (model, vars) => {
+    const q = new URLSearchParams({ latitude: (+b.site.lat).toFixed(4), longitude: (+b.site.lon).toFixed(4), hourly: vars.join(','), models: model, wind_speed_unit: 'ms', timeformat: 'unixtime', timezone: 'UTC', start_date: startDate, end_date: endDate });
+    const j = await ctx.store.data('om', { query: q.toString(), api: 'ensemble' }, shareTok(ctx));
+    if (!j || j.error || !j.hourly?.time) throw new Error(j?.reason || 'ensemble');
+    return j;
+  };
+  const sfcVars = lv.filter(([, agl]) => agl != null).flatMap(([k]) => [`wind_speed_${k}`, `wind_direction_${k}`]);
+  const lvlVars = lv.filter(([, , hpa]) => hpa != null).flatMap(([k]) => [`wind_speed_${k}`, `wind_direction_${k}`]);
+  const [js, jl] = await Promise.all([sfcModel && sfcVars.length ? fetchEns(sfcModel, sfcVars).catch(() => null) : null, lvlVars.length ? fetchEns('ecmwf_ifs025', lvlVars).catch(() => null) : null]);
+  const stats = (j, key, ms) => {
+    if (!j) return null;
+    const i = OM.indexAt(j, ms); if (i < 0) return null;
+    const H = j.hourly; const sp = [], di = [];
+    for (const k of Object.keys(H)) { const m = new RegExp(`^wind_speed_${key}(_member\\d+)?$`).exec(k); if (!m) continue; const v = H[k][i], d = H[`wind_direction_${key}${m[1] || ''}`]?.[i]; if (v == null || d == null) continue; sp.push(v); di.push(d); }
+    if (sp.length < 3) return null;
+    sp.sort((a, c) => a - c);
+    const pct = (arr, p) => arr[Math.min(arr.length - 1, Math.max(0, Math.round((arr.length - 1) * p)))];
+    const u = di.reduce((a, d) => a + Math.sin(d * Math.PI / 180), 0), v = di.reduce((a, d) => a + Math.cos(d * Math.PI / 180), 0);
+    const mean = (Math.atan2(u, v) * 180 / Math.PI + 360) % 360;
+    const dev = di.map((d) => Math.abs(((d - mean + 540) % 360) - 180)).sort((a, c) => a - c);
+    return { n: sp.length, spd: [pct(sp, .1), pct(sp, .5), pct(sp, .9)], dirMean: mean, dirSpread: Math.round(pct(dev, .9)) };
+  };
+  const rows = [];
+  for (const [k, agl, hpa] of lv) {
+    const j = agl != null ? js : jl; if (!j) continue;
+    const s0 = stats(j, k, b.time.startMs), s1 = stats(j, k, landing);
+    if (!s0 && !s1) continue;
+    const ft = Math.round((agl != null ? (elev || 0) + agl : OM.stdHeight(hpa)) * OM.M_TO_FT);
+    rows.push({ label: agl != null ? `${agl} m GND` : `${hpa} hPa`, ft, model: agl != null ? sfcModel : 'ecmwf_ifs025', ...(s0 || s1), start: s0, land: s1 });
+  }
+  rows.sort((a, c) => c.ft - a.ft);
+  const names = { icon_d2_eps: 'ICON-D2-EPS (20)', icon_eu_eps: 'ICON-EU-EPS (40)', ecmwf_ifs025: 'ECMWF ENS (51)' };
+  return { rows, label: [...new Set(rows.map((r) => names[r.model]))].join(' + '), sfcModel, startMs: b.time.startMs, landMs: landing };
 }
 
 /** Stüve zur Startzeit (volles Profil bis topHpa). */
@@ -191,7 +261,25 @@ export async function traj(ctx, b) {
   const z = b.site.tz || 'Europe/Zurich';
   const text = trs.map((x) => `${x.label} (${x.altFt} ft): ` + x.hourly.map((h) => `${hhmm(z, h.ms)} ${h.km.toFixed(1)} km/${Math.round(h.brg).toString().padStart(3, '0')}° ${h.icao}`).join(' → ') + (x.ok ? '' : ` (${t('auto_trajCut')})`)).join('\n');
   const slim = trs.map((x) => ({ label: x.label, altFt: x.altFt, altM: Math.round(x.altM), ok: x.ok, points: x.points.filter((_, k) => k % 3 === 0 || k === x.points.length - 1).map((p) => ({ ms: p.ms, lat: +p.lat.toFixed(4), lon: +p.lon.toFixed(4) })), hourly: x.hourly.map((h) => ({ ...h, lat: +h.lat.toFixed(4), lon: +h.lon.toFixed(4), km: +h.km.toFixed(1), brg: Math.round(h.brg), spdKt: Math.round(h.spdKt), dir: Math.round(h.dir) })), end: { ...x.end, lat: +x.end.lat.toFixed(4), lon: +x.end.lon.toFixed(4), km: +x.end.km.toFixed(1), brg: Math.round(x.end.brg) } }));
-  return { kind: 'traj', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { tracks: slim, startMs, durationMin, levels, landing: b.landing?.lat != null ? { lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name } : null }, text };
+  // 0.12.14: Spannweite – dieselben Bahnen mit bis zu zwei weiteren Modellfamilien; je Niveau der grösste Abstand der Endpunkte
+  const spread = { models: [], ends: {} };
+  try {
+    const main = j._levelModel || j._model || '';
+    for (const k of OM.compareModels(main, hoursAhead(b), 2)) {
+      try {
+        const jj = await getForecast(ctx, b, k, { allowShort: true });
+        const alt = tracks(jj, { lat: b.site.lat, lon: b.site.lon, elev, startMs, durationMin, levels, stepMin: ctx.settings.trajDefaults?.stepMin || 10 });
+        spread.models.push({ key: k, name: OM.modelName(k), tracks: alt.filter((x) => !x.belowGround && x.points?.length).map((x) => ({ label: x.label, points: x.points.filter((_, i) => i % 6 === 0 || i === x.points.length - 1).map((p) => ({ lat: +p.lat.toFixed(4), lon: +p.lon.toFixed(4) })), end: { lat: +x.end.lat.toFixed(4), lon: +x.end.lon.toFixed(4), km: +x.end.km.toFixed(1), brg: Math.round(x.end.brg) } })) });
+      } catch (e) { console.warn('traj compare', k, e.message); }
+    }
+    for (const x of slim) {
+      const ends = [x.end, ...spread.models.map((m) => m.tracks.find((y) => y.label === x.label)?.end).filter(Boolean)];
+      let maxKm = 0; for (let a = 0; a < ends.length; a++) for (let c = a + 1; c < ends.length; c++) maxKm = Math.max(maxKm, distKm(ends[a].lat, ends[a].lon, ends[c].lat, ends[c].lon));
+      spread.ends[x.label] = { n: ends.length, maxKm: +maxKm.toFixed(1) };
+    }
+  } catch (e) { console.warn('traj spread', e.message); }
+  const spreadText = spread.models.length ? `\n${t('auto_spread')} (${spread.models.map((m) => m.name).join(', ')}): ` + slim.map((x) => `${x.label} ${spread.ends[x.label]?.maxKm ?? '–'} km`).join(' · ') : '';
+  return { kind: 'traj', sourceUrl: 'https://open-meteo.com/', ...standOf(j, b), data: { tracks: slim, startMs, durationMin, levels, landing: b.landing?.lat != null ? { lat: b.landing.lat, lon: b.landing.lon, name: b.landing.name } : null, spread }, text: text + spreadText };
 }
 
 /** Ballonprognose: DWD-Gebietsvorhersage (DE, nächstes Gebiet) + eigene Stundentabelle. */
@@ -309,8 +397,16 @@ export async function obs(ctx, b) {
 /** SIGMET/AIRMET in der Umgebung. */
 export async function sigmet(ctx, b) {
   const j = await ctx.store.data('sigmet', { lat: b.site.lat, lon: b.site.lon }, shareTok(ctx));
-  const text = (j.sigmet || []).map((s) => s.raw || `${s.fir} ${s.hazard} ${s.validFrom}–${s.validTo}`).join('\n\n') || t('auto_none');
-  return { kind: 'sigmet', sourceUrl: 'https://aviationweather.gov/data/sigmet/', stand: Date.now(), source: j.source, data: { list: j.sigmet || [] }, text };
+  // 0.12.14: amtliche Warnungen (MeteoSchweiz/DWD) an Startort, Landeraum und Bahn-Endpunkten
+  let warn = { warnings: [], errors: [] };
+  try {
+    const pts = [[b.site.lat, b.site.lon]];
+    if (b.landing?.lat != null) pts.push([b.landing.lat, b.landing.lon]);
+    for (const tr of b.panels?.['B.traj']?.content?.auto?.data?.tracks || []) if (tr.end && pts.length < 6 && !pts.some((p) => distKm(p[0], p[1], tr.end.lat, tr.end.lon) < 15)) pts.push([tr.end.lat, tr.end.lon]);
+    warn = await ctx.store.data('warnings', { pts: pts.map((p) => `${p[0].toFixed(3)},${p[1].toFixed(3)}`).join(';') }, shareTok(ctx));
+  } catch (e) { warn = { warnings: [], errors: [e.message === 'remote only' ? t('ac_localOnly') : e.message] }; }
+  const text = ((j.sigmet || []).map((s) => s.raw || `${s.fir} ${s.hazard} ${s.validFrom}–${s.validTo}`).join('\n\n') || t('auto_none')) + ((warn.warnings || []).length ? '\n\n' + warn.warnings.map((w) => `${w.src} ${w.area}: ${w.headline} – ${w.text}`).join('\n\n') : '');
+  return { kind: 'sigmet', sourceUrl: 'https://aviationweather.gov/data/sigmet/', stand: Date.now(), source: j.source, data: { list: j.sigmet || [], warnings: warn.warnings || [], warnErrors: warn.errors || [] }, text };
 }
 
 /** Kreis > 100 NM (FAA-Maximum je Abfrage) mit 7 Teilkreisen abdecken: Mitte + Sechseck. */

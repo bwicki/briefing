@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.12.14 — 2026-10-09 · Mehr aus den Quellen: Sicht/0 °C/Grenzschicht, Modellvergleich, Ensemble, amtliche Warnungen, ICON-CH
+
+* **B12 Meteogramm:** zwei neue Zeilen – **Sicht** (km, Balken; Nebelrisiko als Schattierung) und **Grenzschichthöhe**
+  (m AGL, gestrichelt); bei Gasfahrten zusätzlich die **0 °C-Grenze** (m, blaue Linie, für Ballast und Vereisung).
+  Tabelle mit den Spalten Sicht, Grenzschicht und (Gas) 0 °C.
+* **B06 Windprognose – Modellvergleich:** Wind je Niveau zur Startzeit aus bis zu zwei weiteren Modellfamilien
+  (ICON / ECMWF / GFS / Météo-France / UKMO, soweit sie den Horizont decken), auf die Höhen des Hauptmodells
+  interpoliert; Spalte «Spannweite» (Δ Richtung, kt-Bereich), orange ab 25°/4 kt, rot ab 45°/8 kt.
+* **B06 Ensemble-Spannweite:** Bodenschicht 10–180 m GND aus **ICON-D2-EPS** (20 Member, ≤ 42 h) bzw. **ICON-EU-EPS**
+  (40 Member), Druckflächen 925/850/700 hPa aus **ECMWF ENS** (51 Member) – p10/p50/p90 der Geschwindigkeit, mittlere
+  Richtung ± Streuung, zur Startzeit und zur Landung (Open-Meteo Ensemble-API; ICON-EPS liefert dort keine Druckflächen).
+  Worker: `/api/wx/om?api=ensemble&query=…`.
+* **B09 Trajektorien – Spannweite:** dieselben Bahnen mit den Vergleichsmodellen; Spalte «Spannweite» = grösster Abstand
+  der Endpunkte je Niveau (orange ab 8 km, rot ab 20 km); auf der Karte dünn gestrichelt mit Ring am Endpunkt.
+* **B14 Warnungen – amtliche Warnungen automatisch:** Startort, Landeraum und Bahn-Endpunkte; **CH** über die
+  MeteoSchweiz-App-Schnittstelle (PLZ aus Nominatim; Typen Wind, Gewitter, Regen, Schnee, Glatteis, Frost, Hitze,
+  Lawinen, Erdbeben, Waldbrand, Hochwasser, Trockenheit; Stufen 1–5), **DE** über den DWD-WFS «Warnungen_Gemeinden»
+  (Punktabfrage; Minor/Moderate/Severe/Extreme → Stufe 1–4). Je Meldung ✕ zum Ausblenden. Worker `/api/wx/warnings?pts=`.
+  Hinweis: MeteoSchweiz bietet die Warnungen (noch) nicht als Open Data an – die App-Schnittstelle ist inoffiziell.
+* **ICON-CH1 (1 km, 33 h) und ICON-CH2 (2 km, 120 h)** von MeteoSchweiz als Modell wählbar (Open-Meteo): Bodenwerte
+  (Meteogramm, Ampel, Thermik, Startplatzwerte) aus dem gewählten Modell, **Druckflächen aus dem Ersatzmodell** (feinstes
+  Modell mit Flächen, das den Horizont deckt – meist ICON-D2/ICON-EU), da Open-Meteo für ICON-CH keine Druckflächen
+  liefert; Standzeile nennt beide. Für Trajektorien/Höhenprofil bleiben die Modelle mit Flächen.
+* **Eigener Text:** Schliessen mit Inhalt **klappt ein** (eine Zeile mit Vorschau; Klick klappt auf), Inhalt bleibt;
+  ohne Inhalt schliesst das Kästchen.
+* Tests: Smoke (Einklappen), API, Remote-UI, calc.
+
 ## 0.12.13 — 2026-10-08 · Rückmeldungen Test 0.12.12 (Navigation, Warnmarkierung, Panels B10/B14, C1, C3, C4)
 
 * **Linke Spalte:** Abschnittstitel mit hängendem Einzug (Umbruch bündig unter dem Text, nicht unter dem Kennbuchstaben);

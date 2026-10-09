@@ -522,6 +522,7 @@ table.auto.dwd td,table.auto.dwd th{white-space:normal;}
 .wp-dot{fill:var(--amber);}
 .mg-grid{stroke:var(--line-soft);stroke-width:1;} .mg-grid.mg-hour{stroke-opacity:.5} .mg-grid.mg-day{stroke:var(--text-dim);stroke-width:1.2} .mg-grid.mg-sep{stroke:var(--text-dim);stroke-opacity:.6} .mg-grid.mg-zero{stroke:var(--text-dim);stroke-dasharray:3 2}
 .mg-frame{fill:none;stroke:var(--line);stroke-width:1}
+.mg-vis{fill:var(--dew);opacity:.7} .mg-vis.warn{fill:var(--amber)} .mg-vis.bad{fill:var(--temp)} .mg-fog{fill:var(--text-dim);opacity:.12} .mg-fog2{opacity:.22} .mg-fog3{opacity:.34} .mg-pbl{fill:none;stroke:var(--amber);stroke-width:1.4;stroke-dasharray:4 3} .mg-fzl{fill:none;stroke:#3d74b4;stroke-width:1.4} .mg-fzlt{fill:#3d74b4}   /* 0.12.14: Sicht, Grenzschicht, 0 °C */
 .mg-title{font-family:var(--sans);font-size:9.5px;font-weight:600;fill:var(--text);}
 .mg-val{font-family:var(--mono);font-size:8.5px;fill:var(--text);} .mg-val.mg-tv{fill:var(--sv-temp);font-weight:600} .mg-dayl{font-weight:600;fill:var(--text)}
 .mg-night{fill:var(--text-dim);fill-opacity:.14;} .mg-window{fill:var(--amber);fill-opacity:.14;}
@@ -918,3 +919,8 @@ table.tbl.list tr.hidden-row td{opacity:.6} table.tbl.list tr.hidden-row td.acts
 
 /* 0.12.13: A01 Regeln – Kästchen unmittelbar links von NVFR, Abstand zu VFR */
 .rules{display:inline-flex;align-items:center;gap:14px} .rules .nvfr-lbl{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+
+/* 0.12.14: Modellvergleich/Ensemble (B06), Warnungen (B14) */
+details.cmp{margin-top:8px} details.cmp>summary{cursor:pointer;font-weight:600} table.auto.cmp-tbl tr.warn td{background:color-mix(in srgb,var(--amber) 14%,transparent)} table.auto.cmp-tbl tr.bad td{background:color-mix(in srgb,var(--temp) 14%,transparent)} table.auto td.warn{color:var(--gafor-d)} table.auto td.bad{color:var(--temp);font-weight:600}
+.warn-wrap{margin-top:10px} .warn-head{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px} .tag.wlvl{font-weight:700} .tag.wlvl.l1{color:var(--green);border-color:var(--green)} .tag.wlvl.l2{color:var(--gafor-d);border-color:var(--gafor-d)} .tag.wlvl.l3{color:#d97706;border-color:#d97706} .tag.wlvl.l4,.tag.wlvl.l5{color:var(--temp);border-color:var(--temp)}
+.sub.extra.collapsed{cursor:pointer;padding-top:4px;padding-bottom:4px} .sub.extra.collapsed .sub-head{margin:0} .sub.extra.collapsed .prev{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 8px}   /* 0.12.14: eingeklappte Zusatzbox */

@@ -230,15 +230,21 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   const upload = (dataUrl) => ctx.store.uploadImage(b.id, dataUrl, shared?.token);
   // Zusatzboxen unter dem Panelinhalt: «Eigener Text / Bilder / Daten» (blau) und «Kommentar PIC» (gelb) – erscheinen nur mit Inhalt
   // oder nach Klick auf den Symbolknopf im Panelkopf; KI-Kommentar dazwischen (violett)
-  const openBoxes = new Set();
+  const openBoxes = new Set(), collapsed = new Set();
+  /** 0.12.14: eingeklappte Zusatzbox (Inhalt bleibt) – eine Zeile mit Vorschau, Klick klappt auf. */
+  function extraBar(p, d, X = main) {
+    const txt = (d.extra?.text || '').trim().replace(/\s+/g, ' ');
+    const n = (d.extra?.images || []).length;
+    const bar = h('div.sub.extra.collapsed', { title: t('extra_expand'), onclick: () => { collapsed.delete(X.id(p) + ':extra'); bar.replaceWith(extraBox(p, d, X)); } }, [h('div.sub-head', [h('div.lbl', t('extra')), h('span.small.muted.prev', `${txt.slice(0, 90)}${txt.length > 90 ? '…' : ''}${n ? ` · ${n} ${t('extra_images')}` : ''}`), h('button.btn.icon.small.sub-close', { type: 'button', title: t('extra_expand'), 'aria-label': t('extra_expand') }, icon('down'))])]);
+    return bar;
+  }
   function extraBox(p, d, X = main) {
-    // 0.12.13: Schliesssymbol oben rechts – mit Inhalt Rückfrage (Inhalt wird verworfen), ohne Inhalt sofort zu
+    // 0.12.13: Schliesssymbol oben rechts; 0.12.14: mit Inhalt wird eingeklappt (Inhalt bleibt), ohne Inhalt geschlossen
     const box = h('div.sub.extra');
-    const close = async () => {
+    const close = () => {
       const has = !!((d.extra?.text || '').trim() || (d.extra?.images || []).length);
-      if (has && !(await confirmDialog(t('extra_closeQ_t'), t('extra_closeQ'), { yes: t('extra_closeYes'), no: t('cancel') }))) return;
-      if (has) { d.extra = { text: '', images: [] }; touched(p.key, X); }
-      openBoxes.delete(X.id(p) + ':extra'); box.remove();
+      openBoxes.delete(X.id(p) + ':extra');
+      if (has) { collapsed.add(X.id(p) + ':extra'); box.replaceWith(extraBar(p, d, X)); } else box.remove();
     };
     box.append(h('div.sub-head', [h('div.lbl', t('extra')), shared?.role === 'read' ? null : h('button.btn.icon.small.sub-close', { type: 'button', title: t('close'), 'aria-label': t('close'), onclick: close }, icon('close'))]),
       pasteArea(d.extra, (v) => { d.extra = v; touched(p.key, X); }, upload, { placeholder: t('extraHint'), rows: 2 }));
@@ -251,7 +257,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
   function subBlocks(p, X = main) {
     const d = X.b.panels[p.key];
     const hasExtra = !!((d.extra?.text || '').trim() || (d.extra?.images || []).length);
-    const extra = hasExtra || openBoxes.has(X.id(p) + ':extra') ? extraBox(p, d, X) : null;
+    const extra = hasExtra && collapsed.has(X.id(p) + ':extra') ? extraBar(p, d, X) : hasExtra || openBoxes.has(X.id(p) + ':extra') ? extraBox(p, d, X) : null;
     // KI-Kommentar direkt unter dem Panelinhalt: Text (Klick auf ✎ zum Bearbeiten), ✕ verwirft
     let ai = null;
     if (d.ai?.text) {
@@ -269,6 +275,7 @@ export async function renderEditor(view, ctx, id, opts = {}) {
     const open = (kind) => {
       const body = document.getElementById('panel-' + X.id(p))?.querySelector('.panel-body'); if (!body) return;
       let box = body.querySelector(kind === 'extra' ? ':scope > .sub.extra' : ':scope > .sub.cmt');
+      if (box?.classList.contains('collapsed')) { collapsed.delete(`${X.id(p)}:extra`); const nb = extraBox(p, d, X); box.replaceWith(nb); box = nb; }
       if (!box) {
         openBoxes.add(`${X.id(p)}:${kind}`);
         box = kind === 'extra' ? extraBox(p, d, X) : commentBox(p, d, X);

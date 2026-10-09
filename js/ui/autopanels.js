@@ -25,7 +25,9 @@ export function meteoBar(b, ctx, { onChange, refreshAll, readOnly }) {
   if (!b.meteo) b.meteo = { model: 'icon_eu', topHpa: 500 };   // Vorgabe ICON-EU (0.12.4)
   const hours = (b.time.startMs - Date.now()) / 3600000;
   const ok = modelsFor(hours).map((m) => m.key);
-  const opts = MODELS.filter((m) => !m.noLevels).map((m) => ({ value: m.key, label: `${m.name} · ${m.note}${ok.includes(m.key) ? '' : ' ✗'}` }));
+  // 0.12.14: Modelle ohne Druckflächen (ICON-CH1/CH2, AROME) wählbar – Bodenwerte vom Modell, Druckflächen vom Ersatzmodell
+  const okAll = modelsFor(hours).map((m) => m.key).concat(MODELS.filter((m) => m.noLevels && m.hours >= hours + 6).map((m) => m.key));
+  const opts = MODELS.map((m) => ({ value: m.key, label: `${m.name} · ${m.note}${m.noLevels ? ` · ${t('auto_sfcOnly')}` : ''}${okAll.includes(m.key) ? '' : ' ✗'}` }));
   const sel = select(opts, b.meteo.model || '', { disabled: readOnly, onchange: (e) => { b.meteo.model = e.target.value; DATA.clearMemo(); onChange(); } });
   const lr = b.meteo.lastRefresh;
   const status = h('span.note', lr ? `${lr.n}/${lr.total} ✓ · ${hhmm(b.site.tz || 'Europe/Zurich', lr.ts)}` : '');

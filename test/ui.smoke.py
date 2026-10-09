@@ -265,9 +265,10 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
             pg.click('#panel-B\\.metar .panel-head .rrow .add.extra'); pg.wait_for_timeout(300)
             pg.fill('#panel-B\\.metar .panel-body > .sub.extra textarea', 'Notiz'); pg.wait_for_timeout(200)
             pg.click('#panel-B\\.metar .panel-body > .sub.extra .sub-close'); pg.wait_for_timeout(300)
-            assert pg.query_selector('.dialog') is not None, 'Rückfrage bei Inhalt'
-            pg.click('.dialog-foot button:has-text("Abbrechen")'); pg.wait_for_timeout(200)
-            assert pg.input_value('#panel-B\\.metar .panel-body > .sub.extra textarea') == 'Notiz', 'Abbrechen behält den Text'
+            # 0.12.14: mit Inhalt wird eingeklappt (Vorschau), Klick klappt wieder auf – Inhalt bleibt
+            assert pg.query_selector('.dialog') is None and pg.query_selector('#panel-B\\.metar .panel-body > .sub.extra.collapsed') is not None and 'Notiz' in pg.inner_text('#panel-B\\.metar .panel-body > .sub.extra.collapsed'), 'Zusatzbox mit Inhalt eingeklappt'
+            pg.click('#panel-B\\.metar .panel-body > .sub.extra.collapsed'); pg.wait_for_timeout(300)
+            assert pg.input_value('#panel-B\\.metar .panel-body > .sub.extra textarea') == 'Notiz', 'Aufklappen zeigt den Text wieder'
             assert pg.query_selector('#menuBtn svg.ico-menu') is not None and pg.query_selector('#tools button.print svg.ico-print') is not None and pg.query_selector('#panel-C\\.fpl .panel-head .rrow .add.extra svg.ico-text') is not None, 'SVG-Symbole (Menü, Drucken, Zusatzbox)'
             pg.screenshot(path=f'{OUT}/{name}_18_boxes.png')
             # 0.11.3: Tragkraft-Grafik mit Obergrenze, Max. Hüllentemperatur mit Vorgabe, Niveauliste der Trajektorien

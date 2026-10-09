@@ -25,6 +25,8 @@ export const MS_TO_KT = 1.943844;
 
 /** Modelle mit Druckflächen, nach Horizont sortiert; km = Gitterweite (für die Vorgabe «feinstes Modell, das reicht»). */
 export const MODELS = [
+  { key: 'meteoswiss_icon_ch1', name: 'ICON-CH1', note: 'MeteoSchweiz, 1 km', hours: 33, km: 1, noLevels: true },   // 0.12.14: Bodenwerte; Druckflächen aus dem Ersatzmodell
+  { key: 'meteoswiss_icon_ch2', name: 'ICON-CH2', note: 'MeteoSchweiz, 2 km', hours: 120, km: 2.1, noLevels: true },
   { key: 'icon_d2', name: 'ICON-D2', note: 'DWD, 2 km', hours: 48, km: 2 },
   { key: 'meteofrance_arome_france_hd', name: 'AROME', note: 'Météo-France, 1.5 km', hours: 48, km: 1.5, noLevels: true },
   { key: 'meteofrance_arpege_europe', name: 'ARPEGE', note: 'Météo-France, 11 km', hours: 96, km: 11 },
@@ -74,13 +76,37 @@ export function buildQuery(lat, lon, opts = {}) {
   return { query: q.toString(), levels };
 }
 
+/** Ersatzmodell für die Druckflächen, wenn das gewählte Modell keine liefert (ICON-CH1/CH2, AROME): feinstes Modell mit Flächen, das den Horizont deckt. */
+export const levelModelFor = (hoursAhead) => (modelsFor(hoursAhead).find((m) => m.key && !m.noLevels) || MODELS.find((m) => m.key === 'icon_eu')).key;
 export async function forecast(fetcher, lat, lon, opts = {}) {
+  const def = MODELS.find((m) => m.key === (opts.model || ''));
+  if (def?.noLevels && !opts.noLevels) {
+    // 0.12.14: Modell ohne Druckflächen → Bodenwerte vom gewählten Modell, Druckflächen vom Ersatzmodell (gleiches Zeitraster)
+    const hoursAhead = opts.endDate ? (Date.parse(opts.endDate + 'T00:00:00Z') + 86400000 - Date.now()) / 3600000 : (opts.days || 4) * 24;
+    const lm = opts.levelModel || levelModelFor(hoursAhead);
+    const [a, bb] = await Promise.all([forecast(fetcher, lat, lon, { ...opts, noLevels: true }), forecast(fetcher, lat, lon, { ...opts, model: lm })]);
+    const n = a.hourly.time.length;
+    if (bb.hourly.time.length === n && bb.hourly.time[0] === a.hourly.time[0]) { for (const k of Object.keys(bb.hourly)) if (/_\d+hPa$/.test(k)) a.hourly[k] = bb.hourly[k]; a._levels = bb._levels; a._levelModel = lm; }
+    else { a._levels = []; a._levelModel = null; }
+    if (a.elevation == null) a.elevation = bb.elevation;
+    return a;
+  }
   const { query, levels } = buildQuery(lat, lon, opts);
   const j = await fetcher(query);
   if (!j || j.error) throw new Error(j?.reason || 'Open-Meteo error');
   if (!j.hourly?.time?.length) throw new Error('no data');
   j._levels = levels; j._model = opts.model || ''; j._fetched = Date.now();
   return j;
+}
+/** 0.12.14: Vergleichsmodelle (andere Modellfamilien mit Druckflächen, die den Horizont decken), höchstens n. */
+export function compareModels(mainKey, hoursAhead, n = 2) {
+  const fam = (k) => (k.startsWith('icon') || k.startsWith('meteoswiss') ? 'icon' : k.startsWith('ecmwf') ? 'ecmwf' : k.startsWith('gfs') ? 'gfs' : k.startsWith('meteofrance') ? 'mf' : k.startsWith('ukmo') ? 'ukmo' : k);
+  const mainFam = mainKey ? fam(mainKey) : null;
+  const order = ['icon', 'ecmwf', 'gfs', 'mf', 'ukmo'];
+  const avail = modelsFor(hoursAhead).filter((m) => m.key && !m.noLevels);
+  const out = [];
+  for (const f of order) { if (f === mainFam) continue; const m = avail.find((x) => fam(x.key) === f); if (m) out.push(m.key); if (out.length >= n) break; }
+  return out;
 }
 
 /** Index der Stunde, die ms (UTC) am nächsten liegt; -1 wenn ausserhalb. */

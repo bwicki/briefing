@@ -146,9 +146,9 @@ export function stueveChart(levels, o = {}) {
  * o: {w, hhmm(ms), dayLabel(ms), rating(r), fromMs, toMs, startMs, lab{…}} — Beschriftungen kommen vom Aufrufer (Sprache). */
 export function meteogram(recs, o = {}) {
   if (!recs?.length) return null;
-  const lab = Object.assign({ temp: 'Temperatur °C', wind: 'Wind kt', cloud: 'Bewölkung %', precip: 'Niederschlag mm/h', cape: 'CAPE J/kg', high: 'hoch', mid: 'mittel', low: 'tief', fly: 'Ampel', start: 'Start', land: 'Landung', lt: 'LT' }, o.lab || {});
+  const lab = Object.assign({ temp: 'Temperatur °C', wind: 'Wind kt', cloud: 'Bewölkung %', precip: 'Niederschlag mm/h', cape: 'CAPE J/kg', high: 'hoch', mid: 'mittel', low: 'tief', fly: 'Ampel', start: 'Start', land: 'Landung', lt: 'LT', vis: 'Sicht km · Nebelrisiko', pbl: 'Grenzschicht m AGL', fzl: '0 °C-Grenze m' }, o.lab || {});
   const W = o.w || 760, L = 58, R = 44, T = 8, B = 44;
-  const bands = [['temp', 96], ['wind', 86], ['cloud', 58], ['precip', 56]];
+  const bands = [['temp', 96], ['wind', 86], ['cloud', 58], ['precip', 56], ['vis', 50], ['hgt', 56]];   // 0.12.14: Sicht/Nebel, 0 °C-Grenze (Gas) und Grenzschicht
   const H = T + bands.reduce((a, b) => a + b[1], 0) + B;
   const svg = mk('svg', { viewBox: `0 0 ${W} ${H}`, class: 'mg-svg', role: 'img' });
   const t0 = recs[0].ms, t1 = recs[recs.length - 1].ms;
@@ -221,6 +221,28 @@ export function meteogram(recs, o = {}) {
       for (const r of capes) if (r.cape >= 300) svg.appendChild(mk('text', { x: x(r.ms), y: y0 + 11, class: 'mg-ax mg-cape', 'text-anchor': 'middle' }, '⚡'));
     }
     title(y0, `${lab.precip} · ${lab.cape}`);
+  }
+  // 0.12.14: Sicht (km, Balken bis 10 km) mit Nebelrisiko-Schattierung
+  { const [y0, y1] = band(bands[4][1]);
+    const vMax = 10;
+    const y = (v) => y1 - 4 - (Math.min(vMax, v) / vMax) * (y1 - y0 - 18);
+    for (const v of [0, 5, 10]) { svg.appendChild(mk('line', { x1: L, y1: y(v), x2: W - R, y2: y(v), class: 'mg-grid' })); tick(y(v), v === 10 ? '≥10' : String(v)); }
+    for (const r of recs) {
+      if (r.fog >= 1) inPlot(mk('rect', { x: x(r.ms) - colW / 2, y: y0 + 1, width: colW + 0.5, height: y1 - y0 - 2, class: 'mg-fog mg-fog' + r.fog }));
+      if (r.vis != null) inPlot(mk('rect', { x: x(r.ms) - colW * 0.36, y: y(r.vis / 1000), width: colW * 0.72, height: Math.max(0, y(0) - y(r.vis / 1000)), class: 'mg-vis' + (r.vis < 1500 ? ' bad' : r.vis < 5000 ? ' warn' : '') }));
+    }
+    title(y0, lab.vis);
+  }
+  // 0.12.14: Höhen – Grenzschicht (m AGL, gestrichelt) und 0 °C-Grenze (m AMSL, Gasfahrt)
+  { const [y0, y1] = band(bands[5][1]);
+    const vals = recs.flatMap((r) => [r.pbl, o.gas ? r.fzl : null]).filter((v) => v != null);
+    const vMax = Math.max(1000, Math.ceil((Math.max(0, ...vals) + 200) / 500) * 500);
+    const y = (v) => y1 - 4 - (Math.max(0, v) / vMax) * (y1 - y0 - 18);
+    for (const v of [0, vMax / 2, vMax]) { svg.appendChild(mk('line', { x1: L, y1: y(v), x2: W - R, y2: y(v), class: 'mg-grid' })); tick(y(v), String(Math.round(v))); }
+    const pb = recs.filter((r) => r.pbl != null);
+    if (pb.length) svg.appendChild(mk('polyline', { points: pb.map((r) => `${x(r.ms).toFixed(1)},${y(r.pbl).toFixed(1)}`).join(' '), class: 'mg-pbl' }));
+    if (o.gas) { const fz = recs.filter((r) => r.fzl != null); if (fz.length) { svg.appendChild(mk('polyline', { points: fz.map((r) => `${x(r.ms).toFixed(1)},${y(r.fzl).toFixed(1)}`).join(' '), class: 'mg-fzl' })); const last = fz[fz.length - 1]; svg.appendChild(mk('text', { x: W - R + 4, y: y(last.fzl) + 3, class: 'mg-ax mg-fzlt', 'text-anchor': 'start' }, '0°')); } }
+    title(y0, o.gas ? `${lab.pbl} · ${lab.fzl}` : lab.pbl);
   }
   // Ampelstreifen
   if (o.rating) {

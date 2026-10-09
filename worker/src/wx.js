@@ -61,10 +61,44 @@ async function openMeteo(env, decrypt, ctx, q) {
   const query = q.get('query') || '';
   if (!/^latitude=/.test(query) || /[^\w=&.,%:-]/.test(query)) return err('bad query');
   const key = await getSecret(env, decrypt, 'openmeteo');
-  const base = key ? 'https://customer-api.open-meteo.com' : 'https://api.open-meteo.com';
-  const url = `${base}/v1/forecast?${query}${key ? `&apikey=${encodeURIComponent(key)}` : ''}`;
-  const data = await cached(ctx, `om/${await sha(query)}`, 900, async () => (await get(url, {}, 25000)).json());
+  // 0.12.14: api=ensemble → Ensemble-API (ICON-D2-EPS/ICON-EU-EPS, Member je Variable)
+  const ens = q.get('api') === 'ensemble';
+  const base = ens ? (key ? 'https://customer-ensemble-api.open-meteo.com' : 'https://ensemble-api.open-meteo.com') : (key ? 'https://customer-api.open-meteo.com' : 'https://api.open-meteo.com');
+  const url = `${base}/v1/${ens ? 'ensemble' : 'forecast'}?${query}${key ? `&apikey=${encodeURIComponent(key)}` : ''}`;
+  const data = await cached(ctx, `om${ens ? 'e' : ''}/${await sha(query)}`, 900, async () => (await get(url, {}, 25000)).json());
   return json(data);
+}
+/** 0.12.14: Amtliche Warnungen – CH über die MeteoSchweiz-App-Schnittstelle (PLZ aus Nominatim), DE über den DWD-WFS (Warnungen_Gemeinden).
+ * Punkte: lat,lon-Paare (bis 6). Antwort: einheitliche Liste {src, type, level, headline, text, from, to, area, point}. */
+const CH_WARN = { 0: 'Wind', 1: 'Gewitter', 2: 'Regen', 3: 'Schnee', 4: 'Glatteis', 5: 'Frost', 6: 'Hitze', 7: 'Hitze', 8: 'Lawinen', 9: 'Erdbeben', 10: 'Waldbrand', 11: 'Hochwasser', 12: 'Trockenheit' };
+const DWD_LEVEL = { Minor: 1, Moderate: 2, Severe: 3, Extreme: 4 };
+async function warnings(ctx, q) {
+  const pts = String(q.get('pts') || '').split(';').map((x) => x.split(',').map(Number)).filter((x) => x.length === 2 && x.every(isFinite)).slice(0, 6);
+  if (!pts.length) return err('pts');
+  const out = [], errors = [], seen = new Set();
+  for (const [lat, lon] of pts) {
+    const key = `${lat.toFixed(2)},${lon.toFixed(2)}`;
+    try {
+      const w = await cached(ctx, `warn/${key}`, 600, async () => {
+        // Land und PLZ über Nominatim (zoom 10 → Gemeinde/PLZ)
+        const n = await (await get(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&zoom=10&accept-language=de`, {}, 10000)).json();
+        const a = n.address || {}; const cc = String(a.country_code || '').toUpperCase(); const area = a.town || a.city || a.village || a.municipality || a.county || '';
+        const list = [];
+        if (cc === 'CH' && /^\d{4}$/.test(a.postcode || '')) {
+          const j = await (await get(`https://app-prod-ws.meteoswiss-app.ch/v1/plzDetail?plz=${a.postcode}00`, {}, 12000)).json();
+          for (const x of j.warnings || []) list.push({ src: 'MeteoSchweiz', cc, type: CH_WARN[x.warnType] || `Typ ${x.warnType}`, level: x.warnLevel, headline: `${CH_WARN[x.warnType] || 'Warnung'} Stufe ${x.warnLevel}${x.outlook ? ' (Vorwarnung)' : ''}`, text: x.text || '', from: x.validFrom || null, to: x.validTo || null, area: `${a.postcode} ${area}`.trim(), outlook: !!x.outlook, links: (x.links || []).map((l) => l.url).slice(0, 2) });
+        } else if (cc === 'DE') {
+          const u = `https://maps.dwd.de/geoserver/dwd/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dwd:Warnungen_Gemeinden&outputFormat=application/json&CQL_FILTER=${encodeURIComponent(`INTERSECTS(THE_GEOM,POINT(${lat.toFixed(4)} ${lon.toFixed(4)}))`)}&count=50`;
+          const j = await (await get(u, {}, 15000)).json();
+          for (const f of j.features || []) { const p = f.properties || {}; list.push({ src: 'DWD', cc, type: p.EC_GROUP || p.EVENT || '', level: DWD_LEVEL[p.SEVERITY] || 1, headline: p.HEADLINE || p.EVENT || '', text: [p.DESCRIPTION, p.INSTRUCTION].filter(Boolean).join('\n'), from: p.ONSET ? Date.parse(p.ONSET) : null, to: p.EXPIRES ? Date.parse(p.EXPIRES) : null, area: p.NAME || area, outlook: /Vorab/i.test(p.HEADLINE || ''), id: p.IDENTIFIER || '' }); }
+        }
+        return { cc, area, list };
+      });
+      for (const x of w.list) { const id = `${x.src}|${x.id || x.type}|${x.level}|${x.from}|${x.area}`; if (seen.has(id)) continue; seen.add(id); out.push({ ...x, id, point: key }); }
+      if (!['CH', 'DE'].includes(w.cc)) errors.push(`${key}: ${w.cc || '?'} – keine Warnquelle`);
+    } catch (e) { errors.push(`${key}: ${e.message}`); }
+  }
+  return json({ warnings: out, errors, generated: new Date().toISOString() });
 }
 /** Geländehöhe (Open-Meteo Elevation API, Copernicus DEM 90 m): bis 100 Koordinaten je Abruf; 7 Tage im Cache. */
 async function elevation(ctx, q) {
@@ -735,6 +769,7 @@ export async function handleWx(kind, req, env, ctx, q, body, auth, decrypt) {
     case 'om': return openMeteo(env, decrypt, ctx, q);
     case 'metar': return metar(env, ctx, q);
     case 'sigmet': return sigmet(ctx, q);
+    case 'warnings': return warnings(ctx, q);
     case 'dwd': return dwd(env, ctx);
     case 'dabs': if (!canWrite) return err('forbidden', 403); return dabs(env, ctx, q, briefingId);
     case 'snapshot': if (!canWrite) return err('forbidden', 403); return snapshot(env, body, briefingId, q);
