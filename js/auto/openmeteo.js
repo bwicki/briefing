@@ -86,7 +86,8 @@ export async function forecast(fetcher, lat, lon, opts = {}) {
     const lm = opts.levelModel || levelModelFor(hoursAhead);
     const [a, bb] = await Promise.all([forecast(fetcher, lat, lon, { ...opts, noLevels: true }), forecast(fetcher, lat, lon, { ...opts, model: lm })]);
     const n = a.hourly.time.length;
-    if (bb.hourly.time.length === n && bb.hourly.time[0] === a.hourly.time[0]) { for (const k of Object.keys(bb.hourly)) if (/_\d+hPa$/.test(k)) a.hourly[k] = bb.hourly[k]; a._levels = bb._levels; a._levelModel = lm; }
+    // Druckflächen immer vom Ersatzmodell; Bodenvariablen, die das gewählte Modell nicht liefert (z. B. Sicht, Grenzschicht bei ICON-CH), ebenfalls
+    if (bb.hourly.time.length === n && bb.hourly.time[0] === a.hourly.time[0]) { for (const k of Object.keys(bb.hourly)) if (/_\d+hPa$/.test(k) || !a.hourly[k] || a.hourly[k].every((v) => v == null)) a.hourly[k] = bb.hourly[k]; a._levels = bb._levels; a._levelModel = lm; }
     else { a._levels = []; a._levelModel = null; }
     if (a.elevation == null) a.elevation = bb.elevation;
     return a;
@@ -96,8 +97,21 @@ export async function forecast(fetcher, lat, lon, opts = {}) {
   if (!j || j.error) throw new Error(j?.reason || 'Open-Meteo error');
   if (!j.hourly?.time?.length) throw new Error('no data');
   j._levels = levels; j._model = opts.model || ''; j._fetched = Date.now();
+  // 0.12.14: Bodenvariablen, die das Modell nicht liefert (Grenzschicht bei ICON-D2/EU, Sicht/0 °C bei ECMWF), aus «best match» ergänzen
+  if (opts.model && !opts.noFill) {
+    const miss = SURFACE_FILL.filter((k) => !j.hourly[k] || j.hourly[k].every((v) => v == null));
+    if (miss.length) {
+      try {
+        const q = new URLSearchParams({ latitude: (+lat).toFixed(4), longitude: (+lon).toFixed(4), hourly: miss.join(','), timeformat: 'unixtime', timezone: 'UTC' });
+        if (opts.startDate && opts.endDate) { q.set('start_date', opts.startDate); q.set('end_date', opts.endDate); } else q.set('forecast_days', String(opts.days || 4));
+        const f = await fetcher(q.toString());
+        if (f?.hourly?.time?.length === j.hourly.time.length && f.hourly.time[0] === j.hourly.time[0]) { for (const k of miss) if (f.hourly[k]) j.hourly[k] = f.hourly[k]; j._filled = miss; }
+      } catch { /* bleibt leer */ }
+    }
+  }
   return j;
 }
+const SURFACE_FILL = ['boundary_layer_height', 'visibility', 'freezing_level_height', 'cape'];
 /** 0.12.14: Vergleichsmodelle (andere Modellfamilien mit Druckflächen, die den Horizont decken), höchstens n. */
 export function compareModels(mainKey, hoursAhead, n = 2) {
   const fam = (k) => (k.startsWith('icon') || k.startsWith('meteoswiss') ? 'icon' : k.startsWith('ecmwf') ? 'ecmwf' : k.startsWith('gfs') ? 'gfs' : k.startsWith('meteofrance') ? 'mf' : k.startsWith('ukmo') ? 'ukmo' : k);

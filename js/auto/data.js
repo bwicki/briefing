@@ -52,7 +52,7 @@ export async function getForecastAt(ctx, b, lat, lon, modelOverride) {
   return p;
 }
 
-const standOf = (j, b) => ({ stand: Date.now(), model: j._model, modelName: OM.modelName(j._model) + (j._levelModel ? ` (${t('auto_levelsFrom')} ${OM.modelName(j._levelModel)})` : ''), source: 'Open-Meteo', fetched: j._fetched, elevModel: j.elevation });   // 0.12.14: Ersatzmodell für Druckflächen
+const standOf = (j, b) => ({ stand: Date.now(), model: j._model, modelName: OM.modelName(j._model) + (j._levelModel ? ` (${t('auto_levelsFrom')} ${OM.modelName(j._levelModel)})` : '') + (j._filled?.length ? ` (${t('auto_filledFrom', { v: j._filled.map((k) => ({ boundary_layer_height: t('auto_pbl'), visibility: t('auto_vis'), freezing_level_height: t('auto_fzl'), cape: 'CAPE' })[k] || k).join(', ') })})` : ''), source: 'Open-Meteo', fetched: j._fetched, elevModel: j.elevation });   // 0.12.14: Ersatzmodell für Druckflächen
 const hoursAhead = (b) => (b.time.startMs + (b.intent.durationMin || 0) * 60000 - Date.now()) / 3600000;
 const lightFn = (b, ctx) => { const sun = sunFor(b, ctx.settings, ctx.racTable); return (ms) => (sun ? ms >= sun.official.bcmt - 1800000 && ms <= sun.official.ecet + 1800000 : true); };
 /** Ampel-Kriterium «Tageslicht»: bei zugelassener Nachtfahrt (NVFR) entfällt es (0.12.3); die Nachtkennzeichnung im Meteogramm bleibt. */

@@ -440,17 +440,18 @@ export function sigmetGeo(s) { const c = (s.coords || []).map((q) => [+q.lat, +q
 export async function sigmetMapDialog(s, b) {
   const poly = sigmetGeo(s); if (!poly) return;
   await geoMapDialog(`${s.fir || ''} ${s.hazard || ''} ${s.qualifier || ''}`.trim(), (s.raw || '').trim().slice(0, 600), b, (map, pts) => {
-    L.polygon(poly, { color: '#c0392b', weight: 2, fillOpacity: .12 }).addTo(map).bindTooltip(`${s.hazard || ''} ${s.qualifier || ''} · ${s.validFrom || ''} – ${s.validTo || ''}`);
+    L.polygon(poly, { color: '#c0392b', weight: 2, fillOpacity: .12 }).addTo(map).bindTooltip(`${s.hazard || ''} ${s.qualifier || ''} · ${sgT(s.validFrom)} – ${sgT(s.validTo)}`);
     pts.push(...poly);
   });
 }
+const sgT = (v) => (v == null || v === '' ? '' : typeof v === 'number' || /^\d{9,10}$/.test(String(v)) ? new Date(+v * 1000).toISOString().slice(5, 16).replace('T', ' ') + 'Z' : String(v).slice(0, 16));   // 0.12.14: Epochensekunden der AWC-API lesbar
 export function renderSigmet(snap, b, ctx, opts = {}) {
   const d = snap.data, hidden = new Set(opts.hidden || []);
   const list = (d.list || []).filter((s, i) => !hidden.has(s.id || `${s.fir}-${i}`));
   const hid = hidden.size ? h('div.note', t('hide_count', { n: hidden.size })) : null;
   if (!list.length) return h('div', [h('div.note', t('auto_noSigmet')), hid, renderWarnings(d, b, opts)]);
   const mapBtn = (s) => (sigmetGeo(s) && typeof L !== 'undefined' ? h('button.btn.icon.small.map-x.no-print', { type: 'button', title: t('notam_map'), onclick: (e) => { e.stopPropagation(); sigmetMapDialog(s, b); } }, icon('map', 14)) : null);
-  return h('div.auto-wrap', [...list.map((s, i) => h('div.metar', [h('div.mhead', [h('b', `${s.fir || ''} ${s.hazard || ''} ${s.qualifier || ''}`), h('span.muted.small', ` · ${s.validFrom || ''} – ${s.validTo || ''}${s.base != null || s.top != null ? ` · ${s.base ?? 'SFC'}–${s.top ?? '?'} ft` : ''}`), h('span.mh-btns', [mapBtn(s), hideBtn(opts, s.id || `${s.fir}-${i}`)])]), h('pre.report', s.raw || '')])), hid, renderWarnings(d, b, opts)]);
+  return h('div.auto-wrap', [...list.map((s, i) => h('div.metar', [h('div.mhead', [h('b', `${s.fir || ''} ${s.hazard || ''} ${s.qualifier || ''}`), h('span.muted.small', ` · ${sgT(s.validFrom)} – ${sgT(s.validTo)}${s.base != null || s.top != null ? ` · ${s.base ?? 'SFC'}–${s.top ?? '?'} ft` : ''}`), h('span.mh-btns', [mapBtn(s), hideBtn(opts, s.id || `${s.fir}-${i}`)])]), h('pre.report', s.raw || '')])), hid, renderWarnings(d, b, opts)]);
 }
 /** 0.12.14: Amtliche Warnungen (MeteoSchweiz / DWD) an Startort, Landeraum und Bahn-Endpunkten – Stufe, Gültigkeit, Text; ✕ blendet aus. */
 export function renderWarnings(d, b, opts = {}) {

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.14a — 2026-10-09 · Live-Befunde
+
+* Open-Meteo liefert je Modell nicht alle Bodenvariablen (gemessen: ICON-D2/ICON-EU ohne Grenzschichthöhe, ECMWF ohne
+  Sicht/0 °C/Grenzschicht, ICON-CH ohne Sicht/Grenzschicht): fehlende Werte (Grenzschicht, Sicht, 0 °C, CAPE) werden
+  mit einer zweiten kleinen Abfrage aus «best match» ergänzt; die Standzeile nennt es.
+* SIGMET/AIRMET: Gültigkeit lesbar (Epochensekunden der AWC-API → «MM-DD HH:MMZ»).
+
 ## 0.12.14 — 2026-10-09 · Mehr aus den Quellen: Sicht/0 °C/Grenzschicht, Modellvergleich, Ensemble, amtliche Warnungen, ICON-CH
 
 * **B12 Meteogramm:** zwei neue Zeilen – **Sicht** (km, Balken; Nebelrisiko als Schattierung) und **Grenzschichthöhe**
