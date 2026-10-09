@@ -36,39 +36,39 @@ Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
 11  Mecklenburgisches Tiefland  M2 ISOL RA  M5 ISOL RA  M5 ISOL RA
 
-12  Vorpommern  O ISOL RA  M2 ISOL RA  M5 ISOL RA
+12  Vorpommern  O ISOL RA  M5 ISOL RA  M5 ISOL RA
 
 13  Westliche Mecklenburgische Seenplatte und Prignitz  M2 ISOL RA  M5 ISOL RA  M5 ISOL RA
 
-14  Östliche Mecklenburgische Seenplatte und Uckermark  O ISOL RA  M2 ISOL RA  M5 ISOL RA
+14  Östliche Mecklenburgische Seenplatte und Uckermark  O ISOL RA  M5 ISOL RA  M5 ISOL RA
 
-15  Altmark  D1 ISOL RA  M2 ISOL RA  M2 ISOL RA
+15  Altmark  D1 ISOL RA  M5 ISOL RA  M5 ISOL RA
 
-16  Fläming  O ISOL RA  D1 ISOL RA  M5 ISOL RA
+16  Fläming  O ISOL RA  M8 ISOL RA  M8 ISOL RA
 
-17  Havelland  O ISOL RA  D1 ISOL RA  D1 ISOL RA
+17  Havelland  O ISOL RA  M5 ISOL RA  M5 ISOL RA
 
-18  Barnim und Oderbruch  O ISOL RA  D1 ISOL RA  D1 ISOL RA
+18  Barnim und Oderbruch  O ISOL RA  D4 ISOL RA  M5 ISOL RA
 
-19  Dahme-Spree-Gebiet und Gubener Waldland  O ISOL RA  D1 ISOL RA  D1 ISOL RA
+19  Dahme-Spree-Gebiet und Gubener Waldland  O ISOL RA  D4 ISOL RA  M5 ISOL RA
 
-20  Magdeburger Börde und Nördliches Harzvorland  D1 ISOL RA  D1 ISOL RA  D1 ISOL RA
+20  Magdeburger Börde und Nördliches Harzvorland  D1 ISOL RA  D4 ISOL RA  D4 ISOL RA
 
 21  Harz  X ISOL RA  X ISOL RA  X ISOL RA
 
-22  Leipziger Tieflandsbucht und Elbe-Elster-Niederung  O ISOL RA  D1 ISOL RA  D1 ISOL RA
+22  Leipziger Tieflandsbucht und Elbe-Elster-Niederung  O ISOL RA  D4 ISOL RA  D4 ISOL RA
 
-23  Niederlausitzer Heiden  O ISOL RA  D1 ISOL RA  D1 ISOL RA
+23  Niederlausitzer Heiden  O ISOL RA  D4 ISOL RA  M5 ISOL RA
 
-24  Thüringer Becken  D1 ISOL RA  D1 ISOL RA  D1 ISOL RA
+24  Thüringer Becken  D1 ISOL RA  D4 ISOL RA  D4 ISOL RA
 
-25  Mittelsächsisches Hügelland  O ISOL RA  D1 ISOL RA  D1 ISOL RA
+25  Mittelsächsisches Hügelland  O ISOL RA  D4 ISOL RA  D4 ISOL RA
 
-26  Oberlausitz und Lausitzer Gebirge  O ISOL RA  O ISOL RA  D1 ISOL RA
+26  Oberlausitz und Lausitzer Gebirge  O ISOL RA  O ISOL RA  D4 ISOL RA
 
 27  Thüringer Wald  X ISOL RA  X ISOL RA  X ISOL RA
 
-28  Erzgebirge  D1 ISOL RA  M2 ISOL RA  X ISOL RA
+28  Erzgebirge  D1 ISOL RA  M8 ISOL RA  X ISOL RA
 
 GAFOR-Einstufung RWZ Essen
 
