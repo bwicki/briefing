@@ -11,6 +11,7 @@ import { mapsLink } from './place.js';
 import { decodeMetar, decodeTaf, tafGroupWindows, tafValidEnd, badToken, MARK0, MARK1 } from '../calc/metar.js';
 import { bearing, compass } from '../calc/geo.js';
 import { placeName } from '../net.js';
+import { parseReport, reportValidity } from '../calc/report.js';
 import { icon, iconSvg } from './icons.js';
 
 const kt = (ms) => (ms == null ? '–' : Math.round(ms * MS_TO_KT));
@@ -32,12 +33,7 @@ export function snapCovers(snap, b) {
   if (!snap || !b) return null;
   const fw0 = b.time?.startMs || 0, need = fw0 + COVER_UNTIL_MS;
   const d = snap.data || {};
-  if (snap.kind === 'metar') {
-    if (!farStart(b)) return true;
-    const tafs = Object.values(d.taf || {}).map((x) => (typeof x === 'string' ? x : x?.rawTAF || x?.raw || ''));
-    return tafs.some((raw) => { const e = tafValidEnd(raw, snap.stand || Date.now()); return e != null && e >= need; });
-  }
-  if (NOW_KINDS.has(snap.kind)) return !farStart(b);
+  if (NOW_KINDS.has(snap.kind)) return !farStart(b);   // 0.12.15: auch METAR/TAF – Start > 6 h entfernt → zu aktualisieren (Entscheid 09.10.2026), TAF-Gültigkeit zählt nicht
   if (snap.kind === 'balloon') {
     if (!d.dwd) return null;
     const days = []; for (const ms of [fw0, need]) { const x = new Date(ms); const k = `${String(x.getUTCDate()).padStart(2, '0')}.${String(x.getUTCMonth() + 1).padStart(2, '0')}.${x.getUTCFullYear()}`; if (!days.includes(k)) days.push(k); }
@@ -47,6 +43,42 @@ export function snapCovers(snap, b) {
   if (snap.kind === 'pdiff') { const last = Math.max(0, ...(d.pairs || []).flatMap((p) => (p.rows || []).map((r) => r.ms || 0))); return last >= need; }
   return null;
 }
+/** 0.12.15: Gültigkeit eines eingefügten Berichts – von Hand gesetzt (content.valid), sonst aus dem Text gelesen. */
+export function pasteValidity(d) {
+  const v = d?.content?.valid;
+  if (v && (v.to != null || v.next != null)) return { ...v, src: v.src || 'manual' };
+  const r = reportValidity(d?.content?.text || '');
+  return r ? { ...r, src: 'text' } : null;
+}
+/** Deckt der eingefügte Bericht Start + 1 h ab? Massgebend ist die nächste Aktualisierung (wenn bekannt), sonst das Ende der Gültigkeit;
+ * ist dieser Zeitpunkt vorbei oder liegt er vor Start + 1 h, gilt «zu aktualisieren». null = keine Gültigkeit erkennbar. */
+export function pasteCovers(d, b) {
+  const v = pasteValidity(d); if (!v || !b) return null;
+  const end = v.next ?? v.to; if (end == null) return null;
+  const need = (b.time?.startMs || 0) + COVER_UNTIL_MS;
+  return need <= end && Date.now() <= end;
+}
+export const pasteWarn = (d, b) => (pasteCovers(d, b) === false ? h('span.now-warn', { title: t('now_warn') }, icon('warn', 14)) : null);
+/** 0.12.15: eingefügter Textbericht lesbar – Zwischentitel fett, Absätze ohne harte Umbrüche, Windtabellen nebeneinander. */
+export function renderReport(text) {
+  const r = parseReport(text);
+  const windBox = r.wind.length ? h('div.rp-wind', r.wind.map((w) => h('table.auto.rp-wt', [
+    h('thead', [h('tr', [h('th', { colspan: 5 }, w.station)]), h('tr', [h('th', 'ft'), h('th', `${w.times[0]} UTC`), h('th', '°C'), h('th', `${w.times[1]} UTC`), h('th', '°C')])]),
+    h('tbody', [w.ground ? h('tr', [h('td', 'GND'), h('td.mono', { colspan: 4 }, w.ground)]) : null, ...w.rows.map((x) => h('tr', [h('td.mono', x.ft), h('td.mono', x.w1), h('td.mono', x.t1 != null ? (x.t1 > 0 ? '+' : '') + x.t1 : '–'), h('td.mono', x.w2), h('td.mono', x.t2 != null ? (x.t2 > 0 ? '+' : '') + x.t2 : '–')]))].filter(Boolean)),
+  ]))) : null;
+  const out = h('div.report-fmt');
+  let windPlaced = false;
+  r.blocks.forEach((bk, i) => {
+    if (bk.kind === 'h') out.appendChild(h(i === 0 ? 'div.rp-title' : 'div.rp-h', bk.text));
+    else if (bk.kind === 'kv') out.appendChild(h('div.rp-kv', [h('span.k', bk.k + ': '), bk.v]));
+    else out.appendChild(h('p.rp-p', bk.text));
+    if (windBox && !windPlaced && bk.kind === 'h' && /^Wind/i.test(bk.text)) { out.appendChild(windBox); windPlaced = true; }
+  });
+  if (windBox && !windPlaced) out.appendChild(windBox);
+  return out;
+}
+/** Ist der Text ein erkannter Bericht (CH-Flugwetterprognose oder mit Windtabellen)? */
+export const isReport = (text) => { if (!text || text.length < 120) return false; const r = parseReport(text); return r.ch || r.wind.length > 0; };
 /** Rotes Warndreieck für die Titelzeile des Panels (0.12.10): Information deckt den Fahrtzeitraum noch nicht ab. */
 export const coverWarn = (snap, b) => (snapCovers(snap, b) === false ? h('span.now-warn', { title: t('now_warn') }, icon('warn', 14)) : null);   // 0.12.13: Strich-Icon statt fettem Glyph
 export const nowWarn = (snap, b) => null;   // bis 0.12.9 in der Standzeile; seit 0.12.10 in der Titelzeile (coverWarn)
@@ -536,11 +568,14 @@ function notamOverviewMap(el, items, b) {
 }
 export function renderNotam(snap, b, ctx, opts = {}) {
   const d = snap.data, hidden = new Set(opts.hidden || []);
-  const items = (d.items || []).filter((x) => !hidden.has(x.id));   // 0.12.8: ausgeblendete Meldungen
+  const all = (d.items || []).filter((x) => !hidden.has(x.id));   // 0.12.8: ausgeblendete Meldungen
+  // 0.12.15: NOTAM, deren Gültigkeit den Fahrtzeitraum nicht berührt (abgelaufen / erst später), werden nicht gezeigt
+  const outside = all.filter((x) => (x.vfr?.why || []).some((w) => w === 'later' || w === 'expired'));
+  const items = all.filter((x) => !outside.includes(x));
   const rel = items.filter((x) => x.vfr?.relevant), other = items.filter((x) => !x.vfr?.relevant);
   const mapBtn = (x) => (notamGeo(x) ? h('button.btn.icon.small.map-x.no-print', { type: 'button', title: t('notam_map'), onclick: (e) => { e.stopPropagation(); notamMapDialog(x, b); } }, icon('map', 14)) : null);
   const item = (x) => h('div.metar', [h('div.mhead', [h('b', `${x.icao || x.location || ''} ${x.number || ''}`), h('span.muted.small', ` · ${(x.start || '').slice(0, 16)} – ${(x.end || '').slice(0, 16)}${x.minFL != null || x.maxFL != null ? ` · FL${x.minFL ?? '000'}–FL${x.maxFL ?? '?'}` : ''}`), x.vfr?.why?.length ? h('span.muted.small', ` · ${x.vfr.why.join(', ')}`) : null, h('span.mh-btns', [mapBtn(x), hideBtn(opts, x.id)])]), h('pre.report', (x.formatted || x.text || '').trim())]);
-  const hid = hidden.size ? ` · ${t('hide_count', { n: hidden.size })}` : '';
+  const hid = (hidden.size ? ` · ${t('hide_count', { n: hidden.size })}` : '') + (outside.length ? ` · ${t('notam_outside', { n: outside.length })}` : '');
   // 0.12.13: ohne Statistik; Korridor nennt Startort → Ortschaften auf dem Fahrtweg → Landeraum (keine «Endpunkte» in der Höhe)
   const corridorNames = () => { const ps = d.points || []; const site = ps[0]?.name || b.site?.name || ''; const land = b.landing?.lat != null ? (ps.find((p) => p.kind === 'landing')?.name || b.landing.name || '') : ''; const mid = ps.filter((p, i) => i > 0 && p.kind !== 'landing' && p.name && !/^(Endpunkt|End point)\b/.test(p.name)).map((p) => p.name); return [site, ...mid, land].filter(Boolean).join(' → '); };
   const parts = [h('div.note', (d.mode === 'places' ? `${t('notam_places')}: ${(d.points || []).map((p) => `${p.name || ''} (${Math.round((p.nm || d.nm) * 1.852)} km)`).join(', ')}` : `${t('auto_notamCorridor')} ${d.nm} NM: ${corridorNames()}`) + hid)];

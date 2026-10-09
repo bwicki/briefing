@@ -10,7 +10,7 @@ import { fplView } from './fplpanel.js';
 import { profileView } from './profile.js';
 import { docsLine } from '../stamm.js';
 import { placeLine } from './place.js';
-import { renderSnapshot, standLine, coverWarn, liveWarn } from './autorender.js';
+import { renderSnapshot, standLine, coverWarn, liveWarn, pasteWarn, renderReport, isReport } from './autorender.js';
 import { load, save } from '../util.js';
 import { goNoGo } from '../calc/gonogo.js';
 import { changesSinceFinal } from '../calc/diff.js';
@@ -142,13 +142,13 @@ export async function renderBrief(view, ctx, id, opts = {}) {
             cell.appendChild(h('div', [h('div.mini.attref', t('att_ref', { n: attachments.length, p: snap.images.length })), viewer]));
             for (const x of (snap.data?.texts || []).filter((y) => !y.linkOnly)) cell.appendChild(h('div.print-only', [h('div.mini', [h('b', x.name), x.fetched ? ` · ${new Date(x.fetched).toISOString().slice(0, 16).replace('T', ' ')} UTC` : '']), h('pre.report.wx', { style: { whiteSpace: 'pre-wrap', fontSize: '10px', fontFamily: 'inherit' } }, x.text)]));
           } else if (snap) cell.appendChild(renderSnapshot(snap, bb, ctx, { interactive: false, hidden: d.content?.hidden || [] }));
-          if (d.content?.text) cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap', marginTop: '4px' } }, textToNodes(d.content.text)));
+          if (d.content?.text) cell.appendChild(isReport(d.content.text) ? renderReport(d.content.text) : h('div', { style: { whiteSpace: 'pre-wrap', marginTop: '4px' } }, textToNodes(d.content.text)));   // 0.12.15: Bericht gegliedert
           for (const im of d.content?.images || []) cell.appendChild(h('figure', { style: { margin: '4px 0' } }, [h('img.pimg', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]));
           if (!d.content?.auto && !d.content?.text && !(d.content?.images || []).length) cell.appendChild(h('span.mini', '–'));
           break;
         }
         case 'paste': default: {
-          if (d.content.text) cell.appendChild(h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text)));
+          if (d.content.text) cell.appendChild(isReport(d.content.text) ? renderReport(d.content.text) : h('div', { style: { whiteSpace: 'pre-wrap' } }, textToNodes(d.content.text)));   // 0.12.15
           for (const im of d.content.images || []) cell.appendChild(h('figure', { style: { margin: '4px 0' } }, [h('img.pimg', { src: im.url, alt: im.caption || '' }), im.caption ? h('figcaption.mini', im.caption) : null]));
           if (!d.content.text && !(d.content.images || []).length) cell.appendChild(h('span.mini', '–'));
         }
@@ -160,7 +160,7 @@ export async function renderBrief(view, ctx, id, opts = {}) {
       }
       if (d.ai?.text) cell.appendChild(h('div.aiN', [h('b.ai-lbl', [icon('ai', 12), ' ' + t('ai') + ': ']), d.ai.text]));
       if (d.comment) cell.appendChild(h('div.cm', [h('b', t('comment') + ': '), textToNodes(d.comment)]));
-      return h('tr', { class: `row-${p.key.replace('.', '-')}${rowClass}` }, [h('th', [h('span.pno', panelNo(p, list, pfx(p, bb))), ' ', tt(p), p.kind === 'auto' ? (p.auto === 'radar' ? liveWarn(bb) : coverWarn(d.content?.auto, bb)) : null, bb === b && changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]);   // 0.12.10: Warndreieck in der Titelzelle
+      return h('tr', { class: `row-${p.key.replace('.', '-')}${rowClass}` }, [h('th', [h('span.pno', panelNo(p, list, pfx(p, bb))), ' ', tt(p), p.kind === 'auto' ? (p.auto === 'radar' ? liveWarn(bb) : coverWarn(d.content?.auto, bb) || pasteWarn(d, bb)) : pasteWarn(d, bb), bb === b && changed.has(p.key) ? h('span.tag.half', { style: { marginLeft: '6px' } }, t('chg_tag', { n: ch.since.no })) : null, ]), cell]);   // 0.12.10: Warndreieck in der Titelzelle; 0.12.15: auch eingefügte Berichte (Gültigkeit)
   }
   for (const s of SECTIONS) {
     const ps = panels.filter((p) => p.section === s.id);

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.12.15 — 2026-10-09 · Rückmeldungen Test 0.12.14 (B02, B04, B05, B10, C03)
+
+* **B02 METAR/TAF:** «zu aktualisieren», sobald der Start mehr als 6 h entfernt ist – auch wenn ein TAF den Fahrtzeitraum
+  abdeckt (Entscheid 09.10.2026; die TAF-Regel aus 0.12.13 ist zurückgenommen).
+* **B04 Beobachtungen:** lädt im Server-Modus jetzt automatisch beim Öffnen (bisher erst mit «Laden»; Hinweistext war ein
+  roher Schlüssel). Stationen ausserhalb CH/DE (AT, FR, IT, …) über **MeteoGate/E-SOH (EUMETNET)** mit einer
+  Flächenabfrage (EDR «area», letzte 2 h) – wie in cockpit.wicki.aero, dort je Station; der Stationslink der Liste liefert
+  keine Reihen, deshalb die Flächenabfrage. SwissMetNet und DWD bleiben die Quellen in CH/DE.
+* **B05 Flugwetterprognose (eingefügt):** in der **Briefingsicht** gegliedert – Zwischentitel fett, harte Zeilenumbrüche
+  innerhalb der Absätze entfernt, **Windtabellen Payerne / Zürich / Lugano nebeneinander** (ft · Wind/°C je Termin,
+  PS04 → +4 °C), Prognosewerte als Schlüssel/Wert. **Gültigkeit aus dem Text** (Ausgabe, «gültig für hh:mm – hh:mm UTC»,
+  «Nächste Aktualisierung …»); «zu aktualisieren» (Dreieck, Schraffur), wenn die nächste Aktualisierung vor Start + 1 h
+  liegt oder bereits vorbei ist. Gültigkeitszeile unter dem Einfügefeld (Erarbeitung), «gültig bis (UTC)» von Hand setzbar.
+* **B10 SIGWX low Alps:** Gültigkeitszeile; nach dem Einfügen eines Bildes liest die **KI** (wenn freigeschaltet) die
+  Gültigkeit aus dem Kartentitel («VALID 12 UTC 09.10.2026» → ±3 h), sonst Knopf «Gültigkeit aus dem Bild lesen» oder von
+  Hand; Warnung nach derselben Regel. Gültigkeit wird mit dem Panel gespeichert (`content.valid`).
+* **C03 NOTAM:** Meldungen, deren Gültigkeit den Fahrtzeitraum nicht berührt (abgelaufen bzw. erst nach der Fahrt
+  beginnend, 1 h Toleranz statt 6 h), werden **nicht mehr gezeigt**; die Kopfzeile nennt «n ausserhalb des Fahrtzeitraums».
+* Tests: calc 282 (Berichtsparser, Gültigkeit), Smoke (B05 eingefügt → Gültigkeit, Warnung, Briefingsicht), API, Remote-UI.
+
 ## 0.12.14a — 2026-10-09 · Live-Befunde
 
 * Open-Meteo liefert je Modell nicht alle Bodenvariablen (gemessen: ICON-D2/ICON-EU ohne Grenzschichthöhe, ECMWF ohne

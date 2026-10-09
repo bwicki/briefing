@@ -6,7 +6,7 @@ import { h, clear, toast, num, dialog, confirmDialog } from '../util.js';
 import { stageWindows, posAtKm } from '../calc/profile.js';
 import { t, getLang } from '../i18n.js';
 import { field, input, select, textarea, check } from './widgets.js';
-import { renderSnapshot, setAirspaceUrl, renderSondeWindow, nowWarnLive, coverWarn, liveWarn } from './autorender.js';
+import { renderSnapshot, setAirspaceUrl, renderSondeWindow, nowWarnLive, coverWarn, liveWarn, pasteWarn, pasteValidity } from './autorender.js';
 import * as DATA from '../auto/data.js';
 import { MODELS, modelsFor, modelName, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDateTime } from '../calc/time.js';
@@ -40,6 +40,51 @@ export function meteoBar(b, ctx, { onChange, refreshAll, readOnly }) {
  * Rahmen eines automatischen Panels. p.auto = 'meteogram'|'wind'|…;
  * d = Panel-Datensatz (d.content.auto = Schnappschuss). onChange() nach Änderungen.
  */
+/** 0.12.13/0.12.15: Warndreieck in der Titelzeile und rote Schraffur am linken Panelrand setzen/entfernen. */
+export function setCoverWarn(panelEl, el) {
+  const ttl = panelEl?.querySelector('.panel-head .ttl'); if (!ttl) return;
+  ttl.querySelector('.now-warn')?.remove(); panelEl.querySelector('.cover-stripe')?.remove(); panelEl.classList.toggle('cover-warn', !!el);
+  if (el) { ttl.appendChild(el); panelEl.appendChild(h('div.cover-stripe', { title: t('now_warn') })); }
+}
+/** 0.12.15: Gültigkeitszeile unter dem Einfügefeld (B05, B10 …): erkannt aus Text/Bild oder von Hand «gültig bis (UTC)»; KI liest die Gültigkeit aus dem Bild. */
+export function validityRow(p, d, b, ctx, { onChange, readOnly }) {
+  const row = h('div.valid-row.no-print');
+  const fmt = (ms) => (ms != null ? new Date(ms).toISOString().slice(5, 16).replace('T', ' ') + 'Z' : '–');
+  const toLocal = (ms) => (ms != null ? new Date(ms).toISOString().slice(0, 16) : '');
+  let busy = false;
+  const draw = () => {
+    clear(row);
+    const v = pasteValidity(d);
+    const src = v ? (v.src === 'manual' ? t('valid_manual') : v.src === 'ai' ? t('valid_fromAi') : t('valid_fromText')) : null;
+    const parts = [h('span.lbl', t('valid_lbl') + ': ')];
+    if (v && (v.from != null || v.to != null)) parts.push(h('span', `${fmt(v.from)} – ${fmt(v.to)}`));
+    if (v?.next != null) parts.push(h('span.muted', ` · ${t('valid_next')} ${fmt(v.next)}`));
+    if (src) parts.push(h('span.muted.small', ` (${src})`));
+    if (!v) parts.push(h('span.muted', t('valid_none')));
+    row.appendChild(h('div.vl', parts));
+    if (!readOnly) {
+      const inp = input('datetime-local', toLocal(d.content?.valid?.to ?? null), { title: t('valid_until'), onchange: (e) => { const ms = e.target.value ? Date.parse(e.target.value + 'Z') : null; if (ms) { d.content.valid = { from: d.content.valid?.from ?? null, to: ms, next: null, src: 'manual' }; } else delete d.content.valid; onChange(); draw(); } });
+      const btns = [h('label.inline.small', [t('valid_until') + ' ', inp])];
+      if (d.content?.valid) btns.push(h('button.btn.icon.small', { type: 'button', title: t('valid_clear'), onclick: () => { delete d.content.valid; onChange(); draw(); } }, icon('close', 12)));
+      if (ctx.store.mode === 'remote' && ctx.can('ai') && (d.content?.images || []).length) btns.push(h('button.btn.small.ai', { type: 'button', disabled: busy, onclick: () => readAi() }, [icon('ai', 12), ' ', busy ? t('ai_working') : t('valid_readAi')]));
+      row.appendChild(h('div.vb', btns));
+    }
+  };
+  const readAi = async () => {
+    busy = true; draw();
+    try {
+      const images = (d.content.images || []).map((i) => i.url).filter((u) => /\/files\//.test(u)).slice(0, 2);
+      const r = await aiHint(ctx, b, { system: 'Du liest die Gültigkeitsangabe aus einer Flugwetterkarte (z. B. SIGWX LOW ALPS, GAFOR, Bodenkarte). Antworte ausschliesslich mit einer Zeile im Format VALID=YYYY-MM-DDTHH:MMZ/YYYY-MM-DDTHH:MMZ (Beginn/Ende der Gültigkeit, UTC). Ist nur ein Zeitpunkt angegeben (z. B. «VALID 12 UTC 09.10.2026»), gib Zeitpunkt−3h/Zeitpunkt+3h an. Ist nichts erkennbar: VALID=NONE.', prompt: `Heutiges Datum: ${new Date().toISOString().slice(0, 10)}. Lies VALID aus dem Bild.`, images });
+      const m = /VALID=(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z\/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z/.exec(r?.text || '');
+      if (!m) throw new Error(t('valid_aiFail'));
+      d.content.valid = { from: Date.parse(m[1] + ':00Z'), to: Date.parse(m[2] + ':00Z'), next: null, src: 'ai' }; onChange();
+    } catch (e) { toast(`${t('valid_aiFail')}: ${e.message}`); }
+    busy = false; draw();
+  };
+  draw();
+  row.redraw = draw; row.readAi = readAi;
+  return row;
+}
 export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   setAirspaceUrl(ctx.settings.airspaceTileUrl);
   const wrap = h('div.autoblock');
@@ -49,7 +94,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   const setSnap = (snap) => { d.content.auto = snap; onChange(); draw(); };
   /** Warndreieck in der Titelzeile (.panel-head .ttl) setzen/entfernen – auch nach «Aktualisieren». */
   // 0.12.13: zusätzlich eine dünne rote Schraffur am linken Panelrand (mit Tooltip), solange die Information Start + 1 h nicht abdeckt
-  const syncWarn = (el, n = 0) => { const pn = body.closest('.panel'); const ttl = pn?.querySelector('.panel-head .ttl'); if (!ttl) { if (n < 5) setTimeout(() => syncWarn(el, n + 1), 50); return; } ttl.querySelector('.now-warn')?.remove(); pn.querySelector('.cover-stripe')?.remove(); pn.classList.toggle('cover-warn', !!el); if (el) { ttl.appendChild(el); pn.appendChild(h('div.cover-stripe', { title: t('now_warn') })); } };
+  const syncWarn = (el, n = 0) => { const pn = body.closest('.panel'); if (!pn?.querySelector('.panel-head .ttl')) { if (n < 5) setTimeout(() => syncWarn(el, n + 1), 50); return; } setCoverWarn(pn, el); };
   async function run(auto = false) {
     if (auto && !wrap.isConnected) return;   // Sicht inzwischen verlassen (Timer) → nichts laden
     // 0.12.8: einzelne Meldungen/Stationen wurden ausgeblendet → beim Aktualisieren fragen, ob die Auswahl bleibt
@@ -85,7 +130,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
       if (d.content.auto) toolbar.appendChild(h('button.btn.icon.small', { type: 'button', title: t('auto_clear'), onclick: async () => { if (await confirmDialog(t('auto_clear'), t('auto_clearQ'), { yes: t('auto_clear'), no: t('cancel') })) { d.content.auto = null; onChange(); draw(); } } }, icon('close', 14)));
       toolbar.appendChild(status);
     }
-    syncWarn(p.auto === 'radar' ? liveWarn(b) : coverWarn(d.content.auto, b));   // 0.12.10: Warndreieck in der Titelzeile des Panels
+    syncWarn(p.auto === 'radar' ? liveWarn(b) : coverWarn(d.content.auto, b) || pasteWarn(d, b));   // 0.12.10: Warndreieck in der Titelzeile des Panels; 0.12.15: auch eingefügter Bericht
     if (p.auto === 'radar') { const w = nowWarnLive(b); if (w) body.appendChild(w); body.appendChild(radarLive(b, ctx)); }   // 0.12.8a: Warnsymbol auch bei Radar/Webcams (live)
     if (p.auto === 'notam' && !readOnly && b.notamMode === 'places') body.appendChild(notamPlacesEditor(b, ctx, () => { onChange(); }, () => run()));
     const snap = d.content.auto;
@@ -104,7 +149,7 @@ export function autoBlock(p, d, b, ctx, { onChange, readOnly, upload }) {
   // beim ersten Öffnen ohne Schnappschuss automatisch laden: Modell-Panels sofort; DABS, Karten und
   // NOTAM (Worker-Abrufe, Freigabe) etwas später, damit die Modellpanels zuerst stehen
   const remote = ctx.store.mode === 'remote';
-  const auto = ['meteogram', 'wind', 'temps', 'traj', 'metar', 'sigmet', 'balloon', 'pdiff', 'thermal'].includes(p.auto) || (p.auto === 'fwp' && b.site.country === 'DE');
+  const auto = ['meteogram', 'wind', 'temps', 'traj', 'metar', 'sigmet', 'balloon', 'pdiff', 'thermal'].includes(p.auto) || (p.auto === 'obs' && remote) || (p.auto === 'fwp' && b.site.country === 'DE');   // 0.12.15: Beobachtungen automatisch (Server-Modus)
   const later = remote && (p.auto === 'dabs' || p.auto === 'airspace' || (p.auto === 'synoptic' && (ctx.settings.synopticCharts || []).length) || (p.auto === 'notam' && ctx.can('notam')));
   if (!readOnly && !d.content.auto && (auto || later) && b.site.lat != null && ctx.autoLoad !== false) setTimeout(() => run(true), (later ? 1500 : 50) + Math.random() * 400);
   return wrap;

@@ -1,0 +1,56 @@
+Flugwetterprognose für die Schweiz
+
+ausgegeben von der Prognose- und Flugwetterzentrale MeteoSchweiz, Zürich Flughafen
+am Freitag, den 9. Oktober 2026, 11:00 UTC
+Gültig für heute und die nächsten 3 Tage
+
+Wetterlage:
+Nach einer kurzen Phase mit Abtrocknung nähert sich im Laufe
+des Freitags aus Nordwesten eine Warmfront der Schweiz. Dessen
+steuerndes Tief mit Zentrum südlich von Island führt am Samstag
+eine Kaltfront aus Nordwesten zur Alpennordseite.
+
+Wolken, Sicht und Wetter gültig für 12:00 - 18:00 UTC
+
+Flachland und Jura:
+Anfangs im westlichen Mittelland 1-4/8 Basis 6000-7000 ft/msl,
+sonst meist 3-5/8 Basis 4500-6000 ft/msl. Sicht im Allgemeinen
+über 8 km.
+
+Gefahren gültig 12:00 - 18:00 UTC:
+Alpenübergänge aus Norden teilweise in Wolken.
+
+Aussichten bis Mitternacht:
+Am Abend auf der Alpennordseite weitere Bewölkungszunahme.
+
+Wind (GRAD/KT) und Temperatur (GRAD CELSIUS)
+
+Payerne - 12:00 UTC   / 18:00 UTC
+Höhe    - Wind Temperatur
+Ground  - NW-N / 3-6 KT              
+05000FT - VRB/03 PS04 / 250/06 PS07
+07500FT - 350/05 PS04 / 330/11 PS03
+10000FT - 010/08 PS01 / 320/09 MS01
+
+Zürich  - 12:00 UTC   / 18:00 UTC
+Höhe    - Wind Temperatur
+Ground  - W-NW / 5-10 KT             
+05000FT - 240/13 PS03 / 240/20 PS06  
+07500FT - 260/09 PS04 / 290/10 PS03  
+
+Lugano  - 12:00 UTC   / 18:00 UTC
+Höhe    - Wind Temperatur
+Ground  - VRB / 2-4 KT               
+05000FT - VRB/02 PS09 / VRB/02 PS10  
+
+Prognosewerte freie Atmosphäre von 12:00 - 18:00 UTC
+
+Tropopause: 41'000FT MS61   
+Nullgradgrenze: 10'000FT        
+
+Wetterentwicklung für die nächsten 3 Tage:
+Am SAMSTAG auf der Alpennordseite sowie in den Alpen oft stark
+bewölkt und vor allem am Vormittag einige Niederschläge.
+Am SONNTAG nördlich der Alpen anfangs stärker bewölkt.
+
+Nächste Aktualisierung am Samstag, den 10. Oktober 2026 05:00 UTC

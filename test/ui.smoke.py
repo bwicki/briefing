@@ -271,6 +271,17 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
             assert pg.input_value('#panel-B\\.metar .panel-body > .sub.extra textarea') == 'Notiz', 'Aufklappen zeigt den Text wieder'
             assert pg.query_selector('#menuBtn svg.ico-menu') is not None and pg.query_selector('#tools button.print svg.ico-print') is not None and pg.query_selector('#panel-C\\.fpl .panel-head .rrow .add.extra svg.ico-text') is not None, 'SVG-Symbole (Menü, Drucken, Zusatzbox)'
             pg.screenshot(path=f'{OUT}/{name}_18_boxes.png')
+            # 0.12.15: eingefügte Flugwetterprognose CH – Gültigkeit aus dem Text, Warnung (Start > nächste Aktualisierung), Briefingsicht gegliedert mit drei Windtabellen
+            fwp = open(os.path.join(os.path.dirname(__file__), 'fixtures', 'fwp_ch.txt'), encoding='utf-8').read()
+            pg.fill('#panel-B\\.fwp .sub.half textarea', fwp); pg.wait_for_timeout(600)
+            vr = pg.inner_text('#panel-B\\.fwp .valid-row')
+            assert 'aus dem Text' in vr and '10-10 05:00Z' in vr, 'Gültigkeitszeile aus dem Text: ' + vr
+            assert pg.query_selector('#panel-B\\.fwp .cover-stripe') is not None and pg.query_selector('#panel-B\\.fwp .panel-head .now-warn') is not None, 'Bericht veraltet (nächste Aktualisierung vor Start + 1 h) → Warnung'
+            bid_fwp = pg.evaluate('location.hash').split('/')[-1]
+            pg.goto(BASE + '#/list'); pg.wait_for_timeout(300); pg.goto(BASE + f'#/v/{bid_fwp}'); pg.wait_for_timeout(1500)
+            assert len(pg.query_selector_all('.brief .row-B-fwp .report-fmt table.rp-wt')) == 3 and 'Wetterlage' in [e.inner_text() for e in pg.query_selector_all('.brief .row-B-fwp .rp-h')], 'Briefingsicht: Bericht gegliedert, drei Windtabellen'
+            assert pg.query_selector('.brief .row-B-fwp th .now-warn') is not None, 'Briefingsicht: Warndreieck bei veraltetem Bericht'
+            pg.goto(BASE + '#/list'); pg.wait_for_timeout(300); pg.goto(BASE + f'#/b/{bid_fwp}'); pg.wait_for_timeout(1200)
             # 0.11.3: Tragkraft-Grafik mit Obergrenze, Max. Hüllentemperatur mit Vorgabe, Niveauliste der Trajektorien
             assert 'obergrenze' in (pg.text_content('#panel-A\\.massperf svg.curve') or '').lower(), 'Obergrenze in der Tragkraft-Grafik'
             assert 'max. hüllen' in pg.inner_text('#panel-A\\.massperf').lower().replace('\xad', '') and 'vorgabe' in pg.inner_text('#panel-A\\.massperf').lower(), 'Max. Hüllentemperatur mit Vorgabe des Ballons'

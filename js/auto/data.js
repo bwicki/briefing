@@ -458,8 +458,8 @@ export async function notam(ctx, b, opts = {}) {
 export function vfrRelevant(it, maxFt, fromMs, toMs) {
   const why = [];
   const s = it.start ? Date.parse(it.start) : null, e = it.end && !/PERM/i.test(it.end) ? Date.parse(it.end) : null;
-  if (s && s > toMs + 6 * 3600000) why.push('later');
-  if (e && e < fromMs - 6 * 3600000) why.push('expired');
+  if (s && s > toMs + 3600000) why.push('later');      // 0.12.15: 1 h Toleranz statt 6 h – ausserhalb des Fahrtzeitraums wird nicht gezeigt
+  if (e && e < fromMs - 3600000) why.push('expired');
   const txt = `${it.text || ''} ${it.formatted || ''}`.toUpperCase();
   const minFL = it.minFL != null ? +it.minFL : null;
   if (minFL != null && minFL * 100 > maxFt) why.push(`above FL${minFL}`);

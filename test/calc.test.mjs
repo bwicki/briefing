@@ -30,6 +30,7 @@ import { carCode } from '../js/net.js';
 import { stageOps, canDropOps, ensureOps, coverPoints, countryAtKm, stagePlanBriefing, stageSets, startPlanOff, startPlanBriefing, startPlanSig, planStale, pruneStagePlans } from '../js/calc/stageplan.js';
 import { defaultStages, renameStartStage } from '../js/calc/profile.js';
 import { decodeMetar as dMetar, decodeTaf as dTaf, tafGroupWindows, tafValidEnd } from '../js/calc/metar.js';
+import { parseReport, reportValidity, parseDeDateUtc } from '../js/calc/report.js';
 
 let fails = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('  FAIL', msg); } else console.log('  ok  ', msg); };
@@ -662,5 +663,24 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(fis.some((c) => c.cc === 'DE' && c.freq === '128.950') && fis.some((c) => c.cc === 'FR' && c.freq === '130.905') && mergeSettings({ fisContacts: [{ cc: 'DE', name: 'eigen', freq: '123.000', phone: '' }] }).fisContacts.length === 1, 'FIS-Liste: alte Platzhalter → neue Standardwerte; eigene Werte bleiben');
 }
 
+// ---------------------------------------------------------------- 0.12.15: eingefügte Berichte (Flugwetterprognose CH)
+{
+  const txt = readFileSync(new URL('./fixtures/fwp_ch.txt', import.meta.url), 'utf8');
+  const r = parseReport(txt);
+  ok(r.ch && r.wind.length === 3 && r.wind.map((w) => w.station).join(',') === 'Payerne,Zürich,Lugano' && r.wind[1].rows[0].w1 === '240/13' && r.wind[1].rows[0].t1 === 3 && r.wind[0].rows[2].t2 === -1 && r.wind[0].ground === 'NW-N / 3-6 KT', 'Windtabellen je Station (PS/MS → ±°C, Ground)');
+  const heads = r.blocks.filter((b) => b.kind === 'h').map((b) => b.text);
+  ok(heads.includes('Wetterlage') && heads.includes('Flachland und Jura') && heads.includes('Wolken, Sicht und Wetter gültig für 12:00 - 18:00 UTC') && heads.includes('Wind (GRAD/KT) und Temperatur (GRAD CELSIUS)'), 'Zwischentitel erkannt: ' + heads.join(' | '));
+  const p0 = r.blocks.find((b) => b.kind === 'p' && b.text.startsWith('Nach einer'));
+  ok(p0 && !p0.text.includes('\n') && p0.text.includes('Island führt am Samstag'), 'harte Umbrüche im Absatz entfernt');
+  ok(r.blocks.some((b) => b.kind === 'kv' && b.k === 'Nullgradgrenze'), 'Prognosewerte als Schlüssel/Wert');
+  const v = r.validity;
+  ok(v.issued === Date.UTC(2026, 9, 9, 11) && v.from === Date.UTC(2026, 9, 9, 12) && v.to === Date.UTC(2026, 9, 9, 18) && v.next === Date.UTC(2026, 9, 10, 5), 'Gültigkeit: Ausgabe 11:00, 12–18 UTC, nächste Aktualisierung 10.10. 05:00');
+  ok(parseDeDateUtc('am Samstag, den 10. Oktober 2026 05:00 UTC') === Date.UTC(2026, 9, 10, 5), 'deutsches Datum mit/ohne Komma');
+  const s1 = reportValidity('SIGWX LOW ALPS VALID 12 UTC 09.10.2026', Date.UTC(2026, 9, 9));
+  ok(s1.from === Date.UTC(2026, 9, 9, 9) && s1.to === Date.UTC(2026, 9, 9, 15), 'SIGWX «VALID 12 UTC 09.10.2026» → ±3 h');
+  ok(reportValidity('nur Text ohne Zeiten') === null, 'ohne Angabe → null');
+}
+
 console.log(`\n${n - fails}/${n} Tests bestanden`);
 process.exit(fails ? 1 : 0);
+

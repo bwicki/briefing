@@ -9,7 +9,8 @@ import { SECTIONS, visiblePanels, panelFilled, mandatoryPanels, panelNo, AMC1_BO
 import { phaseOf, sunFor, equipmentSuggest, upgradeBriefing, applyLanding, balloonImage, completion, isLocked, isArchived, paxLine, countriesLine, placeLabel, hasCopilot, routeCountries, transitionItems, applicableTransitions, intentLine } from '../model.js';
 import { docsLine } from '../stamm.js';
 import { placeRow, placeLine } from './place.js';
-import { meteoBar, autoBlock, askAi } from './autopanels.js';
+import { meteoBar, autoBlock, askAi, setCoverWarn, validityRow } from './autopanels.js';
+import { pasteWarn } from './autorender.js';
 import { refreshAll as refreshAllData } from '../auto/data.js';
 import { goNoGoCard, crewDialog, assessmentDialog, finalPdfDialog, exportOne, printDialog, paxCardTitle } from './extras.js';
 import { changesSinceFinal } from '../calc/diff.js';
@@ -343,20 +344,27 @@ export async function renderEditor(view, ctx, id, opts = {}) {
         content = h('div', [
           autoBlock(p, d, bb, ctx, { onChange: () => touched(p.key, X), readOnly: shared?.role === 'read', upload }),
           // Einfügepflicht (LINK + EINFÜGEN): Feld für den offiziellen Bericht bleibt immer sichtbar; sonst dient die Zusatzbox
-          p.grade === 'half' ? h('div.sub.half', [h('div.lbl', t('panel_pasteSummary')), pasteArea(d.content, (v) => { Object.assign(d.content, { text: v.text, images: v.images }); touched(p.key, X); }, upload)]) : null,
+          p.grade === 'half' ? (() => { const vr = validityRow(p, d, bb, ctx, { onChange: () => { touched(p.key, X); syncPaste(); }, readOnly: shared?.role === 'read' }); return h('div.sub.half', [h('div.lbl', t('panel_pasteSummary')), pasteArea(d.content, (v) => { Object.assign(d.content, { text: v.text, images: v.images }); touched(p.key, X); vr.redraw(); syncPaste(); }, upload), vr]); })() : null,
         ]);
         break;
       }
       case 'paste': default: {
         const link = p.link && S.sources[p.link];
+        // 0.12.15: Gültigkeitszeile (B10 SIGWX u. a.); nach dem Einfügen eines Bildes liest die KI die Gültigkeit, wenn freigeschaltet
+        const vr = validityRow(p, d, bb, ctx, { onChange: () => { touched(p.key); syncPaste(); }, readOnly: shared?.role === 'read' });
         content = h('div', [
           p.phase2 ? h('div.note', { style: { marginBottom: '6px' } }, t('panel_phase2', { s: p.phase2 })) : null,
-          pasteArea(d.content, (v) => { d.content = v; touched(p.key); }, upload),
+          pasteArea(d.content, (v) => { const nImg = (v.images || []).length, had = (d.content?.images || []).length; d.content = v; touched(p.key); vr.redraw(); syncPaste(); if (nImg > had && !d.content.valid && ctx.store.mode === 'remote' && ctx.can('ai')) vr.readAi().then(() => syncPaste()); }, upload),
+          vr,
         ]);
       }
     }
     body.append(content, ...subBlocks(p, X).filter(Boolean));
-    return h('div.panel' + (panelStatus(p, X) === 'must' ? '.must-open' : ''), { id: 'panel-' + X.id(p) }, [head, body]);
+    const panelEl = h('div.panel' + (panelStatus(p, X) === 'must' ? '.must-open' : ''), { id: 'panel-' + X.id(p) }, [head, body]);
+    // 0.12.15: Aktualitätswarnung für eingefügte Berichte (Gültigkeit) – bei Auto-Panels übernimmt der Autoblock
+    function syncPaste() { if (p.kind === 'auto') { const pn = panelEl; const cur = pn.querySelector('.now-warn'); if (!d.content?.auto || !cur) setCoverWarn(pn, pasteWarn(d, bb)); return; } setCoverWarn(panelEl, pasteWarn(d, bb)); }
+    if (p.kind !== 'auto') setTimeout(syncPaste, 0);
+    return panelEl;
   }
   /** «KI-Kommentar» (direkt) und «…» (mit Prompt-Maske) im Titelbalken – Server-Modus mit KI-Freigabe. */
   function aiButtons(p, d, X = main) {

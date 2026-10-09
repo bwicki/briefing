@@ -430,22 +430,30 @@ async function stations(ctx, q) {
     const seen = new Set();
     const deRes = await Promise.allSettled(pts.slice(0, 19).map(([la, lo]) => get(`https://api.brightsky.dev/current_weather?lat=${la.toFixed(3)}&lon=${lo.toFixed(3)}&max_dist=${Math.round(Math.min(60000, km * 1000))}`, {}, 10000).then((r) => r.json()).catch((e) => { if (!/HTTP 404/.test(e.message)) errors.push('BrightSky: ' + e.message); return null; })));
     for (const r of deRes) { const j = r.status === 'fulfilled' ? r.value : null; if (!j?.weather) continue; const src = j.sources?.[0] || {}; const key = src.dwd_station_id || src.station_name; if (!key || seen.has(key)) continue; seen.add(key); const w = j.weather; push({ id: src.dwd_station_id || '', name: src.station_name || 'DWD', lat: src.lat, lon: src.lon, time: w.timestamp || null, dir: w.wind_direction_10 ?? w.wind_direction ?? null, kt: (w.wind_speed_10 ?? w.wind_speed) != null ? Math.round((w.wind_speed_10 ?? w.wind_speed) / 1.852 * 10) / 10 : null, gustKt: (w.wind_gust_speed_10 ?? w.wind_gust_speed) != null ? Math.round((w.wind_gust_speed_10 ?? w.wind_gust_speed) / 1.852 * 10) / 10 : null, tempC: w.temperature ?? null, rh: w.relative_humidity ?? null, dewC: w.dew_point ?? DEW(w.temperature, w.relative_humidity), qnh: w.pressure_msl ?? null, precipMm: w.precipitation_60 ?? w.precipitation_10 ?? null, src: 'DWD (Bright Sky)' }); }
-    // übriges Europa: MeteoGate/E-SOH (EUMETNET) – Stationsliste (gross, 24 h im Cache), dann je Station die Zeitreihe
+    // übriges Europa: MeteoGate/E-SOH (EUMETNET, 33 Länder) – 0.12.15: eine Flächenabfrage (EDR «area», letzte 2 h) statt je Station
+    // (der «timeseries-link» der Stationsliste liefert keine Reihen); Namen aus der Stationsliste im gleichen Rechteck
     try {
-      const list = await cached(ctx, 'stations/meteogate-locations', 86400, async () => {
-        const j = await (await get('https://observations.meteogate.eu/collections/observations/locations', {}, 25000)).json();
-        return (j.features || []).filter((f) => (f.properties?.['parameter-name'] || []).some((p) => /^wind_speed|^wind_from_direction|^air_temperature/.test(p))).map((f) => ({ id: f.id, name: f.properties?.name || '', lon: f.geometry?.coordinates?.[0], lat: f.geometry?.coordinates?.[1], link: f.properties?.['timeseries-link'] || '' }));
-      });
-      const near = list.map((s) => ({ ...s, d: distKm(lat, lon, s.lat, s.lon) })).filter((s) => s.d <= km && s.link && !out.some((o) => distKm(o.lat, o.lon, s.lat, s.lon) < 3)).sort((a, b) => a.d - b.d).slice(0, 15);
-      const mg = await Promise.allSettled(near.map((s) => get(s.link + (s.link.includes('?') ? '&' : '?') + 'limit=40', {}, 12000).then((r) => r.json()).then((j) => ({ s, j }))));
-      for (const r of mg) {
-        if (r.status !== 'fulfilled') continue;
-        const { s, j } = r.value; const feats = Array.isArray(j?.features) ? j.features : j?.type === 'Feature' ? [j] : [];
-        const latest = {};
-        for (const f of feats) { const p = f.properties || {}; const name = p['parameter-name'] || p.parameter || ''; const v = p.value ?? p.result ?? null; const tm = p.resultTime || p.phenomenonTime || p.time || ''; if (v == null || !name) continue; if (!latest[name] || tm > latest[name].t) latest[name] = { v: +v, t: tm }; }
-        const find = (pre) => { const k = Object.keys(latest).find((x) => x.startsWith(pre)); return k ? latest[k] : null; };
-        const dir = find('wind_from_direction'), spd = find('wind_speed'), tt = find('air_temperature'), rh = find('relative_humidity'), pp = find('air_pressure_at_sea_level');
-        push({ id: s.id, name: s.name, lat: s.lat, lon: s.lon, time: (tt || spd || dir)?.t || null, dir: dir ? Math.round(dir.v) : null, kt: spd ? Math.round(spd.v * 1.943844 * 10) / 10 : null, gustKt: null, tempC: tt ? (tt.v > 100 ? Math.round((tt.v - 273.15) * 10) / 10 : tt.v) : null, rh: rh ? rh.v : null, dewC: tt && rh ? DEW(tt.v > 100 ? tt.v - 273.15 : tt.v, rh.v) : null, qnh: pp ? (pp.v > 2000 ? Math.round(pp.v / 100 * 10) / 10 : pp.v) : null, precipMm: null, src: 'EUMETNET (MeteoGate)' });
+      const dLat = km / 111, dLon = km / (111 * Math.cos(lat * Math.PI / 180));
+      const bbox = `${(lon - dLon).toFixed(3)},${(lat - dLat).toFixed(3)},${(lon + dLon).toFixed(3)},${(lat + dLat).toFixed(3)}`;
+      const poly = `POLYGON((${(lon - dLon).toFixed(3)} ${(lat - dLat).toFixed(3)},${(lon + dLon).toFixed(3)} ${(lat - dLat).toFixed(3)},${(lon + dLon).toFixed(3)} ${(lat + dLat).toFixed(3)},${(lon - dLon).toFixed(3)} ${(lat + dLat).toFixed(3)},${(lon - dLon).toFixed(3)} ${(lat - dLat).toFixed(3)}))`;
+      const PARS = ['wind_speed:10.0:point:PT10M', 'wind_from_direction:10.0:point:PT10M', 'wind_speed_of_gust:10.0:point:PT1H', 'air_temperature:2.0:point:PT0S', 'dew_point_temperature:2.0:point:PT0S', 'relative_humidity:2.0:point:PT0S', 'air_pressure_at_mean_sea_level:0.0:point:PT0S', 'precipitation_amount:1.5:sum:PT1H'];
+      const from = new Date(Date.now() - 2 * 3600000).toISOString();
+      const [locs, cov] = await Promise.all([
+        get(`https://observations.meteogate.eu/collections/observations/locations?bbox=${bbox}`, {}, 15000).then((r) => r.json()).catch(() => ({})),
+        get(`https://observations.meteogate.eu/collections/observations/area?coords=${encodeURIComponent(poly)}&parameter-name=${PARS.join(',')}&datetime=${encodeURIComponent(from + '/..')}`, {}, 20000).then((r) => r.json()),
+      ]);
+      const names = {}; for (const f of locs.features || []) names[f.id] = { name: f.properties?.name || '', lat: f.geometry?.coordinates?.[1], lon: f.geometry?.coordinates?.[0] };
+      const byId = {};
+      for (const c of cov.coverages || []) {
+        const id = c['metocean:wigosId'] || c.id; if (!id) continue;
+        const ts = c.domain?.axes?.t?.values || []; const x = c.domain?.axes?.x?.values?.[0], y = c.domain?.axes?.y?.values?.[0];
+        const st = (byId[id] = byId[id] || { id, lat: y, lon: x, v: {} });
+        for (const [k, rg] of Object.entries(c.ranges || {})) { const vals = rg.values || []; for (let i = vals.length - 1; i >= 0; i--) if (vals[i] != null) { const pre = k.split(':')[0]; if (!st.v[pre] || ts[i] > st.v[pre].t) st.v[pre] = { v: vals[i], t: ts[i] }; break; } }
+      }
+      for (const st of Object.values(byId)) {
+        if (st.lat == null || out.some((o) => distKm(o.lat, o.lon, st.lat, st.lon) < 3)) continue;   // CH/DE sind schon über SMN/Bright Sky da
+        const g = (k) => st.v[k] || null; const dir = g('wind_from_direction'), spd = g('wind_speed'), gst = g('wind_speed_of_gust'), tt = g('air_temperature'), td = g('dew_point_temperature'), rh = g('relative_humidity'), pp = g('air_pressure_at_mean_sea_level'), rr = g('precipitation_amount');
+        push({ id: st.id, name: names[st.id]?.name ? names[st.id].name.replace(/\b([A-ZÄÖÜ])([A-ZÄÖÜ]+)/g, (m, a, b) => a + b.toLowerCase()) : st.id, lat: st.lat, lon: st.lon, time: (spd || tt || dir)?.t || null, dir: dir ? Math.round(dir.v) : null, kt: spd ? Math.round(spd.v * 1.943844 * 10) / 10 : null, gustKt: gst ? Math.round(gst.v * 1.943844) : null, tempC: tt ? Math.round(tt.v * 10) / 10 : null, dewC: td ? Math.round(td.v * 10) / 10 : null, rh: rh ? Math.round(rh.v) : null, qnh: pp ? Math.round(pp.v) : null, precipMm: rr ? Math.round(rr.v * 10) / 10 : null, src: 'MeteoGate (EUMETNET)' });
       }
     } catch (e) { errors.push('MeteoGate: ' + e.message); }
     out.sort((a, b) => a.km - b.km);
