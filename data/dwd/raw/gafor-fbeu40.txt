@@ -4,167 +4,167 @@ GAFOR-Einstufung LBZ Hamburg
 
 GAFOR Bereich LBZ Hamburg 09.10.2026
 
-Gebiet  Name  12-14 UTC  14-16 UTC  16-18 UTC
+Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
-00  Deutsche Bucht  M5 OCNL RADZ  D1 OCNL SHRA  D1 ISOL TSRA
+00  Deutsche Bucht  M2 OCNL RADZ  D1 ISOL TSRA  D1 ISOL TSRA
 
-01  Ostfriesland  X OCNL RA  X OCNL RADZ  X ISOL TSRA
+01  Ostfriesland  X OCNL RADZ  X ISOL TSRA  M5 ISOL TSRA
 
-02  Nordfriesland-Dithmarschen  M8 OCNL RA  X OCNL RADZ  M5 OCNL SHRA
+02  Nordfriesland-Dithmarschen  X OCNL RADZ  M5 OCNL SHRA  D1 ISOL TSRA
 
-03  Schleswig-Holsteinische Geest  M5 OCNL RA  X OCNL RADZ  X OCNL RADZ
+03  Schleswig-Holsteinische Geest  X OCNL RADZ  X OCNL RADZ  X ISOL TSRA
 
-04  Schleswig-Holsteinisches Hügelland  M5 OCNL RA  M5 OCNL RA  X OCNL RADZ
+04  Schleswig-Holsteinisches Hügelland  M5 OCNL RA  X OCNL RADZ  X ISOL TSRA
 
-05  Nordwestliches Niedersachsen  M5 OCNL RA  M8 OCNL RADZ  M8 OCNL RADZ
+05  Nordwestliches Niedersachsen  M8 OCNL RADZ  M8 OCNL RADZ  M8 ISOL TSRA
 
-06  Lüneburger Heide  M5 OCNL RA  M5 OCNL RA  M8 OCNL RADZ
+06  Lüneburger Heide  X OCNL RA  X OCNL RADZ  X OCNL RADZ
 
-07  Westliches Niedersachsen  M5 OCNL RA  M5 OCNL RA  M8 OCNL RADZ
+07  Westliches Niedersachsen  M5 OCNL RA  M8 OCNL RADZ  M8 OCNL RADZ
 
-08  Hannover und Braunschweig  D4 OCNL RA  D4 OCNL RA  M8 OCNL RADZ
+08  Hannover und Braunschweig  M5 OCNL RA  M8 OCNL RADZ  M8 OCNL RADZ
 
-09  Teutoburger Wald  X OCNL RA  X OCNL RA  X OCNL RADZ
+09  Teutoburger Wald  X OCNL RA  X OCNL RADZ  M8 OCNL RADZ
 
-10  Weser-Leine-Bergland  M5 OCNL RA  X OCNL RA  X OCNL RADZ
+10  Weser-Leine-Bergland  X OCNL RA  X OCNL RADZ  X OCNL RADZ
 
 GAFOR-Einstufung LBZ Berlin
 
 GAFOR Bereich LBZ Berlin 09.10.2026
 
-Gebiet  Name  09-11 UTC  11-13 UTC  13-15 UTC
+Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
-11  Mecklenburgisches Tiefland  O ISOL SHRA  O ISOL RA  D1 ISOL RA
+11  Mecklenburgisches Tiefland  M2 ISOL RA  M5 ISOL RA  M5 ISOL RA
 
-12  Vorpommern  O ISOL SHRA  O ISOL RA  O ISOL RA
+12  Vorpommern  O ISOL RA  M2 ISOL RA  M5 ISOL RA
 
-13  Westliche Mecklenburgische Seenplatte und Prignitz  O  O ISOL RA  D1 ISOL RA
+13  Westliche Mecklenburgische Seenplatte und Prignitz  M2 ISOL RA  M5 ISOL RA  M5 ISOL RA
 
-14  Östliche Mecklenburgische Seenplatte und Uckermark  O  O  O ISOL RA
+14  Östliche Mecklenburgische Seenplatte und Uckermark  O ISOL RA  M2 ISOL RA  M5 ISOL RA
 
-15  Altmark  O  O ISOL RA  O ISOL RA
+15  Altmark  D1 ISOL RA  M2 ISOL RA  M2 ISOL RA
 
-16  Fläming  O  O  O ISOL RA
+16  Fläming  O ISOL RA  D1 ISOL RA  M5 ISOL RA
 
-17  Havelland  O  O  O ISOL RA
+17  Havelland  O ISOL RA  D1 ISOL RA  D1 ISOL RA
 
-18  Barnim und Oderbruch  O  O  O
+18  Barnim und Oderbruch  O ISOL RA  D1 ISOL RA  D1 ISOL RA
 
-19  Dahme-Spree-Gebiet und Gubener Waldland  C  O  O
+19  Dahme-Spree-Gebiet und Gubener Waldland  O ISOL RA  D1 ISOL RA  D1 ISOL RA
 
-20  Magdeburger Börde und Nördliches Harzvorland  O  O ISOL RA  O ISOL RA
+20  Magdeburger Börde und Nördliches Harzvorland  D1 ISOL RA  D1 ISOL RA  D1 ISOL RA
 
-21  Harz  D1  M2 ISOL RA  M2 ISOL RA
+21  Harz  X ISOL RA  X ISOL RA  X ISOL RA
 
-22  Leipziger Tieflandsbucht und Elbe-Elster-Niederung  O  O  O ISOL RA
+22  Leipziger Tieflandsbucht und Elbe-Elster-Niederung  O ISOL RA  D1 ISOL RA  D1 ISOL RA
 
-23  Niederlausitzer Heiden  C  O  O
+23  Niederlausitzer Heiden  O ISOL RA  D1 ISOL RA  D1 ISOL RA
 
-24  Thüringer Becken  D1  O ISOL RA  O ISOL RA
+24  Thüringer Becken  D1 ISOL RA  D1 ISOL RA  D1 ISOL RA
 
-25  Mittelsächsisches Hügelland  C  O  O
+25  Mittelsächsisches Hügelland  O ISOL RA  D1 ISOL RA  D1 ISOL RA
 
-26  Oberlausitz und Lausitzer Gebirge  O  O  O
+26  Oberlausitz und Lausitzer Gebirge  O ISOL RA  O ISOL RA  D1 ISOL RA
 
-27  Thüringer Wald  M2 ISOL FG  D1 ISOL RA  M2 ISOL RA
+27  Thüringer Wald  X ISOL RA  X ISOL RA  X ISOL RA
 
-28  Erzgebirge  D1 ISOL FG  O  O
+28  Erzgebirge  D1 ISOL RA  M2 ISOL RA  X ISOL RA
 
 GAFOR-Einstufung RWZ Essen
 
 GAFOR Bereich RWZ Essen 09.10.2026
 
-Gebiet  Name  09-11 UTC  11-13 UTC  13-15 UTC
+Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
-31  Niederrheinisches Tiefland  M2 ISOL RADZ  M5 OCNL RADZ  M5 ISOL DZRA
+31  Niederrheinisches Tiefland  M2 ISOL DZRA  M2 ISOL DZRA  M2 ISOL SHRA
 
-32  Münsterland  M5 ISOL RADZ  X OCNL RADZ  X ISOL DZRA
+32  Münsterland  X ISOL DZRA  X ISOL DZRA  M5 ISOL SHRA
 
-33  Ruhrgebiet und Ostwestfalen  D1 ISOL RADZ  M2 OCNL RADZ  M5 ISOL DZRA
+33  Ruhrgebiet und Ostwestfalen  M2 ISOL DZRA  M2 ISOL DZRA  M5 ISOL SHRA
 
-34  Niederrheinische Bucht  O ISOL RADZ  D1 OCNL RADZ  D4 ISOL DZRA
+34  Niederrheinische Bucht  D1 ISOL DZRA  D1 ISOL DZRA  D1 ISOL RADZ
 
-35  Bergisches Land  M2 ISOL RADZ  X OCNL RADZ  X ISOL DZRA
+35  Bergisches Land  X ISOL DZRA  X ISOL DZRA  X ISOL RADZ
 
-36  Sauerland  M5 ISOL RADZ  X OCNL RADZ  X ISOL DZRA
+36  Sauerland  X ISOL DZRA  X ISOL DZRA  X ISOL RADZ
 
-37  Eifel  X ISOL RADZ  X OCNL RADZ  X ISOL DZRA
+37  Eifel  X ISOL DZRA  X ISOL DZRA  X ISOL DZRA
 
-38  Neuwieder Becken  O ISOL RADZ  M2 OCNL RADZ  M2 ISOL DZRA
+38  Neuwieder Becken  M2 ISOL DZRA  M2 ISOL DZRA  M2 ISOL DZRA
 
-39  Westerwald  M2 ISOL RADZ  X OCNL RADZ  X ISOL DZRA
+39  Westerwald  X ISOL DZRA  X ISOL DZRA  X ISOL DZRA
 
 GAFOR-Einstufung FWZ Frankfurt
 
 GAFOR Bereich FWZ Frankfurt 09.10.2026
 
-Gebiet  Name  09-11 UTC  11-13 UTC  13-15 UTC
+Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
-41  Hunsrück  D1 ISOL RA  M2 ISOL RA  X OCNL RA
+41  Hunsrück  X OCNL RA  X ISOL RA  X ISOL RA
 
-42  Taunus  X ISOL RA  M2 ISOL RA  X OCNL RA
+42  Taunus  X OCNL RA  X ISOL RA  X ISOL RA
 
-43  Nordhessisches Bergland und Vogelsberg  M2 ISOL RA  M2 ISOL RA  X OCNL RA
+43  Nordhessisches Bergland und Vogelsberg  X OCNL RA  X ISOL RA  X ISOL RA
 
-44  Rheinpfalz und Saarland  M2 ISOL RA  D1 ISOL RA  O ISOL RA
+44  Rheinpfalz und Saarland  D1 ISOL RA  D1 ISOL RA  D1 ISOL RA
 
 45  Rhein-Main-Gebiet und Wetterau  O ISOL RA  O ISOL RA  O ISOL RA
 
-46  Odenwald und Spessart  O ISOL RA  O ISOL RA  O ISOL RA
+46  Odenwald und Spessart  O ISOL RA  D1 ISOL RA  D1 ISOL RA
 
-47  Rhön  X ISOL RA  M2 ISOL RA  M2 ISOL RA
+47  Rhön  X ISOL RA  X ISOL RA  X ISOL RA
 
 50  Südlicher Oberrheingraben  O ISOL RA  O ISOL RA  O ISOL RA
 
-51  Mittlerer Oberrheingraben  C ISOL RA  C ISOL RA  C ISOL RA
+51  Mittlerer Oberrheingraben  O ISOL RA  O ISOL RA  O ISOL RA
 
-52  Kraichgau  C ISOL RA  C ISOL RA  C ISOL RA
+52  Kraichgau  O ISOL RA  O ISOL RA  O ISOL RA
 
-53  Oberer und mittlerer Neckarraum  O  C ISOL RA  C ISOL RA
+53  Oberer und mittlerer Neckarraum  O ISOL RA  O OCNL RA  O ISOL RA
 
-61  Schwarzwald  M2  M2 ISOL RA  M2 ISOL RA
+61  Schwarzwald  D1 ISOL RA  D1 OCNL RA  D1 ISOL RA
 
 GAFOR-Einstufung LBZ Muenchen
 
 GAFOR Bereich LBZ Muenchen 09.10.2026
 
-Gebiet  Name  09-11 UTC  11-13 UTC  13-15 UTC
+Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
-54  Mainfranken und Nördliches Unterfranken  O ISOL RA  D1 ISOL RA  D1 ISOL RA
+54  Mainfranken und Nördliches Unterfranken  D1 ISOL RA  M2 OCNL RA  M2 ISOL RA
 
-55  Kocher-Jagst-Gebiet und Frankenhöhe  O  D1 ISOL RA  D1 ISOL RA
+55  Kocher-Jagst-Gebiet und Frankenhöhe  D1 ISOL RA  M2 OCNL RA  M2 ISOL RA
 
-56  Mittelfranken  O  O ISOL RA  O ISOL RA
+56  Mittelfranken  O ISOL RA  D1 OCNL RA  D1 OCNL RA
 
-57  Oberfranken  M2  D1 ISOL RA  O ISOL RA
+57  Oberfranken  D1 ISOL RA  X OCNL RADZ  X OCNL RADZ
 
-58  Frankenwald und Fichtelgebirge  X  M2 ISOL RA  M2 ISOL RA
+58  Frankenwald und Fichtelgebirge  M2 ISOL RA  X OCNL RADZ  X OCNL RADZ
 
-62  Schwäbische Alb  C  O  O
+62  Schwäbische Alb  O ISOL RA  M2 OCNL RA  X OCNL RA
 
-63  Fränkische Alb  C  O  O
+63  Fränkische Alb  O ISOL RA  D1 OCNL RA  M2 OCNL RA
 
-64  Oberpfälzer Wald  X  D1  O ISOL RA
+64  Oberpfälzer Wald  O ISOL RA  M5 OCNL RADZ  X OCNL RADZ
 
-71  Bodenseeraum  D1  O  O
+71  Bodenseeraum  O  O ISOL RA  D4 OCNL RA
 
-72  Schwäbische Hochebene  C  C  C
+72  Schwäbische Hochebene  O  O ISOL RA  D1 OCNL RA
 
-73  Westliche Donauniederung  C  C  C
+73  Westliche Donauniederung  C  O ISOL RA  D1 OCNL RA
 
-74  Südbayerisches Hügelland  C  C  C
+74  Südbayerisches Hügelland  C  O ISOL RA  O OCNL RA
 
-75  Östliche Donau- und Naabniederung  M2  O  C
+75  Östliche Donau- und Naabniederung  C  O ISOL RA  D1 OCNL RA
 
-76  Bayerischer Wald  X  C  O
+76  Bayerischer Wald  O  D4 ISOL RA  X OCNL RA
 
-81  Westliches Alpenvorland  O  M2  O
+81  Westliches Alpenvorland  O  D1 ISOL RA  D1 OCNL RADZ
 
-82  Östliches Alpenvorland  C  O  O
+82  Östliches Alpenvorland  O  O ISOL RA  D1 OCNL RA
 
-83  Allgäuer Alpen  C  X  X
+83  Allgäuer Alpen  X  X ISOL RA  X OCNL RADZ
 
-84  Östliche Bayerische Alpen  X  X  X
+84  Östliche Bayerische Alpen  X  X  X ISOL RA
 
 GAFOR Legende
 
