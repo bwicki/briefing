@@ -1,91 +1,90 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-807
-FBEU40 EDZB 101200
+672
+FBEU40 EDZB 101800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 10.10.2026, 12.00 UTC bis 11.10.2026, 09.00 UTC
+gültig vom 10.10.2026, 18.00 UTC bis 11.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Rückseitig einer Kaltfront fließt mit teils lebhafter Westströmung
-relativ kühle Meeresluft in den Osten Deutschlands. Ein nachrückender
-Höhentrog sorgt von Nordwesten her für eine zunehmende Labilisierung
-der Luftmasse.
+Im Einflussbereich eines Tiefs über Südskandinavien fließt Rückseitig
+einer Kaltfront mit einer westlichen Strömung kühlere und labile
+Meeresluft in den Osten Deutschlands.
 
 Wettergeschehen:
-Heute Nachmittag überwiegend FEW/SCT, über Sachsen BKN CU/SC mit
-Basis bei 2000 bis 4000 FT AMSL, Obergrenzen bis FL100. Mittelgebirge
-zeitweise in Wolken. Bevorzugt von der Altmark bis zur Ostsee sowie
-anfangs in Sachsen eingelagert SCT/BKN TCU/CB mit Regen- oder
-Sprühregenschauern und TOPs bis FL130, Basis im kräftigen Schauer auf
-rund 1000 FT AGL absinkend. Ein kurzes Gewitter mit Graupel ist im
-Nordwesten und über der Ostsee nicht ganz ausgeschlossen. Im Gewitter
-TOPS bis FL180.
+Überwiegend FEW/SCT CU/SC mit Basis bei 2500 bis 4500 FT AMSL,
+Obergrenzen bis FL100.
+Von Nordwesten her zieht SCT/BKN TCU/CB mit Regenschauern und Tops
+bis FL130 durch, die Basis kann im kräftigen Schauer auf 1000 bis
+1500 FT AGL absinken. Dabei ist ein kurzes Gewitter im Nordwesten und
+über der Ostsee nicht ganz ausgeschlossen. Im Gewitter Tops bis
+FL180. Die weiter südostwärts ins Landesinnere ziehenden Schauer
+schwächen sich bei kaum ändernder Bewölkung zunehmend ab.
 
-Am Abend über Ostsachsen und Erzgebirge/Zittauer Gebirge rasch
-abziehende, bzw. auflockernde Bewölkung und zunehmend
-niederschlagsfrei. Sonst weiter landeinwärts ziehende und sich
-abschwächende Schauer bei kaum veränderter Bewölkung.
+Zudem bildet sich n der Nacht zum Sonntag in der Nordhälfte SCT/BKN
+SC mit langsam auf 1000 bis 2000 FT AMSL absinkender Wolkenbasis, im
+Süden kaum Änderung.
+Harz und Thüringer Wald werden im Laufe der zweiten Nachthälfte im
+Südwesten oberhalb rund 2000 FT AMSL angestaut und in Wolken gehüllt
+sein. Obergrenze der Bewölkung allgemein um FL060.
+Ansonsten weiterhin Regenschauer mit kurzen möglichen Gewittern im
+Küstenumfeld, weiter südlich meist nur leichte, sich abschwächende
+Schauer.
 
-In der Nacht zum Sonntag in der Nordhälfte SCT/BKN SC/CU mit langsam
-auf 1000 bis 2000 FT AMSL absinkender Wolkenbasis. In der Südhälfte
-meist FEW/SCT SC/CU mit Basis in 2000 bis 4000 FT AMSL. Thüringer
-Wald bis Vogtland im Laufe der zweiten Nachthälfte oberhalb rund 2000
-FT AMSL angestaut und in Wolken. Obergrenze der Bewölkung allgemein
-um FL060. Im gesamten Bereich vereinzelt eingelagerte TCU mit TOPS um
-FL140 und leichten Regenschauern.
-
-Am Sonntagvormittag zunächst keine wesentliche Wetteränderung.
+Am Sonntagmorgen zunächst keine wesentliche Wetteränderung, im
+weiteren Verlauf hebt der SC im Norden allmählich an auf 2000 bis
+4000 FT AMSL und geht dabei in CU/TCU über, im Süden bilden sich die
+Quellwolken in einem ähnlichen Höhenbereich. Die Schaueraktivität
+lebt im Tagesverlauf im gesamten Gebiet auf, im Norden sind zudem
+Gewitter möglich.
 
 Sichtweite:
-30 bis über 60 km. Im Sprühregenschauer über Sachseln lokal 2 bis 5
-km. Im kräftigen Schauer 4 bis 10 km.
+30 bis über 60 km. In kräftigen Schauern 4 bis 10 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  15 UTC  |  06 UTC  |
- 500FT | 240/15KT  14C | 230/15KT  08C |
-1000FT | 240/20KT  12C | 230/20KT  07C |
-1500FT | 240/20KT  11C | 240/25KT  06C |
-2000FT | 240/20KT  10C | 240/30KT  05C |
-3000FT | 240/25KT  06C | 260/30KT  03C |
-5000FT | 250/25KT  02C | 270/30KT M00C |
-FL100  | 260/25KT M08C | 270/25KT M09C |
+AMSL  |  21 UTC  |  09 UTC  |
+ 500FT | 220/15KT  09C | 250/20KT  10C |
+1000FT | 230/25KT  08C | 250/20KT  08C |
+1500FT | 240/25KT  07C | 260/25KT  07C |
+2000FT | 240/30KT  07C | 260/25KT  06C |
+3000FT | 260/30KT  04C | 270/25KT  03C |
+5000FT | 260/30KT  02C | 270/25KT  00C |
+FL100  | 250/30KT M09C | 280/25KT M10C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 250/15KT  14C | 230/20KT  08C |
-1500FT | 250/15KT  12C | 250/30KT  07C |
-2000FT | 250/15KT  11C | 250/30KT  06C |
-3000FT | 260/20KT  07C | 270/30KT  04C |
-5000FT | 260/20KT  03C | 270/30KT M00C |
-FL100  | 270/25KT M07C | 270/25KT M09C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 230/20KT  10C | 250/20KT  10C |
+1500FT | 250/25KT  10C | 250/25KT  07C |
+2000FT | 260/25KT  09C | 260/25KT  07C |
+3000FT | 270/25KT  06C | 270/30KT  03C |
+5000FT | 270/30KT  02C | 280/30KT M00C |
+FL100  | 260/25KT M08C | 270/25KT M10C |
 
 Turbulenz:
-An der Küste und über der Ostsee zeitweise Böen um 25 KT und
-dementsprechend mäßige Turbulenz unterhalb 3000 FT AMSL. Mäßig bis
-stark bei und um TCU/CB.
+An der Küste und über der Ostsee leicht bis mäßig unterhalb 3000 FT
+AMSL. Mäßig bis stark in oder in der Nähe von TCU/CB.
 
 Vereisung:
 Leicht bis mäßig in dichterer CU/SC-Bewölkung oberhalb der
 Nullgradgrenze. Mäßig bis stark in TCU/CB.
 
 Nullgradgrenze:
-FL060-070, bis Sonntagvormittag auf 4000 bis 5000 FT AMSL absinkend.
+FL060-070, in der Nacht absinkend auf 4500 bis 5000 FT AMSL
+absinkend, am Sonntag wieder etwas ansteigend auf FL050 bis FL055.
 
 Inversionen:
-Schwache Absinkinversion in der Mitte und im Süden in FL080-100, in
-der Nacht auflösend.
+Nicht signifikant.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Berlin  16.23 | 16.55  | 04.50 | 05.24
-Leipzig  16.29 | 17.02  | 04.54 | 05.28
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Berlin  04.50 | 05.24 | 16.20 | 16.55
+Leipzig  04.54 | 05.28 | 16.27 | 16.59
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 11.10.2026 um
+02.00/05.00 UTC
 
-Luftfahrtberatungszentrale Berlin/Ru
+Luftfahrtberatungszentrale Berlin/Wo
