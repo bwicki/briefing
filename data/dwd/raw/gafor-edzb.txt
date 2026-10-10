@@ -1,94 +1,85 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-059
-FBEU40 EDZB 091800
+388
+FBEU40 EDZB 100600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 09.10.2026, 18.00 UTC bis 10.10.2026, 15.00 UTC
+gültig vom 10.10.2026, 06.00 UTC bis 11.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Das Frontensystems eines atlantischen Tiefs beeinflusst am Abend und
-in der Nacht das gesamte Gebiet mit wolkenreicher Luft und einem
-kräftigen Gradienten.
-Zum Ende der Nacht gerät der Nordwesten langsam auf die Rückseite der
-abschließenden Kaltfront, im Laufe des Samstags dann auch die
-südöstlichen Landesteile.
-Rückseitig strömt kühle Nordseeluft zu uns, die durch einen
-überlagerten Höhentrog vor allem im Norden labilisiert wird.
+Die Kaltfront eines Tiefs über Südskandinavien passiert
+Ostdeutschland bis Samstagmittag von Nordwest nach Südost. Mit einer
+kräftigen Westströmung fließt dabei kühle Meeresluft ein, die im
+Nordwesten durch einen Höhentrog labilisiert wird.
 
 Wettergeschehen:
-Am Abend verbreitet leichter bis mäßiger Regen aus OVC NS mit
-Untergrenzen zwischen 2000 und 3000 FT AMSL und Obergrenzen in
-FL160-200, darüber noch CI. Nördlich einer Linie Börde - Fläming -
-Dahme-Spree-Gebiet zudem verbreitet BKN ST in 500-900 FT AGL,
-kleinräumig auch darunter. Südlich davon nur Fetzen tieferer
-Bewölkung in 1000-2000 FT AGL. West- und Südweststaulagen der
-Mittelgebirge allesamt in Wolken. Nachts zunächst kaum Änderung.
-
-Zum Ende der Nacht im Nordwesten nachlassender Regen und Abflachen
-der hochreichenden Schichtbewölkung bzw. Übergang in SCT/BKN ST/SC in
-1000-2000 FT AMSL, Obergrenzen bei FL050-060.
-
-Am Morgen und Vormittag setzen sich diese Bedingungen auch weiter
-nach Südosten durch mit Untergrenzen dort eher zwischen 1500 und 3000
-FT AMSL. Am längsten dauert die Besserung im NW-Stau von Erz- und
-Lausitzer Gebirge.
-Vormittags zudem Bildung von SCT/BKN CU mit anfänglicher Basis in
-1000-2000 FT AMSL im Norden und 2000-2500 FT AMSL im Süden. Bis zum
-frühen Nachmittag steigt die CU-Basis im Norden auf 3000 FT AMSL, im
-Süden auf 4000-5000 FT AMSL.
-
-Im Küstenbereich schon am Morgen/Vormittag Schauer aus TCU/CB, weiter
-nach Süden hin erst nachmittags TCU-Entwicklungen mit kleinräumigen
-Schauern. Über der See nachmittags kurze Gewitter nicht
-ausgeschlossen bei maximalen CB-Tops bis FL230. Die TCU-Tops weiter
-nach Süden liegen zwischen FL100 und FL130.
+Am Morgen im Bereich der Kaltfront im Südosten des Gebiets BKN/OVC
+SC/AC/AS mit Basis in 2000-3000 FT AMSL, Tops meist in FL130-160. In
+den Südstaulagen der Mittelgebirge zusätzlich BKN ST in 1500-2000 FT
+AMSL, Höhenlagen oberhalb dementsprechend in Wolken. Mit der Front
+überwiegend leichter Regen, vereinzelt schauerartig verstärkt. Auf
+der Rückseite der Front Richtung Nordwesten Übergang in zunächst
+mehrschichtige SCT/BKN SC/AC-Bewölkung, Untergrenze teils in
+1000-2000 FT AMSL, teils in 2000-4000 FT AMSL, Tops meist zwischen
+FL060 und FL120. An der Küste erste TCU mit Regenschauern.
+Bis Mittag nach Tschechien abziehende Kaltfront, rückseitig
+allgemeiner Übergang in SCT/BKN SC/CU mit Basis um 2000 FT AMSL,
+Obergrenzen in 4000-5000 FT AMSL. Am Nachmittag überwiegend als SCT,
+teils auch nur FEW CU mit Basis in 4000-5000 FT AMSL, Tops bis FL080,
+dann auch in Sachsen. Im Nordwesten hingegen weiterhin etwas tiefere
+Wolkenuntergrenzen in 2000-3000 FT AMSL mit BKN CU/TCU, Tops meist um
+FL130 mit leichten bis mäßigen Regenschauern, vereinzelt auch CB bis
+FL180 mit kräftigen Schauern und kurzen Gewittern.
+Am Abend und in der ersten Nachthälfte weiter landeinwärts ziehende
+Schauer, in abgeschwächter Form, meist ohne Gewitter. Im weiteren
+Nachtverlauf weitere Wetterberuhigung.
 
 Sichtweite:
-Außerhalb des Niederschlags in der Nacht 15-30 km. Bei Regen je nach
-Intensität 4-12 km, mit Sprühregenanteil auch mal unter 3 km.
-Rückseitig der Kaltfront in der frischen Meeresluft 40-60 km. Bei
-Schauern am Samstag kleinräumig wieder 4-8 km.
+Im Frontbereich 20-30 km, rückseitig auf 30-60 km bessernd. Im
+Niederschlag, vor allem bei kräftigeren Schauern, vorübergehend auf
+3-6 km reduziert.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  21 UTC  |  09 UTC  |
- 500FT | 220/15KT  10C | 260/20KT  11C |
-1000FT | 230/30KT  09C | 260/20KT  10C |
-1500FT | 240/35KT  09C | 260/25KT  08C |
-2000FT | 240/35KT  09C | 260/25KT  08C |
-3000FT | 280/35KT  10C | 270/25KT  05C |
-5000FT | 280/35KT  08C | 270/25KT  02C |
-FL100  | 270/35KT M01C | 260/30KT M06C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 260/15KT  11C | 230/15KT  10C |
+1000FT | 260/20KT  10C | 240/20KT  09C |
+1500FT | 260/20KT  08C | 250/25KT  07C |
+2000FT | 260/20KT  08C | 250/30KT  07C |
+3000FT | 270/25KT  06C | 260/30KT  04C |
+5000FT | 270/25KT  03C | 260/30KT  02C |
+FL100  | 260/25KT M06C | 250/30KT M07C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 220/25KT  10C | 270/20KT  12C |
-1500FT | 230/35KT  08C | 270/20KT  10C |
-2000FT | 240/40KT  08C | 270/20KT  09C |
-3000FT | 270/45KT  09C | 280/25KT  06C |
-5000FT | 280/40KT  08C | 270/20KT  03C |
-FL100  | 280/30KT M00C | 260/30KT M04C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 260/15KT  12C | 240/20KT  11C |
+1500FT | 270/20KT  10C | 260/30KT  09C |
+2000FT | 270/20KT  09C | 260/30KT  09C |
+3000FT | 280/20KT  07C | 270/30KT  05C |
+5000FT | 270/20KT  03C | 270/30KT  02C |
+FL100  | 260/30KT M05C | 260/20KT M08C |
 
 Turbulenz:
-Über den Mittelgebirgen sowie in deren Lee mäßig unterhalb von FL060.
-Zudem am Samstag in und um TCU/CB mäßig bis stark.
+An der Küste ganztags aufgrund von Windböen leicht bis mäßig
+unterhalb 2000 FT AMSL. In den Mittelgebirgen und deren Leeseiten am
+Morgen leicht bis mäßig unterhalb FL050, abschwächend. Mäßig bis
+stark bei und um TCU/CB.
 
 Vereisung:
-In der Frontbewölkung mäßig zwischen FL090-100 und FL200, punktuell
-starke Vereisung nicht ganz ausgeschlossen. Nach Abzug der Front nur
-noch leicht in unterkühlter CU/SC-Bewölkung. In TCU/CB stark.
+In der Frontbewölkung mäßig oberhalb der Nullgradgrenze. Rückseitig
+leicht bis mäßig in dichterer CU/SC-Bewölkung oberhalb der
+Nullgradgrenze. Mäßig bis stark in TCU/CB.
 
 Nullgradgrenze:
-Von anfangs FL090-100 rückseitig der abschließenden Kaltfront
-sukzessive auf FL055-065 absinkend.
+Anfangs um FL065 im Bereich Lübecker Bucht und noch FL090 im Süden.
+Bis zum Mittag von Nordwesten rasch auf FL060-065 absinkend, nur in
+der Lausitz noch um FL075, hier am Nachmittag absinkend. In der
+kommenden Nacht dann allgemein bei FL050-055.
 
 Inversionen:
-Die Aufgleitinversion der Warmfront wird nachts abgebaut.
-Anschließend keine nennenswerte mehr bzw. morgen in den mittleren und
-südlichen Landesteilen schwache Absinkinversion in FL080-100.
+Schwache Absinkinversion in der Mitte und im Süden in FL080-100.
 
 Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
 Berlin  04.48 | 05.22 | 16.23 | 16.55
@@ -96,7 +87,6 @@ Leipzig  04.52 | 05.26 | 16.29 | 17.02
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt am 10.10.2026 um
-02.00/05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
-Luftfahrtberatungszentrale Berlin/ph
+Luftfahrtberatungszentrale Berlin/AS
