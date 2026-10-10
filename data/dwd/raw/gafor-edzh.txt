@@ -1,95 +1,104 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzh_node.html
 
-387
-FBEU40 EDZH 100600
+019
+FBEU40 EDZH 101200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Nord
-gültig vom 10.10.2026, 06.00 UTC bis 11.10.2026, 03.00 UTC
+gültig vom 10.10.2026, 12.00 UTC bis 11.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 00 bis 10
 
 Wetterlage und -entwicklung:
-Ein hochreichendes Tief zieht von den Färöern nach Südnorwegen uns
-lenkt mit südwestlicher bis westlicher Strömung hochreichend labil
-geschichtete Meereskaltluft in den Vorhersagebereich.
+Ausgehend von einem hochreichenden Tief über der nördlichen Nordsee
+erstreckt sich ein Trog südwärts bis nach Norditalien. Bis zum
+Sonntagvormittag verlagert sich das Zentrum des Tiefs nach
+Südwest-Schweden, während die Trogachse dann von dort bis zum Allgäu
+verläuft. Mit einer südwestlichen bis zunehmend westlichen Strömung
+wird hochreichend labil geschichtete Meereskaltluft herangeführt.
 
 Wettergeschehen:
-Verbreitet zeigen sich SCT/BKN CU/SC/AC mit Untergrenzen in FL060-080
-und Obergrenzen um FL140. Darin eingelagert kommt es wiederholt zu
-ISOL TCU/CB mit Untergrenzen in 1500-2500 FT AMSL und Tops bis FL200.
-Daraus fallen zunächst vor allem im Norden Schauer, einzelne
-kurzlebige Gewitter sind insbesondere über der Nordsee nicht
-ausgeschlossen. Bei länger anhaltendem kräftigem Niederschlag sind
-lokal auftretende ST-Felder zwischen 800 und 1000 FT AGL möglich.
-
-Am Vormittag setzt die Basis neu bildender CU in 1000-1500 FT AGL an
-bei Obergrenzen zwischen 4000 FT AMSL und FL100. Bis zum Nachmittag
-steigen die Untergrenzen abseits der Niederschläge auf 2000-3000 FT
-AMSL an, und die CB-Tops können FL260 erreichen. Dabei weitet sich
-die TCU/CB-Aktivität schrittweise nach Südosten aus, und es muss mit
-zahlreichen, teils eng zusammenstehenden Schauern, teils auch mit
-kurzen, meist von West nach Ost orientierten Linien oder auch
-Clusterbildungen gerechnet werden. Gewitter sind besonders im Norden
+Es zeigen sich FEW/SCT, im Nordwesten auch BKN CU mit Basis bei
+1500-3000 FT AMSL und uneinheitlichen Obergrenzen zwischen 5000 FT
+AMSL und FL100. Dazu gibt es, zunächst vor allem nordwestlich einer
+Linie Travemünde-Kassel, ISOL CB mit maximalen Tops bei FL260. Daraus
+fallen Schauer und es gibt einzelne Gewitter, darin können die
+Untergrenzen vorübergehend auf 800-1200 FT AGL absinken. Im weiteren
+Verlauf des Nachmittags weitet sich die CB-/Schaueraktivität
+schrittweise bis ins südöstliche Niedersachsen aus und intensiviert
+sich dabei: Es muss mit zahlreichen Schauern oder auch mit kurzen,
+meist von West nach Ost orientierten Linien bzw. mit Clusterbildungen
+gerechnet werden. Gewitter sind weiterhin besonders im Norden
 wahrscheinlich (mit der größten Wahrscheinlichkeit über der Nordsee)
-und können von kleinkörnigem Hagel oder Graupel begleitet sein. In
-den Clustern bzw. Linien zeigen sich auch immer wieder FEW/SCT,
-selten BKN ST mit Untergrenzen in 800-1200 FT AGL.
+und können von Graupel begleitet sein. In den Clustern bzw. Linien
+zeigen sich auch immer wieder FEW/SCT, selten BKN ST mit Untergrenzen
+in 800-1200 FT AGL.
 
-In der Nacht zum Sonntag sinken die Untergrenzen über
-Schleswig-Holstein, sowie Ostfriesland als BKN ST verbreitet auf
-1000-1500 FT AMSL, lokal bis auf 500-800 FT AGL ab. Auch im Bergland
-sinken die Untergrenzen teilweise bis auf 700-900 FT AGL ab. Die
-Obergrenzen liegen außerhalb vom Niederschlag meist um FL060. Die
-Schauer- und Gewitteraktivität kommt nicht zum Erliegen; TCU/CBs
-erreichen weiterhin Tops um FL200-240.
+Am Abend und in der Nacht hält sich verbreitet SCT/BKN, teils aber
+auch FEW CU/SC-Bewölkung in 1500-3000 FT AMSL mit Obergrenzen bei
+3000 FT AMSL - FL060. Im Nordwesten ziehen in der Höhe allmählich
+SCT/BKN AC/CI in Schichten oberhalb FL150 auf. Die Schauer und
+Gewitter lassen im Westen und Nordwesten kaum nach, die CB können
+dort weiterhin Tops um FL260 erreichen. Im Osten Niedersachsens und
+im südöstlichen Schleswig-Holstein sind nachts dagegen auch mal
+längere trockene Abschnitte drin. Über Land muss dann auch abseits
+von Schauern, vor allem im Osten und Südosten des Bereichs, zeit- und
+gebietsweise mit der Bildung von SCT/BKN ST mit Untergrenzen in
+700-1500 FT AGL und Obergrenzen bei 1500-3000 FT AMSL gerechnet
+werden.
+
+Am Sonntagvormittag heben die Untergrenzen der ST-Bewölkung über Land
+allmählich wieder an auf 1000-1500 FT AGL und es erfolgt ein Übergang
+zu SCT/BKN CU mit Basis bei 1500-2000 FT AMSL und Tops zwischen FL060
+und FL090. Die unverändert kräftigen Schauer und Gewitter greifen
+allmählich wieder weiter südostwärts aus.
 
 Sichtweite:
-15-50 km, in Schauern bzw. Gewittern kleinräumig und vorübergehend
-auf 3-8 km absinkend.
+30-50 km, in Schauern bzw. Gewittern je nach Art und Intensität
+vorübergehend auf 3-10 km absinkend.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 00-04:
-AMSL  |  09 UTC  |  21 UTC  |
- 500FT | 240/20KT  11C | 230/15KT  09C |
-1000FT | 240/20KT  10C | 240/25KT  08C |
-1500FT | 250/25KT  08C | 250/30KT  07C |
-2000FT | 250/25KT  07C | 250/25KT  06C |
-3000FT | 270/25KT  05C | 260/25KT  03C |
-5000FT | 270/25KT  02C | 260/25KT  01C |
-FL100  | 260/35KT M08C | 270/20KT M09C |
+AMSL  |  15 UTC  |  03 UTC  |
+ 500FT | 240/20KT  11C | 240/15KT  09C |
+1000FT | 250/25KT  10C | 260/20KT  08C |
+1500FT | 250/25KT  08C | 260/25KT  07C |
+2000FT | 250/30KT  07C | 260/25KT  06C |
+3000FT | 250/25KT  04C | 270/20KT  03C |
+5000FT | 260/25KT  02C | 270/20KT  01C |
+FL100  | 260/30KT M08C | 280/20KT M09C |
 
 GAFOR-Gebiete 05-10:
-AMSL  |  09 UTC  |  21 UTC  |
- 500FT | 250/20KT  12C | 240/15KT  09C |
-1000FT | 250/20KT  10C | 240/25KT  08C |
-1500FT | 260/25KT  08C | 250/30KT  07C |
-2000FT | 260/25KT  07C | 260/30KT  05C |
-3000FT | 260/25KT  05C | 260/30KT  03C |
-5000FT | 270/30KT  02C | 260/35KT  01C |
-FL100  | 270/25KT M07C | 270/30KT M10C |
+AMSL  |  15 UTC  |  03 UTC  |
+ 500FT | 250/25KT  12C | 240/20KT  09C |
+1000FT | 250/25KT  11C | 240/25KT  07C |
+1500FT | 250/30KT  09C | 260/30KT  06C |
+2000FT | 250/30KT  07C | 260/30KT  05C |
+3000FT | 260/35KT  05C | 270/35KT  04C |
+5000FT | 250/30KT  02C | 270/30KT  00C |
+FL100  | 260/30KT M07C | 280/25KT M09C |
 
 Turbulenz:
-Örtlich mäßig unterhalb von 2000 FT AGL. Außerdem im Bereich von und
-in TCU/CB mäßig bis stark.
+Örtlich mäßig unterhalb von 1500-2000 FT AGL, im Norden im Laufe der
+Nacht abschwächend. Außerdem im Bereich von und in CB mäßig bis
+stark.
 
 Vereisung:
-In CU vereinzelt mäßig bis FL100. Zudem in TCU/CB mäßig bis stark.
+In CU vereinzelt mäßig bis FL100, außerdem in CB mäßig bis stark.
 
 Nullgradgrenze:
-FL055-FL065, bis zum Berichtsende verbreitet auf um 5000 FT AMSL
+FL055-FL060, bis Sonntagfrüh verbreitet auf 4500 FT AMSL - FL055
 absinkend.
 
 Inversionen:
-Über Land zu Beginn örtlich noch schwache Bodeninversion unterhalb
-von 500-1000 FT AGL, mit Durchzug von Schauern aber abschwächend oder
-auflösend. Am Vormittag vollständig auflösend.
+keine signifikante
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Schleswig  05.05 | 05.41 | 16.36 | 17.11
-Hannover  05.03 | 05.38 | 16.38 | 17.11
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Schleswig  16.36 | 17.11 | 05.07 | 05.42
+Hannover  16.38 | 17.11 | 05.05 | 05.39
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Luftfahrtberatungszentrale Hamburg/SC/RI
+Luftfahrtberatungszentrale Hamburg/RI
