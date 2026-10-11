@@ -1,96 +1,92 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-673
-FBEU40 EDZF 101800
+144
+FBEU40 EDZF 110600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 10.10.2026, 18.00 UTC bis 11.10.2026, 15.00 UTC
+gültig vom 11.10.2026, 06.00 UTC bis 12.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Rückseitig einer nach Südosten abgezogenen Kaltfront, ist unter
-Zwischenhocheinfluss mit einer westlichen bis südwestlichen Strömung
-milde und in den unteren Schichten labile Luft eingeflossen.
+Im Bereich eines breiten Höhentroges, der im Tagesverlauf ostwärts
+durchschwenkt, fließt mit westlicher bis südwestlicher Strömung milde
+und in den unteren Schichten labile Luft ein. Mit Durchschwenken des
+Troges wird ein Hochdruckgebiet über Frankreich wetterbestimmend und
+stabilisiert die Luftmasse im Laufe des Nachmittages. In der Nacht
+zum Montag bleibt vielerorts sehr feuchte Luft in den bodennahen
+Schichten erhalten.
 
 Wettergeschehen:
-Am Abend und in der ersten Nachthälfte zeigt sich im Süden von
-Baden-Württemberg SCT/BKN SC/AC mit Basis um 3500 FT AMSL und
-Obergrenzen um FL080, einzelne Tropfen sind nicht ausgeschlossen. Im
-restlichen Gebiet meist FEW/SCT, westlich des Rhein SCT/BKN CU/SC mit
-Basis um 4000 FT AMSL und Obergrenze bei FL070. Es ist
-niederschlagsfrei. Über Nordhessen sind einzelne Schauer aus ISOL
-TCU/CB mit TOPs um FL160 nicht ausgeschlossen.
+Am Morgen hält sich in Baden-Württemberg und Hessen SCT/BKN SC in
+2500-5000 FT AMSL. Die Obergrenzen liegen im Süden bei FL080-100, in
+Hessen eher bei FL100-120. In Hessen und im Norden Baden-Württembergs
+zeigt sich lokal noch BKN ST in 1200-2000 FT AMSL, das Bergland ist
+meist in Wolken. In Mittel- und Nordhessen sind zudem ISOL TCU/CB mit
+Tops um FL160 eingelagert und es kommt zu lokalen Schauern.
+Westlich es Rheins hingegen hat sich recht verbreitet BKN ST/SC in
+1200-2000 FT AMSL mit Dunst gebildet, die Obergrenzen reichen bis
+FL060-070.
 
-In der zweiten Nachthälfte bildet sich vor allem nördlich einer Linie
-zwischen Mittelbaden und dem oberen Neckarraum eine BKN/OVC
-ST/SC-Bewölkung mit Untergrenzen zwischen 1500 und 2500 FT AMSL und
-Obergrenzen um FL060 sowie Dunst aus. Die Bewölkung befindet sich
-somit teils nur wenige 100 FT AGL oder ist aufliegend. Berge sind
-teils in den Wolken. In Nordhessen treten weiterhin, nun teils
-eingelagerte, ISOL/OCNL CBs mit TOPs um FL160 auf. Es kommt zu
-Regenschauern. Südlich der Linie ist eine SCT/BKN SC-Bewölkung mit
-Untergrenzen zwischen 3500 und 4500 FT AMSL und Obergrenzen um FL100
-vorhanden.
+Im Laufe des Vormittages geht sie Bewölkung generell in BKN CU in
+2500-4500 FT AMSL über. Die Obergrenzen sind recht unterschiedlich,
+westlich des Rheins eher etwas tiefer bei FL060-080, sonst bei
+FL080-100. Weiterhin sind lokal ISOL TCU/CB eingelagert mit Tops im
+Süden bei FL100-120 und im Norden bis FL180. Im Norden kommt es eher
+zu mäßigen Schauern, selbst kurze Gewitter sind nicht ausgeschlossen,
+im Süden treten her leichte Regenschauer auf. Lediglich westlich des
+Rheins kommt es kaum zu konvektiven Aktivitäten.
 
-Am Sonntagmorgen zeigt sich verbreitet SCT/BKN SC/AC mit Basis
-zwischen 1500-2500 FT AMSL die im Laufe des Vormittages auf 2500-3500
-FT AMSL anhebt. Die Obergrenzen liegen um FL070. Nur lokal kommt es
-nördlich des Mains aus TCU mit Tops um FL140 zu meist leichten
-Schauern.
-
-Bis zum Nachmittag hebt die Basis auf 3500-4500 FT AMSL an. Die
-Obergrenzen sind kaum verändert. Entlang und nördlich des Mains
-zeigen sich weiterhin einzelne TCU mit TOPs um FL140, über Nordhessen
-sind aus CB mit TOPs um FL180 auch mäßige Schauer sowie einzelne
-Entladungen möglich.
+Im Laufe des Nachmittages wird die Schaueraktivität von Westen her
+immer schwäche und kommt in der Nacht dann ganz zum Erliegen. Es
+verbleiben FEW/SCT SC zwischen 4000 FT AMSL und FL080.
+In der zweiten Nachthälfte zieht in die Gebiete westlich des Rheins
+BKN ST/SC mit Dunst. Die Basis befindet sich in 1200-2500 FT AMSL,
+die Obergrenzen um FL060-080. Diese Bewölkung breitet sich dann
+weiter nach Osten aus und erreicht vor allem die Gebiete in
+Baden-Württemberg und in Südhessen.
 
 Sichtweite:
-20-40 km. Im Niederschlag je nach Intensität 5 bis 15 km, im Dunst 1
-bis 5 km.
+20-40 km. Im Niederschlag je nach Intensität 5-15 km, im Dunst 1-4
+km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 240/05KT  09C | 260/15KT  10C |
-1500FT | 260/15KT  08C | 260/20KT  08C |
-2000FT | 260/15KT  07C | 260/20KT  07C |
-3000FT | 280/25KT  05C | 270/25KT  04C |
-5000FT | 280/35KT  01C | 280/25KT  01C |
-FL100  | 270/30KT M09C | 280/30KT M10C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 260/15KT  10C | 220/05KT  09C |
+1500FT | 260/20KT  08C | 260/10KT  08C |
+2000FT | 260/20KT  07C | 280/15KT  07C |
+3000FT | 270/25KT  04C | 290/25KT  05C |
+5000FT | 270/25KT  00C | 290/20KT  02C |
+FL100  | 280/25KT M09C | 300/15KT M08C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 230/20KT  12C | 240/10KT  10C |
-1500FT | 250/25KT  11C | 250/15KT  08C |
-2000FT | 260/25KT  11C | 250/20KT  07C |
-3000FT | 260/25KT  07C | 270/25KT  05C |
-5000FT | 260/25KT  04C | 270/25KT  02C |
-FL100  | 270/25KT M07C | 280/30KT M05C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 230/15KT  10C | 230/10KT  12C |
+1500FT | 250/20KT  09C | 250/15KT  11C |
+2000FT | 260/20KT  08C | 260/15KT  09C |
+3000FT | 270/25KT  05C | 270/20KT  06C |
+5000FT | 270/25KT  02C | 270/15KT  03C |
+FL100  | 270/30KT M07C | 300/20KT M06C |
 
 Turbulenz:
 Im Bereich von TCU/CB mäßig bis stark.
 
 Vereisung:
-Im Bereich von TCU/CB mäßig bis stark. In der SCT/BKN SC/AC-Bewölkung
-teils mäßig zwischen FZLVL und FL100.
+Im Bereich von TCU/CB mäßig bis stark.
 
 Nullgradgrenze:
-Zwischen FL060 im Norden und FL085 im Süden. Bis Sonntagmorgen im
-Norden auf 4500 FT AMSL und FL060 im Süden absinkend. Am Nachmittag
-im Norden FL055, im Süden FL065.
+FL055-065.
 
 Inversionen:
-Lokal schwache Absinkinversion zwischen FL080-100, in der Nacht vor
-allem im Norden abbauend.
+Nicht signifikant.
 
 Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
 Gießen  05.09 | 05.41 | 16.42 | 17.15
 Karlsruhe  05.09 | 05.41 | 16.45 | 17.17
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
-SA/SU   = Sonnenauf/untergang - morgen
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
+SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt am 11.10.2026 um 02.00
-UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
-Flugwetterzentrale Frankfurt/CH
+Flugwetterzentrale Frankfurt/He
