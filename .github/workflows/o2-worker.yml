@@ -1,0 +1,105 @@
+# Speicher-Server der EDS O2-Planung (o2.wicki.aero) — Einrichtung und Deploy.
+#
+# Der Quelltext liegt im Repository bwicki/o2 (Ordner worker/). Dieser Workflow läuft hier,
+# weil die Cloudflare-Zugangsdaten (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID) in diesem
+# Repository bereits hinterlegt sind; so müssen sie nicht ein zweites Mal eingetragen werden.
+# Mit dem Fahrtbriefing hat er sonst nichts zu tun: Er fasst weder den Worker «briefing-api»
+# noch dessen Datenbank an.
+#
+# Start: GitHub → bwicki/briefing → Actions → «O2 worker» → Run workflow.
+# Was passiert: bwicki/o2 auschecken, Tests, KV-Namespace «o2-calcs» finden oder anlegen,
+# Worker «o2-api» deployen, Gesundheitsprüfung. Wiederholbar; nach jeder Änderung unter
+# worker/ im Repository bwicki/o2 erneut starten.
+name: O2 worker
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: o2-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Voraussetzungen prüfen
+        run: |
+          ok=1
+          [ -n "$CLOUDFLARE_API_TOKEN" ]  || { echo "::error::Secret CLOUDFLARE_API_TOKEN fehlt"; ok=0; }
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Secret CLOUDFLARE_ACCOUNT_ID fehlt"; ok=0; }
+          [ "$ok" = 1 ]
+      - name: bwicki/o2 auschecken
+        uses: actions/checkout@v5
+        with:
+          repository: bwicki/o2
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Tests
+        run: node --test test/*.test.mjs
+      - name: wrangler installieren
+        working-directory: worker
+        run: npm install --no-audit --no-fund
+      - name: Cloudflare-Zugang prüfen
+        working-directory: worker
+        run: npx wrangler whoami
+      - name: KV-Namespace «o2-calcs»
+        id: kv
+        working-directory: worker
+        run: |
+          set +e
+          list=$(npx wrangler kv namespace list 2>/dev/null)
+          id=$(printf '%s' "$list" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const i=s.indexOf("[");const j=JSON.parse(s.slice(i));const d=j.find(x=>/(^|-)o2-calcs$/.test(x.title||""));process.stdout.write(d?d.id:"")}catch{process.stdout.write("")}})')
+          if [ -z "$id" ]; then
+            echo "Namespace wird angelegt …"
+            out=$(npx wrangler kv namespace create o2-calcs 2>&1); echo "$out"
+            id=$(printf '%s' "$out" | grep -oE '[0-9a-f]{32}' | head -1)
+          else
+            echo "Namespace vorhanden"
+          fi
+          set -e
+          if [ -z "$id" ]; then
+            echo "--- kv namespace list ---"; echo "$list"
+            echo "::error::ID des KV-Namespace «o2-calcs» nicht ermittelbar. Häufigste Ursache: Dem API-Token fehlt «Account · Workers KV Storage · Edit» (Cloudflare → My Profile → API Tokens → Token bearbeiten → Berechtigung ergänzen; der Token-Wert bleibt gleich)."
+            exit 1
+          fi
+          sed -i -E "s/^id = \"[^\"]*\"/id = \"$id\"/" wrangler.toml
+          grep -q "^id = \"$id\"" wrangler.toml || { echo "::error::wrangler.toml: Zeile «id = …» nicht gefunden"; exit 1; }
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+      - name: Deploy
+        id: deploy
+        working-directory: worker
+        run: |
+          set +e
+          out=$(npx wrangler deploy 2>&1); rc=$?
+          set -e
+          echo "$out"
+          [ "$rc" = 0 ] || { echo "::error::Deploy fehlgeschlagen – Ausgabe im Schritt prüfen"; exit 1; }
+          url=$(echo "$out" | grep -oE 'https://[a-z0-9.-]+\.workers\.dev' | head -1)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Worker-Adresse: $url"
+      - name: Gesundheitsprüfung
+        run: |
+          url='${{ steps.deploy.outputs.url }}'
+          [ -n "$url" ] || { echo "::warning::workers.dev-Adresse nicht erkannt — Prüfung übersprungen"; exit 0; }
+          sleep 5
+          curl -fsS --max-time 20 "$url/health" && echo
+      - name: Zusammenfassung
+        run: |
+          {
+            echo "## Speicher-Server der EDS O2-Planung"
+            echo
+            echo "* Worker-Adresse: ${{ steps.deploy.outputs.url }}"
+            echo "* Prüfung: ${{ steps.deploy.outputs.url }}/health"
+            echo "* KV-Namespace: ${{ steps.kv.outputs.id }}"
+            echo
+            echo "Die Adresse muss in bwicki/o2 in \`js/config.js\` als \`apiBase\` stehen."
+          } >> "$GITHUB_STEP_SUMMARY"
