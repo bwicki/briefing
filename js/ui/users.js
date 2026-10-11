@@ -179,6 +179,37 @@ async function viewStamm(ctx, u) {
   await dialog(t('us_stammOf', { n: u.name }), body, [{ label: t('close'), primary: true }], { cls: 'wide' });
 }
 
+// ---------------------------------------------------------------- Aktivitätsprotokoll (Super, 0.12.16)
+const LOG_KINDS = ['login', 'logout', 'briefing_open', 'briefing_create', 'briefing_save', 'release', 'briefing_amend', 'briefing_delete', 'briefing_hide', 'briefing_unhide', 'link_create', 'link_open', 'link_save', 'link_revoke', 'share', 'file', 'ai', 'pdf', 'wx_', 'settings_save', 'secret_set', 'secret_view', 'secret_delete', 'user_create', 'user_update', 'password_reset', 'export'];
+const kindLabel = (k) => (k.startsWith('wx_') ? `${t('lg_wx')} ${k.slice(3)}` : t('lg_' + k) !== 'lg_' + k ? t('lg_' + k) : k);
+export function logSection(ctx) {
+  const box = h('div');
+  if (ctx.store.mode !== 'remote' || !ctx.isSuper) return box;
+  const f = { user: '', kind: '', from: '', limit: 300 };
+  const userSel = select([{ value: '', label: t('lg_allUsers') }], '', { onchange: (e) => { f.user = e.target.value; load(); } });
+  const kindSel = select([{ value: '', label: t('lg_allKinds') }, ...LOG_KINDS.map((k) => ({ value: k, label: kindLabel(k) }))], '', { onchange: (e) => { f.kind = e.target.value; load(); } });
+  const fromIn = input('date', '', { onchange: (e) => { f.from = e.target.value; load(); } });
+  const limitSel = select([100, 300, 1000, 2000].map((n) => ({ value: n, label: `${n}` })), 300, { onchange: (e) => { f.limit = +e.target.value; load(); } });
+  const params = () => ({ user: f.user, kind: f.kind, from: f.from ? Date.parse(f.from + 'T00:00:00') : '', limit: f.limit });
+  const csvBtn = h('button.btn', { type: 'button', onclick: async () => { try { const txt = await ctx.store.adminLogCsv(params()); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/csv;charset=utf-8' })); a.download = 'briefing-protokoll.csv'; a.click(); } catch (e) { toast(e.message); } } }, t('st_csv'));
+  const body = h('div', t('loading'));
+  box.appendChild(h('div.card', [h('div.card-head', [h('div.section-title', t('lg_title')), csvBtn]), h('div.card-body', [h('div.note.small', t('lg_hint')), h('div.frow.c4.log-filters', [field(t('st_user'), userSel), field(t('lg_kind'), kindSel), field(t('lg_from'), fromIn), field(t('lg_limit'), limitSel)]), body])]));
+  let usersLoaded = false;
+  async function load() {
+    clear(body); body.appendChild(h('div.note', t('loading')));
+    let r;
+    try { r = await ctx.store.adminLog(params()); } catch (e) { clear(body); body.appendChild(h('div.err', e.message)); return; }
+    if (!usersLoaded) { try { const us = await ctx.store.adminUsers(); for (const u of us.users || []) userSel.appendChild(h('option', { value: u.id }, `${u.name} (${u.id})`)); } catch { /* ohne Liste */ } usersLoaded = true; }
+    clear(body);
+    if (!r.log.length) { body.appendChild(h('div.note', t('st_none'))); return; }
+    body.appendChild(h('div.tblwrap', h('table.tbl.compact.logtbl', [h('thead', h('tr', [t('lg_time'), t('st_user'), t('lg_kind'), t('lg_detail')].map((x) => h('th', x)))),
+      h('tbody', r.log.map((e) => h('tr', { class: e.user === ctx.user?.id ? 'me' : '' }, [h('td.mono.nowrap', fmtDateTime('Europe/Zurich', e.ts)), h('td', e.userName), h('td', kindLabel(e.kind)), h('td.small', `${e.detail || ''}${e.n > 1 ? ` · ${e.n}` : ''}`)])))])));
+    body.appendChild(h('div.note.small', t('lg_count', { n: r.log.length })));
+  }
+  load();
+  return box;
+}
+
 // ---------------------------------------------------------------- Statistik (Super)
 export function statsSection(ctx) {
   const box = h('div');

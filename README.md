@@ -593,3 +593,9 @@ Balthasar Wicki / Wicki Aero GmbH und mit Quellenangabe — siehe `LICENSE`
 (DE/EN). Drittkomponenten: Leaflet (BSD-2-Clause), qrcode-generator (MIT),
 pdf.js (Apache-2.0, `js/vendor/pdfjs`). Logo und Name
 «Wicki Partners Ballonteam» sind nicht Teil der Lizenz.
+
+
+## Sitzung und Protokoll (0.12.16)
+
+* **Leerlaufsperre:** 2 h ohne Aktivität → Anmeldeseite (Client im Minutentakt und auf dem Server je Sitzung; `sessions`-Tabelle, 30 Tage Höchstdauer). «Abmelden» beendet die Sitzung auf dem Server.
+* **Aktivitätsprotokoll:** Einstellungen → Statistik (nur Supermaster): alle protokollierten Aktionen aller Nutzer mit Filter und CSV (`GET /api/admin/log`). Die Tabelle `usage` wächst mit; kürzen über D1 (z. B. `DELETE FROM usage WHERE ts < …`).

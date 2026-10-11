@@ -11,7 +11,7 @@ import { placeRow, mapsUrl } from './place.js';
 import { countryGuess } from '../calc/geo.js';
 import { exportAll } from './extras.js';
 import { COUNTRY_MATRIX, ROLES } from '../countries.js';
-import { usersSection, statsSection } from './users.js';
+import { usersSection, statsSection, logSection } from './users.js';
 import { icon, iconSvg } from './icons.js';
 
 const SECTS = ['general', 'balloons', 'persons', 'operators', 'sites', 'intent', 'schedule', 'fpl', 'rac', 'transition', 'gonogo', 'meteo', 'panels', 'links', 'users', 'stats', 'access', 'expert'];
@@ -350,7 +350,7 @@ export async function renderSettings(view, ctx) {
   }
 
   const users = () => usersSection(ctx);
-  const stats = () => statsSection(ctx);
+  const stats = () => h('div', [statsSection(ctx), logSection(ctx)]);   // 0.12.16: Aktivitätsprotokoll unter der Statistik
 
   function access() {
     const box = h('div');

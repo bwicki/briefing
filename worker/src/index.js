@@ -149,9 +149,22 @@ async function setPassword(env, id, password) {
 const can = (user, flag) => !!user && (user.role === 'super' || user.flags?.[flag] !== false);
 
 // ------------------------------------------------------------ Sitzung
+const IDLE_MS = 2 * 3600000;   // 0.12.16: Sitzung endet serverseitig nach 2 h ohne Anfrage (Entscheid 11.10.2026)
+async function ensureSessions(env) {
+  if (ensureSessions.done) return; ensureSessions.done = true;
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, created_ms INTEGER NOT NULL, last_ms INTEGER NOT NULL)').run();
+}
 async function makeToken(env, uid) {
-  const payload = b64u(enc.encode(JSON.stringify({ uid, exp: Date.now() + SESSION_DAYS * 86400000, r: rnd(8) })));
+  await ensureSessions(env);
+  const sid = rnd(12);
+  await env.DB.prepare('INSERT INTO sessions (id,user_id,created_ms,last_ms) VALUES (?,?,?,?)').bind(sid, uid, Date.now(), Date.now()).run();
+  const payload = b64u(enc.encode(JSON.stringify({ uid, sid, exp: Date.now() + SESSION_DAYS * 86400000, r: rnd(8) })));
   return `${payload}.${await hmac(env.SESSION_SECRET, payload)}`;
+}
+/** Sitzung aus dem Token (für Abmelden/Protokoll). */
+function tokenPayload(req) {
+  const m = /^Bearer (.+)$/.exec(req.headers.get('Authorization') || ''); if (!m) return null;
+  try { return JSON.parse(dec.decode(unb64u(m[1].split('.')[0]))); } catch { return null; }
 }
 /** Gültige Sitzung → Benutzer (aktiv), sonst null. */
 async function sessionUser(env, req) {
@@ -166,6 +179,14 @@ async function sessionUser(env, req) {
   if (!(p.exp > Date.now()) || !p.uid) return null;
   await ensureUsers(env);
   await ensureSchema(env);
+  // 0.12.16: Leerlaufsperre – Sitzung ohne Anfrage seit > 2 h ist beendet; Tokens ohne Sitzungskennung (vor 0.12.16) gelten nicht mehr
+  await ensureSessions(env);
+  if (!p.sid) return null;
+  const ss = await env.DB.prepare('SELECT last_ms FROM sessions WHERE id=? AND user_id=?').bind(p.sid, p.uid).first();
+  if (!ss) return null;
+  const now = Date.now();
+  if (now - ss.last_ms > IDLE_MS) { await env.DB.prepare('DELETE FROM sessions WHERE id=?').bind(p.sid).run(); return null; }
+  if (now - ss.last_ms > 60000) env.DB.prepare('UPDATE sessions SET last_ms=? WHERE id=?').bind(now, p.sid).run().catch(() => null);
   const u = await getUser(env, p.uid);
   return u && u.active ? u : null;
 }
@@ -354,7 +375,11 @@ async function route(req, env, url, ctx) {
     logUsage(env, ctx, u.id, 'login');
     return json({ token: await makeToken(env, u.id), user: { id: u.id, name: u.name, role: u.role, flags: u.flags } });
   }
-  if (p === '/api/session' && req.method === 'DELETE') return new Response(null, { status: 204 });
+  if (p === '/api/session' && req.method === 'DELETE') {
+    const pl = tokenPayload(req);
+    if (pl?.sid) { await ensureSessions(env); await env.DB.prepare('DELETE FROM sessions WHERE id=?').bind(pl.sid).run(); logUsage(env, ctx, pl.uid, 'logout'); }
+    return new Response(null, { status: 204 });
+  }
 
   // ---- Persönliche Links (ohne Sitzung)
   mm = m(/^\/api\/shared\/([A-Za-z0-9_-]+)$/);
@@ -373,6 +398,7 @@ async function route(req, env, url, ctx) {
       if (link.role !== 'edit') return err('read only', 403);
       if (b.frozen || Date.now() > endMsOf(b)) return err('locked', 423);   // 0.12.10: Archiv auch über Links unveränderlich
       const { briefing, who } = await body();
+      logUsage(env, ctx, b.ownerId, 'link_save', `${b.id} ${link.person}`);
       if (!briefing || briefing.id !== b.id) return err('bad briefing');
       // Mitarbeit darf weder Freigabe noch Berechtigungen ändern
       briefing.status = b.status; briefing.finalNo = b.finalNo; briefing.versions = b.versions;
@@ -441,7 +467,7 @@ async function route(req, env, url, ctx) {
       if (other && other !== user.id) { if (!isSuper) return err('forbidden', 403); return json({ settings: await userSettings(env, other), readOnly: true, user: other }); }
       return json({ settings: await userSettings(env, user.id) });
     }
-    if (req.method === 'PUT') { const { settings } = await body(); await setKv(env, `settings:${user.id}`, settings || {}); if (settings?.ownerName) ctx.waitUntil(env.DB.prepare('UPDATE users SET name=? WHERE id=?').bind(String(settings.ownerName).slice(0, 80), user.id).run()); return json({ ok: true }); }
+    if (req.method === 'PUT') { const { settings } = await body(); await setKv(env, `settings:${user.id}`, settings || {}); logUsage(env, ctx, user.id, 'settings_save'); if (settings?.ownerName) ctx.waitUntil(env.DB.prepare('UPDATE users SET name=? WHERE id=?').bind(String(settings.ownerName).slice(0, 80), user.id).run()); return json({ ok: true }); }
   }
   // ---- Zugänge (API-Schlüssel): zentral, nur Super schreibt; alle sehen, was vorhanden ist
   if (p === '/api/secrets') {
@@ -451,12 +477,13 @@ async function route(req, env, url, ctx) {
       const { name, value } = await body();
       if (!/^[a-z0-9_]{1,40}$/.test(name || '') || typeof value !== 'string' || !value) return err('bad secret');
       const { iv, ct } = await encrypt(env, value);
+      logUsage(env, ctx, user.id, 'secret_set', name);
       await env.DB.prepare('INSERT INTO secrets (name,iv,ct,updated_at) VALUES (?,?,?,?) ON CONFLICT(name) DO UPDATE SET iv=excluded.iv, ct=excluded.ct, updated_at=excluded.updated_at').bind(name, iv, ct, Date.now()).run();
       return json({ ok: true });
     }
   }
   mm = m(/^\/api\/secrets\/([a-z0-9_]+)$/);
-  if (mm && req.method === 'DELETE') { if (!isSuper) return err('forbidden', 403); await env.DB.prepare('DELETE FROM secrets WHERE name=?').bind(mm[1]).run(); return new Response(null, { status: 204 }); }
+  if (mm && req.method === 'DELETE') { if (!isSuper) return err('forbidden', 403); await env.DB.prepare('DELETE FROM secrets WHERE name=?').bind(mm[1]).run(); logUsage(env, ctx, user.id, 'secret_delete', mm[1]); return new Response(null, { status: 204 }); }
   if (mm && req.method === 'GET') {
     // Wert anzeigen (nur Supermaster, wird protokolliert) — z. B. um einen Schlüssel zu prüfen oder zu übernehmen
     if (!isSuper) return err('forbidden', 403);
@@ -531,6 +558,7 @@ async function route(req, env, url, ctx) {
   }
   if (p === '/api/export' && req.method === 'GET') {
     const all = isSuper && url.searchParams.get('all') === '1';
+    logUsage(env, ctx, user.id, 'export', all ? 'all' : 'own');
     const rows = all ? await env.DB.prepare('SELECT json FROM briefings').all() : await env.DB.prepare('SELECT json FROM briefings WHERE owner_id=?').bind(user.id).all();
     const out = { exportedAt: Date.now(), user: user.id, settings: await userSettings(env, user.id), briefings: (rows.results || []).map((r) => JSON.parse(r.json)) };
     if (all) { const us = await env.DB.prepare('SELECT id FROM users').all(); out.users = {}; for (const u of us.results || []) out.users[u.id] = await userSettings(env, u.id); }
@@ -549,7 +577,7 @@ async function route(req, env, url, ctx) {
     }
     if (!row) return err('not found', 404);
     if (!access) return err('forbidden', 403);
-    if (req.method === 'GET') { const b = await loadBriefing(env, id); return json({ briefing: b, access }); }
+    if (req.method === 'GET') { const b = await loadBriefing(env, id); if (row.owner_id !== user.id) logUsage(env, ctx, user.id, 'briefing_open', `${id} (${row.owner_id})`); else logUsage(env, ctx, user.id, 'briefing_open', id); return json({ briefing: b, access }); }   // 0.12.16: Protokoll
     if (req.method === 'DELETE') {
       if (access !== 'write' && !(isSuper && rowArchived(row))) return err('read only', 403);
       if (rowArchived(row)) {   // 0.12.9: Archiv – kein Löschen; 0.12.10a: der Supermaster blendet Archiv-Einträge aus (nichts wird gelöscht)
@@ -625,7 +653,7 @@ async function route(req, env, url, ctx) {
         logUsage(env, ctx, user.id, 'link_create', `${id} ${role}`);
         return json({ link: { token, person, role, expiresAt } });
       }
-      if (req.method === 'DELETE' && tok) { await env.DB.prepare('UPDATE access_links SET revoked=1 WHERE token=? AND briefing_id=?').bind(tok, id).run(); return new Response(null, { status: 204 }); }
+      if (req.method === 'DELETE' && tok) { await env.DB.prepare('UPDATE access_links SET revoked=1 WHERE token=? AND briefing_id=?').bind(tok, id).run(); logUsage(env, ctx, user.id, 'link_revoke', id); return new Response(null, { status: 204 }); }
     }
   }
 
@@ -667,15 +695,37 @@ async function route(req, env, url, ctx) {
       if (active != null && uid !== user.id) await env.DB.prepare('UPDATE users SET active=? WHERE id=?').bind(active ? 1 : 0, uid).run();
       if (flags && typeof flags === 'object') { const f = { ...u.flags }; for (const k of FLAGS) if (k in flags) f[k] = flags[k] !== false; await env.DB.prepare('UPDATE users SET flags=? WHERE id=?').bind(JSON.stringify(f), uid).run(); }
       if (password) { if (String(password).length < 4) return err('too short'); await setPassword(env, uid, password); logUsage(env, ctx, user.id, 'password_reset', uid); }
+      logUsage(env, ctx, user.id, 'user_update', `${uid}${role ? ' role=' + role : ''}${active != null ? ' active=' + (active ? 1 : 0) : ''}${flags ? ' flags' : ''}`);
       return json({ ok: true, user: await getUser(env, uid) });
     }
     if (p === '/api/admin/stats' && req.method === 'GET') return adminStats(env, url);
+    if (p === '/api/admin/log' && req.method === 'GET') return adminLog(env, url);   // 0.12.16: Aktivitätsprotokoll (nur Supermaster)
   }
 
   return err('not found', 404);
 }
 
 // ------------------------------------------------------------ Statistik
+/** 0.12.16: Aktivitätsprotokoll – Einzelereignisse aus «usage» mit Nutzername; Filter user, kind, from/to (ms), limit ≤ 2000; CSV mit format=csv. */
+async function adminLog(env, url) {
+  const q = url.searchParams;
+  const where = [], args = [];
+  if (q.get('user')) { where.push('u.user_id=?'); args.push(q.get('user')); }
+  if (q.get('kind')) { where.push('u.kind LIKE ?'); args.push(q.get('kind').replace(/[%_]/g, '') + '%'); }
+  if (+q.get('from')) { where.push('u.ts>=?'); args.push(+q.get('from')); }
+  if (+q.get('to')) { where.push('u.ts<=?'); args.push(+q.get('to')); }
+  const limit = Math.min(2000, Math.max(1, +q.get('limit') || 500));
+  const rows = (await env.DB.prepare(`SELECT u.id, u.user_id, u.ts, u.kind, u.detail, u.n, s.name AS user_name FROM usage u LEFT JOIN users s ON s.id=u.user_id${where.length ? ' WHERE ' + where.join(' AND ') : ''} ORDER BY u.ts DESC LIMIT ?`).bind(...args, limit).all()).results || [];
+  const out = rows.map((r) => ({ id: r.id, ts: r.ts, user: r.user_id, userName: r.user_name || r.user_id, kind: r.kind, detail: r.detail, n: r.n }));
+  if (q.get('format') === 'csv') {
+    const esc = (v) => { const x = v == null ? '' : String(v); return /[";\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x; };
+    const lines = ['zeit_utc;nutzer;name;aktion;detail;n'];
+    for (const r of out) lines.push([new Date(r.ts).toISOString().slice(0, 19).replace('T', ' '), r.user, r.userName, r.kind, r.detail, r.n].map(esc).join(';'));
+    return new Response('\ufeff' + lines.join('\r\n'), { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="briefing-protokoll.csv"' } });
+  }
+  const kinds = ((await env.DB.prepare('SELECT DISTINCT kind FROM usage ORDER BY kind').all()).results || []).map((r) => r.kind);
+  return json({ log: out, kinds, generatedAt: Date.now() });
+}
 async function adminStats(env, url) {
   const month = "strftime('%Y-%m', ts/1000, 'unixepoch')";
   const usage = (await env.DB.prepare(`SELECT user_id, ${month} AS month, kind, COUNT(*) AS c, SUM(n) AS n FROM usage GROUP BY user_id, month, kind ORDER BY month DESC, user_id, kind`).all()).results || [];

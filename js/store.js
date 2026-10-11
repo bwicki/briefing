@@ -34,6 +34,8 @@ const local = {
   async adminCreateUser() { throw new Error('local'); },
   async adminUpdateUser() { throw new Error('local'); },
   async adminStats() { throw new Error('local'); },
+  async adminLog() { throw new Error('local'); },
+  async adminLogCsv() { throw new Error('local'); },
   async adminStatsCsv() { throw new Error('local'); },
   async listMaterialLinks() { return []; },
   async createMaterialLink() { throw new Error('local'); },
@@ -95,7 +97,7 @@ async function api(path, opts = {}) {
   });
   // 401 nur dann als «Sitzung weg» werten, wenn die Anfrage mit der aktuellen Sitzung lief
   // (ein noch laufender Abruf mit altem Token darf eine frische Anmeldung nicht beenden)
-  if (r.status === 401) { if (usedToken && usedToken === load(LS.token, null)) del(LS.token); throw Object.assign(new Error('unauthorized'), { status: 401 }); }
+  if (r.status === 401) { if (usedToken && usedToken === load(LS.token, null)) { del(LS.token); try { document.dispatchEvent(new CustomEvent('fb:unauth')); } catch { /* ohne DOM */ } } throw Object.assign(new Error('unauthorized'), { status: 401 }); }   // 0.12.16: Sitzung serverseitig beendet → Anmeldeseite
   if (!r.ok) { let m = `HTTP ${r.status}`; try { m = (await r.json()).error || m; } catch { /* egal */ } throw Object.assign(new Error(m), { status: r.status }); }
   if (r.status === 204) return null;
   return r.json();
@@ -119,6 +121,8 @@ const remote = {
   async adminCreateUser(body) { return (await api('/api/admin/users', { method: 'POST', body })).user; },
   async adminUpdateUser(id, body) { return (await api(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'PUT', body })).user; },
   async adminStats() { return api('/api/admin/stats'); },
+  async adminLog(params = {}) { const q = new URLSearchParams(); for (const [k, v] of Object.entries(params)) if (v != null && v !== '') q.set(k, String(v)); return api(`/api/admin/log?${q}`); },   // 0.12.16: Aktivitätsprotokoll
+  async adminLogCsv(params = {}) { const q = new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v != null && v !== '')), format: 'csv' }); const r = await fetch(API + `/api/admin/log?${q}`, { headers: authHeaders() }); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); },
   async adminStatsCsv() { const r = await fetch(API + '/api/admin/stats?format=csv', { headers: authHeaders() }); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); },
   /** Material-Links: externer Materialeigner sieht alle Briefings mit seinen Kennungen (ohne Sitzung). */
   async listMaterialLinks() { return (await api('/api/material-links')).links; },
@@ -201,7 +205,7 @@ export const store = {
   idleExpired(ms = 2 * 60 * 60 * 1000) { const t = load(LS.touch, 0); return t && Date.now() - t > ms; },
 };
 for (const k of ['health', 'login', 'logout', 'isAuthed', 'changePassword', 'getSettings', 'saveSettings', 'listBriefings', 'getBriefing', 'saveBriefing', 'deleteBriefing', 'amendBriefing', 'listHidden', 'unhideBriefing', 'uploadImage', 'uploadDoc', 'listAccess', 'createAccess', 'revokeAccess', 'listSecrets', 'setSecret', 'deleteSecret', 'getSecret', 'openShared', 'saveShared', 'getLog', 'data', 'exportAll',
-  'me', 'listUsers', 'listShares', 'setShare', 'getSettingsOf', 'adminUsers', 'adminCreateUser', 'adminUpdateUser', 'adminStats', 'adminStatsCsv',
+  'me', 'listUsers', 'listShares', 'setShare', 'getSettingsOf', 'adminUsers', 'adminCreateUser', 'adminUpdateUser', 'adminStats', 'adminStatsCsv', 'adminLog', 'adminLogCsv',
   'listMaterialLinks', 'createMaterialLink', 'revokeMaterialLink', 'openMaterial']) {
   store[k] = (...a) => store.impl[k](...a);
 }

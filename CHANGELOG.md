@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.16 — 2026-10-11 · Leerlaufsperre serverseitig, Aktivitätsprotokoll
+
+* **Sperre nach 2 h ohne Aktivität – jetzt auch auf dem Server:** jede Anmeldung erhält eine Sitzung (Tabelle `sessions`,
+  letzte Anfrage); ohne Anfrage seit mehr als 2 h ist die Sitzung beendet (401) und die App zeigt die Anmeldeseite mit
+  Hinweis. Die App prüft zusätzlich im Minutentakt (lange Timer werden in Hintergrund-Tabs ausgesetzt) und reagiert auf
+  jedes 401 mit der Anmeldeseite. «Abmelden» beendet die Sitzung auf dem Server. **Alle bestehenden Anmeldungen sind
+  damit einmalig ungültig** – nach dem Update ist eine neue Anmeldung nötig.
+* **Aktivitätsprotokoll (nur Supermaster):** Einstellungen → Statistik, Karte «Aktivitätsprotokoll»: alle protokollierten
+  Aktionen aller Nutzer, neueste zuerst, Filter Nutzer / Aktion / ab Datum / Anzahl, CSV-Export. Neu protokolliert:
+  Abmeldung, Briefing geöffnet (bei fremden Briefings mit Eigner), Einstellungen gespeichert, Zugang gesetzt/gelöscht,
+  Link widerrufen, über Link gespeichert, Nutzer geändert, Export; bisher schon Anmeldung, Briefing angelegt/gespeichert,
+  Freigabe, Nachtrag, Löschen/Ausblenden, Links, Datenabrufe, KI, PDF, Dateien, Stamm-Freigaben, Zugang angezeigt,
+  Nutzer angelegt, Kennwort gesetzt. Worker `GET /api/admin/log?user=&kind=&from=&to=&limit=&format=csv`.
+* Tests: API (Protokoll, Abmelden → 401), Remote-UI (Protokollkarte, Filter), Smoke, calc.
+
 ## 0.12.15a — 2026-10-11
 
 * **B04:** keine Doppelnennungen – MeteoGate-Stationen der WMO-Blöcke CH (066xx–069xx) und DE (10xxx) entfallen, dort gelten SwissMetNet und DWD; übrige Länder bleiben (3-km-Regel).

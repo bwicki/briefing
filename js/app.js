@@ -131,7 +131,7 @@ function showGate(hint) {
   setTimeout(() => (store.mode !== 'local' && !u.value ? u : $('gatePw')).focus(), 60);
 }
 function hideGate() { $('gate').hidden = true; }
-function lock() { store.logout(); showGate(); }
+function lock() { store.logout(); showGate(t('idle_locked')); }   // 0.12.16: Hinweis auf der Anmeldeseite
 let idleTimer = null;
 function touchGate() {
   store.touch();
@@ -218,6 +218,9 @@ async function main() {
   document.addEventListener('click', (e) => { if (!e.target.closest('#menu') && !e.target.closest('#menuBtn')) $('menu').classList.add('hidden'); });
   ['pointerdown', 'keydown'].forEach((ev) => document.addEventListener(ev, () => { if (store.isAuthed() && !$('gate').hidden === false) touchGate(); }, { passive: true }));
   document.addEventListener('visibilitychange', () => { if (!document.hidden && store.isAuthed() && store.idleExpired(GATE_IDLE_MS) && !ctx.shared) lock(); });
+  // 0.12.16: Leerlaufsperre robust – Minutentakt (lange Timer werden in Hintergrund-Tabs ausgesetzt) und Anmeldeseite, sobald der Server die Sitzung beendet hat (401)
+  setInterval(() => { if (store.isAuthed() && store.idleExpired(GATE_IDLE_MS) && !ctx.shared) lock(); }, 60000);
+  document.addEventListener('fb:unauth', () => { if (!ctx.shared && $('gate').hidden) showGate(t('idle_locked')); });
   window.addEventListener('hashchange', route);
 
   buildMenu();

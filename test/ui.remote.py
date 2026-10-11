@@ -137,6 +137,11 @@ with sync_playwright() as p:
     pg.goto(BASE + '#/settings?stats'); pg.wait_for_timeout(1500)
     st = pg.inner_text('#view').upper()
     assert 'JE NUTZER UND MONAT' in st and 'ANMELDUNGEN' in st, 'Statistik: ' + st[:200]
+    # 0.12.16: Aktivitätsprotokoll (nur Super) mit Einträgen und Filter nach Aktion
+    assert pg.query_selector('table.logtbl') is not None and 'Anmeldung' in pg.inner_text('table.logtbl'), 'Aktivitätsprotokoll mit Anmeldung: ' + pg.inner_text('#view')[-400:]
+    pg.select_option('.log-filters select >> nth=1', 'login'); pg.wait_for_timeout(1200)
+    kinds = set(e.inner_text() for e in pg.query_selector_all('table.logtbl tbody td:nth-child(3)'))
+    assert kinds and kinds <= {'Anmeldung'}, 'Filter nach Aktion: ' + str(kinds)
     pg.screenshot(path=f'{OUT}/remote_stats.png', full_page=True)
     # Sperren → neuer Benutzer meldet sich an
     pg.click('#menuBtn'); pg.click('#menu button:has-text("Sperren")'); pg.wait_for_timeout(500)
