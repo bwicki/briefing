@@ -3,8 +3,8 @@
  */
 export const APP = {
   name: 'Fahrtbriefing',
-  version: '0.12.16',
-  date: '2026-10-08',
-  cache: 'briefing-v0.12.16',
+  version: '0.12.17',
+  date: '2026-10-11',
+  cache: 'briefing-v0.12.17',
   repo: 'https://github.com/bwicki/briefing',
 };

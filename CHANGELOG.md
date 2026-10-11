@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.12.17 — 2026-10-11 · B04: regionale Stationsnetze Österreich, Italien, Frankreich
+
+* **B04 Beobachtungen:** zusätzliche Quellen im Worker (`/api/wx/stations`), je nach Umkreis:
+  **GeoSphere Austria** (TAWES, 10-min, CC BY; mehrere Zeitstempel je Antwort werden je Station aufgelöst),
+  **Südtirol** (Landeswetterdienst Open Data, alle Stationen in einem Abruf), **Meteotrentino** (Stationsliste + Tageswerte
+  der 12 nächsten Stationen, Stundenwerte), **ARPA Lombardia** (dati.lombardia.it/Socrata: Sensoren im Rechteck, Werte der
+  letzten 2 h; gelegentlich 429 bei zu vielen Abfragen – dann Hinweis in der Fussnote), **Météo-France** (DPObs 6-min, nur
+  mit API-Schlüssel `meteofrance_key` in den Zugängen – kostenloser Schlüssel vom Portail API; ohne Schlüssel entfällt F
+  stillschweigend). Reihenfolge: SwissMetNet, DWD, regionale Netze, dann MeteoGate (3-km-Regel gegen Doppelnennungen);
+  nur Werte jünger als 3 h; höchstens 80 nächste Stationen. Nicht angebunden: Piemonte (ARPA nur mit Token), Friuli
+  (OSMER untersagt Weiterverbreitung innert 24 h), übrige italienische Regionen ohne offene Echtzeit-API.
+* Hinweistexte (Panel, Fussnote, README) ergänzt; Zugang «Météo-France API-Schlüssel» in den Einstellungen.
+
 ## 0.12.16 — 2026-10-11 · Leerlaufsperre serverseitig, Aktivitätsprotokoll
 
 * **Sperre nach 2 h ohne Aktivität – jetzt auch auf dem Server:** jede Anmeldung erhält eine Sitzung (Tabelle `sessions`,
