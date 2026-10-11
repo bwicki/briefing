@@ -1,100 +1,92 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-817
-FBEU40 EDZF 111200
+764
+FBEU40 EDZF 111800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 11.10.2026, 12.00 UTC bis 12.10.2026, 09.00 UTC
+gültig vom 11.10.2026, 18.00 UTC bis 12.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Ein Tief über Südskandinavien und der Ostsee lenkt mit lebhafter
-westlicher Strömung in den unteren Schichten labile Meeresluft in den
-Vorhersagebereich. Diese bleibt bis zum Abend wetterbestimmend.
-Anschließend setzt sich von Westen Hochdruckeinfluss mit trockenerer
-Luft durch. Montagmorgen bildet sich gebietsweise eine feuchte
-Grundschicht aus, die sich bis zum späteren Vormittag auflösen wird.
+Unter Hochdruckeinfluss fließt mit lebhafter westlicher Strömung in
+den unteren Schichten labile und milde Meeresluft in den
+Vorhersagebereich. Aus der Nacht heraus kann sich gebietsweise eine
+feuchte Grundschicht ausbilden, die sich bis am Vormittag auflöst.
 
 Wettergeschehen:
-Das Wettergeschehen wird im heutigen Tagesverlauf über dem gesamten
-Vorhersagegebiet von Quellbewölkung geprägt. Dabei liegt verbreitet
-SCT/BKN CU mit Basen in 3000-4500 FT AMSL und Obergrenzen in FL100
-vor. Darüber hinaus ziehen ISOL TCU mit Tops um FL140, über
-Nordhessen auch bis FL160, sowie leichten bis mäßigen Schauern
-ostwärts über die Region hinweg. Zeitweise treten in tieferen Lagen
-gebietsweise Böen um 25 KT, in höheren Lagen Böen um 30 KT aus SW bis
-W auf.
+Am Abend zeigt sich verbreitet FEW/SCT, über dem Süden von
+Baden-Württemberg und über Nordhessen SCT/BKN SC/AC zwischen
+FL070-100. Es ist niederschlagsfrei. Über Nordhessen sind am Abend
+letzte leichte Schauer aus ISOL TCU mit TOPs bis FL130 nicht
+ausgeschlossen. Lokal sinkt die Basis dann auf 3500-4500 FT AMSL. Im
+Laufe der ersten Nachthälfte lockert die Quellbewölkung immer weiter
+auf. Vor allem über Hessen ist es dann oft wolkenfrei oder es zeigen
+sich nur dünne AC-Felder um FL080. Lokal bilden sich erste flache
+Dunst- und Nebelfelder.
 
-Am späteren Nachmittag und frühen Abend fallen die TCUs mit von
-Westen übergreifendem Hochdruckeinfluss zusammen und die
-Schaueraktivität lässt langsam nach. Über Nordhessen hält diese bis
-zum späteren Abend an.
-Nach Auflösen der Quellbewölkung erfolgt entweder ein Übergang in SCT
-SC/AC in den Höhen zwischen 4000 FT AMSL und FL100 oder es entstehen
-größere Wolkenlücken. Im Nordweststau des Schwarzwaldes geht die
-Quellbewölkung am späten Abend dann in BKN/OVC SC mit Untergrenzen in
-3000-4000 FT AMSL über, woraus noch ein paar Tropfen Regen fallen.
+In der zweiten Nachthälfte breiten sich über Hessen die Dunst- und
+Nebelfelder weiter aus. Über Rheinland-Pfalz, dem Saarland und weiten
+Teilen von Baden-Württemberg zeigt sich meist SCT ST/SC/AC mit Basis
+zwischen 2000-2500 FT AMSL und Obergrenzen um FL070. Lokal sind auch
+dort Auflockerungen nicht ausgeschlossen und somit auch Dunst oder
+Nebel.
 
-Ab Beginn der zweiten Nachthälfte bildet sich in Tallagen und
-Flussniederungen gebietsweise Dunst und Nebel. Voraussichtlich in
-Rheinland-Pfalz und Saarland, im Hunsrück sowie in großen Teilen des
-Rhein-Main-Gebiets wächst der Nebel zu BKN/OVC ST bis 3000 FT AMSL
-heran.
-
-Am Montagvormittag lösen sich Dunst und Nebel auf. Der dichtere
-Stratus hält sich meist bis zum späteren Vormittag. Ansonsten zeigt
-sich örtlich SCT/BKN SC mit Untergrenzen um 4000 FT AMSL, Obergrenzen
-in FL070-080.
+Am Montagvormittag lösen sich Dunst und Nebel teils nur zögerlich
+auf. Der dichtere Stratus hält sich meist bis zum späteren Vormittag.
+Ansonsten zeigt sich örtlich SCT/BKN SC mit Untergrenzen um 4000 FT
+AMSL, Obergrenzen in FL070-080.  Über Nordhessen und dem südlichen
+Baden-Württemberg ist es oft wolkenfrei. Bis zum Mittag bilden sich
+dann verbreitet meist SCT CU mit Basis um 3000-3500 FT AMSL,
+Obergrenzen bei FL060 und es ist niederschlagsfrei.
 
 Sichtweite:
-30-60 km. Im leichten Schauer 10-20 km, im mäßigen Schauer zeitweise
-2-5 km. Nachts im Dunst 1-5 km, im Nebel unter 1 km.
+30-60 km. Im leichten Niederschlag kaum reduziert. Nachts im Dunst
+1-5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 260/10KT  12C | 190/05KT  06C |
-1500FT | 270/20KT  10C | 260/05KT  07C |
-2000FT | 270/20KT  09C | 270/05KT  07C |
-3000FT | 270/20KT  06C | 290/10KT  05C |
-5000FT | 280/25KT  02C | 280/05KT  01C |
-FL100  | 300/20KT M08C | 310/20KT M05C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 230/05KT  09C | 220/05KT  09C |
+1500FT | 270/10KT  08C | 230/05KT  07C |
+2000FT | 290/15KT  07C | 240/05KT  07C |
+3000FT | 300/25KT  05C | 240/05KT  05C |
+5000FT | 300/20KT  02C | 250/05KT  01C |
+FL100  | 310/15KT M07C | 330/20KT M04C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 260/10KT  13C | 210/05KT  10C |
-1500FT | 260/15KT  11C | 220/05KT  10C |
-2000FT | 260/15KT  10C | 240/05KT  09C |
-3000FT | 270/15KT  07C | 260/10KT  06C |
-5000FT | 280/20KT  03C | 300/15KT  03C |
-FL100  | 290/25KT M07C | 320/25KT M02C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 240/15KT  12C | 230/05KT  10C |
+1500FT | 260/15KT  10C | 230/05KT  09C |
+2000FT | 260/15KT  09C | 230/05KT  09C |
+3000FT | 270/15KT  06C | 260/05KT  06C |
+5000FT | 290/15KT  03C | 290/10KT  02C |
+FL100  | 290/20KT M07C | 330/20KT M03C |
 
 Turbulenz:
-Im Bereich der TCU mäßig bis stark. Sonst bis zum späteren Nachmittag
-mäßige Turbulenz unterhalb 5000 FT AMSL. Anschließend nicht mehr
-signifikant.
+Im Bereich der TCU mäßig bis stark. Abseits davon nicht signifikant.
 
 Vereisung:
-Im Bereich der TCU mäßig bis stark. Ab dem späteren Abend im
-unterkühlten SC/AC örtlich mäßig bis FL100.
+Im Bereich der TCU mäßig bis stark. Ab dem späteren Abend teils mäßig
+im unterkühlten SC/AC.
 
 Nullgradgrenze:
-5000 FT AMSL bis FL060. Abends und nachts auf FL055-070 ansteigend.
-Montagvormittag in Rheinland-Pfalz und Saarland sowie im Hunsrück auf
-FL070-090 ansteigend.
+Zwischen FL055 im Norden und FL065 im Süden. Nachts kaum verändert.
+Am Montag im Laufe des Tages ansteigend auf FL070-080 im Norden und
+FL110 im Süden und Südwesten.
 
 Inversionen:
-Schwache Absinkinversion um FL100. In der Nacht Bodeninversion
-unterhalb 1500 FT AMSL, Montagvormittag auflösend.
+Über der Mitte und im Süden Absinkinversion zwischen FL070 und FL090.
+In der Nacht Bodeninversion unterhalb 1500 FT AMSL, Montagvormittag
+auflösend.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Gießen  16.42 | 17.15 | 05.09 | 05.43
-Karlsruhe  16.45 | 17.17 | 05.11 | 05.42
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Gießen  05.09 | 05.43 | 16.40 | 17.12
+Karlsruhe  05.11 | 05.42 | 16.43 | 17.14
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 12.10.2026 um 02.00
+UTC
 
-Flugwetterzentrale Frankfurt/St
+Flugwetterzentrale Frankfurt/CH

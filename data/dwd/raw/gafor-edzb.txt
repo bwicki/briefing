@@ -1,84 +1,89 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-816
-FBEU40 EDZB 111200
+691
+FBEU40 EDZB 111800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 11.10.2026, 12.00 UTC bis 12.10.2026, 09.00 UTC
+gültig vom 11.10.2026, 18.00 UTC bis 12.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
 Ein Tief mit Kern über Südschweden führt mit lebhafter Westströmung
 kühle Meeresluft heran, die durch einen ostwärts durchschwenkenden
-Höhentrog labilisiert wird. Am Montag wieder verstärkender
-Hochdruckeinfluss.
+Höhentrog labilisiert wird. Im Laufe des Montags von Westen
+zunehmender Zwischenhocheinfluss mit einsetzender Stabilisierung.
 
 Wettergeschehen:
-Mittelhohe und hohe Wolkenfelder oberhalb von FL140-180. Darunter
-verbreitet SCT/BKN CU/SC mit Basis in 1500-3000 FT AMSL im Norden, in
-2500-4000 FT AMSL im Süden. In der Westhälfte gebietsweise, im Osten
-anfangs nur örtliche TCU/C mit Obergrenzen in FL140-180 und ostwärts
-ziehenden Schauern/kurzen Gewittern. An der Küste und über Ostsee
-teils kräftige Schauer/Gewitter mit Tops bis FL270.
+Zunächst meist SCT/BKN, teils FEW/SCT SC/CU bei 2500 bis 3500 FT AMSL
+mit Tops bei FL080 bis FL100. Darüber gebietsweise CI-Felder oberhalb
+FL180. Dabei verbreitet niederschlagsfrei, örtlich schauerartiger, in
+Küstennähe auch gewittriger Regen durch TCU/CB bei 1500 bis 2500 FT
+AMSL und Tops um FL180.
 
-Im Nachmittagsverlauf anhaltende Schaueraktivitäten, eventuell von
-der Ostsee in den Norden Mecklenburg-Vorpommerns linienhafte
-Ausbreitung. Zum Abend von Westen/Nordwesten abklingende Regenschauer
-und verbreitete Wolkenauflösung, zum Ende der 1. Nachthälfte auch im
-Südosten über Oder/Neiße abziehend.
+Im Laufe der Nacht abschwächende bzw. langsam nach Osten abziehende
+Schauer, einzig an der Küste bin zum Morgen lokale Regenschauer aus
+isolierten TCU/CB bei 1000 bis 2000 FT AGL mit Tops um FL120. Sonst
+häufig SCT/BKN SC bei 1000 bis 2000 FT AGL mit Obergrenzen bis FL080.
+Darunter gebietsweise SCT/BKN ST bei 300 bis 800 FT AGL. Zudem in den
+Weststaulagen der Mittelgebirge sowie in einem Streifen von der
+Altmark bis zur Lausitz häufig SCT/BKN ST in 100 bis 400 FT AGL,
+teils mit Dunst darunter.
 
-Im weiteren Nachtverlauf südwestlich der Elbe Ausbildung einer
-feuchten Grundschicht mit Dunst-/Hochnebel/Nebel, sonst örtlich
-SCT/BKN ST in 500-1500 FT AGL und in Ostvorpommern weiterhin geringes
-Schauerrisiko. Am Montagvormittag zögerndes Anheben/Auflösen der
-feuchten Grundschicht südwestlich der Elbe bzw. im Osten Übergang in
-SCT CU in 1000-2000 FT AGL. Meist trocken.
+Im Vormittagsverlauf auflösende Dunstfelder und langsamer Übergang in
+SCT/BKN, teils FEW/SCT CU/SC in 1500 bis 2500 FT AMSL, zum Mittag
+weiter auf 2000 bis 3000 FT AMSL ansteigend. Dabei meist trocken,
+einzig in Küstennähe und im Mittelgebirgsraum einzelne Schauer aus
+isolierten TCU/CB bei 1000 bis 2000 FT AGL.
+
+Am Nachmittag meist FEW/SCT, lokal SCT/BKN CU/SC bei 3500 bis 4500 FT
+AMSL mit nur einzelnen Schauern über den Mittelgebirgen.
 
 Sichtweite:
-20-70 km, in kräftigen Schauern kurzzeitig bzw. in der Nacht zu
-Montag unter tieferer ST-Bewölkung auf 3-8 km zurückgehend
+Meist oberhalb 10 bis 30 km, im Niederschlag je nach Intensität und
+unter tieferer ST-Bewölkung auf 2 bis 7 km zurückgehend.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  15 UTC  |  06 UTC  |
- 500FT | 250/15KT  10C | 280/10KT  04C |
-1000FT | 260/20KT  09C | 300/25KT  06C |
-1500FT | 260/20KT  08C | 320/25KT  05C |
-2000FT | 260/20KT  07C | 320/25KT  05C |
-3000FT | 270/25KT  04C | 320/25KT  03C |
-5000FT | 280/25KT  01C | 330/25KT  00C |
-FL100  | 290/20KT M10C | 320/30KT M09C |
+AMSL  |  21 UTC  |  09 UTC  |
+ 500FT | 290/15KT  08C | 280/10KT  08C |
+1000FT | 300/20KT  07C | 290/15KT  06C |
+1500FT | 310/20KT  06C | 320/20KT  05C |
+2000FT | 310/20KT  06C | 320/20KT  05C |
+3000FT | 310/20KT  04C | 320/20KT  03C |
+5000FT | 300/20KT  01C | 320/20KT  00C |
+FL100  | 310/25KT M08C | 330/25KT M08C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 260/20KT  11C | 290/10KT  08C |
-1500FT | 260/20KT  09C | 300/15KT  06C |
-2000FT | 260/25KT  08C | 310/15KT  05C |
-3000FT | 270/25KT  05C | 330/15KT  03C |
-5000FT | 280/25KT  01C | 320/20KT  00C |
-FL100  | 280/25KT M09C | 310/20KT M08C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 250/20KT  09C | 270/10KT  09C |
+1500FT | 270/30KT  07C | 290/10KT  07C |
+2000FT | 280/30KT  07C | 300/10KT  06C |
+3000FT | 300/30KT  04C | 310/10KT  04C |
+5000FT | 300/25KT  01C | 310/10KT M00C |
+FL100  | 300/25KT M08C | 310/20KT M08C |
 
 Turbulenz:
-mäßig bis stark in TCU/CB-Nähe, sonst nicht signifikant
+Mäßig bis stark in TCU/CB-Nähe, sonst an der Küste leicht bis mäßig
+unterhalb 2000 FT AGL.
 
 Vereisung:
-mäßig bis stark im TCU/CB, sonst nicht signifikant
+Mäßig bis stark in TCU/CB. Sonst in unterkühlter Bewölkung leicht bis
+mäßig unterhalb FL100.
 
 Nullgradgrenze:
-um 5000 FT AMSL, in der Nacht zu Montag in der Nordhälfte auf
-4000-4500 FT AMSL absinkend
+4000 bis 5000 FT AMSL, lokal um FL060
 
 Inversionen:
 nicht signifikant
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Berlin  16.20 | 16.55  | 04.51 | 05.25
-Leipzig  16.27 | 16.59  | 04.56 | 05.29
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Berlin  04.51 | 05.25 | 16.18 | 16.52
+Leipzig  04.56 | 05.29 | 16.25 | 16.57
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 12.10.2026 um
+02.00/05.00 UTC
 
-Luftfahrtberatungszentrale Berlin/hb
+Luftfahrtberatungszentrale Berlin/Qe

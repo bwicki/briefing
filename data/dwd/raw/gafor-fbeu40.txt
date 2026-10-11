@@ -4,25 +4,25 @@ GAFOR-Einstufung LBZ Hamburg
 
 GAFOR Bereich LBZ Hamburg 11.10.2026
 
-Gebiet  Name  12-14 UTC  14-16 UTC  16-18 UTC
+Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
 00  Deutsche Bucht  C ISOL TSRA  C  C
 
-01  Ostfriesland  O ISOL TSRA  C ISOL TSRA  C
+01  Ostfriesland  O ISOL TSRA  C  C
 
 02  Nordfriesland-Dithmarschen  O ISOL TSRA  C  C
 
-03  Schleswig-Holsteinische Geest  O ISOL TSRA  O ISOL TSRA  C ISOL SHRA
+03  Schleswig-Holsteinische Geest  O ISOL TSRA  O  C
 
-04  Schleswig-Holsteinisches Hügelland  O ISOL TSRA  O ISOL TSRA  O ISOL SHRA
+04  Schleswig-Holsteinisches Hügelland  O ISOL TSRA  O ISOL SHRA  O
 
-05  Nordwestliches Niedersachsen  O ISOL TSRA  O ISOL TSRA  O ISOL SHRA
+05  Nordwestliches Niedersachsen  O ISOL TSRA  O ISOL SHRA  O ISOL SHRA
 
-06  Lüneburger Heide  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
+06  Lüneburger Heide  O ISOL SHRA  O ISOL SHRA  O
 
-07  Westliches Niedersachsen  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
+07  Westliches Niedersachsen  O ISOL TSRA  O ISOL SHRA  O ISOL SHRA
 
-08  Hannover und Braunschweig  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
+08  Hannover und Braunschweig  O ISOL TSRA  O ISOL SHRA  O ISOL SHRA
 
 09  Teutoburger Wald  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
 
@@ -128,25 +128,25 @@ GAFOR-Einstufung LBZ Muenchen
 
 GAFOR Bereich LBZ Muenchen 11.10.2026
 
-Gebiet  Name  12-14 UTC  14-16 UTC  16-18 UTC
+Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
 54  Mainfranken und Nördliches Unterfranken  O ISOL SHRA  O ISOL SHRA  O
 
-55  Kocher-Jagst-Gebiet und Frankenhöhe  D1 ISOL SHRA  O ISOL SHRA  O
+55  Kocher-Jagst-Gebiet und Frankenhöhe  O ISOL SHRA  O ISOL SHRA  O
 
 56  Mittelfranken  O ISOL SHRA  O ISOL SHRA  O
 
 57  Oberfranken  O ISOL SHRA  O ISOL SHRA  O
 
-58  Frankenwald und Fichtelgebirge  D1 ISOL SHRA  D1 ISOL SHRA  D1 ISOL SHRA
+58  Frankenwald und Fichtelgebirge  D1 ISOL SHRA  O ISOL SHRA  O ISOL SHRA
 
-62  Schwäbische Alb  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
+62  Schwäbische Alb  D1 ISOL SHRA  O ISOL SHRA  O ISOL SHRA
 
 63  Fränkische Alb  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
 
-64  Oberpfälzer Wald  D1 ISOL SHRA  D1 ISOL SHRA  D1 ISOL SHRA
+64  Oberpfälzer Wald  D1 ISOL SHRA  O ISOL SHRA  O
 
-71  Bodenseeraum  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
+71  Bodenseeraum  O ISOL SHRA  O ISOL SHRA  O
 
 72  Schwäbische Hochebene  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
 
@@ -156,15 +156,15 @@ Gebiet  Name  12-14 UTC  14-16 UTC  16-18 UTC
 
 75  Östliche Donau- und Naabniederung  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
 
-76  Bayerischer Wald  M2 ISOL SHRA  M2 ISOL SHRA  M2 ISOL SHRA
+76  Bayerischer Wald  M2 ISOL SHRA  M2 ISOL SHRA  D1 ISOL SHRA
 
 81  Westliches Alpenvorland  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
 
 82  Östliches Alpenvorland  O ISOL SHRA  O ISOL SHRA  O ISOL SHRA
 
-83  Allgäuer Alpen  X  X ISOL SHRA  X ISOL SHRA
+83  Allgäuer Alpen  X ISOL SHRA  X ISOL SHRA  X ISOL SHRA
 
-84  Östliche Bayerische Alpen  X  X ISOL SHRA  X ISOL SHRA
+84  Östliche Bayerische Alpen  X ISOL SHRA  X ISOL SHRA  X ISOL SHRA
 
 GAFOR Legende
 

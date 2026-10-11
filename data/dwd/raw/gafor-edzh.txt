@@ -1,48 +1,41 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzh_node.html
 
-991
-FBEU40 EDZH 111200
+983
+FBEU40 EDZH 111800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Nord
-gültig vom 11.10.2026, 12.00 UTC bis 12.10.2026, 09.00 UTC
+gültig vom 11.10.2026, 18.00 UTC bis 12.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 00 bis 10
 
 Wetterlage und -entwicklung:
 Ein Tief zieht von Südschweden über das Baltikum in den Nordwesten
-Russlands. Dabei fließt mit anfangs westlicher, später nordwestlicher
-Strömung labile Meeresluft in den Norden Deutschlands. In der Nacht
-stabilisiert Hochdruckeinfluss über Land die Luftmasse, während über
-der See ein schwacher Bogentrog die Labilität erhält.
+Russlands. Dabei fließt mit nordwestlicher Strömung labile Meeresluft
+in den Norden Deutschlands. In der Nacht stabilisiert
+Hochdruckeinfluss über Land die Luftmasse, während über der See ein
+schwacher Bodentrog die Labilität bis in den Montag hinein erhält.
+Der Montag ist dann von einer sehr kühlen Luftmasse unter
+Zwischenhocheinfluss geprägt.
 
 Wettergeschehen:
-Vielerorts zeigt sich SCT/BKN CU mit Untergrenzen in 2000-3000 FT
-AMSL und Obergrenzen in FL120-160. In die CU-Bewölkung sind TCU/CB
-eingelagert, welche zu Regenschauern führen und in der Nordhälfte
-auch stark ausfallen können. Die Zellen können Cluster bilden oder
-linienartig angeordnet sein, auch einzelne kurze Gewitter über der
-Deutschen Bucht oder den angrenzenden Küstenregionen sind nicht
-gänzlich ausgeschlossen. Die Tops der CB erreichen etwa FL260, im
-Niederschlag sinken die Untergrenzen auf 1000-1500 FT AMSL ab.
-Oberhalb von FL200 zieht FEW/SCT CI durch.
-
-Über den Nachmittag lockert die Bewölkung im Norden, am späten
-Nachmittag auch im Süden, zu FEW/SCT CU bei Untergrenzen in 2500-4000
-FT AMSL und Obergrenzen in FL060-080 auf, die Schauertätigkeit lässt
-über Land von Norden her nach.
-
-In der Nacht zum Montag lockert die Bewölkung im Norden weiter zu FEW
-SC zwischen 4000 FT und 5000 FT AMSL auf, gebietsweise ist es
-sternenklar. Über dem Südwesten der Deutschen Bucht sowie weiten
-Teilen Niedersachsens mit Ausnahme der Lüneburger Heide halten sich
-einzelne Schauer durch die Nacht hinweg. Dabei liegen die
-Untergrenzen in 2500-3500 FT AMSL bei Tops in FL100-120, es erfolgt
-ein Übergang zu FEW/SCT SC. In der ersten Nachthälfte bildet sich
-zudem über Niedersachsen Dunst- oder Nebel aus, der in der zweiten
-Nachthälfte gebietsweise zu OVC ST unterhalb von 500-800 FT AGL
-anwachsen kann. In der zweiten Nachthälfte können sich auch in der
-Westhälfte Schleswig-Holsteins flache Dunst- und Nebelfelder
-ausbilden.
+Letzte FEW/SCT CU bei Untergrenzen in 2500-4000, häufig auch bei
+1500-2000 FT AMSL und Obergrenzen in FL060-080 lösen sich allmählich
+auf, die Schauertätigkeit lässt über Land von Norden her nach. Die
+bis nach Südniedersachsen vorgedrungenen Schauer und Gewitter aus den
+CB mit Tops bei etwa FL260 zunächst noch etwas zögerlich, fallen dann
+aber auch zusammen, im Niederschlag sinken die Untergrenzen auf
+1000-1500 FT AMSL ab. Oberhalb von FL200 zieht FEW/SCT CI durch.
+Übrig bleiben am Abend und in der Nacht FEW/SCT SC zwischen 4000 FT
+und 5000 FT AMSL, teils AC bei FL080, gebietsweise ist es
+sternenklar. Über dem Südwesten der Deutschen Bucht sowie vorranging
+im westlichen Niedersachen halten sich einzelne Schauer durch die
+Nacht hinweg. Dabei liegen die Untergrenzen in 2500-3500 FT AMSL bei
+Tops in FL100-120.
+Außerdem bildet sich in der ersten Nachthälfte über Niedersachsen
+Dunst- oder Nebel aus, der in der zweiten Nachthälfte gebietsweise zu
+OVC ST unterhalb von 500-800 FT AGL anwachsen kann. In der zweiten
+Nachthälfte können sich auch in der Westhälfte Schleswig-Holsteins
+flache Dunst- und Nebelfelder ausbilden.
 
 Am Vormittag lösen sich die Dunst- und Nebelfelder allmählich wieder
 auf. Während über Hamburg und Schleswig-Holstein schnell die Sonne
@@ -52,60 +45,65 @@ SCT/BKN CU bei Untergrenzen in 700-1200 FT AGL und Obergrenzen um
 zeigt sich SCT/BKN CU in 2500 FT AML und Obergrenzen in FL070-080.
 Vereinzelt bilden sich TCU mit Tops um FL090 und es fallen daraus
 schwache Schauer.
+Bis zum Nachmittag steigen die Untergrenzen in der Südhälfte
+Niedersachsens auf FEW/SCT CU bei 3000-4000 FT, in der Nordhälfte
+etwas tiefer bei 2000-3000 FT AMSL mit Tops bei 5000-6000 FT AMSL.
+Auch am Nachmittag durchbrechen die TCU meist nur Richtung Küste und
+über der See die Obergrenzen der CU mit Tops bis zu FL090, wodurch es
+für einzelne, meist schwächere Schauer ausreicht, die dann mit der
+Nordnordwestlichen Strömung landeinwärts ziehen.
 
 Sichtweite:
 30-70 km, in Schauern bzw. Gewittern vereinzelt auf 2-8 km
 zurückgehend. In der Nacht im Dunst 1-5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
-GAFOR-Gebiete 00-04:
-AMSL  |  15 UTC  |  03 UTC  |
- 500FT | 340/10KT  11C | 290/10KT  08C |
-1000FT | 340/10KT  09C | 310/10KT  08C |
-1500FT | 340/15KT  07C | 320/15KT  07C |
-2000FT | 340/15KT  06C | 320/15KT  06C |
-3000FT | 330/15KT  03C | 320/20KT  03C |
-5000FT | 320/15KT  01C | 330/20KT M00C |
-FL100  | 320/20KT M09C | 320/20KT M09C |
+GAFOR-Gebiete 00 - 04:
+AMSL  |  21 UTC  |  09 UTC  |
+ 500FT | 330/15KT  07C | 240/05KT  09C |
+1000FT | 340/20KT  07C | 250/05KT  08C |
+1500FT | 340/20KT  05C | 270/05KT  07C |
+2000FT | 340/20KT  04C | 280/05KT  07C |
+3000FT | 320/20KT  02C | 310/10KT  03C |
+5000FT | 320/25KT  00C | 310/10KT  00C |
+FL100  | 310/30KT M09C | 310/20KT M08C |
 
-GAFOR-Gebiete 05-10:
-AMSL  |  15 UTC  |  03 UTC  |
- 500FT | 260/15KT  11C | 270/10KT  08C |
-1000FT | 260/20KT  09C | 270/10KT  08C |
-1500FT | 270/25KT  08C | 300/10KT  08C |
-2000FT | 280/30KT  07C | 300/10KT  07C |
-3000FT | 280/30KT  04C | 310/10KT  04C |
-5000FT | 280/30KT  01C | 310/15KT  01C |
-FL100  | 290/25KT M08C | 310/20KT M08C |
+GAFOR-Gebiete 05 - 10:
+AMSL  |  21 UTC  |  09 UTC  |
+ 500FT | 270/15KT  09C | 260/05KT  10C |
+1000FT | 280/20KT  09C | 260/10KT  08C |
+1500FT | 300/25KT  08C | 270/10KT  07C |
+2000FT | 300/20KT  07C | 270/10KT  06C |
+3000FT | 300/20KT  04C | 280/10KT  04C |
+5000FT | 310/20KT  01C | 300/10KT  02C |
+FL100  | 310/25KT M08C | 320/15KT M06C |
 
 Turbulenz:
 Im Bereich von TCU/CB.
 
 Vereisung:
-Zwischen FL070 und FL130 zeitweise mäßig. Am Nachmittag zunächst im
-Norden, am Abend und in der Nacht auch im restlichen Bereich
-abschwächend.
-Außerdem in TCU/CB.
+In den über die Nullgradgrenze hinauswachsenden CU bis FL070-080
+teils mäßig, außerdem in TCU/CB mit den Tops bis FL090.
 
 Nullgradgrenze:
 FL050-FL060, in der Nacht an der Ostsee auf 4500-5000 FT AMSL
-absinkend.
+absinkend. Im Laufe des Nachmittages von Westen her, im Vorfeld des
+nächsten Frontensystems auf FL080-100 ansteigend.
 
 Inversionen:
-Ab dem Abend in Schleswig-Holstein und im nördlichen Niedersachsen
-ausbildende Bodeninversion unterhalb von 1000 FT AGL. Im restlichen
-Niedersachsen bildet sich gebietsweise eine Bodeninversion bzw. eine
-bodennahe Inversion mit Untergrenze in wenigen hundert Fuß und
-Obergrenze um 1000 FT AGL aus. Diese lösen sich am Vormittag wieder
-auf.
+In Schleswig-Holstein und im nördlichen Niedersachsen ausbildende
+Bodeninversion unterhalb von 1000 FT AGL. Im restlichen Niedersachsen
+bildet sich gebietsweise eine Bodeninversion bzw. eine bodennahe
+Inversion mit Untergrenze in wenigen hundert Fuß und Obergrenze um
+1000 FT AGL aus. Diese lösen sich am Vormittag wieder auf.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Schleswig  16.34 | 17.08 | 05.09 | 05.44
-Hannover  16.36 | 17.10 | 05.07 | 05.41
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Schleswig  05.09 | 05.44 | 16.31 | 17.08
+Hannover  05.07 | 05.41 | 16.34 | 17.08
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 12.10.2026 um
+02.00/05.00 UTC
 
-Luftfahrtberatungszentrale Hamburg/Zd
+Luftfahrtberatungszentrale Hamburg/Sz
