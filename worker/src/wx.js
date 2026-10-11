@@ -451,7 +451,8 @@ async function stations(ctx, q) {
         for (const [k, rg] of Object.entries(c.ranges || {})) { const vals = rg.values || []; for (let i = vals.length - 1; i >= 0; i--) if (vals[i] != null) { const pre = k.split(':')[0]; if (!st.v[pre] || ts[i] > st.v[pre].t) st.v[pre] = { v: vals[i], t: ts[i] }; break; } }
       }
       for (const st of Object.values(byId)) {
-        if (st.lat == null || out.some((o) => distKm(o.lat, o.lon, st.lat, st.lon) < 3)) continue;   // CH/DE sind schon über SMN/Bright Sky da
+        // CH/DE sind über SwissMetNet/Bright Sky abgedeckt – deren WMO-Blöcke (066xx–069xx, 10xxx) nicht nochmals (Doppelnennungen, Entscheid 11.10.2026); übrige zusätzlich 3-km-Regel
+        if (st.lat == null || /^0-20000-0-(06[6-9]\d\d|10\d{3})$/.test(String(st.id)) || out.some((o) => distKm(o.lat, o.lon, st.lat, st.lon) < 3)) continue;
         const g = (k) => st.v[k] || null; const dir = g('wind_from_direction'), spd = g('wind_speed'), gst = g('wind_speed_of_gust'), tt = g('air_temperature'), td = g('dew_point_temperature'), rh = g('relative_humidity'), pp = g('air_pressure_at_mean_sea_level'), rr = g('precipitation_amount');
         push({ id: st.id, name: names[st.id]?.name ? names[st.id].name.replace(/_/g, ' ').replace(/\s*\/\s*/g, ' / ').replace(/\s+/g, ' ').trim().replace(/\b([A-ZÄÖÜ])([A-ZÄÖÜ]{2,})\b/g, (m, a, b) => a + b.toLowerCase()) : st.id, lat: st.lat, lon: st.lon, time: (spd || tt || dir)?.t || null, dir: dir ? Math.round(dir.v) : null, kt: spd ? Math.round(spd.v * 1.943844 * 10) / 10 : null, gustKt: gst ? Math.round(gst.v * 1.943844) : null, tempC: tt ? Math.round(tt.v * 10) / 10 : null, dewC: td ? Math.round(td.v * 10) / 10 : null, rh: rh ? Math.round(rh.v) : null, qnh: pp ? Math.round(pp.v) : null, precipMm: rr ? Math.round(rr.v * 10) / 10 : null, src: 'MeteoGate (EUMETNET)' });
       }

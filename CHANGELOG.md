@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.15a — 2026-10-11
+
+* **B04:** keine Doppelnennungen – MeteoGate-Stationen der WMO-Blöcke CH (066xx–069xx) und DE (10xxx) entfallen, dort gelten SwissMetNet und DWD; übrige Länder bleiben (3-km-Regel).
+
 ## 0.12.15 — 2026-10-09 · Rückmeldungen Test 0.12.14 (B02, B04, B05, B10, C03)
 
 * **B02 METAR/TAF:** «zu aktualisieren», sobald der Start mehr als 6 h entfernt ist – auch wenn ein TAF den Fahrtzeitraum
