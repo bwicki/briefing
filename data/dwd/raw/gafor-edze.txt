@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edze_node.html
 
-580
-FBEU40 EDZE 110600
+393
+FBEU40 EDZE 111200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich West
-gültig vom 11.10.2026, 06.00 UTC bis 12.10.2026, 03.00 UTC
+gültig vom 11.10.2026, 12.00 UTC bis 12.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 31 bis 39
 
@@ -13,28 +13,18 @@ Am Rande eines Tiefdruckkomplexes über Südskandinavien und der
 Nordsee gelangt mit einer lebhaften westlichen Strömung weiterhin
 kühle und labil geschichtete Meeresluft nach Westdeutschland.
 Gleichzeitig dämpft hoher Luftdruck über Frankreich die Labilität im
-Südwesten des Vorhersagebereiches.
+Südwesten des Vorhersagebereiches. Am Montag setzt sich aus Westen
+der Hochdruckeinfluss durch und stabilisiert die Luftmasse.
 
 Wettergeschehen:
-SCT/BKN SC in 3000 und 5000 FT AMSL, vor allem nördlich einer Linie
-Aachen-Sauerland noch einzelne Schauer mit SCT/BKN TCU mit Basis
-zwischen 1500 und 2500 FT AMSL, Tops zwischen FL120-160. Im Südwesten
-kaum Schauer und zu FEW/SCT auflockernder SC mit Basis in 4000-5000
-FT AMSL, Tops FL080-100. Im Münsterland vor allem unter dem
-Niederschlag örtlich BKN ST mit Untergrenzen zwischen 800 und 1200 FT
-AGL möglich, im Bergland teils BKN/OVC ST unter 500 FT AGL, Kammlagen
-in Wolken.
-
-Am Vormittag nur zögerlich anhebende Untergrenzen der ST-Bewölkung.
-
-Zum Mittag meist SCT/BKN CU/SC in 2000 bis 4000 FT AMSL, Obergrenzen
-dabei meist um FL080 bis FL090. Zudem erneut auflebende und
-zunehmende Schauertätigkeit in der Nordhälfte sowie im Bergland. Vor
-allem hier und bei Schauern Böen zwischen 25 und 30 KT aus SW
-möglich. Dabei ISOL TCU/CB mit Tops um FL180, teils bis FL200.
-Einzelne kurze Gewitter im Norden nicht ganz ausgeschlossen.
-Abseits von TCU/CB am Nachmittag verbreitet SCT/BKN CU/SC/AC mit
-Untergrenzen zwischen 3000 und 4000 FT AMSL, Obergrenzen bis FL100.
+Am Mittag und Nachmittag SCT/BKN CU/SC in 2500 bis 4000 FT AMSL,
+Obergrenzen in FL080 bis FL090. Auflebende und zunehmende
+Schauertätigkeit in der Nordhälfte sowie im Bergland mit ISOL/OCNL
+TCU/CB mit Tops in FL120-FL160. Mit Schauern Böen zwischen 25 und 30
+KT aus SW möglich. Einzelne kurze Gewitter im Norden nicht ganz
+ausgeschlossen. In Hochlagen des Berglandes anfangs BKN ST/CU in
+500-1500 FT AGL, im Nachmittagsverlauf auf mehr als 1500 FT AGL
+ansteigend.
 
 Am Abend im Norden abschwächende Schauertätigkeit, im Südwesten
 weiter auflockernde Bewölkung zu FEW/SCT nur noch selten BKN CU/SC/AC
@@ -57,59 +47,69 @@ ST in 200-700 FT AGL. Im restlichen Gebiet SKC oder FEW/SCT SC/AC
 Felder zwischen 1500 und FL070 im Norden und um 3000 FT AMSL bis
 FL070 im restlichen Gebiet.
 
+Bis zum Vormittag im Nordosten teils noch BKN SC in 2000-3000 FT AMSL
+und Obergrenzen um 5000 FT AMSL, in der Eifel BKN ST/SC mit
+Untergrenzen in 400-800 FT AGL und Obergrenzen bis FL060. Dazwischen
+nur FEW/SCT SC zwischen 2000-5000 FT AMSL, zeitweise auch SKC.
+Niederschlagsfrei.
+
 Sichtweite:
-30-50 km, in Schauern je nach Intensität 2-8 km. In der Nacht zum
-Montag vor allem im Bergland örtlich Dunst- und Nebel mit Sichtweiten
-teils unter 1 km, bei Dunst 2-5 km, bei aufliegender Bewölkung und
-dichterem Nebel unter 500 m.
+30-60 km, in Schauern je nach Intensität 3-10 km.
+In der Nacht zum Montag vor allem im Bergland und Münsterland örtlich
+Dunst- und Nebel mit Sichtweiten teils unter 1 km, bei Dunst 2-5 km,
+bei aufliegender Bewölkung und dichterem Nebel unter 500 m. Im
+Vormittagsverlauf allmähliche Auflösung vorhandener Dunst- und
+Nebelfelder.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 31 - 34:
-AMSL  |  09 UTC  |  21 UTC  |
- 500FT | 240/15KT  10C | 250/10KT  10C |
-1000FT | 240/15KT  08C | 270/15KT  10C |
-1500FT | 270/25KT  07C | 280/15KT  09C |
-2000FT | 270/25KT  06C | 280/15KT  08C |
-3000FT | 270/25KT  03C | 280/15KT  05C |
-5000FT | 290/30KT  00C | 290/10KT  02C |
-FL100  | 300/25KT M08C | 310/20KT M05C |
+AMSL  |  15 UTC  |  06 UTC  |
+ 500FT | 280/15KT  13C | 160/10KT  08C |
+1000FT | 280/20KT  12C | 190/10KT  09C |
+1500FT | 280/20KT  10C | 220/05KT  08C |
+2000FT | 280/20KT  08C | 220/05KT  07C |
+3000FT | 280/20KT  05C | 210/05KT  05C |
+5000FT | 280/20KT  01C | 210/05KT  02C |
+FL100  | 310/25KT M07C | 320/20KT M04C |
 
 GAFOR-Gebiete 35 - 39:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 260/10KT  08C | 260/05KT  09C |
-1500FT | 270/20KT  07C | 280/10KT  08C |
-2000FT | 270/20KT  06C | 280/15KT  08C |
-3000FT | 280/25KT  03C | 290/15KT  05C |
-5000FT | 280/25KT  00C | 280/15KT  02C |
-FL100  | 290/25KT M09C | 310/20KT M06C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 270/10KT  11C | 100/05KT  07C |
+1500FT | 280/20KT  09C | 200/05KT  07C |
+2000FT | 280/20KT  08C | 220/05KT  07C |
+3000FT | 280/20KT  05C | 250/05KT  04C |
+5000FT | 280/25KT  01C | 210/05KT  02C |
+FL100  | 310/25KT M07C | 320/20KT M04C |
 
 Turbulenz:
-In TCU/CB und deren Umgebung mäßig bis stark. Im Tagesverlauf
-zunehmend auch abseits von TCU/CB mäßig bis 3000 FT AMSL, vor allem
-im Münsterland und dem Bergland.
+In TCU/CB und deren Umgebung mäßig bis stark. Auch abseits von TCU/CB
+mäßig bis 3000 FT AMSL, vor allem im Münsterland und dem Bergland, im
+Laufe des Abends abschwächend. Zeitweise auch mäßig zwischen FL150
+und FL200.
 
 Vereisung:
-Bei TCU/CB mäßig bis stark. Sonst bei mittelhoher AC-Bewölkung teils
-mäßig zwischen FL060 und FL100. Abends abschwächend.
+Bei TCU/CB mäßig bis stark, in CU/SC an der Oberkante bis zum Abend
+örtlich mäßig oberhalb FL055.
 
 Nullgradgrenze:
-Zwischen 4500 und 5000 FT AMSL, am Mittag FL050-FL055, ab dem
-Nachmittag um FL055. In der Nacht zum Montag von Westen erst
+Bis zum Abend um FL055. In der Nacht zum Montag von Westen erst
 ansteigend auf FL060, im Nordosten teils noch um FL055. In der
 zweiten Nachthälfte im Westen weiter steigend. Montagfrüh in der
-Eifel teilweise FL060-FL075, sonst zwischen FL055-FL060.
+Eifel teilweise bis FL080, sonst zwischen FL055-FL060. Bis zum
+Vormittag westrheinisch auf FL080-FL085 ansteigend.
 
 Inversionen:
-Im Südwesten Absinkinversion zwischen FL080 und FL120. Im Norden
-teils Inversion zwischen 800 und 1500 FT AGL, im Vormittagsverlauf
-auflösend. In der Nacht zum Montag gebietsweise Ausbildung einer
-Bodeninversion unterhalb von 1000-1500 FT AGL.
+Von Südwesten schwache Absinkinversion um FL080, nach Nordosten meist
+keine Inversion. In der Nacht zum Montag gebietsweise Ausbildung
+einer Bodeninversion unterhalb von 1000-1500 FT AGL, am Vormittag
+auflösend. Dann Absinkinversion in 4000-5000 FT AMSL.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Düsseldorf  05.16 | 05.49 | 16.49 | 17.21
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Düsseldorf  16.49 | 17.21 | 05.18 | 05.51
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
 Regionale Wetterberatungszentrale Essen/Oh
