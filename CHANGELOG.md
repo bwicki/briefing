@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.12.17b — 2026-10-12 · Fahrtprofil: Übergabe an die O₂-Planung
+
+* **Panel A «Fahrtprofil» (Gasfahrt):** neuer Knopf **O₂-Planung** neben «Werkzeug öffnen». Er öffnet die
+  Sauerstoffplanung [o2.wicki.aero](https://o2.wicki.aero) in einem neuen Tab und übergibt das Höhenprofil als Höhenstufen
+  (ft Druckhöhe aus m AMSL und dem QNH des Briefings, auf 100 ft gerundet) mit Dauer; Titel = Briefingnummer · Kennzeichen · Datum.
+  Haltestrecken werden je eine Stufe, Steigen und Sinken je bis zu vier Teilstufen auf mittlerer Höhe – die Gesamtdauer bleibt
+  erhalten, die O₂-Planung ergänzt deshalb keine eigenen Übergänge. Höchstens 24 Stufen (kürzeste Nachbarn werden zusammengefasst).
+  Ohne aufbereitete Bahn kein Knopf. Das Profil steht im Anhang der Adresse (`#i.…`); die O₂-Planung legt daraus eine
+  Berechnung an und speichert sie wie jede andere unter einem Kurzcode (Höhenstufen und Titel, sonst nichts aus dem Briefing).
+* Rechenkern `o2Levels`/`o2Link` in `js/calc/profile.js`, Tests in `test/calc.test.mjs` und `test/ui.smoke.py`.
+
 ## 0.12.17a — 2026-10-12 · B04: ganz Italien über Meteo-Hub, Unteranfragen-Limit
 
 * **B04 Italien:** **Meteo-Hub** (Agenzia ItaliaMeteo/CINECA, Beobachtungs-API der öffentlichen Karte, ohne Anmeldung, CC BY 4.0)

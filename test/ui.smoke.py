@@ -419,6 +419,11 @@ def run_gas(name):
             pg.wait_for_timeout(500)
             if pg.query_selector('#panel-A\\.profile svg.pf-svg'): break
         assert pg.query_selector('#panel-A\\.profile svg.pf-svg') is not None, 'Fahrtprofil: Grafik nach «Daten aufbereiten»: ' + pg.inner_text('#panel-A\\.profile .row-actions')
+        # 0.12.17b: Übergabe des Höhenprofils an die O2-Planung (Link mit Höhenstufen in ft und Dauer in h)
+        o2 = pg.get_attribute('#panel-A\\.profile .row-actions a.btn:has-text("O₂-Planung")', 'href') or ''
+        import base64 as _b64
+        o2d = json.loads(_b64.urlsafe_b64decode(o2.split('#i.')[1] + '==')) if '#i.' in o2 else {}
+        assert o2.startswith('https://o2.wicki.aero/#i.') and o2d.get('s') == 1 and len(o2d.get('l', [])) >= 2 and all(a >= 0 and d > 0 for a, d in o2d['l']), 'O2-Planung: Übergabe-Link im Panel Fahrtprofil: ' + o2[:80]
         txt = pg.text_content('#panel-A\\.profile svg.pf-svg')
         assert 'SS' in txt and 'ECET' in txt and 'BCMT' in txt and 'km' in txt and 'Sonne' not in txt and 'Tag' not in txt.replace('Tage', ''), 'Zeitzeile mit Sonnenzeiten, ohne Zeilenbeschriftungen «Sonne»/«Tag»: ' + txt[:200]
         assert len(pg.query_selector_all('#panel-A\\.profile table.pf-stages tbody tr')) >= 3 and len(pg.query_selector_all('#panel-A\\.profile table.pf-ballast tbody tr')) >= 4, 'Etappen- und Ballasttabelle im Panel'

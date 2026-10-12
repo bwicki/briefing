@@ -681,6 +681,28 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(reportValidity('nur Text ohne Zeiten') === null, 'ohne Angabe → null');
 }
 
+// ---------------------------------------------------------------- 0.12.17b: Übergabe des Höhenprofils an die O2-Planung
+{
+  const { o2Levels, o2Link } = await import('../js/calc/profile.js');
+  const t0 = Date.UTC(2026, 9, 6, 14, 0);
+  const track = { totalKm: 180, points: [] };
+  for (let k = 0; k <= 180; k += 10) track.points.push({ km: k, ms: t0 + k * 5 * 60000, lat: 47, lon: 8 });   // 12 km/h → 15 h
+  const pts = [{ km: 0, alt: 450 }, { km: 6, alt: 3050 }, { km: 90, alt: 3050 }, { km: 96, alt: 4270 }, { km: 150, alt: 4270 }, { km: 180, alt: 600 }];
+  const lv = o2Levels(pts, track);
+  const sum = lv.reduce((a, l) => a + l.dur, 0);
+  ok(Math.abs(sum - 15) < 0.01, 'O2-Übergabe: Gesamtdauer bleibt erhalten (15 h): ' + sum);
+  ok(lv.some((l) => l.alt === 10000 && Math.abs(l.dur - 7) < 0.01) && lv.some((l) => l.alt === 14000 && Math.abs(l.dur - 4.5) < 0.01), 'Haltestrecken werden je eine Stufe in ft: ' + JSON.stringify(lv));
+  ok(lv.length === 14 && lv[0].alt < lv[1].alt && lv[lv.length - 1].alt < lv[lv.length - 2].alt && lv.every((l) => l.alt % 100 === 0 && l.dur > 0), 'Steigen und Sinken in je vier Teilstufen, auf 100 ft gerundet');
+  const low = o2Levels(pts, track, { qnh: 993.25 });
+  ok(low.find((l) => Math.abs(l.dur - 7) < 0.01).alt === 10500, 'QNH 993 hPa: Druckhöhe 540 ft über der Höhe AMSL');
+  const few = o2Levels(pts, track, { max: 6 });
+  ok(few.length <= 6 && Math.abs(few.reduce((a, l) => a + l.dur, 0) - 15) < 0.01, 'Obergrenze der Stufenzahl: zusammengefasst, Dauer bleibt');
+  ok(o2Levels(pts, null).length === 0 && o2Levels([], track).length === 0, 'ohne Bahn oder ohne Punkte keine Übergabe');
+  const url = o2Link(lv, '2026-017 · HB-QWZ · 2026-10-06');
+  const back = JSON.parse(Buffer.from(url.split('#i.')[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+  ok(url.startsWith('https://o2.wicki.aero/#i.') && back.v === 1 && back.s === 1 && back.t === '2026-017 · HB-QWZ · 2026-10-06' && back.l.length === lv.length && back.l[0][0] === lv[0].alt, 'Übergabe-Link: Titel, Stufen, Kennzeichen «Verlauf»');
+}
+
 console.log(`\n${n - fails}/${n} Tests bestanden`);
 process.exit(fails ? 1 : 0);
 

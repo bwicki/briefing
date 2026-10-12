@@ -10,7 +10,7 @@ import { h, clear, toast, fmt } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { MODELS, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDate, isoDate, localParts, fmtDateTime } from '../calc/time.js';
-import { ensureProfile, altAt, msAtKm, kmAtMs, posAtKm, reliefAt, segments, rateClass, reliefBreaches, addStage, removeStage, moveStage, renameStartStage, stageWindows, nightFraction, ballastPlan, fitPoints } from '../calc/profile.js';
+import { ensureProfile, altAt, msAtKm, kmAtMs, posAtKm, reliefAt, segments, rateClass, o2Levels, o2Link, reliefBreaches, addStage, removeStage, moveStage, renameStartStage, stageWindows, nightFraction, ballastPlan, fitPoints } from '../calc/profile.js';
 import { stageOps, canDropOps, ensureOps, pruneStagePlans } from '../calc/stageplan.js';
 import { buildProfileData } from '../auto/profiledata.js';
 import { massPerf, fillFractionOf } from '../model.js';
@@ -445,6 +445,14 @@ export function stageTable(b, ctx, o = {}) {
 export const standLine = (b, D) => (D ? t('pf_stand', { t: fmtDateTime(zoneOf(b), D.stand, getLang()), m: D.modelName || D.model || '', s: D.source || '' }) + (D.errors?.length ? ` · ${t('pf_errors', { e: D.errors.join('; ') })}` : '') : '');
 
 // ---------------------------------------------------------------- Panel (Editor) und Briefingsicht
+/** 0.12.17b: Link «O₂-Planung» – übergibt das Höhenprofil als Höhenstufen an o2.wicki.aero (neuer Tab); ohne Bahn kein Link. */
+function o2Button(b, p, D) {
+  if (!D?.track?.points?.length || (p.points?.length || 0) < 2) return null;
+  const levels = o2Levels(p.points, D.track, { qnh: b.weather?.qnh });
+  if (!levels.length) return null;
+  const title = [b.no, b.balloon?.reg, b.time?.date].filter(Boolean).join(' · ');
+  return h('a.btn.small', { href: o2Link(levels, title), target: '_blank', rel: 'noopener', title: t('pf_o2Tip') }, [icon('ext', 14), ` ${t('pf_o2')}`]);
+}
 /** Panel A «Fahrtprofil» im Editor: Daten aufbereiten, Werkzeug öffnen, Grafik (Bild), Etappen- und Ballasttabelle. */
 export function profilePanel(b, ctx, o = {}) {
   const p = ensureProfile(b);
@@ -463,6 +471,7 @@ export function profilePanel(b, ctx, o = {}) {
     if (!o.readOnly) box.appendChild(h('div.row-actions', [
       h('button.btn.small' + (D ? '' : '.primary'), { type: 'button', onclick: (e) => build(e.currentTarget) }, [icon('refresh', 14), ` ${D ? t('pf_rebuild') : t('pf_build')}`]),
       D ? h('button.btn.small.primary', { type: 'button', onclick: () => openProfileTool(b, ctx, { onChange: o.onChange, onClose: draw }) }, [icon('edit', 14), ` ${t('pf_open')}`]) : null,
+      o2Button(b, p, D),   // 0.12.17b: Höhenprofil an die Sauerstoffplanung übergeben
       st,
     ]));
     if (!D) { box.appendChild(h('div.note', t('pf_noData'))); return; }

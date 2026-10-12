@@ -129,6 +129,43 @@ export function segments(points, track) {
   }
   return out;
 }
+// ---------------------------------------------------------------- Übergabe an die Sauerstoffplanung (0.12.17b)
+const O2_FT_PER_M = 3.28084;
+/**
+ * Höhenprofil als Folge von Höhenstufen für die EDS O2-Planung (o2.wicki.aero): [{ alt (ft Druckhöhe), dur (h) }].
+ * Ein Teilstück ohne Höhenänderung wird eine Stufe; Steigen und Sinken wird in bis zu vier Teilstufen auf
+ * mittlerer Höhe zerlegt. Die Gesamtdauer bleibt erhalten – die O2-Planung ergänzt deshalb keine eigenen Übergänge.
+ * qnh (hPa): Umrechnung m AMSL → Druckhöhe mit 27 ft je hPa (ohne Angabe: Standarddruck). Höchstens `max` Stufen,
+ * darüber werden die kürzesten Nachbarn zusammengefasst (zeitgewichtete Höhe).
+ */
+export function o2Levels(points, track, { qnh = null, max = 24 } = {}) {
+  const corr = Number.isFinite(+qnh) && +qnh > 900 && +qnh < 1080 ? (1013.25 - qnh) * 27 : 0;
+  const ft = (m) => Math.max(0, Math.round((m * O2_FT_PER_M + corr) / 100) * 100);
+  const raw = [];
+  for (const sg of segments(points, track)) {
+    const h = sg.dtMin / 60;
+    if (!(h > 0)) continue;
+    const n = Math.min(4, Math.max(1, Math.ceil(Math.abs(sg.alt1 - sg.alt0) / 300)));
+    for (let k = 0; k < n; k++) raw.push({ alt: ft(sg.alt0 + (sg.alt1 - sg.alt0) * (k + 0.5) / n), dur: h / n });
+  }
+  const merge = (list) => list.reduce((out, l) => { const q = out[out.length - 1]; if (q && q.alt === l.alt) q.dur += l.dur; else out.push({ ...l }); return out; }, []);
+  let lv = merge(raw);
+  while (lv.length > max) {
+    let i = 0;
+    for (let k = 1; k < lv.length - 1; k++) if (lv[k].dur + lv[k + 1].dur < lv[i].dur + lv[i + 1].dur) i = k;
+    const a = lv[i], b = lv[i + 1], dur = a.dur + b.dur;
+    lv.splice(i, 2, { alt: Math.round((a.alt * a.dur + b.alt * b.dur) / dur / 100) * 100, dur });
+    lv = merge(lv);
+  }
+  return lv.map((l) => ({ alt: l.alt, dur: Math.round(l.dur * 1000) / 1000 }));
+}
+/** Übergabe-Link: https://o2.wicki.aero/#i.<base64url von { v, t: Titel, l: [[ft, h], …], s: 1 = Verlauf ohne zu ergänzende Übergänge }>. */
+export function o2Link(levels, title = '', base = 'https://o2.wicki.aero/') {
+  const json = JSON.stringify({ v: 1, t: String(title).slice(0, 60), l: levels.map((l) => [l.alt, l.dur]), s: 1 });
+  const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return `${base}#i.${b64}`;
+}
+
 /** Klasse der Rate: hold (< 0,5), ok (≤ 1,75), warn (≤ 3), bad. */
 export const rateClass = (r) => { const a = Math.abs(r); return a < RATE_HOLD ? 'hold' : a <= RATE_OK ? 'ok' : a <= RATE_WARN ? 'warn' : 'bad'; };
 

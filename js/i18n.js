@@ -153,6 +153,7 @@ const DE = {
   // 0.12 Höhenprofil-Werkzeug, Etappen, Ballast
   pf_stepModel: 'Modellprognose am Startort …', pf_stepWaypoints: 'Prognosen an {n} Wegpunkten entlang der Bahn …', pf_stepRelief: 'Relief entlang der Bahn …', pf_stepHours: 'Stundenprofile (Wolken, Inversionen, Wind) …', pf_stepAirspace: 'Lufträume entlang der Bahn …',
   pf_stStart: 'Start', pf_stEnroute: 'Enroute', pf_stLanding: 'Landung',
+  pf_o2: 'O₂-Planung', pf_o2Tip: 'Höhenprofil an die Sauerstoffplanung übergeben (o2.wicki.aero, neuer Tab). Höhen als Druckhöhe, Steigen und Sinken in Teilstufen.',
   pf_open: 'Werkzeug öffnen', pf_build: 'Daten aufbereiten', pf_rebuild: 'Daten erneuern', pf_recalc: 'Bahn nachrechnen', pf_working: 'rechnet …',
   pf_noData: 'Noch keine Daten. «Daten aufbereiten» holt die Modellprognosen entlang der Bahn, das Relief und die Lufträume; danach lassen sich Fahrthöhen und Etappen im Werkzeug setzen.',
   pf_noSite: 'Startort mit Koordinaten nötig.', pf_title: 'Höhenprofil-Werkzeug', pf_viewProfile: 'Profil', pf_viewMap: 'Karte (Ansicht)', pf_undo: 'Rückgängig', pf_undoTitle: 'Letzten Schritt zurücknehmen (Ctrl+Z)',
@@ -343,6 +344,7 @@ const EN = {
   // 0.12 altitude profile tool, stages, ballast
   pf_stepModel: 'Model forecast at the launch site …', pf_stepWaypoints: 'Forecasts at {n} waypoints along the track …', pf_stepRelief: 'Relief along the track …', pf_stepHours: 'Hourly profiles (clouds, inversions, wind) …', pf_stepAirspace: 'Airspaces along the track …',
   pf_stStart: 'Launch', pf_stEnroute: 'Enroute', pf_stLanding: 'Landing',
+  pf_o2: 'O₂ planning', pf_o2Tip: 'Hand the altitude profile over to the oxygen planning (o2.wicki.aero, new tab). Altitudes as pressure altitude, climb and descent in partial steps.',
   pf_open: 'Open tool', pf_build: 'Prepare data', pf_rebuild: 'Refresh data', pf_recalc: 'Recompute track', pf_working: 'computing …',
   pf_noData: 'No data yet. “Prepare data” fetches the model forecasts along the track, the relief and the airspaces; then altitudes and stages can be set in the tool.',
   pf_noSite: 'Launch site with coordinates required.', pf_title: 'Altitude profile tool', pf_viewProfile: 'Profile', pf_viewMap: 'Map (view)', pf_undo: 'Undo', pf_undoTitle: 'Undo the last step (Ctrl+Z)',
