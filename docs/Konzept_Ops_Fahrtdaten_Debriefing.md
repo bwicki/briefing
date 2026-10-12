@@ -1,6 +1,6 @@
 # Konzept «ops.wicki.aero» – Dokumente aus dem Briefing, Fahrtdaten, Debriefing
 
-Stand 12.10.2026, Fassung 2 (Konzept, keine Umsetzung). Fassung 1 vom 09.10.2026 mit neun offenen Fragen; die Antworten
+Stand 12.10.2026, Fassung 2.1 (Konzept, keine Umsetzung). Fassung 1 vom 09.10.2026 mit neun offenen Fragen; die Antworten
 von B. Wicki vom 12.10.2026 sind eingearbeitet (Abschnitt 9 «Entscheide») und die betroffenen Abschnitte angepasst.
 Grundlage: Auftrag vom 09.10.2026 – nach zwei bis drei weiteren Briefing-Iterationen sollen (1) Beförderungsschein und
 Flugauftrag aus dem finalisierten Briefing erzeugt, (2) ein zweiter Hauptteil **Fahrtdaten** (laufendes Einspielen von
@@ -45,8 +45,8 @@ Zwei betrieblich nötige Dokumente werden aus dem Final-Stand erzeugt; die Daten
 
 | Dokument | Inhalt (aus dem Briefing) | Fehlendes (noch zu erfassen) |
 |---|---|---|
-| **Beförderungsschein** (Passagierliste/Fahrtenschein) | Betreiber (LTF), Ballon (Kennzeichen, Muster, S/N), Datum, Startort, geplanter Landeraum, PIC, 2. Pilot/Crew, Pax (Name, Vorname, ggf. Gewicht), Briefingnummer, Fahrtzweck (gewerblich/privat) | Unterschriftenfelder; Geburtsdatum/Adresse der Pax nur, wenn das Formular es verlangt (Datenschutz: nur drucken, nicht länger speichern als die Fahrt) |
-| **Flugauftrag** (Operator Flight Order) | Fahrtnummer, PIC, Crew, Ballon, Startort/-zeit, Landeraum, Fahrtabsicht (Höhenband, Dauer), Treffpunkt, Rückholer, Wetterkurzfassung (Ampel, Wind), NOTAM/DABS-Status, Freigabestand «Final vN» mit Zeitstempel | Freigabe durch den Betriebsleiter (Name, Zeit) – bei Wicki Aero identisch mit dem PIC, Feld trotzdem vorsehen |
+| **Beförderungsschein** – Vorlage BHB ANH 511 «Passagierliste und Beförderungsschein» v7 vom 28.12.2024 (DE und EN, je 2 Seiten; Seite 2 = Auszüge AXA A–D, unverändert) | Kopf: Datum der Fahrt, am/Tag/pm, Startort; Kennzeichen (HB-QWP, HB-QWZ, HB-QPJ, HB-QWV, anderes – aus dem Briefing angekreuzt); Luftfrachtführer (Wicki Aero GmbH / B. Wicki / Veranstalter / Drittpartei – aus Fahrtzweck); Entgelt (CHF/EUR, pro Fahrt/Person, durch/an Dritte, unentgeltlich); Art der Fahrt (gewerblich / Ausbildung / Skill test / privat entgeltlich / privat unentgeltlich); Erklärungstext; Tabelle Vorname Name · E-Mail/Bemerkungen · Unterschrift (Pax aus dem Briefing vorgedruckt, Rest leer); Ort/Datum, Unterschrift Pilot; Fusszeile «v7 \| 28.12.2024 \| EASA BOP.BAS.115» | Entgelt-Angaben (Betrag, Modus) und Veranstalter/Drittpartei sind im Briefing nicht erfasst → Eingabefelder auf der Druckseite oder leer lassen zum Ankreuzen von Hand; Sprache DE/EN nach Briefingsprache |
+| **Flugauftrag** (Operator Flight Order) – eigener Entwurf, 12.10.2026 im Design-Fenster vorgelegt (A4, eine Seite, Tabellenstil des Beförderungsscheins) | Betreiber/Betriebsleiter; Datum, Startzeit LT/UTC, geplante Dauer und Fenster; Startort mit Koordinaten/Höhe; Landeraum (Sektor, Distanz, Grenzübertritt); Art der Fahrt, Heissluft/Gas; Ballon (Kennzeichen, Muster, Volumen) und Korb (Typ, Plätze, MTOM); Besatzung (PIC mit Lizenz/Medical, Crew, Rückholer mit Telefon); Passagiere (Namen, Anzahl, Insassenmasse); Rahmenbedingungen: Fahrtabsicht (Höhenband, VFR/NVFR, Brennstoff/Ballast), Wetter aus dem Briefing (Ampel, Wind, Sicht, Mindestbedingungen), Luftraum/NOTAM/DABS, Auflagen; Erteilung (Betreiber) und Annahme (PIC) mit Unterschriften; Durchführung nach der Fahrt (Start/Landung Zeit/Ort, Bemerkungen); Fusszeile mit Briefingnummer/Final-Stand | Lizenz-Nr. und Medical-Gültigkeit des PIC sowie Korb-Daten (Typ, Plätze, MTOM) fehlen in den Stammdaten → Ergänzung der Nutzer-/Ballon-Stammdaten in Stufe 0 |
 
 Erzeugung: wie die Pax-Karte (`#/v/<id>/p`) als eigene Druckseiten `#/v/<id>/bs` und `#/v/<id>/fa`, A4, mit den drei
 Schriften der Briefingsicht; Final-PDF über den vorhandenen PDF-Weg (Cloudflare Browser Rendering), Ablage in R2 neben
@@ -169,8 +169,8 @@ Heissluft/Gas; Vergleich mehrerer Fahrten; Export der Zeitreihen. Dient auch als
   (ZIP mit GPX, CSV, JSON, Bericht-PDF)» oder «Löschen». Ohne Antwort wird nicht gelöscht; die Frage erscheint bei jedem
   Login erneut, bis sie beantwortet ist. Der Supermaster sieht die fälligen Fahrten aller Nutzer. Löschungen werden im
   Aktivitätsprotokoll (0.12.16) festgehalten.
-* Sicht auf die Ist-Bahn: Eigner und Supermaster; Crew-, Rückholer- und Materiallinks nur während der Fahrt und bis
-  24 h nach der Landung (Rollen über die bestehenden Links). Pax sehen keine Bahn.
+* Sicht auf die Ist-Bahn: Eigner und Supermaster; Crew-, Rückholer- und Materiallinks während der Fahrt und bis
+  **3 Monate** nach der Landung (Entscheid 12.10.2026; Rollen über die bestehenden Links). Pax sehen keine Bahn.
 
 ## 5 Struktur der Plattform
 
@@ -236,4 +236,4 @@ Noch offen (für die Umsetzungssitzung der jeweiligen Stufe):
 1. Stufe 1: Kennwort des MapShare-Feeds (falls gesetzt) und Gerätekennungen je Ballon; aprs.fi-Schlüssel in den
    Zugängen hinterlegen.
 2. Stufe 2: Lese-Token für `gb_flight_data` (GitHub Fine-grained Token, nur Contents: Read) in den Zugängen hinterlegen.
-3. Stufe 3: Sicht auf die Ist-Bahn für Crew/Rückholer nur bis 24 h nach Landung – so belassen? (`ja` / andere Frist)
+3. Stufe 0: Rückmeldung zum Entwurf des Flugauftrags (Design-Fenster) – Felder, Reihenfolge, Umfang.
