@@ -7,8 +7,8 @@ Flugauftrag aus dem finalisierten Briefing erzeugt, (2) ein zweiter Hauptteil **
 Trackingdaten) und (3) ein dritter Hauptteil **Debriefing** (Planung gegen Ist, iterativ verbesserte physikalische
 Modelle, v. a. Gasfahrt) aufgebaut werden.
 
-Die Plattform heisst seit 12.10.2026 **ops.wicki.aero** (Repository `bwicki/ops`); `briefing.wicki.aero` bleibt als
-Weiterleitung für Links in Umlauf. Nichts in diesem Dokument ist bereits gebaut – ausser dem Umzug selbst (0.12.17f).
+Die Plattform heisst seit 12.10.2026 **ops.wicki.aero** (Repository `bwicki/ops`); `briefing.wicki.aero` ist seither
+nicht mehr erreichbar (GitHub Pages bedient nur eine Domain) – ältere Links sind auf ops.wicki.aero umzustellen. Nichts in diesem Dokument ist bereits gebaut – ausser dem Umzug selbst (0.12.17f).
 
 ## 1 Gesamtbild
 
@@ -185,7 +185,7 @@ Stammdaten Ballon (Einstellungen → Ballone) werden um die Tracker ergänzt: bi
 ## 6 Name (Entscheid 8)
 
 **ops.wicki.aero** – umgesetzt am 12.10.2026 (Repository `bwicki/ops`, Pages-Domain, Worker-Origins, Links;
-`briefing.wicki.aero` leitet weiter). Der App-Name «Fahrtbriefing» bleibt für den Briefing-Teil; der Seitentitel und
+`briefing.wicki.aero` nicht mehr erreichbar). Der App-Name «Fahrtbriefing» bleibt für den Briefing-Teil; der Seitentitel und
 das Logo werden mit Stufe 1 auf «Ops» umgestellt, wenn der zweite Hauptteil sichtbar wird.
 
 ## 7 Etappen der Umsetzung (Entscheid 9: Reihenfolge bestätigt)

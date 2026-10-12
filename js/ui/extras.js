@@ -30,7 +30,7 @@ export function icsFor(b, ctx, opts = {}) {
   const desc = [`${t('appName')} ${fmtDate(zz, b.time.startMs, lang)} · ${placeLabel(b.site)} · ${b.balloon.label}`, `PIC ${b.persons.pic}${hasCopilot(b) ? ` · ${t('copilot')} ${b.persons.copilot}` : ''}${b.persons.retrieve ? ` · ${t('retrieve')} ${b.persons.retrieve}` : ''}`, '', ...lines, '', sc.meetingLat != null ? `${t('meeting')}: ${mapsUrl(sc.meetingLat, sc.meetingLon)}` : '', b.site.lat != null ? `${t('site')}: ${mapsUrl(b.site.lat, b.site.lon)}` : '', opts.link ? `Briefing: ${opts.link}` : ''].filter((x) => x !== null).join('\n');
   const now = icsDate(Date.now());
   return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Wicki Aero//Fahrtbriefing//DE', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
-    `UID:briefing-${b.id}@briefing.wicki.aero`, `DTSTAMP:${now}`, `DTSTART:${icsDate(first)}`, `DTEND:${icsDate(last)}`,
+    `UID:briefing-${b.id}@briefing.wicki.aero`   /* UID bewusst unverändert (Kalendereinträge bleiben dieselben) */, `DTSTAMP:${now}`, `DTSTART:${icsDate(first)}`, `DTEND:${icsDate(last)}`,
     `SUMMARY:${icsEsc(`${t('ics_title')} ${placeLabel(b.site)} · ${b.balloon.reg}`)}`, `LOCATION:${icsEsc(loc)}`, `DESCRIPTION:${icsEsc(desc)}`,
     b.site.lat != null ? `GEO:${b.site.lat.toFixed(5)};${b.site.lon.toFixed(5)}` : '', `URL:${opts.link || location.origin + location.pathname}`,
     'BEGIN:VALARM', 'TRIGGER:-PT12H', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(t('ics_title'))}`, 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].filter(Boolean).join('\r\n');

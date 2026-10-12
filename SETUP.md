@@ -7,13 +7,13 @@ schreiben und nie im Chat weitergeben.
 ## 1 Frontend auf GitHub Pages
 
 1. Repository `bwicki/briefing`: Settings → Pages → Source «Deploy from a branch»,
-   Branch `main`, Ordner `/ (root)`. Die Datei `CNAME` (`briefing.wicki.aero`)
+   Branch `main`, Ordner `/ (root)`. Die Datei `CNAME` (`ops.wicki.aero`)
    liegt bereits im Repository.
 2. DNS für wicki.aero (Cloudflare): `CNAME briefing → bwicki.github.io`, Proxy
    **aus** (graue Wolke), bis GitHub das Zertifikat ausgestellt hat.
-3. Settings → Pages → Custom domain `briefing.wicki.aero`, nach «DNS check
+3. Settings → Pages → Custom domain `ops.wicki.aero`, nach «DNS check
    successful» **Enforce HTTPS** aktivieren.
-4. Prüfung: https://briefing.wicki.aero öffnet die Kennwortseite; solange der
+4. Prüfung: https://ops.wicki.aero öffnet die Kennwortseite; solange der
    Worker fehlt, erscheint «Lokaler Modus» in der Kopfzeile (Kennwort 1234).
 
 ## 2 Cloudflare-Konto vorbereiten
@@ -47,7 +47,7 @@ und `CLOUDFLARE_ACCOUNT_ID` im Repository). Dann:
    «Setup worker: database_id, apiBase»). Die Zusammenfassung des Laufs zeigt
    die Adresse und die nächsten Schritte.
 4. Weiter mit Abschnitt 7 (erste Anmeldung). Abschnitt 6 (eigene Domain
-   `api.briefing.wicki.aero`) ist optional und kann jederzeit nachgeholt werden.
+   `api.ops.wicki.aero`) ist optional und kann jederzeit nachgeholt werden.
 
 Bricht ein Schritt ab, steht die Ursache rot im Protokoll des Laufs (meist ein
 fehlendes Secret oder ein Token ohne «D1 Edit»/«R2 Edit»). Der Workflow ist
@@ -113,17 +113,17 @@ Prüfung: `https://briefing-api.<account>.workers.dev/api/health` liefert
 ## 6 Eigene Domain für den Worker (optional)
 
 Dashboard → Workers & Pages → `briefing-api` → Settings → Domains & Routes →
-**Add → Custom domain** `api.briefing.wicki.aero`. Cloudflare legt den DNS-Eintrag
-und das Zertifikat an. Prüfung: `https://api.briefing.wicki.aero/api/health`.
+**Add → Custom domain** `api.ops.wicki.aero`. Cloudflare legt den DNS-Eintrag
+und das Zertifikat an. Prüfung: `https://api.ops.wicki.aero/api/health`.
 
-Danach in `js/config.js` `apiBase: 'https://api.briefing.wicki.aero'` eintragen
+Danach in `js/config.js` `apiBase: 'https://api.ops.wicki.aero'` eintragen
 (direkt auf GitHub: Datei öffnen → Stift → ändern → Commit changes). Ohne eigene
 Domain bleibt die vom Workflow eingetragene workers.dev-Adresse — das
 funktioniert genauso.
 
 ## 7 Erste Anmeldung
 
-1. https://briefing.wicki.aero öffnen — die Kopfzeile zeigt jetzt **nicht** mehr
+1. https://ops.wicki.aero öffnen — die Kopfzeile zeigt jetzt **nicht** mehr
    «Lokaler Modus».
 2. Nutzer `bwicki`, Kennwort `1234` (bei einer bestehenden Installation das
    bisherige Kennwort — es wird beim ersten Start in den Supermaster-Nutzer

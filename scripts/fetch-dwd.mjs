@@ -28,7 +28,7 @@ import { dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const OUT_DIR = 'data/dwd';
-const UA = 'Fahrtbriefing/1.0 (static site data fetcher, +https://briefing.wicki.aero)';
+const UA = 'Fahrtbriefing/1.0 (static site data fetcher, +https://ops.wicki.aero)';
 const TIMEOUT_MS = 25000;
 const BALLOON_MAX_AGE_H = Number(process.env.BALLOON_MAX_AGE_H || 4);
 

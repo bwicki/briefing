@@ -8,7 +8,7 @@ compatibility_date = "2025-09-01"
 workers_dev = true
 
 [vars]
-ALLOWED_ORIGINS = "https://ops.wicki.aero,https://briefing.wicki.aero,https://bwicki.github.io,http://localhost:8080,http://127.0.0.1:8080"
+ALLOWED_ORIGINS = "https://ops.wicki.aero,https://ops.wicki.aero,https://bwicki.github.io,http://localhost:8080,http://127.0.0.1:8080"
 APP_VERSION = "0.13.0"
 DATA_BASE = "https://ops.wicki.aero/data/dwd"
 APP_URL = "https://ops.wicki.aero"
@@ -24,5 +24,5 @@ bucket_name = "briefing-files"
 
 # Eigene Domain (nach dem ersten Deploy im Dashboard oder hier):
 # [[routes]]
-# pattern = "api.briefing.wicki.aero"
+# pattern = "api.ops.wicki.aero"
 # custom_domain = true

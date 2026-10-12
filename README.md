@@ -6,7 +6,7 @@ astronomisch), Tragkraft-/Treibstoff- bzw. Ballastrechnung, Tagesplanung mit
 Routing, Meteo- und Navigations-Panels mit Einfüge-Assistent, Briefingsicht zum
 Drucken (A4), persönliche Links für Mitarbeit oder Lesen. Zweisprachig DE/EN.
 
-**Live:** https://ops.wicki.aero (bis 12.10.2026 briefing.wicki.aero; Repository bis dahin `bwicki/briefing`) · **Repository:** https://github.com/bwicki/ops
+**Live:** https://ops.wicki.aero (bis 12.10.2026 briefing.wicki.aero, Repository `bwicki/briefing`) · **Repository:** https://github.com/bwicki/ops
 **Stack:** HTML/CSS/JS ohne Build-Schritt (GitHub Pages) + Cloudflare Worker mit D1
 (Datenbank) und R2 (Bilder). Gestaltung, Tokens und Bedienidiom aus GaforCast/StueveCast.
 
@@ -545,7 +545,7 @@ hinter Login — Deep-Link + Einfügen.
 
 ## Betrieb
 
-* **Frontend:** GitHub Pages aus `main` (Root). `CNAME` = `briefing.wicki.aero`.
+* **Frontend:** GitHub Pages aus `main` (Root). `CNAME` = `ops.wicki.aero`.
 * **Worker:** `worker/` (wrangler). Deployment automatisch über die GitHub Action
   `deploy-worker.yml` bei Änderungen unter `worker/` — Einrichtung in **SETUP.md**.
 * **Konfiguration:** `js/config.js` enthält die Worker-Adresse (`apiBase`).

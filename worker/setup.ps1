@@ -72,8 +72,8 @@ $url = ([regex]::Match($dep, 'https://[a-z0-9.-]+\.workers\.dev')).Value
 
 Step 'Nächste Schritte'
 Write-Host "1. Prüfen: $url/api/health"
-Write-Host '2. Eigene Domain: Dashboard → Workers & Pages → briefing-api → Settings → Domains & Routes → Custom domain api.briefing.wicki.aero'
+Write-Host '2. Eigene Domain: Dashboard → Workers & Pages → briefing-api → Settings → Domains & Routes → Custom domain api.ops.wicki.aero'
 Write-Host "3. GitHub → Settings → Secrets → Actions: CLOUDFLARE_ACCOUNT_ID = $accountId, CLOUDFLARE_API_TOKEN = (My Profile → API Tokens → «Edit Cloudflare Workers» + D1 Edit + R2 Edit)"
 Write-Host '4. GitHub → Settings → Actions → General → Workflow permissions: «Read and write» (für den DWD-Abruf-Workflow)'
 Write-Host '5. git add worker/wrangler.toml && git commit -m "database_id" && git push'
-Write-Host '6. https://briefing.wicki.aero öffnen, Kennwort 1234, dann Einstellungen → Experte → Kennwort ändern; Zugänge eintragen.'
+Write-Host '6. https://ops.wicki.aero öffnen, Kennwort 1234, dann Einstellungen → Experte → Kennwort ändern; Zugänge eintragen.'

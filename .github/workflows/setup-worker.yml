@@ -158,6 +158,6 @@ jobs:
             echo "Nächste Schritte: https://ops.wicki.aero öffnen (GitHub Pages braucht nach dem Commit 1–2 Minuten),"
             echo "Benutzer **bwicki**, Kennwort **1234**, dann Einstellungen → Experte → Kennwort ändern; Zugänge eintragen."
             echo
-            echo "Eigene Domain (optional): Cloudflare → Workers & Pages → briefing-api → Settings → Domains & Routes → Add → Custom domain api.briefing.wicki.aero;"
-            echo "danach in js/config.js apiBase auf https://api.briefing.wicki.aero stellen (Workflow mit «keep» erneut laufen lassen oder von Hand ändern)."
+            echo "Eigene Domain (optional): Cloudflare → Workers & Pages → briefing-api → Settings → Domains & Routes → Add → Custom domain api.ops.wicki.aero;"
+            echo "danach in js/config.js apiBase auf https://api.ops.wicki.aero stellen (Workflow mit «keep» erneut laufen lassen oder von Hand ändern)."
           } >> "$GITHUB_STEP_SUMMARY"

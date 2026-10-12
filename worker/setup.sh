@@ -50,9 +50,9 @@ URL=$(echo "$DEP" | grep -oE 'https://[a-z0-9.-]+\.workers\.dev' | head -1 || tr
 step 'Nächste Schritte'
 cat <<EOF
 1. Prüfen: ${URL:-<workers.dev-URL>}/api/health
-2. Eigene Domain: Dashboard → Workers & Pages → briefing-api → Settings → Domains & Routes → Custom domain api.briefing.wicki.aero
+2. Eigene Domain: Dashboard → Workers & Pages → briefing-api → Settings → Domains & Routes → Custom domain api.ops.wicki.aero
 3. GitHub → Settings → Secrets → Actions: CLOUDFLARE_ACCOUNT_ID = ${ACCOUNT_ID:-?}, CLOUDFLARE_API_TOKEN = (My Profile → API Tokens → «Edit Cloudflare Workers» + D1 Edit + R2 Edit)
 4. GitHub → Settings → Actions → General → Workflow permissions: «Read and write» (DWD-Abruf-Workflow)
 5. git add worker/wrangler.toml && git commit -m "database_id" && git push
-6. https://briefing.wicki.aero öffnen, Kennwort 1234 → Einstellungen → Experte → Kennwort ändern; Zugänge eintragen.
+6. https://ops.wicki.aero öffnen, Kennwort 1234 → Einstellungen → Experte → Kennwort ändern; Zugänge eintragen.
 EOF

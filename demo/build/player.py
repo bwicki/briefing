@@ -61,7 +61,7 @@ video{width:100%;max-width:100%;aspect-ratio:1366/768;background:#000;border-rad
     </div>
     <div class="chap"><h2>Kapitel</h2><ol id="chap"></ol></div>
   </div>
-  <p class="note">Aufgenommen in der App mit Beispieldaten (lokaler Modus, Wetter aus einem synthetischen Modell, Lufträume nicht geladen); Ballone und Startplätze aus den Stammdaten von Wicki Aero. Stimme: Sprachsynthese (Piper, Stimme «Thorsten»). Die App selbst: <a href="../">briefing.wicki.aero</a>.</p>
+  <p class="note">Aufgenommen in der App mit Beispieldaten (lokaler Modus, Wetter aus einem synthetischen Modell, Lufträume nicht geladen); Ballone und Startplätze aus den Stammdaten von Wicki Aero. Stimme: Sprachsynthese (Piper, Stimme «Thorsten»). Die App selbst: <a href="../">ops.wicki.aero</a>.</p>
 </div>
 <script>
 const DATA = __DATA__;

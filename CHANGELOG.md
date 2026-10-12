@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.13.0a — 2026-10-12
+
+* Umzug abgeschlossen: alle Verweise auf briefing.wicki.aero (SETUP, README, Setup-Skripte, Workflows, Demo, Konzepte, UA des DWD-Abrufs) auf ops.wicki.aero; alte Origin aus den erlaubten Worker-Origins entfernt. Kalender-UIDs (ICS) bleiben unverändert, damit bestehende Einträge erkannt werden.
+
 ## 0.13.0 — 2026-10-12 · Stufe 0: Beförderungsschein und Flugauftrag aus dem Briefing
 
 * **Passagierliste und Beförderungsschein** (`#/bs/<id>`, Menü «Mehr» in der Briefingsicht): Vorlage BHB ANH 511 v7

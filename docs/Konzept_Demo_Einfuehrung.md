@@ -21,7 +21,7 @@ Zwei Fassungen, weil sich Panels und Ablauf unterscheiden:
 - **Film (MP4, H.264/AAC, 1366 × 768)** mit synthetischer Sprecherstimme und Kapiteleinblendung unten links – läuft
   überall (Browser, Handy, PowerPoint, WhatsApp) ohne Abhängigkeiten.
 - **Player-Seite `demo/index.html`**: beide Filme, Kapitelliste zum Springen, Sprechtext als Untertitel, hell/dunkel.
-  Erreichbar unter `briefing.wicki.aero/demo/` und über das Menü ≡ → «Einführung (Filme)»; die Dropbox-Kopie läuft
+  Erreichbar unter `ops.wicki.aero/demo/` und über das Menü ≡ → «Einführung (Filme)»; die Dropbox-Kopie läuft
   auch direkt aus dem Ordner (Datei öffnen).
 - Keine Interaktion im Film (kein Mitklicken): Üben kann man in der App selbst – für die Gasfahrt mit dem
   «Beispiel»-Knopf des Werkzeugs, der im Film gezeigt wird.
