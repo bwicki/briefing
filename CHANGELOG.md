@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.12.17c — 2026-10-12 · B04: Météo-France geprüft, MeteoNetwork
+
+* **Météo-France** mit hinterlegtem Schlüssel live geprüft (Mülhausen 14, Annecy 13, Dijon 15 Stationen im Umkreis 60 km,
+  6-min-Werte, ≤ 8 min alt): Felder t/td (K), u, dd, ff, fxi10 (Böen nur an einigen Stationen), pmer, rr_per bestätigt.
+  Stationsnamen in Gross-/Kleinschreibung («Cran-Gevrier» statt «CRAN-GEVRIER»). `?diag=mf` liefert den Rohdatensatz der
+  ersten Station (Fehlersuche).
+* **Italien:** Amateurstationen des MeteoNetwork (Meteo-Hub, CC BY 4.0) zusätzlich, als «MeteoNetwork (Amateur)» kursiv und
+  gedämpft dargestellt; höchstens 30 je Abruf, sie verdrängen keine amtlichen Stationen (Entscheid 12.10.2026).
+
 ## 0.12.17b — 2026-10-12 · Fahrtprofil: Übergabe an die O₂-Planung
 
 * **Panel A «Fahrtprofil» (Gasfahrt):** neuer Knopf **O₂-Planung** neben «Werkzeug öffnen». Er öffnet die

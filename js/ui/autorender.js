@@ -636,7 +636,7 @@ export function renderObs(snap, b) {
   const refMs = ageRefMs(b);
   const age = (iso) => { if (!iso) return ''; const m = Math.max(0, Math.round((refMs - new Date(iso)) / 60000)); return m < 90 ? `${m} min` : `${Math.round(m / 60)} h`; };
   const windCls = (x) => ((x.kt || 0) >= 14 || (x.gustKt || 0) >= 20 ? 'bad' : '');
-  const rows = st.map((x) => h('tr', [
+  const rows = st.map((x) => h('tr', { class: x.amateur ? 'amateur' : '' }, [   // 0.12.17c: Amateurstationen (MeteoNetwork) kursiv/gedämpft
     h('td', [h('b', x.name), h('span.muted.small', ` ${x.src}`)]),
     h('td.mono', [dirArrow(b, x.lat, x.lon), ` ${x.km} km`]),
     h('td.mono', x.time ? `${x.time.slice(11, 16)}Z (${age(x.time)})` : '–'),

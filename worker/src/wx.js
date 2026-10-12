@@ -452,7 +452,7 @@ async function regionalStations(ctx, env, decrypt, lat, lon, km, push, errors, d
   })().catch((e) => errors.push('Südtirol: ' + e.message)));
   // Italien: Meteo-Hub (Agenzia ItaliaMeteo/CINECA) – Beobachtungskarte-API ohne Anmeldung, CC BY 4.0: regionale Netze
   // (DPCN Veneto/Lombardia/Piemonte/Liguria/…, Open-Trentino, SIR Toscana, ARPA FVG, Emilia-Romagna); je Grösse ein Abruf,
-  // letzter Wert je Station; Amateurnetz «mnw» (MeteoNetwork) ausgeschlossen. 0.12.17a (ersetzt Meteotrentino/ARPA-Socrata)
+  // letzter Wert je Station; Amateurnetz «mnw» (MeteoNetwork) gekennzeichnet (0.12.17c). 0.12.17a (ersetzt Meteotrentino/ARPA-Socrata)
   if (hits(REGIONS.it)) tasks.push((async () => {
     const f = (d) => d.toISOString().slice(0, 16).replace('T', ' ');
     const from = f(new Date(Date.now() - 100 * 60000)), to = f(new Date(Date.now() + 10 * 60000));
@@ -463,7 +463,7 @@ async function regionalStations(ctx, env, decrypt, lat, lon, km, push, errors, d
     await Promise.all(Object.keys(VARS).map(async (v) => {
       const j = await (await get(`https://meteohub.agenziaitaliameteo.it/api/observations?q=${encodeURIComponent(`reftime: >=${from},<=${to};product:${v};license:CCBY_COMPLIANT${TR[v] || ''}`)}&reliabilityCheck=true&last=true&${bb}`, {}, 15000)).json();
       for (const s of j.data || []) {
-        const net = s.stat?.net; if (!net || net === 'mnw' || (net === 'dpcn-bolzanoboze' && hits(REGIONS.st)) || s.stat.lat == null) continue;   // Südtirol direkt (10-min, QNH)
+        const net = s.stat?.net; if (!net || (net === 'dpcn-bolzanoboze' && hits(REGIONS.st)) || s.stat.lat == null) continue;   // Südtirol direkt (10-min, QNH); «mnw» = Amateurnetz, gekennzeichnet (Entscheid 12.10.2026)
         const vals = (s.prod?.[0]?.val || []).filter((x) => x.val != null && x.rel !== 0); if (!vals.length) continue;
         const last = vals[vals.length - 1]; const ms = Date.parse(last.ref + 'Z'); if (!fresh(ms)) continue;
         const key = `${net}/${s.stat.lat.toFixed(4)},${s.stat.lon.toFixed(4)}`;
@@ -471,12 +471,12 @@ async function regionalStations(ctx, env, decrypt, lat, lon, km, push, errors, d
         o.v[VARS[v]] = last.val; o.ms = Math.max(o.ms, ms);
       }
     }));
-    const REG = { 'open-trentino': 'Trentino', 'sir-toscana': 'Toscana', arpafvg: 'Friuli VG', agrmet: 'Emilia-Romagna', locali: 'Emilia-Romagna', simnbo: 'Emilia-Romagna', simnpr: 'Emilia-Romagna', spdsra: 'Emilia-Romagna', urbane: 'Emilia-Romagna', claster: 'Emilia-Romagna', 'dpcn-bolzanoboze': 'Südtirol' };
+    const REG = { mnw: 'MeteoNetwork (Amateur)', 'open-trentino': 'Trentino', 'sir-toscana': 'Toscana', arpafvg: 'Friuli VG', agrmet: 'Emilia-Romagna', locali: 'Emilia-Romagna', simnbo: 'Emilia-Romagna', simnpr: 'Emilia-Romagna', spdsra: 'Emilia-Romagna', urbane: 'Emilia-Romagna', claster: 'Emilia-Romagna', 'dpcn-bolzanoboze': 'Südtirol' };
     const region = (net) => REG[net] || (net.startsWith('dpcn-') ? net.slice(5).replace(/^./, (c) => c.toUpperCase()) : net);
     for (const o of Object.values(st)) {
       if (o.v.tt == null && o.v.ff == null) continue;
       const tempC = o.v.tt != null ? Math.round((o.v.tt - 273.15) * 10) / 10 : null;
-      push({ id: `it-${o.net}-${o.lat.toFixed(3)},${o.lon.toFixed(3)}`, name: (o.name || region(o.net)).replace(/^[A-Z]{1,2}\d{3,5}\s*-\s*/, '').replace(/^SM\s+/, '').replace(/\s+/g, ' ').trim(), lat: o.lat, lon: o.lon, time: new Date(o.ms).toISOString(), dir: o.v.dd != null ? Math.round(o.v.dd) : null, kt: o.v.ff != null ? Math.round(o.v.ff * MS_KT * 10) / 10 : null, gustKt: o.v.fx != null ? Math.round(o.v.fx * MS_KT) : null, tempC, dewC: DEW(tempC, o.v.rh), rh: o.v.rh != null ? Math.round(o.v.rh) : null, qnh: null, precipMm: o.v.rr != null ? Math.round(o.v.rr * 10) / 10 : null, src: `Meteo-Hub ${region(o.net)}` });
+      push({ id: `it-${o.net}-${o.lat.toFixed(3)},${o.lon.toFixed(3)}`, name: (o.name || region(o.net)).replace(/^[A-Z]{1,2}\d{3,5}\s*-\s*/, '').replace(/^SM\s+/, '').replace(/\s+/g, ' ').trim(), lat: o.lat, lon: o.lon, time: new Date(o.ms).toISOString(), dir: o.v.dd != null ? Math.round(o.v.dd) : null, kt: o.v.ff != null ? Math.round(o.v.ff * MS_KT * 10) / 10 : null, gustKt: o.v.fx != null ? Math.round(o.v.fx * MS_KT) : null, tempC, dewC: DEW(tempC, o.v.rh), rh: o.v.rh != null ? Math.round(o.v.rh) : null, qnh: null, precipMm: o.v.rr != null ? Math.round(o.v.rr * 10) / 10 : null, src: o.net === 'mnw' ? 'MeteoNetwork (Amateur)' : `Meteo-Hub ${region(o.net)}`, amateur: o.net === 'mnw' || undefined });
     }
   })().catch((e) => errors.push('Meteo-Hub: ' + e.message)));
   // Frankreich: Météo-France «Données d'observation» (Portail API, Schlüssel «meteofrance_key» in den Zugängen) – 6-min-Werte je Station, die 15 nächsten
@@ -493,7 +493,7 @@ async function regionalStations(ctx, env, decrypt, lat, lon, km, push, errors, d
       if (diag && !diag.length) diag.push({ src: 'mf', station: st, keys: Object.keys(o), raw: o });
       const ms = o.validity_time ? Date.parse(o.validity_time) : null; if (!fresh(ms)) continue;
       const k = (x) => (x == null ? null : +x); const tK = k(o.t); const tempC = tK != null ? (tK > 100 ? Math.round((tK - 273.15) * 10) / 10 : tK) : null; const tdK = k(o.td); const dewC = tdK != null ? (tdK > 100 ? Math.round((tdK - 273.15) * 10) / 10 : tdK) : null;
-      push({ id: `fr-${st.id}`, name: st.name, lat: st.lat, lon: st.lon, time: new Date(ms).toISOString(), dir: k(o.dd) != null ? Math.round(k(o.dd)) : null, kt: k(o.ff) != null ? Math.round(k(o.ff) * MS_KT * 10) / 10 : null, gustKt: k(o.fxi10) != null ? Math.round(k(o.fxi10) * MS_KT) : null, tempC, dewC, rh: k(o.u) != null ? Math.round(k(o.u)) : null, qnh: k(o.pmer) != null ? Math.round(k(o.pmer) > 2000 ? k(o.pmer) / 100 : k(o.pmer)) : null, precipMm: k(o.rr_per), src: 'Météo-France' });
+      push({ id: `fr-${st.id}`, name: String(st.name || '').replace(/_/g, ' ').toLowerCase().replace(/(^|[\s\-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/\bSapc\b/, 'SAPC'), lat: st.lat, lon: st.lon, time: new Date(ms).toISOString(), dir: k(o.dd) != null ? Math.round(k(o.dd)) : null, kt: k(o.ff) != null ? Math.round(k(o.ff) * MS_KT * 10) / 10 : null, gustKt: k(o.fxi10) != null ? Math.round(k(o.fxi10) * MS_KT) : null, tempC, dewC, rh: k(o.u) != null ? Math.round(k(o.u)) : null, qnh: k(o.pmer) != null ? Math.round(k(o.pmer) > 2000 ? k(o.pmer) / 100 : k(o.pmer)) : null, precipMm: k(o.rr_per), src: 'Météo-France' });
     }
   })().catch((e) => errors.push('Météo-France: ' + e.message)));
   await Promise.all(tasks);
@@ -502,7 +502,7 @@ async function stations(ctx, q, env, decrypt) {
   if (q.get('lat') == null || q.get('lon') == null) return err('lat/lon');
   const lat = +q.get('lat'), lon = +q.get('lon'), km = Math.min(150, Math.max(10, +q.get('km') || 50));
   if (!isFinite(lat) || !isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return err('lat/lon');
-  const diag = q.get('diag') === 'mf' ? [] : null;   // 0.12.17b: Rohdatensatz der ersten Météo-France-Station (Felder prüfen), ohne Cache
+  const diag = q.get('diag') === 'mf' ? [] : null;   // 0.12.17c: Rohdatensatz der ersten Météo-France-Station (Felder prüfen), ohne Cache
   const data = await cached(ctx, `stations/${lat.toFixed(2)},${lon.toFixed(2)},${km}${diag ? ',diag' + Date.now() : ''}`, 600, async () => {
     const out = [], errors = [];
     const push = (st) => { if (st.lat == null || (st.tempC == null && st.dir == null && st.kt == null)) return; st.km = Math.round(distKm(lat, lon, st.lat, st.lon) * 10) / 10; if (st.km <= km) out.push(st); };
@@ -559,7 +559,8 @@ async function stations(ctx, q, env, decrypt) {
       }
     } catch (e) { errors.push('MeteoGate: ' + e.message); }
     out.sort((a, b) => a.km - b.km);
-    return { stations: out.slice(0, 80), errors: [...new Set(errors)], generated: new Date().toISOString(), ...(diag ? { diag } : {}) };   // höchstens 80 nächste (dichte Netze wie Südtirol)
+    const official = out.filter((x) => !x.amateur).slice(0, 80), amateur = out.filter((x) => x.amateur).slice(0, 30);   // Amateurstationen zusätzlich (höchstens 30), verdrängen keine amtlichen
+    return { stations: [...official, ...amateur].sort((a, b) => a.km - b.km), errors: [...new Set(errors)], generated: new Date().toISOString(), ...(diag ? { diag } : {}) };   // höchstens 80 nächste (dichte Netze wie Südtirol)
   });
   return json(data);
 }
