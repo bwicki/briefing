@@ -1,90 +1,96 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-095
-FBEU40 EDZM 120600
+786
+FBEU40 EDZM 121200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 12.10.2026, 06.00 UTC bis 13.10.2026, 03.00 UTC
+gültig vom 12.10.2026, 12.00 UTC bis 13.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
 Wetterlage und -entwicklung:
-Hochdruckeinfluss ist wetterbestimmend, der die feucht-kühle
-Meeresluft zunehmend abtrocknet. Anfangs hält sich gebietsweise eine
-feuchte bodennahe Schicht, die tagsüber wieder abtrocknet.
+Hochdruckeinfluss ist zunächst wetterbestimmend. Die Luftmasse ist
+kühl und überwiegend trocken. Nachts bildet sich gebietsweise eine
+feuchte bodennahe Schicht, die bis Mittwochvormittag abgetrocknet
+wird. Am Dienstag nähert sich im Tagesverlauf die Warmfront eines
+Tiefs in der Norwegischen See. Sie lenkt milde, in mittleren und
+höheren Schichten auch feuchtere Luft nach Süddeutschland.
 
 Wettergeschehen:
-Verbreitet ist es wolkenlos. Gebietsweise haben sich Dunst- und
-Nebelfelder gebildet; besonders entlang von Flüssen und Seen. Am
-Alpenrand verbreitet, südlich der Donau ansonsten nur vereinzelt
-BKN/OVC SC/AC mit Untergrenze in 4000-5000 FT AMSL und Obergrenze um
-FL090. Daraus noch vereinzelt geringer Sprühregen möglich.
+Es zeigen sich FEW/SCT, vom Frankenwald bis zum Oberpfälzer Wald eher
+BKN CU. Die Basis liegt zwischen 3500-4500, an den Alpen um 6000 FT
+AMSL. Im weiteren Nachmittagsverlauf breiten sich die CU zu dünnen
+FEW/SCT, in der Osthälfte eher BKN SC aus. Die Untergrenzen variieren
+dann zwischen 4500-6000 FT AMSL, Obergrenze um FL080. Trocken.
 
-Im Laufe des Morgens Auflösung der Dunst- und Nebelfelder. Nur in
-Niederbayern halten sie sich evtl. bis in den Vormittag hinein, ehe
-sie sich auch dort auflösen werden.
-Die SC/AC-Bewölkung am Alpenrand trocknet derweil zunehmend ab und
-geht in BKN CU mit Untergrenze zunächst bei 3500-4000 FT AMSL über;
-die TOPs reichen bis FL080. Bis zum Mittag hebt die Basis auf
-FL050-060 an.
+Abends löst sich die CU/SC Bewölkung weitestgehend auf. Nur ganz
+vereinzelt bleiben dünne SC Schollen um FL060 zurück welche sich
+eingangs der Nacht auch auflösen. Anschließend ist es in der Nacht
+zum Dienstag verbreitet wolkenlos.
+Zum Ende der ersten Nachthälfte bilden sich erste flache Dunst- oder
+Nebelfelder, zunächst bevorzugt in Gewässernähe. Diese breiten sich
+in der zweiten Nachthälfte aus und wachsen zu größeren Nebelgebieten
+zusammen. Gebietsweise ist der Nebel ausgangs der Nacht und am
+Dienstagmorgen gefrierend. Schwerpunkt des (gefrierenden) Nebels wird
+entlang der Donau, in Teilen Frankens sowie in Nieder- und Oberbayern
+sein. Bis Dienstagvormittag löst sich der Nebel verbreitet auf.
+Lediglich an der Niederbayerischen Donau kann es bis zum frühen
+Mittag dauern.
 
-Vormittags auch in den übrigen Gebieten gebietsweise Bildung von
-FEW/SCT CU. Besonders ab den Mittagsstunden kommt es mitunter zu
-dünnen Ausbreitungen an der Absinkinversion bei FL080. Es bleibt
-niederschlagsfrei.
-
-Abends löst sich die Quellbewölkung wieder auf. Anschließend ist es
-verbreitet wolkenlos. Im Laufe der ersten Nachthälfte bilden sich
-erneut erste flache Dunst- oder Nebelfelder, wieder bevorzugt in
-Gewässernähe. Diese breiten sich in der zweiten Nachthälfte aus.
-Abseits ebendieser ist und bleibt es wolkenlos.
+Abseits der Nebelgebiete ist es Dienstagmorgen wolkenfrei. Lediglich
+in der Westhälfte ziehen SCT/BKN CI oberhalb FL220 auf. Darunter
+driften am Vormittag rasch dichter werdende BKN AC/AS Wolken mit
+Untergrenzen zwischen FL100-130 rein, Obergrenze bis FL160. Bis zum
+Mittag kommen die AC/AS/CI Wolken etwa bis auf eine Linie
+Coburg-Ingolstadt-Zugspitze voran.
 
 Sichtweite:
-15-30 km. Im Dunst 4-8 km, im Nebel unter 1 km. Im Laufe des Morgens
-abseits etwaiger Dunst- und Nebelfelder bzw. nach deren Auflösung
-Sichtbesserung auf 30-60 km.
+30-50 km. Nachts bei Dunst 4-8 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  09 UTC  |  21 UTC  |
-1500FT | 210/05KT  08C | 130/05KT  11C |
-2000FT | 240/05KT  07C | 140/05KT  11C |
-3000FT | 270/05KT  05C | 210/05KT  07C |
-5000FT | 280/10KT  02C | 270/10KT  03C |
-FL100  | 320/15KT M04C | 320/20KT M01C |
+AMSL  |  15 UTC  |  06 UTC  |
+1500FT | 340/05KT  12C | 160/05KT  09C |
+2000FT | 330/05KT  11C | 180/10KT  09C |
+3000FT | 310/05KT  07C | 240/10KT  07C |
+5000FT | 270/10KT  03C | 270/10KT  04C |
+FL100  | 330/20KT M03C | 320/15KT  01C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  09 UTC  |  21 UTC  |
-2000FT | 210/05KT  08C | 140/05KT  11C |
-3000FT | 260/05KT  06C | 170/05KT  08C |
-5000FT | 280/10KT  02C | 310/05KT  03C |
-FL100  | 330/10KT M05C | 320/15KT M02C |
+AMSL  |  15 UTC  |  06 UTC  |
+2000FT | 330/05KT  12C | 180/05KT  08C |
+3000FT | 320/05KT  08C | 200/05KT  08C |
+5000FT | 290/05KT  03C | 280/05KT  04C |
+FL100  | 310/20KT M03C | 330/20KT  00C |
 
 Turbulenz:
-Es wird keine mäßige oder starke Turbulenz erwartet.
+Über den Alpen aufkommende mäßige Turbulenz unterhalb FL140, nachts
+intensivierend. Am Dienstag gebietsweise auch stark.
 
 Vereisung:
-Anfangs nur südlich der Donau und an den Alpen in stärkerer
-SC/AC-Bewölkung stellenweise mäßig zwischen FL060 und FL090. Morgens
-rasch abklingend.
+Es wird zunächst keine mäßige oder starke Vereisung erwartet. Erst am
+Dienstagvormittag in der dichter werdenden AC/AS Bewölkung teils
+mäßig zwischen FZLVL und FL150-160.
 
 Nullgradgrenze:
-Zwischen 4500 FT AMSL im Hofer Land und FL070 am Bodensee. Im
-Tagesverlauf aus Südwesten Anstieg auf FL055 im Hofer Land und
-FL090-100 in Oberschwaben. Nachts auch im Nordosten Anstieg auf
-FL095, im Südwesten auf FL110.
+Zwischen 5500-6000 FT AMSL in der Osthälfte und FL095-100 nach
+Westen. In der Nacht aus Südwesten Anstieg auf FL085-110, mit den
+tieferen Werten im Osten. Gebietsweise ausgangs der Nacht auch FZLVL
+am Boden.
+Am Dienstagvormittag zwischen FL090-105.
 
 Inversionen:
-Anfangs verbreitet Bodeninversion mit Obergrenze in 2000-2500 FT
-AMSL. Diese löst sich morgens auf und bildet sich in der Nacht zum
-Dienstag neu. Darüber Absinkinversion zwischen FL080 und FL090-100.
+Absinkinversion zwischen FL065-080. Diese wird ab Dienstagmorgen von
+Westen abgebaut. Sonst in der Nacht Bodeninversion mit Obergrenze in
+1800-2500 FT AMSL. Diese wird Dienstagvormittag abgebaut.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Nürnberg  05.00 | 05.32 | 16.32 | 17.03
-München  04.56 | 05.28 | 16.30 | 17.01
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Nürnberg  16.32 | 17.03 | 05.02 | 05.33
+München  16.30 | 17.01 | 04.58 | 05.29
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Luftfahrtberatungszentrale München/pv
+Luftfahrtberatungszentrale München/RE
