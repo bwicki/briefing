@@ -118,7 +118,7 @@ export function faSheet(b, ctx) {
   const pax = b.persons.pax || [];
   const gng = goNoGo(b, S);
   const countries = [...routeCountries(b)].filter((c) => c !== b.site.country);
-  const landing = b.landing?.name ? ((b.intent.direction || '').startsWith(b.landing.name) ? b.intent.direction : `${b.landing.name}${b.intent.direction ? ' · ' + b.intent.direction : ''}`) : b.intent.direction || '–';
+  const landing = b.landing?.name ? ((b.intent.direction || '').includes(b.landing.name) ? b.intent.direction : `${b.landing.name}${b.intent.direction ? ' · ' + b.intent.direction : ''}`) : b.intent.direction || '–';
   const endMs = b.time.startMs + (b.intent.durationMin || 0) * 60000;
   const fee = b.flight.fee || {};
   const mp = (() => { try { return massPerf(b, S); } catch { return null; } })();
