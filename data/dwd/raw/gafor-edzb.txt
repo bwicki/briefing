@@ -1,99 +1,89 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-774
-FBEU40 EDZB 121200
+868
+FBEU40 EDZB 121800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 12.10.2026, 12.00 UTC bis 13.10.2026, 09.00 UTC
+gültig vom 12.10.2026, 18.00 UTC bis 13.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Der Vorhersagebereich befindet sich heute unter zunehmendem
-Hochdruckeinfluss. Eine entlang und südwestlich der Elbe liegende
-schwache Okklusion schwächt sich dadurch weiter ab und löst sich bis
-zum Abend auf. Sie hinterlässt aber eine feuchte Grundschicht.
+Nach kurzem Zwischenhocheinfluss greift am Dienstagvormittag von
+Westen kommend die Warmfront eins Tiefs mit Kern über der Nordsee mit
+wieder etwas wärmerer, aber recht feuchter Luft auf den
+Vorhersagebereich über.
 
 Wettergeschehen:
-Heute Nachmittag entlang der Elbe und südwestlich davon bis an den
-Thüringer Wald heran verbreitet BKN CU/TCU mit Untergrenze in 3000
-bis 4000 FT AMSL und Obergrenze in etwa FL100. Daraus örtlich leichte
-Regenschauer. Diese Bewölkung hebt sich im Nachmittagsverlauf nur
-geringfügig an. Durch den zunehmenden Hochdruckeinfluss sinkt aber
-die Obergrenze bis zum Abend auf FL070 bis FL080 ab. Dadurch schwächt
-sich die Schauertätigkeit ab, kommt aber erst am späteren Abend
-vollständig zum Erliegen. Durch Anstau sind die Hochlagen des
-Erzgebirges und anfangs auch die des Harzes in Wolken oder von einer
-Ceiling in 100 bis 500 Fuß GND überdeckt.
- Nördlich davon, in einem Streifen von der Altmark zur Niederlausitz
-und nach Norden hin bis zu einer Linie von Wismar zur Uckermark
-FEW/SCT CU in etwa 3000 FT AMSL und Obergrenze in 4000 bis 5000 FT
-AMSL. Hier viel Sonnenschein und kein Niederschlag.
- Nördlich dieses Streifens und auch über der Ostsee SCT/BKN CU/TCU in
-3000 bis 4000 FT AMSL und Obergrenze in FL050 bis FL080. Auch hier
-einzelne leichte Schauer, die aber bis zum Abend nach Osten abziehen
-und sich auflösen.
-
- In der Nacht in der Altmark, Brandenburg und Mecklenburg-Vorpommern
-gebietsweise SCT/BKN ST in 100 bis 800 FT AGL und Obergrenze in 2000
-bis 3000 FT AMSL, gebietsweise aber auch wolkenlos. Auch in
-Südthüringen überwiegend wolkenlos. Bei länger anhaltenden
-Auflockerungen bilden sich flache Nebelfelder. Niederschlagsfrei.
-Im restlichen Thüringen, Sachsen-Anhalt und in Sachsen meist SCT/BKN
-SC zwischen 2000 und 5000 FT AMSL und meist niederschlagsfrei.
-Gipfellagen der Mittelgebirge in Wolken, im Tiefland nur vereinzelt
-flacher Nebel.
-
-Am Vormittag allgemein Übergang zu SCT SC/CU in 2000 bis 3000 FT
-AMSL. Kein Niederschlag.
+Eingangs der Nacht von Rügen bis nach Usedom, sowie in Ostsachsen
+vereinzelt BKN TCU in 3000 FT AMSL und Tops bei FL110 und letzte
+Schauer. Sonst SCT CU/SC in 3000 FT AMSL mit Tops bei FL060 und
+niederschlagsfrei.
+Im Verlauf der ersten Nachthälfte allgemein Übergang zu FEW AC um
+FL060 und Tops bei FL070.
+In der zweiten Nachthälfte weitgehend wolkenlos, aber gebietsweise
+Nebelbildung.
+Am Dienstagvormittag teils nur zögernde Nebelauflösung, vorübergehend
+auch Hochnebel BKN ST in 200 bis 500 FT AGL.
+Vom westlichen Mecklenburg-Vorpommern bis nach Thüringen im
+Vormittagsverlauf Aufzug von BKN/OVC AS oberhalb FL100. Tops bei
+FL180, bis zum Mittag bis zu einer Linie Rostock - Plauen
+vorankommend.
+Gegen Mittag im Westen einsetzender Regen bei OVC SC/AS/AS auf 3000
+FT AMSL sinkend. Obergrenze bei FL200.
+Am Nachmittag bis in die östlichen Regionen Verlagerung der frontalen
+Bewölkung und von Rügen bis ins Vogtland in einem ca. 100 km breitem
+Streifen zeitweise Regen. Von Westen am Nachmittag wieder
+nachlassender Regen, aber weiterhin BKN/OVC ST/SC/AS/AC in teils nur
+1500 bis 2000 FT AMSL und Tops bei FL140. Kammlagen teils in Wolken.
 
 Sichtweite:
-30 bis über 60 km. Unter tieferer ST-Bewölkung oder im Regenschauer
-örtlich auf 4 bis 10 km reduziert, bei Nebel unter 1 km.
+Anfangs 30 bis 50 km, nachts in den unteren 500 bis 800 FT AGL Nebel
+mit 0,1 bis 1 km, am Vormittag Übergang zu 5 bis 15 km, im Regen am
+Nachmittag 2 bis 6 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  15 UTC  |  06 UTC  |
- 500FT | 310/10KT  12C | 150/10KT  07C |
-1000FT | 310/10KT  10C | 160/10KT  09C |
-1500FT | 310/10KT  08C | 170/10KT  08C |
-2000FT | 310/10KT  07C | 180/10KT  07C |
-3000FT | 330/15KT  04C | 190/10KT  05C |
-5000FT | 330/15KT  01C | 220/05KT  02C |
-FL100  | 320/20KT M08C | 340/20KT M01C |
+AMSL  |  21 UTC  |  09 UTC  |
+ 500FT | 360/05KT  09C | 150/10KT  09C |
+1000FT | 360/05KT  09C | 160/20KT  09C |
+1500FT | 340/05KT  07C | 170/20KT  08C |
+2000FT | 330/05KT  07C | 180/20KT  08C |
+3000FT | 320/10KT  04C | 190/15KT  06C |
+5000FT | 310/10KT  01C | 190/10KT  03C |
+FL100  | 330/20KT M04C | 320/15KT  00C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 330/05KT  11C | 170/10KT  10C |
-1500FT | 320/05KT  10C | 200/10KT  10C |
-2000FT | 300/05KT  09C | 200/10KT  09C |
-3000FT | 300/10KT  06C | 200/10KT  06C |
-5000FT | 290/10KT  02C | 200/05KT  02C |
-FL100  | 320/20KT M07C | 330/20KT M01C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 160/05KT  11C | 180/05KT  10C |
+1500FT | 290/05KT  10C | 200/10KT  11C |
+2000FT | 290/05KT  09C | 200/10KT  10C |
+3000FT | 280/05KT  06C | 210/10KT  06C |
+5000FT | 290/05KT  01C | 250/10KT  04C |
+FL100  | 330/20KT M03C | 330/20KT  01C |
 
 Turbulenz:
 Nicht signifikant.
 
 Vereisung:
-Mäßig bis stark in TCU/CB zwischen FL050 und FL100. Sonst keine.
+Anfangs in TCU mäßig bis stark zwischen FL055 und FL110, nachts und
+am Morgen keine. In der am Dienstag von Westen aufziehenden frontalen
+Bewölkung mäßig von FL110 bis FL190.
 
 Nullgradgrenze:
-Heute in etwa FL050. Über Nacht von Westen her langsam auf FL100
-ansteigend. Bei längeren Auflockerungen am Morgen vorübergehend
-leichter Frost am Boden.
+Anfangs bei FL055, bis zum Morgen im Osten auf FL065, im Westen auf
+FL110 steigend, am Dienstagnachmittag allgemein um FL110
 
 Inversionen:
-Absinkinversion um FL070, Über Nacht auf etwa FL050 absinkend. In der
-Nacht zum Dienstag Ausbildung einer Bodeninversion unterhalb 500 bis
-1000 FT AGL.
+Nachts Bodeninversion bis 800 FT AGL, am Vormittag zögernd auflösend
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Berlin  16.18 | 16.52  | 04.53 | 05.27
-Leipzig  16.25 | 16.57  | 04.58 | 05.31
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Berlin  04.53 | 05.27 | 16.16 | 16.50
+Leipzig  04.58 | 05.31 | 16.22 | 16.56
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 13.10.2026 um
+02.00/05.00 UTC
 
-Luftfahrtberatungszentrale Berlin/Oe
+Luftfahrtberatungszentrale Berlin/Hn
