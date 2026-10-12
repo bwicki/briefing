@@ -13,6 +13,7 @@
   brauchen zusammen ≤ 12.
 * **Météo-France:** API-Schlüssel (JWT) in Kopfzeile `apikey`; alternativ die Application-ID des Portals → OAuth2-Token (50 min gecacht).
 * MeteoGate-Namen ohne WMO-Zusatz («Milano / Linate (16080 0)» → «Milano / Linate»).
+* **SwissMetNet:** vollständige Stationsliste (161 statt 100 eingebaute; neu u. a. Zürich/Fluntern, Zürich/Affoltern) von api.existenz.ch, täglich erneuert.
 
 ## 0.12.17 — 2026-10-11 · B04: regionale Stationsnetze Österreich, Italien, Frankreich
 

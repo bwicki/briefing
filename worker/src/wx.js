@@ -505,7 +505,9 @@ async function stations(ctx, q, env, decrypt) {
     const out = [], errors = [];
     const push = (st) => { if (st.lat == null || (st.tempC == null && st.dir == null && st.kt == null)) return; st.km = Math.round(distKm(lat, lon, st.lat, st.lon) * 10) / 10; if (st.km <= km) out.push(st); };
     // CH
-    const chNear = SMN.map(([code, name, la, lo]) => ({ code, name, lat: la, lon: lo, d: distKm(lat, lon, la, lo) })).filter((s) => s.d <= km).sort((a, b) => a.d - b.d).slice(0, 40);
+    // 0.12.17a: vollständige SwissMetNet-Liste (161 Stationen, z. B. Zürich/Fluntern, Affoltern) von api.existenz.ch, 24 h gecacht; Rückfall: eingebaute Tabelle (100)
+    const smnList = await cached(ctx, 'stations/smn-locations', 86400, async () => { const j = await (await get(`https://api.existenz.ch/apiv1/smn/locations?app=fahrtbriefing&version=${encodeURIComponent(UA.split(' ')[0])}`, {}, 15000)).json(); const out = Object.values(j.payload || {}).map((x) => [x.details?.id || x.name, x.details?.name || x.name, +x.details?.lat, +x.details?.lon]).filter((x) => x[0] && isFinite(x[2]) && isFinite(x[3])); if (out.length < 100) throw new Error('SMN-Liste unvollständig'); return out; }).catch(() => SMN);
+    const chNear = smnList.map(([code, name, la, lo]) => ({ code, name, lat: la, lon: lo, d: distKm(lat, lon, la, lo) })).filter((s) => s.d <= km).sort((a, b) => a.d - b.d).slice(0, 40);
     if (chNear.length) {
       try {
         const j = await (await get(`https://api.existenz.ch/apiv1/smn/latest?locations=${chNear.map((s) => s.code).join(',')}&parameters=dd,ff,ffx,tt,rh,pp,rr&app=fahrtbriefing&version=${encodeURIComponent(UA.split(' ')[0])}`, {}, 15000)).json();
