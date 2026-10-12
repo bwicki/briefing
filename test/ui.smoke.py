@@ -419,11 +419,23 @@ def run_gas(name):
             pg.wait_for_timeout(500)
             if pg.query_selector('#panel-A\\.profile svg.pf-svg'): break
         assert pg.query_selector('#panel-A\\.profile svg.pf-svg') is not None, 'Fahrtprofil: Grafik nach «Daten aufbereiten»: ' + pg.inner_text('#panel-A\\.profile .row-actions')
-        # 0.12.17b: Übergabe des Höhenprofils an die O2-Planung (Link mit Höhenstufen in ft und Dauer in h)
+        # 0.12.17b/d: Übergabe des Höhenprofils an die O2-Planung (Link mit Höhenstufen in ft, Dauer in h und Kurzcode)
         o2 = pg.get_attribute('#panel-A\\.profile .row-actions a.btn:has-text("O₂-Planung")', 'href') or ''
         import base64 as _b64
         o2d = json.loads(_b64.urlsafe_b64decode(o2.split('#i.')[1] + '==')) if '#i.' in o2 else {}
         assert o2.startswith('https://o2.wicki.aero/#i.') and o2d.get('s') == 1 and len(o2d.get('l', [])) >= 2 and all(a >= 0 and d > 0 for a, d in o2d['l']), 'O2-Planung: Übergabe-Link im Panel Fahrtprofil: ' + o2[:80]
+        o2id = o2d.get('c', '')
+        assert re.fullmatch(r'[A-HJKMNP-Z2-9]{6}', o2id), 'O2-Planung: das Briefing vergibt den Kurzcode: ' + o2id
+        assert pg.query_selector('#panel-A\\.profile .pf-o2line') is None, 'vor der Übergabe keine Link-Zeile'
+        # Klick ohne neuen Tab: Vorgabeaktion unterbinden, die Behandlung der App läuft trotzdem
+        pg.evaluate("() => { const a = [...document.querySelectorAll('[id=\"panel-A.profile\"] .row-actions a.btn')].find((x) => x.textContent.includes('O₂-Planung')); a.addEventListener('click', (e) => e.preventDefault(), { once: true }); a.click(); }")
+        pg.wait_for_timeout(500)
+        ra = pg.inner_text('#panel-A\\.profile .row-actions')
+        assert 'O₂-Planung öffnen' in ra and 'Profil neu übergeben' in ra, 'nach der Übergabe: «öffnen» und «neu übergeben»: ' + ra
+        assert pg.get_attribute('#panel-A\\.profile .row-actions a.btn:has-text("O₂-Planung öffnen")', 'href') == 'https://o2.wicki.aero/#' + o2id, 'Link auf die Berechnung'
+        re2 = json.loads(_b64.urlsafe_b64decode(pg.get_attribute('#panel-A\\.profile .row-actions a.btn:has-text("Profil neu übergeben")', 'href').split('#i.')[1] + '=='))
+        assert re2.get('c') == o2id, 'erneute Übergabe mit demselben Kurzcode'
+        assert o2id in pg.inner_text('#panel-A\\.profile .pf-o2line'), 'Link-Zeile im Panel'
         txt = pg.text_content('#panel-A\\.profile svg.pf-svg')
         assert 'SS' in txt and 'ECET' in txt and 'BCMT' in txt and 'km' in txt and 'Sonne' not in txt and 'Tag' not in txt.replace('Tage', ''), 'Zeitzeile mit Sonnenzeiten, ohne Zeilenbeschriftungen «Sonne»/«Tag»: ' + txt[:200]
         assert len(pg.query_selector_all('#panel-A\\.profile table.pf-stages tbody tr')) >= 3 and len(pg.query_selector_all('#panel-A\\.profile table.pf-ballast tbody tr')) >= 4, 'Etappen- und Ballasttabelle im Panel'
@@ -569,6 +581,7 @@ def run_gas(name):
         pg.click('#panel-C\\.notam button:has-text("Orte aus Etappen")'); pg.wait_for_timeout(500)
         assert len(pg.query_selector_all('#panel-C\\.notam .np-row')) >= 3, 'NOTAM-Orte aus den Etappen'
         pg.goto(BASE + '#/v/' + bid); pg.wait_for_timeout(2500)
+        assert o2id in (pg.inner_text('.brief tr.row-A-profile .pf-o2line') if pg.query_selector('.brief tr.row-A-profile .pf-o2line') else ''), 'Briefingsicht: Link auf die O2-Berechnung (0.12.17d)'
         assert pg.query_selector('.brief tr.row-A-profile svg.pf-svg') is not None and pg.query_selector('.brief tr.row-A-profile table.pf-ballast') is not None, 'Briefingsicht: Profil mit Ballasttabelle'
         assert pg.evaluate("() => document.querySelector('.brief tr.row-A-profile details.pf-fold.legend').open") and pg.query_selector('.brief tr.row-A-profile details.pf-fold.model') is not None, 'Briefingsicht: Legende immer offen, Modell der Schätzung nur weil im Panel aufgeklappt'
         st = pg.query_selector_all('.brief tr.row-A-profile table.pf-stages.wrap tbody tr.st2'); assert len(st) >= 3 and 'Lufträume' in st[0].inner_text() and 'Kontakte' in st[0].inner_text() and pg.evaluate("() => { const t = document.querySelector('.brief tr.row-A-profile table.pf-stages.wrap'); return t.scrollWidth <= t.parentElement.clientWidth + 1; }"), '0.12.9a: Etappenübersicht zweizeilig, nicht breiter als die Zelle'

@@ -683,7 +683,7 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
 
 // ---------------------------------------------------------------- 0.12.17b: Übergabe des Höhenprofils an die O2-Planung
 {
-  const { o2Levels, o2Link } = await import('../js/calc/profile.js');
+  const { o2Levels, o2Link, o2NewId, o2CalcLink, O2_ID_RE } = await import('../js/calc/profile.js');
   const t0 = Date.UTC(2026, 9, 6, 14, 0);
   const track = { totalKm: 180, points: [] };
   for (let k = 0; k <= 180; k += 10) track.points.push({ km: k, ms: t0 + k * 5 * 60000, lat: 47, lon: 8 });   // 12 km/h → 15 h
@@ -700,7 +700,12 @@ console.log('Länder-Matrix und DWD-Astroangaben (0.11.1)');
   ok(o2Levels(pts, null).length === 0 && o2Levels([], track).length === 0, 'ohne Bahn oder ohne Punkte keine Übergabe');
   const url = o2Link(lv, '2026-017 · HB-QWZ · 2026-10-06');
   const back = JSON.parse(Buffer.from(url.split('#i.')[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
-  ok(url.startsWith('https://o2.wicki.aero/#i.') && back.v === 1 && back.s === 1 && back.t === '2026-017 · HB-QWZ · 2026-10-06' && back.l.length === lv.length && back.l[0][0] === lv[0].alt, 'Übergabe-Link: Titel, Stufen, Kennzeichen «Verlauf»');
+  ok(url.startsWith('https://o2.wicki.aero/#i.') && back.v === 1 && back.s === 1 && back.t === '2026-017 · HB-QWZ · 2026-10-06' && back.l.length === lv.length && back.l[0][0] === lv[0].alt && back.c === undefined, 'Übergabe-Link: Titel, Stufen, Kennzeichen «Verlauf»');
+  // 0.12.17d: das Briefing vergibt den Kurzcode der O2-Berechnung
+  const id = o2NewId(), dec = (u) => JSON.parse(Buffer.from(u.split('#i.')[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+  ok(O2_ID_RE.test(id) && o2NewId() !== id && dec(o2Link(lv, 'x', id)).c === id && dec(o2Link(lv, 'x', 'abc')).c === undefined && o2CalcLink(id) === 'https://o2.wicki.aero/#' + id, 'Kurzcode: Form wie in der O2-Planung, im Übergabe-Link, Link auf die Berechnung');
+  const S2 = mergeSettings({}); const src = newBriefing(S2); src.profile = { points: [], stages: [], o2: { id, sent: 1 } };
+  ok(duplicateBriefing(src, S2).profile.o2 === undefined && src.profile.o2.id === id, 'Kopie eines Briefings: eigene O2-Berechnung (Kurzcode nicht übernommen)');
 }
 
 console.log(`\n${n - fails}/${n} Tests bestanden`);

@@ -104,7 +104,7 @@ export function duplicateBriefing(src, settings) {
   b.schedule.rows = []; b.schedule.overrides = {};
   for (const it of b.schedule.plan || []) delete it.pin;
   b.stagePlans = {};   // 0.12.5: Etappen-Briefings sind zeitgebunden
-  if (b.profile) b.profile.data = null;
+  if (b.profile) { b.profile.data = null; delete b.profile.o2; }   // 0.12.17d: die Kopie bekommt eine eigene O₂-Berechnung
   return b;
 }
 

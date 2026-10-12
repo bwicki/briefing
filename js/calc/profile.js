@@ -159,9 +159,22 @@ export function o2Levels(points, track, { qnh = null, max = 24 } = {}) {
   }
   return lv.map((l) => ({ alt: l.alt, dur: Math.round(l.dur * 1000) / 1000 }));
 }
-/** Übergabe-Link: https://o2.wicki.aero/#i.<base64url von { v, t: Titel, l: [[ft, h], …], s: 1 = Verlauf ohne zu ergänzende Übergänge }>. */
-export function o2Link(levels, title = '', base = 'https://o2.wicki.aero/') {
-  const json = JSON.stringify({ v: 1, t: String(title).slice(0, 60), l: levels.map((l) => [l.alt, l.dur]), s: 1 });
+export const O2_BASE = 'https://o2.wicki.aero/';
+const O2_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';   // wie in der O2-Planung: ohne I, L, O, 0, 1
+export const O2_ID_RE = /^[A-HJKMNP-Z2-9]{6}$/;
+/** 0.12.17d: Kurzcode für die Berechnung in der O2-Planung – das Briefing vergibt ihn, damit es den Link kennt. */
+export function o2NewId() { const a = new Uint8Array(6); crypto.getRandomValues(a); return Array.from(a, (x) => O2_ALPHABET[x % O2_ALPHABET.length]).join(''); }
+/** Link auf eine bestehende Berechnung der O2-Planung. */
+export const o2CalcLink = (id, base = O2_BASE) => `${base}#${id}`;
+/**
+ * Übergabe-Link: https://o2.wicki.aero/#i.<base64url von { v, t: Titel, l: [[ft, h], …], s: 1 = Verlauf ohne zu ergänzende
+ * Übergänge, c: Kurzcode }>. Mit Kurzcode (0.12.17d) legt die O2-Planung die Berechnung unter diesem Code an; besteht sie
+ * schon, ersetzt die Übergabe nur das Fahrtprofil und den Titel – Vorrat und Einstellungen bleiben.
+ */
+export function o2Link(levels, title = '', id = '', base = O2_BASE) {
+  const o = { v: 1, t: String(title).slice(0, 60), l: levels.map((l) => [l.alt, l.dur]), s: 1 };
+  if (O2_ID_RE.test(id)) o.c = id;
+  const json = JSON.stringify(o);
   const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   return `${base}#i.${b64}`;
 }

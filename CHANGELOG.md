@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.17d — 2026-10-12 · Fahrtprofil: Link auf die O₂-Berechnung
+
+* **Das Briefing merkt sich die Berechnung der O₂-Planung:** Bei der ersten Übergabe vergibt es den Kurzcode der Berechnung
+  (`b.profile.o2.id`) und speichert ihn mit dem Briefing. Danach zeigt Panel A statt eines Knopfs zwei: **«O₂-Planung öffnen»**
+  (öffnet die Berechnung unverändert) und **«Profil neu übergeben»** (ersetzt dort bewusst Fahrtprofil und Titel; Vorrat und
+  Einstellungen bleiben – nach dem Nachführen im Flug also nur mit Absicht benützen).
+* **Link-Zeile «O₂-Planung: o2.wicki.aero/#…»** unter der Grafik im Panel, in der Briefingsicht und im Druck.
+* Die Kopie eines Briefings bekommt eine eigene O₂-Berechnung (Kurzcode wird nicht übernommen); Nachträge behalten ihn.
 ## 0.12.17c — 2026-10-12 · B04: Météo-France geprüft, MeteoNetwork
 
 * **Météo-France** mit hinterlegtem Schlüssel live geprüft (Mülhausen 14, Annecy 13, Dijon 15 Stationen im Umkreis 60 km,

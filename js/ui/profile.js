@@ -10,7 +10,7 @@ import { h, clear, toast, fmt } from '../util.js';
 import { t, getLang } from '../i18n.js';
 import { MODELS, suggestModel } from '../auto/openmeteo.js';
 import { hhmm, fmtDate, isoDate, localParts, fmtDateTime } from '../calc/time.js';
-import { ensureProfile, altAt, msAtKm, kmAtMs, posAtKm, reliefAt, segments, rateClass, o2Levels, o2Link, reliefBreaches, addStage, removeStage, moveStage, renameStartStage, stageWindows, nightFraction, ballastPlan, fitPoints } from '../calc/profile.js';
+import { ensureProfile, altAt, msAtKm, kmAtMs, posAtKm, reliefAt, segments, rateClass, o2Levels, o2Link, o2NewId, o2CalcLink, O2_ID_RE, reliefBreaches, addStage, removeStage, moveStage, renameStartStage, stageWindows, nightFraction, ballastPlan, fitPoints } from '../calc/profile.js';
 import { stageOps, canDropOps, ensureOps, pruneStagePlans } from '../calc/stageplan.js';
 import { buildProfileData } from '../auto/profiledata.js';
 import { massPerf, fillFractionOf } from '../model.js';
@@ -445,13 +445,29 @@ export function stageTable(b, ctx, o = {}) {
 export const standLine = (b, D) => (D ? t('pf_stand', { t: fmtDateTime(zoneOf(b), D.stand, getLang()), m: D.modelName || D.model || '', s: D.source || '' }) + (D.errors?.length ? ` · ${t('pf_errors', { e: D.errors.join('; ') })}` : '') : '');
 
 // ---------------------------------------------------------------- Panel (Editor) und Briefingsicht
-/** 0.12.17b: Link «O₂-Planung» – übergibt das Höhenprofil als Höhenstufen an o2.wicki.aero (neuer Tab); ohne Bahn kein Link. */
-function o2Button(b, p, D) {
-  if (!D?.track?.points?.length || (p.points?.length || 0) < 2) return null;
+/** 0.12.17b/d: «O₂-Planung» – übergibt das Höhenprofil als Höhenstufen an o2.wicki.aero (neuer Tab); ohne Bahn kein Knopf.
+ * Das Briefing vergibt den Kurzcode der Berechnung und merkt ihn sich (b.profile.o2.id). Besteht er, öffnet der erste Knopf die
+ * Berechnung unverändert; «Profil neu übergeben» ersetzt dort bewusst das Fahrtprofil (Vorrat und Einstellungen bleiben). */
+function o2Buttons(b, p, D, o, redraw) {
+  if (!D?.track?.points?.length || (p.points?.length || 0) < 2) return [];
   const levels = o2Levels(p.points, D.track, { qnh: b.weather?.qnh });
-  if (!levels.length) return null;
+  if (!levels.length) return [];
   const title = [b.no, b.balloon?.reg, b.time?.date].filter(Boolean).join(' · ');
-  return h('a.btn.small', { href: o2Link(levels, title), target: '_blank', rel: 'noopener', title: t('pf_o2Tip') }, [icon('ext', 14), ` ${t('pf_o2')}`]);
+  const known = O2_ID_RE.test(p.o2?.id || '');
+  const id = known ? p.o2.id : o2NewId();
+  const sent = () => { p.o2 = { id, sent: Date.now() }; p.updated = Date.now(); o.onChange?.(); setTimeout(redraw, 0); };   // nach dem Öffnen des Tabs merken und neu zeichnen
+  const link = (label, tip, cls = '') => h('a.btn.small' + cls, { href: o2Link(levels, title, id), target: '_blank', rel: 'noopener', title: tip, onclick: sent, onauxclick: sent }, [icon('ext', 14), ` ${label}`]);
+  if (!known) return [link(t('pf_o2'), t('pf_o2Tip'))];
+  return [
+    h('a.btn.small', { href: o2CalcLink(id), target: '_blank', rel: 'noopener', title: t('pf_o2OpenTip', { id }) }, [icon('ext', 14), ` ${t('pf_o2Open')}`]),
+    link(t('pf_o2Resend'), t('pf_o2ResendTip', { id })),
+  ];
+}
+/** 0.12.17d: Zeile mit dem Link auf die Berechnung der O₂-Planung (Panel, Briefingsicht, Druck); ohne Kurzcode nichts. */
+function o2Line(p) {
+  const id = p.o2?.id;
+  if (!O2_ID_RE.test(id || '')) return null;
+  return h('div.note.small.pf-o2line', [`${t('pf_o2Line')} `, h('a', { href: o2CalcLink(id), target: '_blank', rel: 'noopener' }, `o2.wicki.aero/#${id}`)]);
 }
 /** Panel A «Fahrtprofil» im Editor: Daten aufbereiten, Werkzeug öffnen, Grafik (Bild), Etappen- und Ballasttabelle. */
 export function profilePanel(b, ctx, o = {}) {
@@ -471,7 +487,7 @@ export function profilePanel(b, ctx, o = {}) {
     if (!o.readOnly) box.appendChild(h('div.row-actions', [
       h('button.btn.small' + (D ? '' : '.primary'), { type: 'button', onclick: (e) => build(e.currentTarget) }, [icon('refresh', 14), ` ${D ? t('pf_rebuild') : t('pf_build')}`]),
       D ? h('button.btn.small.primary', { type: 'button', onclick: () => openProfileTool(b, ctx, { onChange: o.onChange, onClose: draw }) }, [icon('edit', 14), ` ${t('pf_open')}`]) : null,
-      o2Button(b, p, D),   // 0.12.17b: Höhenprofil an die Sauerstoffplanung übergeben
+      ...o2Buttons(b, p, D, o, draw),   // 0.12.17b/d: Höhenprofil an die Sauerstoffplanung übergeben, Berechnung öffnen
       st,
     ]));
     if (!D) { box.appendChild(h('div.note', t('pf_noData'))); return; }
@@ -479,7 +495,7 @@ export function profilePanel(b, ctx, o = {}) {
     const svg = el('svg', { class: 'pf-svg', 'aria-label': t('pf_title') });
     drawChart(svg, { b, ctx, p, D, interactive: false, used });
     const onToggle = () => { if (!o.readOnly) { p.updated = Date.now(); o.onChange?.(); } };
-    box.append(h('div.pf-chart', svg), legend(used, ctx, { p, onToggle }), h('div.note.small.stand', standLine(b, D)), stageTable(b, ctx), ballastTable(b, ctx, { onToggle }));
+    box.append(h('div.pf-chart', svg), legend(used, ctx, { p, onToggle }), h('div.note.small.stand', standLine(b, D)), ...[o2Line(p)].filter(Boolean), stageTable(b, ctx), ballastTable(b, ctx, { onToggle }));
   };
   draw();
   return box;
@@ -492,7 +508,7 @@ export function profileView(b, ctx) {
   const svg = el('svg', { class: 'pf-svg', 'aria-label': t('pf_title') });
   drawChart(svg, { b, ctx, p, D, interactive: false, used });
   // Briefingsicht/Druck: Legende immer offen, Modell der Schätzung nur, wenn im Panel/Werkzeug aufgeklappt
-  return h('div.pf-view', [h('div.pf-chart', svg), legend(used, ctx, { p, print: true }), h('div.mini', standLine(b, D)), stageTable(b, ctx, { wrap: true }), ballastTable(b, ctx, { print: true })]);
+  return h('div.pf-view', [h('div.pf-chart', svg), legend(used, ctx, { p, print: true }), h('div.mini', standLine(b, D)), o2Line(p), stageTable(b, ctx, { wrap: true }), ballastTable(b, ctx, { print: true })]);
 }
 
 // ---------------------------------------------------------------- Werkzeug (Vollbild-Dialog)
