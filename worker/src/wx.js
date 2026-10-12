@@ -847,6 +847,7 @@ async function pdfRender(env, decrypt, ctx, body, auth) {
   if (!token || !acc) return err('Browser Rendering nicht konfiguriert (Zugänge: cf_api_token, cf_account_id)', 424);
   const id = String(body.id || '').replace(/[^a-z0-9]/g, '');
   if (!id) return err('id');
+  const doc = ['bs', 'fa'].includes(body.doc) ? body.doc : '';   // 0.13.0: Betriebsdokumente (Beförderungsschein, Flugauftrag) statt Briefingsicht
   const row = await env.DB.prepare('SELECT json FROM briefings WHERE id=?').bind(id).first();
   if (!row) return err('not found', 404);
   const b = JSON.parse(row.json);
@@ -854,15 +855,15 @@ async function pdfRender(env, decrypt, ctx, body, auth) {
   const tmp = [...crypto.getRandomValues(new Uint8Array(16))].map((x) => (x % 36).toString(36)).join('');
   await env.DB.prepare('INSERT INTO access_links (token,briefing_id,person,role,expires_at,created_at) VALUES (?,?,?,?,?,?)').bind(tmp, id, 'PDF-Renderer', 'read', Date.now() + 3600000, Date.now()).run();
   try {
-    const page = `${(env.APP_URL || 'https://ops.wicki.aero').replace(/\/$/, '')}/#/s/${tmp}/v`;
+    const page = `${(env.APP_URL || 'https://ops.wicki.aero').replace(/\/$/, '')}/#/s/${tmp}/${doc || 'v'}`;
     const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acc}/browser-rendering/pdf`, {
       method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: page, gotoOptions: { waitUntil: 'networkidle0', timeout: 60000 }, waitForTimeout: 2500, viewport: { width: 1200, height: 1600 }, pdfOptions: { format: 'A4', printBackground: true, preferCSSPageSize: true, margin: { top: '12mm', right: '12mm', bottom: '14mm', left: '12mm' } } }),
+      body: JSON.stringify({ url: page, gotoOptions: { waitUntil: 'networkidle0', timeout: 60000 }, waitForTimeout: 2500, viewport: { width: 1200, height: 1600 }, pdfOptions: { format: 'A4', printBackground: true, preferCSSPageSize: true, margin: doc ? { top: '10mm', right: '11mm', bottom: '10mm', left: '11mm' } : { top: '12mm', right: '12mm', bottom: '14mm', left: '12mm' } } }),
     });
     const ct = (r.headers.get('Content-Type') || '').split(';')[0];
     if (!r.ok || ct !== 'application/pdf') { let m = `Browser Rendering HTTP ${r.status}`; try { const j = await r.json(); m = j.errors?.[0]?.message || m; } catch { /* kein JSON */ } return err(m, 502); }
     const buf = await r.arrayBuffer();
-    const base = [b.no || 'ohne-Nr', 'Fahrtbriefing', String(b.balloon?.reg || '').replace(/[^A-Za-z0-9-]+/g, ''), b.time?.date || ''].filter(Boolean).join('_');
+    const base = [b.no || 'ohne-Nr', doc === 'bs' ? 'Befoerderungsschein' : doc === 'fa' ? 'Flugauftrag' : 'Fahrtbriefing', String(b.balloon?.reg || '').replace(/[^A-Za-z0-9-]+/g, ''), b.time?.date || ''].filter(Boolean).join('_');
     const key = `${id}/${base}_final-v${b.finalNo || 0}-${Date.now()}.pdf`;
     await env.FILES.put(key, buf, { httpMetadata: { contentType: 'application/pdf' } });
     await env.DB.prepare('INSERT INTO files (key,briefing_id,content_type,size,created_at) VALUES (?,?,?,?,?)').bind(key, id, 'application/pdf', buf.byteLength, Date.now()).run();

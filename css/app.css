@@ -933,3 +933,46 @@ details.cmp{margin-top:8px} details.cmp>summary{cursor:pointer;font-weight:600} 
 /* 0.12.17c: Amateurstationen (MeteoNetwork) in B04 */
 .obs-tbl tr.amateur td { color: var(--muted); font-style: italic; }
 .obs-tbl tr.amateur td b { font-weight: 500; }
+
+/* 0.13.0: Betriebsdokumente (Beförderungsschein, Flugauftrag) – A4-Seiten, Stil der BHB-Formulare */
+.docpages{display:flex;flex-direction:column;gap:18px;align-items:center;margin:8px 0 24px}
+.docsheet{width:794px;max-width:100%;min-height:1123px;box-sizing:border-box;padding:44px 48px 36px;background:#fff;color:#141414;font-family:Arial,Helvetica,'Liberation Sans',sans-serif;font-size:11.5px;line-height:1.35;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 6px rgba(0,0,0,.18);border:1px solid #d7dce3}
+.docsheet .dhead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:6px}
+.docsheet .dhead.line{border-bottom:2px solid #141414;padding-bottom:8px}
+.docsheet .dtitle{font-size:19px;font-weight:700;letter-spacing:.2px}
+.docsheet .dsub{font-size:11px;color:#444}
+.docsheet .dright{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;flex:none}
+.docsheet .dlogo{width:170px;height:58px;object-fit:contain;flex:none}
+.docsheet .mini{font-size:10px;color:#444}
+.docsheet .mini b{color:#141414}
+.docsheet table.dtab{width:100%;border-collapse:collapse;font-size:11.5px}
+.docsheet table.dtab td{border:1px solid #141414;padding:5px 7px;vertical-align:top}
+.docsheet table.dtab td.k{width:118px;background:#ededed;font-weight:700}
+.docsheet table.dtab td.k2{width:86px;background:#ededed;font-weight:700}
+.docsheet table.dtab td.w2{width:240px}
+.docsheet table.dtab td.lines div{line-height:1.5}
+.docsheet table.paxtab td{height:34px}
+.docsheet table.paxtab thead td{height:auto;background:#ededed;font-weight:700}
+.docsheet .cb{display:inline-block;width:10px;height:10px;border:1px solid #141414;vertical-align:-1px;background:#fff}
+.docsheet .cb.on{background:#141414}
+.docsheet .dot{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:-1px;background:#2e7d32}
+.docsheet .dot.half{background:#e0a100}
+.docsheet .dot.neg{background:#c62828}
+.docsheet .dbox{border:1px solid #141414;padding:8px 10px;font-size:10.5px;line-height:1.4;display:flex;flex-direction:column;gap:5px}
+.docsheet .dbox ul,.docsheet .dbox ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:2px}
+.docsheet .dbox p{margin:0}
+.docsheet .dbox.two{display:grid;grid-template-columns:1fr 1fr;column-gap:24px}
+.docsheet .dbox.two>div{display:flex;flex-direction:column;gap:6px}
+.docsheet .dsec{font-size:12px;font-weight:700;border-bottom:1px solid #141414;padding-bottom:2px}
+.docsheet .dtext{font-size:11px}
+.docsheet .paxgrid{display:grid;grid-template-columns:1fr 1fr;column-gap:18px;row-gap:2px}
+.docsheet .sigrow{display:grid;grid-template-columns:1fr 1fr;column-gap:32px;margin-top:6px}
+.docsheet .sig{display:flex;flex-direction:column;gap:3px}
+.docsheet .sig-img{height:46px;display:flex;align-items:flex-end;padding-bottom:2px}
+.docsheet .sig-img img{max-height:44px;max-width:220px}
+.docsheet .sig-line{border-top:1px solid #141414;padding-top:4px;font-size:10.5px}
+.docsheet .dfoot{margin-top:auto;display:flex;justify-content:space-between;font-size:9.5px;color:#444;border-top:1px solid #c8c8c8;padding-top:5px}
+.docsheet .muted{color:#444}
+.docsheet .p2{font-size:10.5px}
+.sigimg{max-height:60px;max-width:220px;border:1px solid var(--line);background:#fff;padding:4px}
+.note.neg{color:#c62828}

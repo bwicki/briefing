@@ -33,7 +33,7 @@ export function newBriefing(settings, now = Date.now()) {
     lang: settings.lang || 'de', timeBase: settings.timeBase || 'LT',
     balloon: bal, balloonSel: sel,
     meteo: { model: 'icon_eu', topHpa: 500 },   // Vorgabe ICON-EU (0.12.4); andere Modelle im Schritt «Was ist geplant?» und in der Modell-Leiste
-    flight: { kind: 'commercial', operatorId: op?.id || 'custom', operatorName: op?.name || '', occasion: '', nvfr: false },
+    flight: { kind: 'commercial', operatorId: op?.id || 'custom', operatorName: op?.name || '', occasion: '', nvfr: false, fee: { amount: '', currency: 'CHF', mode: 'perFlight', third: '', free: false } },
     site: site ? { ...deepCopy(site), icao: icao(site.lat, site.lon) } : { name: '', lat: null, lon: null, elev: null, tz, country: '', icao: '' },
     time: { date, time: '06:30', startMs: fromLocal(tz, date, '06:30'), base: settings.timeBase || 'LT' },
     intent: { durationMin: intent.durationMin, altMinFt: intent.altMinFt, altMaxFt: intent.altMaxFt, direction: '', dayNight: 'day', remark: '', levels: [...intent.levels] },
@@ -60,6 +60,8 @@ export function upgradeBriefing(b) {
   if (!Array.isArray(b.persons.retrievers)) b.persons.retrievers = b.persons.retrieve ? [{ id: b.persons.retrieveId || 'custom', name: b.persons.retrieve }] : [];
   if (b.persons.copilotId == null) { b.persons.copilotId = ''; b.persons.copilot = ''; }   // 0.12.6: 2. Pilot (Gasfahrt)
   for (const p of b.persons.pax || []) if (/^(Pax|Passenger) \d+$/.test(p.name || '')) p.name = '';   // alte Platzhalter-Namen
+  if (b.flight && !b.flight.fee) b.flight.fee = { amount: '', currency: 'CHF', mode: 'perFlight', third: '', free: false };   // 0.13.0: Entgelt (Beförderungsschein)
+  if (!b.docs) b.docs = {};   // 0.13.0: Signaturen/PDF der Betriebsdokumente (bs, fa)
   if (b.flight && b.flight.nvfr == null) b.flight.nvfr = b.intent?.dayNight === 'night' || b.intent?.dayNight === 'both';   // 0.8.1: NVFR-Schalter statt Tag/Nacht in der Absicht
   for (const p of PANELS) if (!b.panels[p.key]) b.panels[p.key] = { content: {}, extra: { text: '', images: [] }, ai: null, comment: '', updatedAt: null, updatedBy: null };
   // 0.12.13: SIGMET/AIRMET-Schnappschuss von «SIGWX low Alps» nach «Warnungen» verschieben (B.sigwx ist nur noch Einfügefeld)

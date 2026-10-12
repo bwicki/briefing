@@ -7,6 +7,7 @@ import { t } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { renderBrief } from './view.js';
 import { renderPaxCard } from './extras.js';
+import { renderDoc } from './docs.js';
 import { mergeSettings } from '../defaults.js';
 import { upgradeBriefing, phaseOf } from '../model.js';
 import { fmtDate, hhmm, fmtDateTime } from '../calc/time.js';
@@ -22,6 +23,7 @@ export async function renderMaterial(view, ctx, tokenAndMore) {
     ctx.shared = { token, role: 'read', person: res.person, material: true };
     const b = upgradeBriefing(res.briefing);
     if (sub === 'p') await renderPaxCard(view, ctx, b.id, { briefing: b });
+    else if (sub === 'bs' || sub === 'fa') await renderDoc(view, ctx, b.id, sub, { briefing: b });
     else await renderBrief(view, ctx, b.id, { briefing: b });
     return;
   }

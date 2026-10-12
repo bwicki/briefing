@@ -599,3 +599,12 @@ pdf.js (Apache-2.0, `js/vendor/pdfjs`). Logo und Name
 
 * **Leerlaufsperre:** 2 h ohne Aktivität → Anmeldeseite (Client im Minutentakt und auf dem Server je Sitzung; `sessions`-Tabelle, 30 Tage Höchstdauer). «Abmelden» beendet die Sitzung auf dem Server.
 * **Aktivitätsprotokoll:** Einstellungen → Statistik (nur Supermaster): alle protokollierten Aktionen aller Nutzer mit Filter und CSV (`GET /api/admin/log`). Die Tabelle `usage` wächst mit; kürzen über D1 (z. B. `DELETE FROM usage WHERE ts < …`).
+
+## Betriebsdokumente (0.13.0, Stufe 0 des Konzepts ops.wicki.aero)
+
+| Dokument | Route | Inhalt |
+|---|---|---|
+| Passagierliste und Beförderungsschein | `#/bs/<id>` (Links: `#/s/<token>/bs`, `#/m/<token>/<id>/bs`) | Vorlage BHB ANH 511 v7, DE/EN nach Briefingsprache, 2 Seiten; vorausgefüllt aus Briefing und Stammdaten; Entgelt nur bei gewerblicher Fahrt (Panel «Fahrt») |
+| Flugauftrag / Operator Flight Assignment | `#/fa/<id>` | 1 Seite nach Entwurf 12.10.2026: Fahrt, Ballon (Registerdaten), Besatzung (Lizenz/Medical aus Personendokumenten), Pax, Rahmenbedingungen, Erteilung/Annahme |
+
+Digitale Unterschrift: Unterschriftenbild je Nutzer (Einstellungen → Allgemein), Knöpfe «Als Betreiber/PIC signieren» setzen Bild, Name und Zeitstempel UTC (gespeichert in `b.docs`). PDF über `data('pdf', { b, doc: 'bs'|'fa' })` (Browser Rendering), Ablage in R2. Abgelaufenes Medical eines PIC → Nachfrage beim Login.

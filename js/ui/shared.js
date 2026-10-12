@@ -7,6 +7,7 @@ import { renderEditor } from './editor.js';
 import { renderBrief } from './view.js';
 import { renderWizard } from './wizard.js';
 import { renderPaxCard } from './extras.js';
+import { renderDoc } from './docs.js';
 import { mergeSettings } from '../defaults.js';
 import { upgradeBriefing } from '../model.js';
 
@@ -28,6 +29,7 @@ export async function renderShared(view, ctx, tokenAndMore) {
   if (res.role === 'edit' && who) ctx.shared.person = who;
   const b = upgradeBriefing(res.briefing);
   if (sub === 'p') await renderPaxCard(view, ctx, b.id, { briefing: b });
+  else if (sub === 'bs' || sub === 'fa') await renderDoc(view, ctx, b.id, sub, { briefing: b });
   else if (res.role === 'read' || sub === 'v') await renderBrief(view, ctx, b.id, { briefing: b });
   else if (sub === 'w') await renderWizard(view, ctx, b.id, { briefing: b });
   else await renderEditor(view, ctx, b.id, { briefing: b });

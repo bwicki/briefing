@@ -67,7 +67,9 @@ export async function renderBrief(view, ctx, id, opts = {}) {
     if (parts.includes('pax')) { paxEl = paxSheet(b, ctx); paxEl.classList.add('print-only', 'pax-append'); brief.appendChild(paxEl); }
   };
   tools.push(toggle, printButton(() => printDialog(b, ctx, shared, (p) => { applyParts(p.split(',')); setTimeout(() => window.print(), 150); })));
-  const menu = [{ label: t('more'), items: [{ label: paxCardTitle(S), fn: () => ctx.navigate(paxHash) }] }];
+  // 0.13.0: Betriebsdokumente (Beförderungsschein, Flugauftrag) – Eigner und Links mit Schreibrecht
+  const docHash = (k) => (shared?.material ? `#/m/${shared.token}/${b.id}/${k}` : shared ? `#/s/${shared.token}/${k}` : `#/${k}/${b.id}`);
+  const menu = [{ label: t('more'), items: [{ label: paxCardTitle(S), fn: () => ctx.navigate(paxHash) }, ...(canEdit || !shared ? [{ label: t('doc_bs'), fn: () => ctx.navigate(docHash('bs')) }, { label: t('doc_fa'), fn: () => ctx.navigate(docHash('fa')) }] : [])] }];
   const ownerNote = foreign ? ` · ${t('readOnlyBriefing', { n: b.updatedBy || b.ownerId || '' })}` : '';
   setHeader({ title: `${b.no ? b.no + ' · ' : ''}${fmtDate(z, b.time.startMs, lang)} ${placeLabel(b.site)} · ${b.balloon.reg}`, sub: `${t('stand')}: ${b.updatedAt ? fmtDateTime(z, b.updatedAt, lang) : '–'}${b.status === 'final' ? ' · ' + t('released', { n: b.finalNo }) : ''}${locked ? ' · 🔒 ' + t('locked') : ''}${ownerNote}`, tools, menu });
   if (locked) view.appendChild(h('div.card.lockbar.no-print', h('div.card-body.row-actions', [h('span', [icon('lock', 16), ` ${lockTitle}`]), h('span.note.small', lockText), !shared && !foreign ? h('button.btn.small.primary', { type: 'button', onclick: lockDialog }, running ? t('amend') : t('locked_copy')) : null])));

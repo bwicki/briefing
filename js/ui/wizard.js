@@ -214,7 +214,16 @@ export async function renderWizard(view, ctx, id, opts = {}) {
       if (typeChanged) { const d = ctx.settings.intentDefaults[bal.type]; b.intent = { ...b.intent, durationMin: d.durationMin, altMinFt: d.altMinFt, altMaxFt: d.altMaxFt, levels: [...d.levels] }; }
       persistSoon();
     }
-    const kinds = h('div.chips', ['private', 'commercial', 'training', 'exam'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': b.flight.kind === k, onclick: (e) => { b.flight.kind = k; kinds.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); persistSoon(); } }, t('kind_' + k))));
+    const kinds = h('div.chips', ['private', 'commercial', 'training', 'exam'].map((k) => h('button.chip.lg', { type: 'button', 'aria-pressed': b.flight.kind === k, onclick: (e) => { b.flight.kind = k; kinds.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === e.currentTarget)); feeRow.hidden = k !== 'commercial'; persistSoon(); } }, t('kind_' + k))));
+    // 0.13.0: Entgelt (nur gewerblich) – erscheint auf dem Beförderungsschein (Entscheid 12.10.2026)
+    const fee = b.flight.fee = b.flight.fee || { amount: '', currency: 'CHF', mode: 'perFlight', third: '', free: false };
+    const feeRow = h('div.frow.c4.fee', [
+      field(t('fee_amount'), input('text', fee.amount || '', { placeholder: '0', inputmode: 'decimal', oninput: (e) => { fee.amount = e.target.value.trim(); persistSoon(); } })),
+      field(t('fee_currency'), select([{ value: 'CHF', label: 'CHF' }, { value: 'EUR', label: 'EUR' }], fee.currency || 'CHF', { onchange: (e) => { fee.currency = e.target.value; persistSoon(); } })),
+      field(t('fee_mode'), select([{ value: 'perFlight', label: t('fee_perFlight') }, { value: 'perPerson', label: t('fee_perPerson') }, { value: 'various', label: t('fee_various') }], fee.mode || 'perFlight', { onchange: (e) => { fee.mode = e.target.value; persistSoon(); } })),
+      field(t('fee_third'), select([{ value: '', label: '–' }, { value: 'by', label: t('fee_by') }, { value: 'to', label: t('fee_to') }, { value: 'free', label: t('fee_free') }, { value: 'some', label: t('fee_some') }], fee.free === 'some' ? 'some' : fee.free ? 'free' : fee.third || '', { onchange: (e) => { const v = e.target.value; fee.free = v === 'free' ? true : v === 'some' ? 'some' : false; fee.third = v === 'by' || v === 'to' ? v : ''; persistSoon(); } })),
+    ]);
+    feeRow.hidden = b.flight.kind !== 'commercial';
     const ops = ctx.stamm.operators.map((o) => ({ value: o.id, label: stammLabel(o, o.name) })).concat([{ value: 'custom', label: t('operatorCustom') }]);
     const custom = input('text', b.flight.operatorId === 'custom' ? b.flight.operatorName : '', { placeholder: t('operatorCustom'), oninput: (e) => { b.flight.operatorName = e.target.value; persistSoon(); } });
     custom.hidden = b.flight.operatorId !== 'custom';
@@ -230,7 +239,7 @@ export async function renderWizard(view, ctx, id, opts = {}) {
     redraw();
     body.append(
       field(t('balloonType'), typeRow), combo,
-      field(t('flightKind'), kinds), h('div.note', t('nvfr_hint')),
+      field(t('flightKind'), kinds), feeRow, h('div.note', t('nvfr_hint')),
       h('div.frow', [field(t('operator'), h('div', [opSel, custom])), field(t('occasion'), input('text', b.flight.occasion, { oninput: (e) => { b.flight.occasion = e.target.value; persistSoon(); } }))]),
     );
   }

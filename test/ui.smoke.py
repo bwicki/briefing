@@ -187,6 +187,18 @@ def run(name, viewport, scale=1.5, mobile=False, site_chip=None):
         pg.goto(BASE + f'#/pax/{bid}'); pg.wait_for_timeout(900)
         assert 'Sicherheit' in pg.inner_text('.paxsheet .paxcard:first-child') and 'Treffpunkt' in pg.inner_text('.paxsheet .paxcard:first-child'), 'Pax-Karte'
         pg.screenshot(path=f'{OUT}/{name}_12_pax.png', full_page=True)
+        # 0.13.0: Betriebsdokumente – Beförderungsschein (2 Seiten) und Flugauftrag (1 Seite) aus dem Briefing
+        pg.goto(BASE + f'#/bs/{bid}'); pg.wait_for_timeout(900)
+        assert len(pg.query_selector_all('.docpages .docsheet')) == 2, 'Beförderungsschein: 2 Seiten'
+        bs_txt = pg.inner_text('.docpages')
+        assert 'Beförderungsschein' in bs_txt and 'AXA' in bs_txt and 'Kennzeichen' in bs_txt and 'v7 | 28.12.2024' in bs_txt, 'Beförderungsschein Inhalt'
+        assert pg.query_selector('.docsheet.bs table.paxtab tbody tr td') is not None, 'Pax-Tabelle'
+        pg.screenshot(path=f'{OUT}/{name}_13_bs.png', full_page=True)
+        pg.goto(BASE + f'#/fa/{bid}'); pg.wait_for_timeout(900)
+        fa_txt = pg.inner_text('.docpages')
+        assert 'Flugauftrag' in fa_txt and 'CH.BOP.8054' in fa_txt and 'Erteilung und Annahme' in fa_txt and 'Fahrt nur bei VMC' in fa_txt, 'Flugauftrag Inhalt'
+        assert len(pg.query_selector_all('.docpages .docsheet')) == 1, 'Flugauftrag: 1 Seite'
+        pg.screenshot(path=f'{OUT}/{name}_14_fa.png', full_page=True)
         assert pg.is_visible('#mainnav a.on'), 'Hauptnavigation sichtbar'
         # Settings
         pg.goto(BASE + '#/settings?balloons'); pg.wait_for_timeout(700)

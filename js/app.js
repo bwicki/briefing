@@ -5,6 +5,7 @@
  *   #/new             geführter Ablauf «Neues Briefing» (#/new/<id> = Entwurf fortsetzen)
  *   #/b/<id>          Erarbeitungssicht
  *   #/v/<id>          Briefingsicht (Druck)
+ *   #/bs/<id>, #/fa/<id>  Beförderungsschein, Flugauftrag (0.13.0)
  *   #/settings        Einstellungen
  *   #/s/<token>       Persönlicher Link (Lesen oder Mitarbeit, ohne Kennwort)
  *   #/m/<token>       Material-Link (externer Materialeigner: Liste + Briefingsicht, ohne Kennwort)
@@ -19,6 +20,7 @@ import { renderEditor } from './ui/editor.js';
 import { renderBrief } from './ui/view.js';
 import { renderSettings } from './ui/settings.js';
 import { renderPaxCard } from './ui/extras.js';
+import { renderDoc, medicalCheck } from './ui/docs.js';   // 0.13.0: Beförderungsschein, Flugauftrag
 import { renderShared } from './ui/shared.js';
 import { renderMaterial } from './ui/material.js';
 import { mergedStamm } from './stamm.js';
@@ -66,7 +68,7 @@ function buildNav() {
   const cur = (location.hash || '#/list').split('?')[0].split('/')[1] || 'list';
   const items = [['list', t('nav_list'), '#/list'], ['new', t('nav_new'), '#/new']];   // Einstellungen: im Hamburger-Menü
   for (const [key, label, href] of items) {
-    const active = cur === key || (key === 'list' && ['b', 'v', 'pax'].includes(cur));
+    const active = cur === key || (key === 'list' && ['b', 'v', 'pax', 'bs', 'fa'].includes(cur));
     n.appendChild(h('a', { href, class: key === 'new' ? 'primary' : active ? 'on' : '', 'aria-current': active ? 'page' : null }, key === 'new' ? `+ ${label}` : label));
   }
 }
@@ -148,6 +150,7 @@ async function afterLogin() {
   buildMenu();
   touchGate();
   route();
+  if (store.mode === 'remote') medicalCheck(ctx).catch((e) => console.warn('medical', e));   // 0.13.0: abgelaufenes Medical eines PIC → Nachfrage
 }
 
 // ---------------------------------------------------------------- Routing
@@ -172,6 +175,8 @@ async function route() {
       case 'v': await renderBrief(view, ctx, arg); break;
       case 'settings': await renderSettings(view, ctx); break;
       case 'pax': await renderPaxCard(view, ctx, arg); break;
+      case 'bs': await renderDoc(view, ctx, arg, 'bs'); break;   // 0.13.0: Passagierliste und Beförderungsschein
+      case 'fa': await renderDoc(view, ctx, arg, 'fa'); break;   // 0.13.0: Flugauftrag
       default: await renderList(view, ctx);
     }
   } catch (e) {

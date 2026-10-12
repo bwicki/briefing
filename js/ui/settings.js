@@ -1,5 +1,5 @@
 /* Fahrtbriefing — Einstellungen (Stammdaten, Regeln, Zugänge, Experte). */
-import { h, clear, toast, deepCopy, num, dialog, uid, shrinkImageSquare } from '../util.js';
+import { h, clear, toast, deepCopy, num, dialog, uid, shrinkImageSquare, shrinkImage } from '../util.js';
 import { t, tt, getLang, setLang } from '../i18n.js';
 import { setHeader } from '../app.js';
 import { field, input, select, textarea, check, listHead, fieldAdd, docsEditor } from './widgets.js';
@@ -69,8 +69,25 @@ export async function renderSettings(view, ctx) {
         txtField(S, 'ownerName', t('set_ownerName')),
       ]),
       check(t('set_expertMode'), S.expert, (v) => { S.expert = v; }),
+      signatureField(),
       h('div.note', `${t('localMode')}/${t('remoteMode')}: ${ctx.store.mode === 'remote' ? ctx.store.apiBase : t('localMode')}`),
     ]));
+  }
+
+  /** 0.13.0: Unterschriftenbild des Nutzers (gescannt, PNG/JPG) für das digitale Signieren von Flugauftrag und Beförderungsschein. */
+  function signatureField() {
+    const box = h('div.imgfield');
+    const draw = () => {
+      clear(box);
+      const sig = S.signature || null;
+      const file = h('input', { type: 'file', accept: 'image/*', style: { display: 'none' }, onchange: async (e) => { const f = e.target.files?.[0]; if (!f) return; try { const dataUrl = await shrinkImage(f, 900, 0.9); const r = ctx.store.mode === 'remote' ? await ctx.store.uploadDoc(dataUrl) : { url: dataUrl }; S.signature = { url: r.url, key: r.key || '', ts: Date.now() }; draw(); markDirty(); } catch (err) { toast(`${t('error')}: ${err.message}`); } } });
+      box.append(
+        sig?.url ? h('img.sigimg', { src: sig.url, alt: '' }) : h('div.bimg.empty', '—'),
+        h('div.col', [h('button.btn.small', { type: 'button', onclick: () => file.click() }, t('b_imageChoose')), sig ? h('button.btn.small', { type: 'button', onclick: () => { delete S.signature; draw(); markDirty(); } }, t('b_imageRemove')) : null, h('span.note.small', t('set_signatureHint'))]), file,
+      );
+    };
+    draw();
+    return field(t('set_signature'), box);
   }
 
   function balloons() {

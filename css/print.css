@@ -82,3 +82,12 @@ img.bimg{width:2cm;height:2cm;object-fit:cover;border:1px solid #ccc;border-radi
   .brief details.pf-fold .pf-fold-body{font-size:7.5pt}
   .pf-backdrop{display:none !important}
 }
+/* 0.13.0: Betriebsdokumente – je Seite ein A4-Blatt */
+@page doc { size: A4 portrait; margin: 10mm 11mm; }
+@media print {
+  .docpages{display:block;margin:0}
+  .docsheet{page:doc;width:auto;max-width:none;min-height:0;height:277mm;box-shadow:none;border:0;padding:0;break-after:page;page-break-after:always;color:#000}
+  .docsheet:last-child{break-after:auto;page-break-after:auto}
+  .docsheet table.dtab td.k,.docsheet table.dtab td.k2,.docsheet table.paxtab thead td{background:#ededed !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .docsheet .cb.on,.docsheet .dot{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}

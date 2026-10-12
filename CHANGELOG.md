@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.13.0 — 2026-10-12 · Stufe 0: Beförderungsschein und Flugauftrag aus dem Briefing
+
+* **Passagierliste und Beförderungsschein** (`#/bs/<id>`, Menü «Mehr» in der Briefingsicht): Vorlage BHB ANH 511 v7
+  (28.12.2024), DE oder EN nach Briefingsprache, zwei Seiten (Seite 2 = AXA-Auszüge A–D unverändert). Vorausgefüllt:
+  Datum, am/pm, Startort, Kennzeichen (HB-QWP/QWZ/QPJ/QWV angekreuzt, andere eingetragen), Luftfrachtführer, Entgelt
+  (nur gewerblich), Art der Fahrt, Passagiere (Name; E-Mail aus der Personenliste, wenn erfasst), Ort/Datum, Unterschrift
+  Pilot (digital), Fusszeile mit Briefingnummer/Final-Stand.
+* **Flugauftrag / Operator Flight Assignment** (`#/fa/<id>`): Entwurf vom 12.10.2026 (Design-Fenster) umgesetzt –
+  Betreiber, Datum/Start LT+UTC, Dauer und Landung, Startort mit ICAO-Koordinaten und Höhe, Landeraum mit Grenzübertritt
+  (Länder der Fahrt), Art der Fahrt und Ballontyp, Entgelt; Ballon mit Registerdaten (Hersteller, Muster, S/N, Volumen,
+  TCDS, ARC), Korb/Massen/MOPSC/MTOM/Hex; Besatzung mit Lizenz-Nr. und Medical-Gültigkeit aus den Personendokumenten
+  («Lizenz …», «Medical»), Rückholer mit Telefon; Passagiere mit Insassenmasse; Fahrtabsicht (Höhenband, NVFR,
+  Gasvorrat/Ballast), Wetter (Ampel, Wind/Böen, Gründe, Mindestbedingungen), Luftraum/NOTAM-Pflichten, Auflagen;
+  Erteilung/Annahme mit digitalen Unterschriften Betreiber und PIC.
+* **Digital signieren:** Einstellungen → Allgemein → «Unterschrift (Bild)» (gescannt, PNG/JPG, Ablage im Worker). In den
+  Dokumenten «Als Betreiber signieren» / «Als PIC signieren» (Eigner, Server-Modus): Bild, Name und Zeitstempel UTC im
+  Dokument und im Briefing gespeichert (`b.docs.bs/fa`).
+* **PDF erzeugen:** über den bestehenden Weg (Cloudflare Browser Rendering, `pdf` mit `doc=bs|fa`), Ablage in R2
+  (`…_Befoerderungsschein_…`, `…_Flugauftrag_…`), Link im Dokument.
+* **Entgelt** (Panel «Fahrt», nur bei «gewerblich»): Betrag, Währung CHF/EUR, pro Fahrt/Person/unterschiedlich,
+  Verrechnung durch/an Dritte, unentgeltlich (ganz / einzelne Pax).
+* **Medical:** ist das Medical eines PIC (Personendokument «Medical») abgelaufen, fragt die App beim Login nach der neuen
+  Gültigkeit; der Flugauftrag zeigt zudem einen Hinweis.
+* Links mit Schreibrecht und Material-Links öffnen die Dokumente über `#/s/<token>/bs|fa` bzw. `#/m/<token>/<id>/bs|fa`.
+* Smoke-Test: beide Dokumente (Seitenzahl, Inhalte).
+
 ## 0.12.17f — 2026-10-12 · Umzug auf ops.wicki.aero
 
 * Website und Repository heissen neu **ops.wicki.aero** / `bwicki/ops` (Entscheid 12.10.2026, Konzept Flightportal Frage 8). Worker: erlaubte Origins um ops.wicki.aero erweitert (briefing.wicki.aero bleibt für Links in Umlauf), `APP_URL`/`DATA_BASE` (DWD-Daten) auf die neue Adresse; Links in README/Workflows. Konzept «ops.wicki.aero – Fahrtdaten, Debriefing» Fassung 2 (`docs/Konzept_Ops_Fahrtdaten_Debriefing.md`) mit den Entscheiden vom 12.10.2026 und dem Befund zu `gb_flight_data`. Die DWD-Zwischenablage (`data/dwd/`) wird vom Worker neu unter ops.wicki.aero gelesen.
