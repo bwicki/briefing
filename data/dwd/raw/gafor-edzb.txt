@@ -1,81 +1,83 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-691
-FBEU40 EDZB 111800
+759
+FBEU40 EDZB 120600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 11.10.2026, 18.00 UTC bis 12.10.2026, 15.00 UTC
+gültig vom 12.10.2026, 06.00 UTC bis 13.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Ein Tief mit Kern über Südschweden führt mit lebhafter Westströmung
-kühle Meeresluft heran, die durch einen ostwärts durchschwenkenden
-Höhentrog labilisiert wird. Im Laufe des Montags von Westen
-zunehmender Zwischenhocheinfluss mit einsetzender Stabilisierung.
+Die eingeflossene kühle und leicht labil geschichtete Meeresluft wird
+durch sich verstärkendem Zwischenhocheinfluss weiter stabilisiert und
+trocknet allmählich ab. In der Nacht zum Dienstag kann sich bodennah
+aber teilweise wieder eine feuchte Grundschicht ausbilden.
 
 Wettergeschehen:
-Zunächst meist SCT/BKN, teils FEW/SCT SC/CU bei 2500 bis 3500 FT AMSL
-mit Tops bei FL080 bis FL100. Darüber gebietsweise CI-Felder oberhalb
-FL180. Dabei verbreitet niederschlagsfrei, örtlich schauerartiger, in
-Küstennähe auch gewittriger Regen durch TCU/CB bei 1500 bis 2500 FT
-AMSL und Tops um FL180.
+Am Montagmorgen vor allem in einem Streifen vom Berliner Raum bis
+nach Westmecklenburg teils wolkenlos, sonst überwiegt SCT/BKN SC mit
+Basis bei 2000 bis 3000 FT AMSL und Obergrenze zwischen 4000 FT AMSL
+und FL100. Darunter von der Börde bis nach Südbrandenburg sowie in
+den Weststaulagen der Mittelgebirge stellenweise SCT/BKN ST bei 300
+bis 1000 FT AGL, Kammlagen in Wolken. In Vorpommern sowie vom Harz
+bis nach Sachsen lokal eingelagerte TCU mit TOPS bis FL130 und
+einzelnen Regenschauern, sonst niederschlagsfrei.
 
-Im Laufe der Nacht abschwächende bzw. langsam nach Osten abziehende
-Schauer, einzig an der Küste bin zum Morgen lokale Regenschauer aus
-isolierten TCU/CB bei 1000 bis 2000 FT AGL mit Tops um FL120. Sonst
-häufig SCT/BKN SC bei 1000 bis 2000 FT AGL mit Obergrenzen bis FL080.
-Darunter gebietsweise SCT/BKN ST bei 300 bis 800 FT AGL. Zudem in den
-Weststaulagen der Mittelgebirge sowie in einem Streifen von der
-Altmark bis zur Lausitz häufig SCT/BKN ST in 100 bis 400 FT AGL,
-teils mit Dunst darunter.
+Am Montagvormittag vom Berliner Raum bis nach Westmecklenburg
+weiterhin meist wolkenlos, sonst SCT/BKN SC/CU mit Basis bei 2000 bis
+3500 FT AMSL, bis zum Nachmittag bei allgemein einsetzenden
+Bewölkungsrückgang zu FEW/SCT noch weiter anhebende Wolkenbasen auf
+2500 bis 5000 FT AMSL, Obergrenze um FL070. Es ist überwiegend
+trocken, einzig in Küstennähe/Vorpommern sowie vom Harz bis nach
+Sachsen aus ISOL TCU/CB mit TOPS bis maximal FL100 bis zum frühen
+Nachmittag noch einzelne schwache Regenschauer.
 
-Im Vormittagsverlauf auflösende Dunstfelder und langsamer Übergang in
-SCT/BKN, teils FEW/SCT CU/SC in 1500 bis 2500 FT AMSL, zum Mittag
-weiter auf 2000 bis 3000 FT AMSL ansteigend. Dabei meist trocken,
-einzig in Küstennähe und im Mittelgebirgsraum einzelne Schauer aus
-isolierten TCU/CB bei 1000 bis 2000 FT AGL.
-
-Am Nachmittag meist FEW/SCT, lokal SCT/BKN CU/SC bei 3500 bis 4500 FT
-AMSL mit nur einzelnen Schauern über den Mittelgebirgen.
+In der Nacht zum Dienstag wolkenlos oder flache SC-Schollen um 5000
+FT AMSL. Im Nachtverlauf insbesondere in Flussniederungen und
+Muldenlagen Ausbildung flacher Nebelfelder. Niederschlagsfrei.
 
 Sichtweite:
-Meist oberhalb 10 bis 30 km, im Niederschlag je nach Intensität und
-unter tieferer ST-Bewölkung auf 2 bis 7 km zurückgehend.
+30 bis über 60 km, unter tieferer ST-Bewölkung oder im Regenschauer
+örtlich auf 4 bis 10 km reduziert, bei Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  21 UTC  |  09 UTC  |
- 500FT | 290/15KT  08C | 280/10KT  08C |
-1000FT | 300/20KT  07C | 290/15KT  06C |
-1500FT | 310/20KT  06C | 320/20KT  05C |
-2000FT | 310/20KT  06C | 320/20KT  05C |
-3000FT | 310/20KT  04C | 320/20KT  03C |
-5000FT | 300/20KT  01C | 320/20KT  00C |
-FL100  | 310/25KT M08C | 330/25KT M08C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 280/10KT  08C | 350/05KT  10C |
+1000FT | 300/15KT  06C | 350/05KT  09C |
+1500FT | 330/20KT  06C | 330/05KT  08C |
+2000FT | 330/20KT  05C | 330/05KT  07C |
+3000FT | 320/20KT  03C | 320/10KT  05C |
+5000FT | 320/20KT  01C | 320/10KT  01C |
+FL100  | 320/25KT M08C | 340/20KT M04C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 250/20KT  09C | 270/10KT  09C |
-1500FT | 270/30KT  07C | 290/10KT  07C |
-2000FT | 280/30KT  07C | 300/10KT  06C |
-3000FT | 300/30KT  04C | 310/10KT  04C |
-5000FT | 300/25KT  01C | 310/10KT M00C |
-FL100  | 300/25KT M08C | 310/20KT M08C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 270/10KT  08C | 160/05KT  11C |
+1500FT | 290/15KT  07C | 050/05KT  10C |
+2000FT | 310/10KT  06C | 030/05KT  09C |
+3000FT | 320/15KT  04C | 300/05KT  06C |
+5000FT | 310/15KT  01C | 290/05KT  01C |
+FL100  | 310/15KT M09C | 340/20KT M04C |
 
 Turbulenz:
-Mäßig bis stark in TCU/CB-Nähe, sonst an der Küste leicht bis mäßig
-unterhalb 2000 FT AGL.
+Mäßig bis stark in TCU/CB-Nähe, sonst über der Vorpommerschen See bis
+zum Montagmittag leicht bis mäßig unterhalb 2000 FT AMSL.
 
 Vereisung:
 Mäßig bis stark in TCU/CB. Sonst in unterkühlter Bewölkung leicht bis
 mäßig unterhalb FL100.
 
 Nullgradgrenze:
-4000 bis 5000 FT AMSL, lokal um FL060
+Zwischen 4000 und 6000 FT AMSL, in der Nacht zum Dienstag im
+Südwesten auf FL90-100 ansteigend. Zudem vor allem im Südbrandenburg
+am Dienstagmorgen vorübergehend leichter Frost am Boden.
 
 Inversionen:
-nicht signifikant
+Im Tagesverlauf Ausbildung einer Absinkinversion um FL070. In der
+Nacht zum Dienstag Ausbildung einer Bodeninversion unterhalb 500 bis
+1000 FT AGL.
 
 Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
 Berlin  04.51 | 05.25 | 16.18 | 16.52
@@ -83,7 +85,6 @@ Leipzig  04.56 | 05.29 | 16.25 | 16.57
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt am 12.10.2026 um
-02.00/05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
-Luftfahrtberatungszentrale Berlin/Qe
+Luftfahrtberatungszentrale Berlin/Ru
