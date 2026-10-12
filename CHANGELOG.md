@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.17e — 2026-10-12 · B04: Sichtweite
+
+* **B04:** Spalte «Sicht» (m/km, rot unter 5 km), erscheint nur, wenn mindestens eine Station im Umkreis Sichtweite meldet – derzeit Météo-France (6-min `vv`); Text-Fassung (Brief) ebenso.
+
 ## 0.12.17d — 2026-10-12 · Fahrtprofil: Link auf die O₂-Berechnung
 
 * **Das Briefing merkt sich die Berechnung der O₂-Planung:** Bei der ersten Übergabe vergibt es den Kurzcode der Berechnung

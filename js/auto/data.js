@@ -390,7 +390,7 @@ export async function obs(ctx, b) {
   if (ctx.store.mode !== 'remote') return { kind: 'obs', stand: Date.now(), source: '', data: { stations: [], km, local: true }, text: t('auto_obsLocal') };
   const j = await ctx.store.data('stations', { lat: b.site.lat.toFixed(4), lon: b.site.lon.toFixed(4), km }, shareTok(ctx));
   const st = (j.stations || []).map((x) => ({ ...x, brg: Math.round(bearing(b.site.lat, b.site.lon, x.lat, x.lon)) }));
-  const text = st.map((x) => `${x.name} (${x.km} km): ${x.dir != null ? String(x.dir).padStart(3, '0') : '–'}/${x.kt ?? '–'} kt${x.gustKt != null ? ` G${x.gustKt}` : ''} · ${x.tempC ?? '–'} °C${x.dewC != null ? `/${x.dewC}` : ''}${x.rh != null ? ` · ${x.rh} %` : ''}${x.qnh != null ? ` · ${x.qnh} hPa` : ''}${x.precipMm != null ? ` · ${x.precipMm} mm` : ''}`).join('\n') || t('auto_none');
+  const text = st.map((x) => `${x.name} (${x.km} km): ${x.dir != null ? String(x.dir).padStart(3, '0') : '–'}/${x.kt ?? '–'} kt${x.gustKt != null ? ` G${x.gustKt}` : ''} · ${x.tempC ?? '–'} °C${x.dewC != null ? `/${x.dewC}` : ''}${x.rh != null ? ` · ${x.rh} %` : ''}${x.qnh != null ? ` · ${x.qnh} hPa` : ''}${x.precipMm != null ? ` · ${x.precipMm} mm` : ''}${x.visM != null ? ` · Sicht ${x.visM >= 10000 ? '≥10 km' : Math.round(x.visM / 100) / 10 + ' km'}` : ''}`).join('\n') || t('auto_none');
   return { kind: 'obs', sourceUrl: 'https://www.meteoschweiz.admin.ch/', stand: Date.now(), source: [...new Set(st.map((x) => x.src))].join(', '), data: { stations: st, km, errors: j.errors || [], generated: j.generated }, text };
 }
 

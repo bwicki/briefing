@@ -636,6 +636,7 @@ export function renderObs(snap, b) {
   const refMs = ageRefMs(b);
   const age = (iso) => { if (!iso) return ''; const m = Math.max(0, Math.round((refMs - new Date(iso)) / 60000)); return m < 90 ? `${m} min` : `${Math.round(m / 60)} h`; };
   const windCls = (x) => ((x.kt || 0) >= 14 || (x.gustKt || 0) >= 20 ? 'bad' : '');
+  const hasVis = st.some((x) => x.visM != null);
   const rows = st.map((x) => h('tr', { class: x.amateur ? 'amateur' : '' }, [   // 0.12.17c: Amateurstationen (MeteoNetwork) kursiv/gedämpft
     h('td', [h('b', x.name), h('span.muted.small', ` ${x.src}`)]),
     h('td.mono', [dirArrow(b, x.lat, x.lon), ` ${x.km} km`]),
@@ -645,9 +646,10 @@ export function renderObs(snap, b) {
     h('td.mono', x.rh != null ? `${Math.round(x.rh)} %` : '–'),
     h('td.mono', x.qnh != null ? `${Math.round(x.qnh)} hPa` : '–'),
     h('td.mono', x.precipMm != null ? `${x.precipMm} mm` : '–'),
+    hasVis ? h('td.mono', { class: x.visM != null && x.visM < 5000 ? 'bad' : '' }, x.visM != null ? (x.visM >= 10000 ? '≥10 km' : x.visM >= 1000 ? `${Math.round(x.visM / 100) / 10} km` : `${x.visM} m`) : '–') : null,   // 0.12.17e: Sichtweite (nur wo gemeldet, z. B. Météo-France); rot unter 5 km
   ]));
   return h('div', [
-    h('div.tbl-scroll', h('table.auto.obs-tbl', [h('thead', h('tr', [t('auto_station'), 'km', 'UTC', t('auto_wind'), 'T / Td', 'RH', 'QNH', t('auto_precip')].map((x) => h('th', x)))), h('tbody', rows)])),
+    h('div.tbl-scroll', h('table.auto.obs-tbl', [h('thead', h('tr', [t('auto_station'), 'km', 'UTC', t('auto_wind'), 'T / Td', 'RH', 'QNH', t('auto_precip'), ...(hasVis ? [t('auto_vis')] : [])].map((x) => h('th', x)))), h('tbody', rows)])),
     h('div.note.small', `${t('auto_obsNote', { km: d.km })}${d.errors?.length ? ' · ' + d.errors.join(' · ') : ''}`),
   ]);
 }
