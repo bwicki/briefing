@@ -405,8 +405,8 @@ const DEW = (t, rh) => { if (t == null || rh == null || rh <= 0) return null; co
  */
 /** 0.12.17: regionale Messnetze (offene Daten). Jede Quelle nur, wenn ihr Gebiet den Umkreis berührt; Fehler je Quelle in errors. */
 const REGIONS = {
-  at: { lat: [46.3, 49.1], lon: [9.4, 17.2] }, st: { lat: [46.2, 47.1], lon: [10.3, 12.5] }, tn: { lat: [45.6, 46.6], lon: [10.4, 12.0] },
-  lo: { lat: [44.6, 46.7], lon: [8.4, 11.5] }, fr: { lat: [42.0, 51.2], lon: [-5.2, 8.3] },
+  at: { lat: [46.3, 49.1], lon: [9.4, 17.2] }, st: { lat: [46.2, 47.1], lon: [10.3, 12.5] },
+  it: { lat: [35.4, 47.2], lon: [6.5, 18.7] }, fr: { lat: [42.0, 51.2], lon: [-5.2, 8.3] },
 };
 const MS_KT = 1.943844;
 const localIsoToMs = (s, tz = 'Europe/Rome') => {   // «2026-10-11T18:30:00» (Lokalzeit ohne Zone) → UTC-ms über die Zeitzonenregel
@@ -450,39 +450,41 @@ async function regionalStations(ctx, env, decrypt, lat, lon, km, push, errors) {
     for (const st of stn) { const v = by[st.id]; if (!v || !inBox(st.lat, st.lon) || (v.LT == null && v.WG == null)) continue;
       push({ id: `st-${st.id}`, name: st.name.replace(/\b([A-ZÄÖÜ])([A-ZÄÖÜ]{2,})\b/g, (m, a, b) => a + b.toLowerCase()), lat: st.lat, lon: st.lon, time: new Date(v.ms).toISOString(), dir: v.WR != null ? Math.round(v.WR) : null, kt: v.WG != null ? Math.round(v.WG * MS_KT * 10) / 10 : null, gustKt: v['WG.BOE'] != null ? Math.round(v['WG.BOE'] * MS_KT) : null, tempC: v.LT ?? null, dewC: DEW(v.LT, v.LF), rh: v.LF != null ? Math.round(v.LF) : null, qnh: v['LD.RED'] != null ? Math.round(v['LD.RED']) : null, precipMm: v.N ?? null, src: 'Südtirol' }); }
   })().catch((e) => errors.push('Südtirol: ' + e.message)));
-  // Trentino: Meteotrentino (CC BY) – Stationsliste (XML), je Station die Werte des Tages (XML); die 12 nächsten
-  if (hits(REGIONS.tn)) tasks.push((async () => {
-    const list = await cached(ctx, 'stations/trentino-stations', 86400, async () => { const x = await (await get('https://dati.meteotrentino.it/service.asmx/listaStazioni', { accept: 'text/xml' }, 15000)).text(); const out = []; for (const m of x.matchAll(/<anagrafica>([\s\S]*?)<\/anagrafica>/g)) { const g = (t) => (new RegExp(`<${t}>([^<]*)<\\/${t}>`).exec(m[1]) || [])[1]; if (g('fine')) continue; out.push({ id: g('codice'), name: g('nome'), lat: +g('latitudine'), lon: +g('longitudine') }); } return out; });
-    const near = list.filter((x) => inBox(x.lat, x.lon)).map((x) => ({ ...x, d: distKm(lat, lon, x.lat, x.lon) })).filter((x) => x.d <= km).sort((a, b) => a.d - b.d).slice(0, 12);
-    const res = await Promise.allSettled(near.map((st) => get(`https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${st.id}`, { accept: 'text/xml' }, 15000).then((r) => r.text()).then((x) => ({ st, x }))));
-    for (const r of res) {
-      if (r.status !== 'fulfilled') continue; const { st, x } = r.value;
-      const lastOf = (block, tag) => { const b = (new RegExp(`<${block}[^>]*>([\\s\\S]*?)<\\/${block}>`).exec(x) || [])[1] || ''; const items = b.split('<data>').slice(1); if (!items.length) return null; const it = items[items.length - 1]; const dt = it.slice(0, it.indexOf('</data>')); const val = (t) => { const m = new RegExp(`<${t}>([^<]*)<\\/${t}>`).exec(it); return m && m[1] !== '' ? +m[1] : null; }; return { ms: localIsoToMs(dt, 'Europe/Rome'), v: val(tag), vmax: val('vmax'), d: val('d') }; };
-      const T = lastOf('temperature', 'temperatura'), W = lastOf('venti', 'v'), H = lastOf('umidita_relativa', 'rh'), R = lastOf('precipitazioni', 'pioggia');
-      const ms = Math.max(T?.ms || 0, W?.ms || 0); if (!fresh(ms)) continue;
-      push({ id: `tn-${st.id}`, name: st.name, lat: st.lat, lon: st.lon, time: new Date(ms).toISOString(), dir: W?.d != null ? Math.round(W.d) : null, kt: W?.v != null ? Math.round(W.v * MS_KT * 10) / 10 : null, gustKt: W?.vmax != null ? Math.round(W.vmax * MS_KT) : null, tempC: T?.v ?? null, dewC: DEW(T?.v, H?.v), rh: H?.v != null ? Math.round(H.v) : null, qnh: null, precipMm: R?.v ?? null, src: 'Meteotrentino' });
+  // Italien: Meteo-Hub (Agenzia ItaliaMeteo/CINECA) – Beobachtungskarte-API ohne Anmeldung, CC BY 4.0: regionale Netze
+  // (DPCN Veneto/Lombardia/Piemonte/Liguria/…, Open-Trentino, SIR Toscana, ARPA FVG, Emilia-Romagna); je Grösse ein Abruf,
+  // letzter Wert je Station; Amateurnetz «mnw» (MeteoNetwork) ausgeschlossen. 0.12.17a (ersetzt Meteotrentino/ARPA-Socrata)
+  if (hits(REGIONS.it)) tasks.push((async () => {
+    const f = (d) => d.toISOString().slice(0, 16).replace('T', ' ');
+    const from = f(new Date(Date.now() - 100 * 60000)), to = f(new Date(Date.now() + 10 * 60000));
+    const bb = `lonmin=${box.lon[0].toFixed(3)}&lonmax=${box.lon[1].toFixed(3)}&latmin=${box.lat[0].toFixed(3)}&latmax=${box.lat[1].toFixed(3)}`;
+    const VARS = { B12101: 'tt', B11001: 'dd', B11002: 'ff', B11041: 'fx', B13003: 'rh', B13011: 'rr' };
+    const TR = { B11041: ';timerange:2,0,3600', B13011: ';timerange:1,0,3600' };
+    const st = {};
+    await Promise.all(Object.keys(VARS).map(async (v) => {
+      const j = await (await get(`https://meteohub.agenziaitaliameteo.it/api/observations?q=${encodeURIComponent(`reftime: >=${from},<=${to};product:${v};license:CCBY_COMPLIANT${TR[v] || ''}`)}&reliabilityCheck=true&last=true&${bb}`, {}, 15000)).json();
+      for (const s of j.data || []) {
+        const net = s.stat?.net; if (!net || net === 'mnw' || (net === 'dpcn-bolzanoboze' && hits(REGIONS.st)) || s.stat.lat == null) continue;   // Südtirol direkt (10-min, QNH)
+        const vals = (s.prod?.[0]?.val || []).filter((x) => x.val != null && x.rel !== 0); if (!vals.length) continue;
+        const last = vals[vals.length - 1]; const ms = Date.parse(last.ref + 'Z'); if (!fresh(ms)) continue;
+        const key = `${net}/${s.stat.lat.toFixed(4)},${s.stat.lon.toFixed(4)}`;
+        const o = (st[key] = st[key] || { net, lat: s.stat.lat, lon: s.stat.lon, name: (s.stat.details || []).find((d) => d.var === 'B01019')?.val || '', v: {}, ms: 0 });
+        o.v[VARS[v]] = last.val; o.ms = Math.max(o.ms, ms);
+      }
+    }));
+    const REG = { 'open-trentino': 'Trentino', 'sir-toscana': 'Toscana', arpafvg: 'Friuli VG', agrmet: 'Emilia-Romagna', locali: 'Emilia-Romagna', simnbo: 'Emilia-Romagna', simnpr: 'Emilia-Romagna', spdsra: 'Emilia-Romagna', urbane: 'Emilia-Romagna', claster: 'Emilia-Romagna', 'dpcn-bolzanoboze': 'Südtirol' };
+    const region = (net) => REG[net] || (net.startsWith('dpcn-') ? net.slice(5).replace(/^./, (c) => c.toUpperCase()) : net);
+    for (const o of Object.values(st)) {
+      if (o.v.tt == null && o.v.ff == null) continue;
+      const tempC = o.v.tt != null ? Math.round((o.v.tt - 273.15) * 10) / 10 : null;
+      push({ id: `it-${o.net}-${o.lat.toFixed(3)},${o.lon.toFixed(3)}`, name: (o.name || region(o.net)).replace(/^[A-Z]{1,2}\d{3,5}\s*-\s*/, '').replace(/^SM\s+/, '').replace(/\s+/g, ' ').trim(), lat: o.lat, lon: o.lon, time: new Date(o.ms).toISOString(), dir: o.v.dd != null ? Math.round(o.v.dd) : null, kt: o.v.ff != null ? Math.round(o.v.ff * MS_KT * 10) / 10 : null, gustKt: o.v.fx != null ? Math.round(o.v.fx * MS_KT) : null, tempC, dewC: DEW(tempC, o.v.rh), rh: o.v.rh != null ? Math.round(o.v.rh) : null, qnh: null, precipMm: o.v.rr != null ? Math.round(o.v.rr * 10) / 10 : null, src: `Meteo-Hub ${region(o.net)}` });
     }
-  })().catch((e) => errors.push('Meteotrentino: ' + e.message)));
-  // Lombardei: ARPA Lombardia über dati.lombardia.it (Socrata, CC BY) – Sensoren im Rechteck, Werte der letzten 2 h in einem Abruf
-  if (hits(REGIONS.lo)) tasks.push((async () => {
-    const sens = await cached(ctx, `stations/lombardia-sens/${lat.toFixed(1)},${lon.toFixed(1)},${km}`, 86400, async () => (await get(`https://www.dati.lombardia.it/resource/nf78-nj6b.json?$limit=5000&$where=${encodeURIComponent(`storico='N' AND lat>${box.lat[0].toFixed(3)} AND lat<${box.lat[1].toFixed(3)} AND lng>${box.lon[0].toFixed(3)} AND lng<${box.lon[1].toFixed(3)}`)}`, {}, 15000)).json());
-    const WANT = { Temperatura: 'tt', 'Velocità Vento': 'ff', 'Direzione Vento': 'dd', 'Umidità Relativa': 'rh', Precipitazione: 'rr' };
-    const stations = {}; const sensMap = {};
-    for (const s of sens || []) { const k = WANT[s.tipologia]; if (!k) continue; const st = (stations[s.idstazione] = stations[s.idstazione] || { id: s.idstazione, name: s.nomestazione, lat: +s.lat, lon: +s.lng, v: {}, ms: 0 }); sensMap[s.idsensore] = { st, k }; }
-    const nearSt = Object.values(stations).map((x) => ({ ...x, d: distKm(lat, lon, x.lat, x.lon) })).filter((x) => x.d <= km).sort((a, b) => a.d - b.d).slice(0, 40);
-    const ids = Object.entries(sensMap).filter(([, m]) => nearSt.some((x) => x.id === m.st.id)).map(([id]) => `'${id}'`);
-    if (!ids.length) return;
-    const since = new Date(Date.now() - 2 * 3600000).toISOString().slice(0, 19);
-    const vals = await (await get(`https://www.dati.lombardia.it/resource/647i-nhxk.json?$limit=5000&$order=data%20DESC&$where=${encodeURIComponent(`idsensore in(${ids.join(',')}) AND data>'${since}'`)}`, {}, 20000)).json();
-    for (const v of vals || []) { const m = sensMap[v.idsensore]; if (!m || v.valore == null || +v.valore <= -999) continue; if (m.st.v[m.k] != null) continue; m.st.v[m.k] = +v.valore; m.st.ms = Math.max(m.st.ms, localIsoToMs(v.data.slice(0, 19), 'Europe/Rome') || 0); }
-    for (const st of nearSt) { const v = stations[st.id].v, ms = stations[st.id].ms; if (!fresh(ms) || (v.tt == null && v.ff == null)) continue;
-      push({ id: `lo-${st.id}`, name: st.name, lat: st.lat, lon: st.lon, time: new Date(ms).toISOString(), dir: v.dd != null ? Math.round(v.dd) : null, kt: v.ff != null ? Math.round(v.ff * MS_KT * 10) / 10 : null, gustKt: null, tempC: v.tt ?? null, dewC: DEW(v.tt, v.rh), rh: v.rh != null ? Math.round(v.rh) : null, qnh: null, precipMm: v.rr ?? null, src: 'ARPA Lombardia' }); }
-  })().catch((e) => errors.push('ARPA Lombardia: ' + e.message)));
+  })().catch((e) => errors.push('Meteo-Hub: ' + e.message)));
   // Frankreich: Météo-France «Données d'observation» (Portail API, Schlüssel «meteofrance_key» in den Zugängen) – 6-min-Werte je Station, die 15 nächsten
   if (hits(REGIONS.fr)) tasks.push((async () => {
     const key = env && decrypt ? await getSecret(env, decrypt, 'meteofrance_key') : null;
     if (!key) return;
-    const H = { headers: { apikey: key, Authorization: `Bearer ${key}` } };
+    // Portail API: entweder ein API-Schlüssel (JWT, Kopfzeile «apikey») oder die Application-ID → OAuth2-Token (1 h, hier 50 min gecacht)
+    const H = { headers: /^eyJ/.test(key) ? { apikey: key } : { Authorization: `Bearer ${await cached(ctx, 'mf-token', 3000, async () => { const r = await fetch('https://portail-api.meteofrance.fr/token', { method: 'POST', headers: { Authorization: `Basic ${key}`, 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA }, body: 'grant_type=client_credentials' }); if (!r.ok) throw new Error('Token HTTP ' + r.status); return (await r.json()).access_token; })}` } };
     const list = await cached(ctx, 'stations/mf-stations', 86400, async () => { const csv = await (await get('https://public-api.meteofrance.fr/public/DPObs/v1/liste-stations', { ...H, accept: 'text/csv' }, 20000)).text(); const rows = csv.split(/\r?\n/).filter(Boolean); const head = rows[0].split(';').map((x) => x.trim().toLowerCase()); const ix = (n) => head.findIndex((h) => h.includes(n)); const iId = ix('id_station'), iName = ix('nom'), iLat = ix('latitude'), iLon = ix('longitude'); return rows.slice(1).map((r) => r.split(';')).filter((c) => c.length > 3).map((c) => ({ id: c[iId], name: c[iName], lat: +c[iLat], lon: +c[iLon] })).filter((x) => isFinite(x.lat)); });
     const near = list.filter((x) => inBox(x.lat, x.lon)).map((x) => ({ ...x, d: distKm(lat, lon, x.lat, x.lon) })).filter((x) => x.d <= km).sort((a, b) => a.d - b.d).slice(0, 15);
     const res = await Promise.allSettled(near.map((st) => get(`https://public-api.meteofrance.fr/public/DPObs/v1/station/infrahoraire-6m?id_station=${st.id}&format=json`, H, 15000).then((r) => r.json()).then((j) => ({ st, j }))));
@@ -516,11 +518,12 @@ async function stations(ctx, q, env, decrypt) {
       } catch (e) { errors.push('SMN: ' + e.message); }
     }
     // DE: Bright Sky – nächste DWD-Station je Rasterpunkt (nur innerhalb Deutschlands Treffer)
+    // 0.12.17a: nur Rasterpunkte innerhalb Deutschlands (sonst 19 Leerabfragen – Limit von 50 Unteranfragen je Aufruf wurde in Bozen überschritten), zwei Ringe
+    const inDE = (la, lo) => la >= 47.2 && la <= 55.2 && lo >= 5.8 && lo <= 15.1;
     const pts = [[lat, lon]];
-    const stepKm = Math.max(15, km / 3);
-    for (let r = stepKm; r <= km; r += stepKm) for (let a = 0; a < 360; a += 60) { const d = r / 111; pts.push([lat + d * Math.cos(a * Math.PI / 180), lon + d * Math.sin(a * Math.PI / 180) / Math.cos(lat * Math.PI / 180)]); }
+    for (const r of [km / 2, km]) for (let a = 0; a < 360; a += 60) { const d = r / 111; pts.push([lat + d * Math.cos(a * Math.PI / 180), lon + d * Math.sin(a * Math.PI / 180) / Math.cos(lat * Math.PI / 180)]); }
     const seen = new Set();
-    const deRes = await Promise.allSettled(pts.slice(0, 19).map(([la, lo]) => get(`https://api.brightsky.dev/current_weather?lat=${la.toFixed(3)}&lon=${lo.toFixed(3)}&max_dist=${Math.round(Math.min(60000, km * 1000))}`, {}, 10000).then((r) => r.json()).catch((e) => { if (!/HTTP 404/.test(e.message)) errors.push('BrightSky: ' + e.message); return null; })));
+    const deRes = await Promise.allSettled(pts.filter(([la, lo]) => inDE(la, lo)).slice(0, 13).map(([la, lo]) => get(`https://api.brightsky.dev/current_weather?lat=${la.toFixed(3)}&lon=${lo.toFixed(3)}&max_dist=${Math.round(Math.min(60000, km * 1000))}`, {}, 10000).then((r) => r.json()).catch((e) => { if (!/HTTP 404/.test(e.message)) errors.push('BrightSky: ' + e.message); return null; })));
     for (const r of deRes) { const j = r.status === 'fulfilled' ? r.value : null; if (!j?.weather) continue; const src = j.sources?.[0] || {}; const key = src.dwd_station_id || src.station_name; if (!key || seen.has(key)) continue; seen.add(key); const w = j.weather; push({ id: src.dwd_station_id || '', name: src.station_name || 'DWD', lat: src.lat, lon: src.lon, time: w.timestamp || null, dir: w.wind_direction_10 ?? w.wind_direction ?? null, kt: (w.wind_speed_10 ?? w.wind_speed) != null ? Math.round((w.wind_speed_10 ?? w.wind_speed) / 1.852 * 10) / 10 : null, gustKt: (w.wind_gust_speed_10 ?? w.wind_gust_speed) != null ? Math.round((w.wind_gust_speed_10 ?? w.wind_gust_speed) / 1.852 * 10) / 10 : null, tempC: w.temperature ?? null, rh: w.relative_humidity ?? null, dewC: w.dew_point ?? DEW(w.temperature, w.relative_humidity), qnh: w.pressure_msl ?? null, precipMm: w.precipitation_60 ?? w.precipitation_10 ?? null, src: 'DWD (Bright Sky)' }); }
     // 0.12.17: regionale Netze – Österreich (GeoSphere), Südtirol, Trentino, Lombardei, Frankreich (Météo-France mit Schlüssel)
     await regionalStations(ctx, env, decrypt, lat, lon, km, push, errors);
@@ -548,7 +551,7 @@ async function stations(ctx, q, env, decrypt) {
         // CH/DE sind über SwissMetNet/Bright Sky abgedeckt – deren WMO-Blöcke (066xx–069xx, 10xxx) nicht nochmals (Doppelnennungen, Entscheid 11.10.2026); übrige zusätzlich 3-km-Regel
         if (st.lat == null || /^0-20000-0-(06[6-9]\d\d|10\d{3})$/.test(String(st.id)) || out.some((o) => distKm(o.lat, o.lon, st.lat, st.lon) < 3)) continue;
         const g = (k) => st.v[k] || null; const dir = g('wind_from_direction'), spd = g('wind_speed'), gst = g('wind_speed_of_gust'), tt = g('air_temperature'), td = g('dew_point_temperature'), rh = g('relative_humidity'), pp = g('air_pressure_at_mean_sea_level'), rr = g('precipitation_amount');
-        push({ id: st.id, name: names[st.id]?.name ? names[st.id].name.replace(/_/g, ' ').replace(/\s*\/\s*/g, ' / ').replace(/\s+/g, ' ').trim().replace(/\b([A-ZÄÖÜ])([A-ZÄÖÜ]{2,})\b/g, (m, a, b) => a + b.toLowerCase()) : st.id, lat: st.lat, lon: st.lon, time: (spd || tt || dir)?.t || null, dir: dir ? Math.round(dir.v) : null, kt: spd ? Math.round(spd.v * 1.943844 * 10) / 10 : null, gustKt: gst ? Math.round(gst.v * 1.943844) : null, tempC: tt ? Math.round(tt.v * 10) / 10 : null, dewC: td ? Math.round(td.v * 10) / 10 : null, rh: rh ? Math.round(rh.v) : null, qnh: pp ? Math.round(pp.v) : null, precipMm: rr ? Math.round(rr.v * 10) / 10 : null, src: 'MeteoGate (EUMETNET)' });
+        push({ id: st.id, name: names[st.id]?.name ? names[st.id].name.replace(/_/g, ' ').replace(/\s*\(\d{4,5}\s*\d?\)\s*$/, '').replace(/\s*\/\s*/g, ' / ').replace(/\s+/g, ' ').trim().replace(/\b([A-ZÄÖÜ])([A-ZÄÖÜ]{2,})\b/g, (m, a, b) => a + b.toLowerCase()) : st.id, lat: st.lat, lon: st.lon, time: (spd || tt || dir)?.t || null, dir: dir ? Math.round(dir.v) : null, kt: spd ? Math.round(spd.v * 1.943844 * 10) / 10 : null, gustKt: gst ? Math.round(gst.v * 1.943844) : null, tempC: tt ? Math.round(tt.v * 10) / 10 : null, dewC: td ? Math.round(td.v * 10) / 10 : null, rh: rh ? Math.round(rh.v) : null, qnh: pp ? Math.round(pp.v) : null, precipMm: rr ? Math.round(rr.v * 10) / 10 : null, src: 'MeteoGate (EUMETNET)' });
       }
     } catch (e) { errors.push('MeteoGate: ' + e.message); }
     out.sort((a, b) => a.km - b.km);

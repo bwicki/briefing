@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.12.17a — 2026-10-12 · B04: ganz Italien über Meteo-Hub, Unteranfragen-Limit
+
+* **B04 Italien:** **Meteo-Hub** (Agenzia ItaliaMeteo/CINECA, Beobachtungs-API der öffentlichen Karte, ohne Anmeldung, CC BY 4.0)
+  liefert die regionalen Netze fast aller Regionen (DPCN Piemonte, Lombardia, Veneto, Liguria, Lazio, Campania, Puglia, Sicilia,
+  Sardegna, Marche, Umbria, Calabria, Basilicata, Molise; Open-Trentino; SIR Toscana; ARPA FVG; Emilia-Romagna) – rund 2 600
+  Stationen, 10–15-min-Werte, 11–56 min alt (gemessen 12.10.2026). Je Grösse ein Abruf (T, Richtung, Wind, Böen, RH,
+  Niederschlag 1 h), Amateurnetz MeteoNetwork ausgeschlossen. **Ersetzt Meteotrentino (Stundenwerte) und ARPA Lombardia
+  (Socrata, mehrere Stunden Verzug, 429).** Südtirol bleibt direkt (10-min, QNH), dort entfällt das Meteo-Hub-Duplikat. Ohne Netz: Valle d'Aosta, Abruzzo.
+* **Limit von 50 Unteranfragen je Worker-Aufruf** wurde in Bozen überschritten («Too many subrequests»): Bright Sky nur noch für
+  Rasterpunkte innerhalb Deutschlands und mit zwei Ringen (höchstens 13 statt 19 Abfragen); GeoSphere/Südtirol/Meteo-Hub
+  brauchen zusammen ≤ 12.
+* **Météo-France:** API-Schlüssel (JWT) in Kopfzeile `apikey`; alternativ die Application-ID des Portals → OAuth2-Token (50 min gecacht).
+* MeteoGate-Namen ohne WMO-Zusatz («Milano / Linate (16080 0)» → «Milano / Linate»).
+
 ## 0.12.17 — 2026-10-11 · B04: regionale Stationsnetze Österreich, Italien, Frankreich
 
 * **B04 Beobachtungen:** zusätzliche Quellen im Worker (`/api/wx/stations`), je nach Umkreis:
