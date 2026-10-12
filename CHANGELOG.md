@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.17f — 2026-10-12 · Umzug auf ops.wicki.aero
+
+* Website und Repository heissen neu **ops.wicki.aero** / `bwicki/ops` (Entscheid 12.10.2026, Konzept Flightportal Frage 8). Worker: erlaubte Origins um ops.wicki.aero erweitert (briefing.wicki.aero bleibt für Links in Umlauf), `APP_URL`/`DATA_BASE` (DWD-Daten) auf die neue Adresse; Links in README/Workflows. Die DWD-Zwischenablage (`data/dwd/`) wird vom Worker neu unter ops.wicki.aero gelesen.
+
 ## 0.12.17e — 2026-10-12 · B04: Sichtweite
 
 * **B04:** Spalte «Sicht» (m/km, rot unter 5 km), erscheint nur, wenn mindestens eine Station im Umkreis Sichtweite meldet – derzeit Météo-France (6-min `vv`); Text-Fassung (Brief) ebenso.

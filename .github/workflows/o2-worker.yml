@@ -6,7 +6,7 @@
 # Mit dem Fahrtbriefing hat er sonst nichts zu tun: Er fasst weder den Worker «briefing-api»
 # noch dessen Datenbank an.
 #
-# Start: GitHub → bwicki/briefing → Actions → «O2 worker» → Run workflow.
+# Start: GitHub → bwicki/ops → Actions → «O2 worker» → Run workflow.
 # Was passiert: bwicki/o2 auschecken, Tests, KV-Namespace «o2-calcs» finden oder anlegen,
 # Worker «o2-api» deployen, Gesundheitsprüfung. Wiederholbar; nach jeder Änderung unter
 # worker/ im Repository bwicki/o2 erneut starten.

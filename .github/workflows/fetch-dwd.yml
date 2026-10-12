@@ -4,7 +4,7 @@ name: DWD-Berichte und METAR holen
 # Browser. Dieser Workflow holt die frei zugänglichen DWD-Luftsportberichte
 # (GAFOR, Flugwetterübersicht, Gebietsvorhersagen Ballonsport) und eine
 # METAR/TAF-Kopie und legt sie als JSON unter data/dwd ab; die App liest sie
-# von der eigenen Origin (briefing.wicki.aero/data/dwd/…). Übernommen aus
+# von der eigenen Origin (ops.wicki.aero/data/dwd/…). Übernommen aus
 # GaforCast (bwicki/gafor); dort läuft derselbe Abruf.
 
 on:

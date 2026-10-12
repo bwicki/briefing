@@ -8,10 +8,10 @@ compatibility_date = "2025-09-01"
 workers_dev = true
 
 [vars]
-ALLOWED_ORIGINS = "https://briefing.wicki.aero,https://bwicki.github.io,http://localhost:8080,http://127.0.0.1:8080"
-APP_VERSION = "0.12.17e"
-DATA_BASE = "https://briefing.wicki.aero/data/dwd"
-APP_URL = "https://briefing.wicki.aero"
+ALLOWED_ORIGINS = "https://ops.wicki.aero,https://briefing.wicki.aero,https://bwicki.github.io,http://localhost:8080,http://127.0.0.1:8080"
+APP_VERSION = "0.12.17f"
+DATA_BASE = "https://ops.wicki.aero/data/dwd"
+APP_URL = "https://ops.wicki.aero"
 
 [[d1_databases]]
 binding = "DB"

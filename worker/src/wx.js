@@ -11,11 +11,11 @@
  * mehrfach belasten.
  */
 
-const UA = 'Fahrtbriefing/0.3 (+https://briefing.wicki.aero)';
+const UA = 'Fahrtbriefing/0.3 (+https://ops.wicki.aero)';
 const AWC = 'https://aviationweather.gov/api/data';
 const GAFOR = 'https://gafor.wicki.aero/data/dwd';
 /** Eigene Kopie (GitHub Action im Repo), Rückfall GaforCast. */
-const dataBase = (env) => (env.DATA_BASE || 'https://briefing.wicki.aero/data/dwd').replace(/\/$/, '');
+const dataBase = (env) => (env.DATA_BASE || 'https://ops.wicki.aero/data/dwd').replace(/\/$/, '');
 async function copyJson(env, name) {
   const bust = `?t=${Math.floor(Date.now() / 600000)}`;
   try { return await (await get(`${dataBase(env)}/${name}${bust}`, {}, 12000)).json(); }
@@ -854,7 +854,7 @@ async function pdfRender(env, decrypt, ctx, body, auth) {
   const tmp = [...crypto.getRandomValues(new Uint8Array(16))].map((x) => (x % 36).toString(36)).join('');
   await env.DB.prepare('INSERT INTO access_links (token,briefing_id,person,role,expires_at,created_at) VALUES (?,?,?,?,?,?)').bind(tmp, id, 'PDF-Renderer', 'read', Date.now() + 3600000, Date.now()).run();
   try {
-    const page = `${(env.APP_URL || 'https://briefing.wicki.aero').replace(/\/$/, '')}/#/s/${tmp}/v`;
+    const page = `${(env.APP_URL || 'https://ops.wicki.aero').replace(/\/$/, '')}/#/s/${tmp}/v`;
     const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acc}/browser-rendering/pdf`, {
       method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: page, gotoOptions: { waitUntil: 'networkidle0', timeout: 60000 }, waitForTimeout: 2500, viewport: { width: 1200, height: 1600 }, pdfOptions: { format: 'A4', printBackground: true, preferCSSPageSize: true, margin: { top: '12mm', right: '12mm', bottom: '14mm', left: '12mm' } } }),

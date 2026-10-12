@@ -155,7 +155,7 @@ jobs:
             echo "* Prüfung: ${{ steps.deploy.outputs.url }}/api/health"
             echo "* database_id: ${{ steps.d1.outputs.id }}"
             echo
-            echo "Nächste Schritte: https://briefing.wicki.aero öffnen (GitHub Pages braucht nach dem Commit 1–2 Minuten),"
+            echo "Nächste Schritte: https://ops.wicki.aero öffnen (GitHub Pages braucht nach dem Commit 1–2 Minuten),"
             echo "Benutzer **bwicki**, Kennwort **1234**, dann Einstellungen → Experte → Kennwort ändern; Zugänge eintragen."
             echo
             echo "Eigene Domain (optional): Cloudflare → Workers & Pages → briefing-api → Settings → Domains & Routes → Add → Custom domain api.briefing.wicki.aero;"
