@@ -1,103 +1,95 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-544
-FBEU40 EDZF 130300
+571
+FBEU40 EDZF 131200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 13.10.2026, 03.00 UTC bis 14.10.2026, 00.00 UTC
+gültig vom 13.10.2026, 12.00 UTC bis 14.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Ausgehend von einem Tief über dem Europäischen Nordmeer erstreckt
-sich eine Warmfront über die Nordsee bis nach Baden-Württemberg.
-Damit einhergehend wird mit einer westlichen Strömung eine milde,
-feuchte und stabile Luftmasse herangeführt. Die zu dem Tief
-zugehörige Kaltfront erstreckt sich über den Britischen Inseln. Im
-Tagesverlauf verlagert sich die Warmfront ostwärts und verlässt im
-Laufe des Nachmittags das Vorhersagegebiet. In der Nacht überquert
-die schwache Kaltfront das Vorhersagegebiet von West nach Ost und
-labilisiert die Luftmasse leicht. Zudem bildet sich in der Nacht eine
-feuchte Grundschicht aus.
+Ausgehend von einem Islandtief erstreckt sich eine Warmfront von
+Südnorwegen über Dänemark und Franken bis in die Schweiz. Dadurch
+liegt ein Großteil des Vorhersagegebiets in einer feuchten, milden
+Luftmasse. Im Tagesverlauf zieht die Warmfront in den Osten. Am
+frühen Abend erreicht uns die dazugehörige Kaltfront, welche die
+Luftmasse leicht labilisiert und im Laufe der Nacht ebenfalls nach
+Osten abzieht. Ausgangs der Nacht nimmt der Einfluss eines
+Hochdruckgebiets mit Schwerpunkt über der Bretagne zu, es bildet sich
+örtlich eine feuchte Grundschicht.
 
 Wettergeschehen:
-Lokal haben sich einzelne Dunst- und Nebelfelder gebildet. Zudem ist
-westlich einer Linie zwischen dem Schwarzwald und Nordhessen eine
-SCT/BKN SC/AS-Bewölkung vorhanden. Die Untergrenzen sinken nach
-Westen hin ab. Im Bereich des Odenwaldes ist mit Untergrenzen um
-FL120 und im Westen von Rheinland-Pfalz mit um FL060 FT AMSL zu
-rechnen. Die Obergrenzen befinden sich um FL160. In Rheinland-Pfalz
-kommt es zu einem Gemisch aus Regen und Sprühregen.
+Derzeit liegt eine BKN/OVC SC Bewölkung mit Untergrenzen zwischen
+3500 und 5000 FT AMSL und Obergrenzen um FL100 über dem
+Vorhersagegebiet. Im Laufe des Nachmittags verdichtet sich von Westen
+die Bewölkung zu BKN/OVC SC/AS und die Untergrenzen sinken auf 2000
+FT AMSL ab, Obergrenzen zwischen FL100 und FL120. In dieser können
+sich ab dem Abend auch ISOL EMBD TCU mit Tops um FL150 befinden,
+welche bis zur zweiten Nachthälfte von Nordwest nach Südost über das
+Gebiet ziehen. Dabei kommt es zu leichten bis mäßigen Regenschauern.
 
-Im Laufe des Morgens breitet sich die SCT/BKN SC/AS-Bewölkung im
-gesamten Gebiet aus. Bis zum Mittag sinken die Untergrenzen im Osten
-des Gebietes auf um 5000 FT AMSL ab, während dessen sie im Westen auf
-um 2500 FT AMSL absinken. Der Regen/Sprühregen ist weiterhin
-vorhanden. Berge in den Wolken.
-
-Bis zum Abend verlagert sich die SCT/BKN SC/AS-Bewölkung ostwärts und
-betrifft mit Untergrenzen zwischen 2000 und 3000 FT AMSL das Gebiet
-westlich des Rheins und nördlich des Mains. Die Obergrenzen befinden
-sich um FL110. Westlich des Rheins lockert die Bewölkung nach und
-nach auf und es bildet sich ein tiefer Stratus mit wenigen 100 FT
-über Grund und Dunst oder Nebel aus.
-
-Im Laufe der Nacht zum Mittwoch bilden sich in der SCT/BKN
-SC/AS-Bewölkung eingelagerte TCUs mit TOPs um FL120 aus. Zudem
-verlagert sich die Bewölkung südostwärts, so dass sie sich am
-Mittwochmorgen südlich einer Linie zwischen Mittelbaden und dem
-mittlerem Neckarraum befindet. Nördlich der Linie bildet sich Nebel
-aus.
+Bis in den frühen Morgen hat die mittelhohe Bewölkung mit den
+eingelagerten Regenschauern das Vorhersagegebiet verlassen. Dahinter
+lockert die Bewölkung kurzzeitig auf. Zeitgleich bildet sich örtlich
+eine BKN/OVC Bewölkung um 800 FT AGL. Vereinzelt geht diese in Nebel
+oder feuchten Dunst über. Bis in den frühen Morgen bildet sich in
+Hessen und entlang des Rheins eine flache SCT/BKN SC Bewölkung
+zwischen 3500 und 5000 FT AMSL. Bis zum Berichtende löst sich der
+Nebel auf, die SC Bewölkung bleibt im Norden örtlich erhalten, dabei
+können die Untergrenzen bis 2000 FT AMSL absinken bei Obergrenzen um
+5000 FT AMSL.
 
 Sichtweite:
-30-60 km, im leichten Niederschlag je nach Intensität 3 bis 5 km, im
-Dunst 2 bis 5 km, im Nebel unter 1 km.
+30-60 km, in Regenschauern je nach Intensität 3 bis 5 km, im Dunst 1
+bis 5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 210/05KT  08C | 210/05KT  11C |
-1500FT | 190/15KT  09C | 210/15KT  10C |
-2000FT | 190/20KT  10C | 230/15KT  11C |
-3000FT | 210/20KT  09C | 270/25KT  12C |
-5000FT | 240/15KT  06C | 280/30KT  10C |
-FL100  | 300/25KT  02C | 280/30KT  03C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 190/10KT  11C | 260/05KT  12C |
+1500FT | 200/15KT  10C | 280/10KT  11C |
+2000FT | 220/15KT  10C | 300/15KT  10C |
+3000FT | 270/20KT  12C | 310/20KT  08C |
+5000FT | 270/25KT  10C | 310/20KT  03C |
+FL100  | 260/25KT  03C | 310/35KT  02C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 240/05KT  11C | 220/15KT  16C |
-1500FT | 210/10KT  12C | 210/20KT  15C |
-2000FT | 210/10KT  12C | 230/20KT  15C |
-3000FT | 230/10KT  11C | 280/20KT  12C |
-5000FT | 270/10KT  08C | 290/25KT  11C |
-FL100  | 310/20KT  02C | 310/25KT  02C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 220/15KT  14C | 270/10KT  13C |
+1500FT | 210/20KT  14C | 280/05KT  13C |
+2000FT | 220/20KT  13C | 300/05KT  12C |
+3000FT | 270/20KT  11C | 340/05KT  09C |
+5000FT | 290/25KT  10C | 310/10KT  06C |
+FL100  | 290/15KT  02C | 300/20KT  02C |
 
 Turbulenz:
+Entlang der Kaltfront mäßig zwischen FL100 und FL160. Dies betrifft
+bis zum Ende der ersten Nachthälfte den Norden des Gebiets, den Süden
+bis Ausgangs der Nacht.
 In und in der Umgebung vom TCU mäßig bis stark.
 
 Vereisung:
-Im TCU mäßig bis stark. In der SCT/BKN SC/AS-Bewölkung zwischen FL110
-und Fl160 mäßig bis stark.
+Am Nachmittag vereinzelt moderate Vereisung innerhalb des SC/AS
+zwischen FL100 und FL120. Im TCU mäßig bis stark.
 
 Nullgradgrenze:
-Um FL110. Bis zum Nachmittag im Osten auf um FL115 und im Westen auf
-um FL125 ansteigend. Zum Abend im gesamten Gebiet um FL110. Bis zum
-Mittwochmorgen im Westen auf um FL120 ansteigend, im Süden weiterhin
-um FL110.
+Am Dienstagmittag verbreitet um FL110, im Saarland bis FL120. Im
+Tagesverlauf abnehmend auf FL105 bis FL115. In der Nacht südlich des
+Mains erneut ansteigend auf FL115 bis FL125.
 
 Inversionen:
-Schwache Aufgleitinversion von FL080 am Dienstagmorgen auf um 4000 FT
-AMSL, am Nachmittag absinkend, in der Nacht abschwächend. Zudem ist
-eine Absinkinversion vorhanden, welche von FL160 am Dienstagmorgen
-auf um 5000 FT AMSL am Mittwochmorgen absinkt. In der Nacht bildet
-sich lokal eine Bodeninversion unterhalb von 1500 FT AMSL aus.
+Nördlich des Mains Inversion um 3000 FT AMSL, welche sich bis
+Eingangs der Nacht abschwächt. Südlich davon schwach ausgeprägt. Am
+Mittwoch Frühs örtlich Bodeninversion unterhalb 1500 FT AMSL.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Gießen  05.11 | 05.44 | 16.38 | 17.09
-Karlsruhe  05.11 | 05.44 | 16.41 | 17.12
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Gießen  16.38 | 17.09 | 05.13 | 05.46
+Karlsruhe  16.41 | 17.12 | 05.13 | 05.45
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Flugwetterzentrale Frankfurt/MJ
+Flugwetterzentrale Frankfurt/IT/Hg
