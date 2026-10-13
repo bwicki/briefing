@@ -1,67 +1,63 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-571
-FBEU40 EDZF 131200
+922
+FBEU40 EDZF 131800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 13.10.2026, 12.00 UTC bis 14.10.2026, 09.00 UTC
+gültig vom 13.10.2026, 18.00 UTC bis 14.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Ausgehend von einem Islandtief erstreckt sich eine Warmfront von
-Südnorwegen über Dänemark und Franken bis in die Schweiz. Dadurch
-liegt ein Großteil des Vorhersagegebiets in einer feuchten, milden
-Luftmasse. Im Tagesverlauf zieht die Warmfront in den Osten. Am
-frühen Abend erreicht uns die dazugehörige Kaltfront, welche die
+Ein Tief östlich von Island bestimmt das Wettergeschehen.
+Das Vorhersagegebiets verweilt aktuell im Warmsektor, in einer
+feuchten und milden Luftmasse.
+Am frühen Abend erreicht uns die dazugehörige Kaltfront, welche die
 Luftmasse leicht labilisiert und im Laufe der Nacht ebenfalls nach
 Osten abzieht. Ausgangs der Nacht nimmt der Einfluss eines
 Hochdruckgebiets mit Schwerpunkt über der Bretagne zu, es bildet sich
-örtlich eine feuchte Grundschicht.
+örtlich eine feuchte Grundschicht, die sich am Mittwoch allmählich
+wieder auflöst.
 
 Wettergeschehen:
-Derzeit liegt eine BKN/OVC SC Bewölkung mit Untergrenzen zwischen
-3500 und 5000 FT AMSL und Obergrenzen um FL100 über dem
-Vorhersagegebiet. Im Laufe des Nachmittags verdichtet sich von Westen
-die Bewölkung zu BKN/OVC SC/AS und die Untergrenzen sinken auf 2000
-FT AMSL ab, Obergrenzen zwischen FL100 und FL120. In dieser können
-sich ab dem Abend auch ISOL EMBD TCU mit Tops um FL150 befinden,
-welche bis zur zweiten Nachthälfte von Nordwest nach Südost über das
-Gebiet ziehen. Dabei kommt es zu leichten bis mäßigen Regenschauern.
-
+Anfangs BKN/OVC SC Bewölkung mit Untergrenzen zwischen 1500 und 2000
+FT AMSL und Obergrenzen um FL100, zeitweise noch leichter
+Regen/Sprühregen, Berge in Wolken.
+In dieser Bewölkung können sich ab dem Abend auch ISOL EMBD TCU mit
+Tops um FL150 einlagern, welche bis zur zweiten Nachthälfte von
+Nordwest nach Südost über das Gebiet ziehen. Dabei kommt es zu
+leichten bis mäßigen Regenschauern.
 Bis in den frühen Morgen hat die mittelhohe Bewölkung mit den
-eingelagerten Regenschauern das Vorhersagegebiet verlassen. Dahinter
-lockert die Bewölkung kurzzeitig auf. Zeitgleich bildet sich örtlich
-eine BKN/OVC Bewölkung um 800 FT AGL. Vereinzelt geht diese in Nebel
-oder feuchten Dunst über. Bis in den frühen Morgen bildet sich in
-Hessen und entlang des Rheins eine flache SCT/BKN SC Bewölkung
-zwischen 3500 und 5000 FT AMSL. Bis zum Berichtende löst sich der
-Nebel auf, die SC Bewölkung bleibt im Norden örtlich erhalten, dabei
-können die Untergrenzen bis 2000 FT AMSL absinken bei Obergrenzen um
-5000 FT AMSL.
+eingelagerten Regenschauern das Vorhersagegebiet verlassen.
+Dahinter lockert die Bewölkung kurzzeitig auf. Zeitgleich bildet sich
+örtlich eine BKN/OVC Bewölkung um 500 FT AGL, lokal auch feuchter
+Dunst oder der Stratus liegt als Nebel auf.
+Bis zum späten Vormittag löst sich der Nebel/Stratus auf und gebt in
+SCT/BKN SC über, Untergrenzen 2000-3000 FT AMSL, Obergrenzen um 5000
+FT AMSL.
 
 Sichtweite:
-30-60 km, in Regenschauern je nach Intensität 3 bis 5 km, im Dunst 1
+20-40 km, in Regenschauern je nach Intensität 3 bis 5 km, im Dunst 1
 bis 5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 190/10KT  11C | 260/05KT  12C |
-1500FT | 200/15KT  10C | 280/10KT  11C |
-2000FT | 220/15KT  10C | 300/15KT  10C |
-3000FT | 270/20KT  12C | 310/20KT  08C |
-5000FT | 270/25KT  10C | 310/20KT  03C |
-FL100  | 260/25KT  03C | 310/35KT  02C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 220/05KT  11C | 250/05KT  13C |
+1500FT | 230/15KT  11C | 250/05KT  10C |
+2000FT | 250/20KT  12C | 250/05KT  10C |
+3000FT | 290/35KT  12C | 290/15KT  07C |
+5000FT | 290/35KT  10C | 300/20KT  05C |
+FL100  | 260/25KT  02C | 300/30KT  01C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 220/15KT  14C | 270/10KT  13C |
-1500FT | 210/20KT  14C | 280/05KT  13C |
-2000FT | 220/20KT  13C | 300/05KT  12C |
-3000FT | 270/20KT  11C | 340/05KT  09C |
-5000FT | 290/25KT  10C | 310/10KT  06C |
-FL100  | 290/15KT  02C | 300/20KT  02C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 220/20KT  16C | 230/05KT  14C |
+1500FT | 220/25KT  16C | 230/05KT  12C |
+2000FT | 230/20KT  15C | 220/05KT  12C |
+3000FT | 270/20KT  12C | 310/05KT  09C |
+5000FT | 290/20KT  11C | 300/10KT  08C |
+FL100  | 320/25KT M00C | 310/20KT  02C |
 
 Turbulenz:
 Entlang der Kaltfront mäßig zwischen FL100 und FL160. Dies betrifft
@@ -74,22 +70,19 @@ Am Nachmittag vereinzelt moderate Vereisung innerhalb des SC/AS
 zwischen FL100 und FL120. Im TCU mäßig bis stark.
 
 Nullgradgrenze:
-Am Dienstagmittag verbreitet um FL110, im Saarland bis FL120. Im
-Tagesverlauf abnehmend auf FL105 bis FL115. In der Nacht südlich des
-Mains erneut ansteigend auf FL115 bis FL125.
+FL105, am Mittwoch FL115.
 
 Inversionen:
-Nördlich des Mains Inversion um 3000 FT AMSL, welche sich bis
-Eingangs der Nacht abschwächt. Südlich davon schwach ausgeprägt. Am
-Mittwoch Frühs örtlich Bodeninversion unterhalb 1500 FT AMSL.
+Am Mittwoch Frühs örtlich Bodeninversion unterhalb 1500 FT AMSL,
+tagsüber dann Absinkinversion um 5000 FT AMSL.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Gießen  16.38 | 17.09 | 05.13 | 05.46
-Karlsruhe  16.41 | 17.12 | 05.13 | 05.45
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Gießen  05.13 | 05.46 | 16.36 | 17.09
+Karlsruhe  05.13 | 05.45 | 16.39 | 17.11
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 14.10.2026 um 02.00
+UTC
 
-Flugwetterzentrale Frankfurt/IT/Hg
+Flugwetterzentrale Frankfurt/Go
