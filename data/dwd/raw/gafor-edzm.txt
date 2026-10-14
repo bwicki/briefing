@@ -1,92 +1,93 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-964
-FBEU40 EDZM 141200
+679
+FBEU40 EDZM 141800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 14.10.2026, 12.00 UTC bis 15.10.2026, 09.00 UTC
+gültig vom 14.10.2026, 18.00 UTC bis 15.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
 Wetterlage und -entwicklung:
-Anfangs liegen noch Reste einer Kaltfront am Alpenrand. Sonst fließt
-aus Nordwesten kühle Meeresluft ein. Das Hoch über Frankreich zieht
-nachts nach Süddeutschland und bleibt auch am Donnerstag
-wetterbestimmend. Dadurch bildet sich nachts eine kühle feuchte
-Grundschicht mit verbreitetem Nebel, der sich am Donnerstag zögernd
-auflöst.
+Ein Hoch zieht nachts von Frankreich Richtung Tschechien, bleibt aber
+auch am Donnerstag für Süddeutschland wetterbestimmend. In der Nacht
+bildet sich eine feuchtkühle Grundschicht aus, die am Donnerstag oft
+nur zögerlich abgebaut wird. In der der Höhe wird gleichzeitig
+feuchtere Luft aus Nordwesten herangeführt.
 
 Wettergeschehen:
- Anfangs im Alpenraum und am Alpenrand BKN/OVC CU/SC mit Basis bei
-3000 FT AMSL. Gelegentlich fällt noch etwas Regen oder Sprühregen. Im
-Nachmittagsverlauf wird es trocken und die CU/SC-Decke hebt auf 4000
-FT AMSL an. Die Tops sinken von FL120 auf FL070 ab. Von Norden her
-setzen sich zögernd Auflockerungen durch.
-In den übrigen Bereichen SCT CU bei 3500 FT AMSL, ansteigend bis zum
-späten Nachmittag auf 4000-4500 FT AMSL. Örtlich breiten sich die CU
-zu einer dünnen SC-Decke bei 5000 FT AMSL aus.
-Abends trocknen die CU ab und übrig bleiben gelegentliche SC-Felder
-bei 5000 FT AMSL.
- In der ersten Nachthälfte lösen sich die SC-Reste von Westen her
-auf. Zum Ende der 1. Nachthälfte bilden sich erste Nebelfelder in den
-Niederungen. In der 2. Nachthälfte gelangt zwar aus Nordwesten
-zunehmend höhere CI-Bewölkung oberhalb FL180 zu uns, dennoch breitet
-sich der Nebel massiv aus.
- Am Morgen liegt dann in Bereichen unterhalb etwa 1500-2000 FT AMSL
-im Norden und unterhalb 2000-2500 FT AMSL im Süden nahezu
-flächendeckend Nebel.
-Eine Auflösung des Nebels bzw. ein Übergang in geringe CU-Bewölkung
-findet in der 2. Vormittagshälfte statt, zum Teil mit der
-Übergangsphase Hochnebel. Darüber zieht weiterhin aus Nordwesten die
-CI-Bewölkung durch mit Basis zwischen FL160 und FL180. Trocken.
+Vor allem im Süden liegt gebietsweise noch SCT/BKN SC bei 4500-6000
+FT AMSL, Obergrenze bei FL050-070. Darüber ziehen CI-Felder oberhalb
+FL240 südwärts. Nach norden hin sind die SC-Felder meist schon
+abgetrocknet.
+
+In der ersten Nachthälfte lösen sich die SC-Reste von Westen her auf.
+Zum Ende der 1. Nachthälfte bilden sich erste Nebelfelder in den
+Niederungen. In der 2. Nachthälfte breitet sich der Nebel aus und
+liegt dann verbreitet über Süddeutschland. Etwa südwestlich einer
+Linie Aalen - Erding - Chiemsee ist der Nebel mit Obergrenzen von
+2500-3000 FT AMSL höherreichender, abseits davon reicht die Schicht
+meist bis 1500-2000 FT AMSL. Auch im Südweststau von Fichtelgebirge
+und Frankenwald sowie vom Bayerischen Wald treten höhere Nebelfelder
+auf.
+
+Morgens und am Vormittag zunächst keine Änderung, erst am späteren
+Vormittag löst sich der Nebel langsam auf, meist verbunden mit einem
+Übergang zu Dunst und Hochnebel, bevor dieser später auflockert und
+sich auflöst. Darüber zieht weiterhin aus Nordwesten die CI-Bewölkung
+durch mit Basis zwischen FL160 und FL180.
+
+Am längsten kann sich ein Dunst- und ST-Feld halten im Bereich von
+Ingolstadt bis nach Mühldorf, hier teils erst am Nachmittag
+Auflockerungen. Abseits davon löst sich der ST verbreitet auf.
+Darüber zieht weiterhin dichte AS/CI-Bewölkung oberhalb FL160
+südostwärts.
 
 Sichtweite:
-20 bis 40 km.
-Nachts allmählicher Rückgang auf 100m bis 5 km.
-In der 2. Vormittagshälfte Besserung auf 8-20 km, zum Berichtsende
-werden örtlich auch schon 30-40 km erreicht.
-Am Donnerstag oberhalb der Inversion 60-100 km.
+20 bis 40 km. Nachts allmählicher Rückgang auf wenige 100 m im Nebel.
+In der 2. Vormittagshälfte Besserung auf 8-20 km, nachmittags 30-40
+km erreicht. Am Donnerstag oberhalb der Inversion 60-100 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  15 UTC  |  06 UTC  |
-1500FT | 310/10KT  15C | 150/05KT  10C |
-2000FT | 310/10KT  14C | 160/05KT  11C |
-3000FT | 300/10KT  10C | 210/05KT  09C |
-5000FT | 290/10KT  06C | 270/10KT  07C |
-FL100  | 300/25KT  02C | 310/20KT  04C |
+AMSL  |  21 UTC  |  09 UTC  |
+1500FT | 110/05KT  13C | 160/05KT  11C |
+2000FT | 360/05KT  12C | 180/10KT  11C |
+3000FT | 280/05KT  09C | 230/10KT  10C |
+5000FT | 270/10KT  05C | 260/10KT  09C |
+FL100  | 320/20KT  04C | 330/20KT  04C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  15 UTC  |  06 UTC  |
-2000FT | 330/05KT  15C | 140/05KT  11C |
-3000FT | 320/05KT  11C | 230/05KT  11C |
-5000FT | 320/05KT  07C | 280/10KT  08C |
-FL100  | 300/25KT  02C | 310/25KT  03C |
+AMSL  |  21 UTC  |  09 UTC  |
+2000FT | 080/05KT  13C | 210/05KT  09C |
+3000FT | 280/05KT  10C | 240/05KT  12C |
+5000FT | 260/10KT  08C | 260/10KT  09C |
+FL100  | 320/20KT  03C | 310/20KT  03C |
 
 Turbulenz:
-Keine.
+Keine mäßige oder starke Turbulenz.
 
 Vereisung:
-Anfangs noch kurzzeitig im Alpenraum selten mäßig unterhalb FL120.
+Keine mäßige oder starke Vereisung.
 
 Nullgradgrenze:
 Zwischen FL095 im Alpenraum und im Osten Bayerns und FL120 im Westen
-und Nordwesten. Nachts von Westen langsam ansteigend. Am
-Donnerstag-Vormittag dann zwischen FL125 im Westen und FL115 im
-Osten.
+und Nordwesten. Nachts von Westen langsam ansteigend. Am Donnerstag
+weiterer Anstieg auf FL120 im Osten und FL130 im Westen.
 
 Inversionen:
-Von Nordwesten her Absinkinversion zwischen FL060 und FL080.
-Nachts absinkend auf 4000 FT AMSL und Ausbildung einer bodennahen
-Inversion mit Obergrenze zwischen 2000 und 2500 FT AMSL.
+Von Nordwesten her Absinkinversion zwischen FL060 und FL080, nachts
+absinkend auf 3500-4000 FT AMSL. Dazu Ausbildung einer bodennahen
+Inversion mit Obergrenze zwischen 2000 und 2500 FT AMSL, die im
+Tagesverlauf abgebaut wird.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Nürnberg  16.28 | 17.00 | 05.03 | 05.37
-München  16.26 | 16.56 | 05.01 | 05.32
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Nürnberg  05.03 | 05.37 | 16.26 | 16.58
+München  05.01 | 05.32 | 16.24 | 16.56
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 15.10.2026 um 02.00
+UTC
 
-Luftfahrtberatungszentrale München/AG
+Luftfahrtberatungszentrale München/pk

@@ -1,91 +1,86 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-965
-FBEU40 EDZF 141200
+678
+FBEU40 EDZF 141800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 14.10.2026, 12.00 UTC bis 15.10.2026, 09.00 UTC
+gültig vom 14.10.2026, 18.00 UTC bis 15.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Unter Hochdruckeinfluss zeigt sich bei einer anfangs nordwestlichen,
-im weiteren Verlauf auf West drehenden Strömung eine trockene und
-teils sehr milde Luftmasse. Ende der zweiten Nachthälfte zum
-Donnerstag fließt in den hohen Luftschichten von Nordwesten feuchte
-Luft ein. Vorderseitig der aufziehenden Bewölkung hat sich nahezu im
-gesamten Gebiet eine flache feuchte Grundschicht ausgebildet. Sie
-löst sich vor allem in Flussniederungen und Tallagen nur zäh auf.
+Im Einflussbereich eines Hochs mit Schwerpunkt über Mitteleuropa ist
+bei einer schwachen westlichen Strömung milde und stabile Luft
+wetterwirksam, die vor allem in höheren Schichten feuchter, sonst
+trocken ist. In der Nacht bildet sich häufig eine feuchte
+Grundschicht aus, die sich am Donnerstag nur zögerlich auflöst.
 
 Wettergeschehen:
-Zu Beginn zeigen sich verbreitet SCT, westlich des Rheins auch BKN CU
-mit Basis zwischen 2500-3500 FT AMSL und Obergrenze bis 4500 FT AMSL.
-Es ist niederschlagfrei. Im Laufe des Nachmittages steigt die Basis
-auf 4000-4500 FT AMSL an und lockert zunehmend wieder auf. Am Abend
-verbleiben oft flache SC-Felder um 4500 FT AMSL.
+Am Abend zeigen sich noch örtlich flache FEW/SCT SC-Felder um 5000 FT
+AMSL, die sich im weiteren Abendverlauf auflösen. Sonst ist es bis
+auf durchziehende dünne CI-Felder wolkenfrei.
 
-Bereits in der ersten Nachthälfte zum Donnerstag kommt es vor allem
-im Bereich des Rheingrabens aber auch westlich des Rheins zu ersten
-Nebelfeldern. Nachfolgend dann auch rasch abseits davon in
-Flussniederungen und Tallagen.
-In der zweiten Nachthälfte breitet sich der Nebel auf nahezu das
-gesamte Gebiet aus. Die Obergrenze der Nebeldecke liegt bei etwa
-1500-2000 FT AMSL. Vor allem die Hochlagen des Schwarzwaldes sind
-frei von Wolken.
+Bereits in der ersten Nachthälfte bilden sich insbesondere in
+Tallagen und Flussniederungen erste Dunst- und Nebelfelder.
+Schwerpunkte sind dabei vor allem der Oberrheingraben, das Neckartal,
+das Saarland und Flusstäler in Nord- und Osthessen.
+In der zweiten Nachthälfte breiten sich Dunst- und Nebelfelder auch
+auf die anderen Tallagen und Flussniederungen aus und gehen zunehmend
+auch mit BKN/OVC ST mit wenigen hundert Fuß AGL ein. Obergrenzen von
+Dunst, Nebel und ST liegen zwischen 1500 und 2000 FT AMSL, sodass es
+darüber bis auf die durchziehenden CI-Felder wolkenfrei bleibt.
 
-Am Vormittag löst sich der Nebel meist nur zäh auf. Vor allem im
-Rheingraben, entlang des Mains und Richtung Saarland hält er sich bis
-in die Mittagszeit. Er hebt dann langsam an und geht vorübergehend in
-CU mit Basis in 1500-2500 FT AMSL über. Oberhalb FL180 ist kompakter
-CI oberhalb FL180 aufgezogen. Zum Nachmittag zeigen sich darunter
-meist nur noch flache CU mit Basis um 3000 FT AMSL.
+Am Vormittag lösen sich Dunst, Nebel und ST nur sehr zögerlich auf.
+Vor allem im Rheingraben, im Saarland, dem Neckartal, sowie einigen
+Flusstälern nördlich des Mains dauert die Auflösung teils bis in die
+Mittagsstunden oder gar bis in den frühen Nachmittag.
+Sonst zieht SCT/BKN AS/CS/CI oberhalb FL160-200 von Nordwest nach
+Südost über das gesamte Gebiet durch. Über dem Bergland können sich
+am Nachmittag lokal flache CU um 3000 FT AMSL bilden.
 
 Sichtweite:
-200-30 km, im Dunst 1 bis 5 km, im Nebel unter 1 km.
+30-60 km, im Dunst 1 bis 5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 250/05KT  15C | 250/05KT  05C |
-1500FT | 260/05KT  13C | 190/10KT  10C |
-2000FT | 260/05KT  12C | 200/10KT  11C |
-3000FT | 270/05KT  08C | 210/15KT  09C |
-5000FT | 290/10KT  05C | 250/10KT  09C |
-FL100  | 300/25KT  04C | 310/20KT  07C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 290/05KT  11C | 230/05KT  09C |
+1500FT | 220/05KT  12C | 200/10KT  09C |
+2000FT | 220/05KT  11C | 210/15KT  10C |
+3000FT | 230/10KT  09C | 220/15KT  10C |
+5000FT | 250/10KT  07C | 260/15KT  11C |
+FL100  | 290/15KT  05C | 350/10KT  07C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 050/05KT  18C | 220/05KT  12C |
-1500FT | 050/05KT  16C | 210/05KT  13C |
-2000FT | 040/05KT  15C | 220/05KT  13C |
-3000FT | 040/05KT  11C | 240/10KT  11C |
-5000FT | 270/05KT  08C | 270/05KT  11C |
-FL100  | 300/20KT  03C | 300/20KT  05C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 080/05KT  16C | 220/05KT  10C |
+1500FT | 100/05KT  15C | 210/10KT  13C |
+2000FT | 130/05KT  14C | 220/10KT  13C |
+3000FT | 230/05KT  12C | 250/10KT  11C |
+5000FT | 250/10KT  10C | 250/10KT  11C |
+FL100  | 310/20KT  05C | 320/15KT  06C |
 
 Turbulenz:
 Nicht signifikant.
 
 Vereisung:
-Nicht signifikant.
+Meist nicht signifikant.
 
 Nullgradgrenze:
-Zwischen FL115 im Norden und FL130 im Süden. Bis Donnerstagmittag
-auch über der Mitte und im Norden auf FL130 ansteigend, im Süden
-nahezu unverändert.
+FL115-125, ab Donnerstagvormittag verbreitet um FL125.
 
 Inversionen:
-Vor allem über der Mitte und im Süden Absinkinversion zwischen 5000
-FT AMSL und FL080. In der Nacht zum Donnerstag bildet sich lokal eine
-Bodeninversion unterhalb 1500 FT AGL aus, die sich lokal nur sehr zäh
-abbaut.
+Absinkinversion zwischen 3000 FT AMSL und FL060. Außerdem ab dem
+Abend Ausbildung einer Bodeninversion unterhalb 1500-2000 FT AMSL,
+die sich am Vormittag nur zögerlich auflöst.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Gießen  16.36 | 17.09 | 05.14 | 05.48
-Karlsruhe  16.39 | 17.11 | 05.14 | 05.47
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Gießen  05.14 | 05.48 | 16.34 | 17.06
+Karlsruhe  05.14 | 05.47 | 16.37 | 17.09
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 15.10.2026 um 02.00
+UTC
 
-Flugwetterzentrale Frankfurt/CH
+Flugwetterzentrale Frankfurt/mb

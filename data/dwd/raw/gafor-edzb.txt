@@ -1,86 +1,79 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-966
-FBEU40 EDZB 141200
+669
+FBEU40 EDZB 141800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 14.10.2026, 12.00 UTC bis 15.10.2026, 09.00 UTC
+gültig vom 14.10.2026, 18.00 UTC bis 15.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Unter Hochdruckeinfluss werden keine Störungen erwartet.
+Ein Hoch über Süd- und Zentraleuropa verlagert sich zögerlich
+ostwärts. Bei relativ schwachen Luftdruckgegensätzen bleibt damit
+milde, stabil geschichtet und weitgehend trockene Luft
+wetterbestimmend. Lediglich in der Nacht kommt es lokal zu Ausbildung
+einer feuchten Grundschicht.
 
 Wettergeschehen:
-Heute Nachmittag verbreitet FEW/SCT CU in etwa 3000 FT AMSL, in
-Mecklenburg-Vorpommern etwa 500 FT tiefer, in Sachsen und Thüringen
-oft etwa 500 FT höher. Obergrenzen zwischen 4000 FT AMSL im Süden und
-5000 FT AMSL im Norden. Im Norden und Osten einzelne Schauer, sonst
-niederschlagsfrei.
+Zeit- und Gebietsweise SCT/BKN CI oberhalb FL245, darunter örtlich
+flache FEW/SCT SC-Felder zwischen 3000 und 5500 FT AMSL, in der Nacht
+weitgehend auflösend.
 
-Am Abend weitere Wolkenauflockerung aber Absinken der verbleibenden
-FEW/SCT SC auf Untergrenzen von 2500 bis 3000 FT AMSL. Sie sind meist
-nur etwa 300 FT mächtig. Kein Niederschlag mehr.
+In der zweiten Nachthälfte, insbesondere in der Osthälfte
+gebietsweise Bildung bodennaher Dunst- /Nebelfelder, vereinzelt mit
+Übergang zu aufliegendem SCT/BKN ST unterhalb 300 FT AGL. Ausgangs
+der Nacht von Westen Aufzug kompakterer SCT/BKN AS/CI-Schichten
+oberhalb FL160.
 
-In der Nacht befindet sich in Mecklenburg-Vorpommern weiterhin der
-schon am Abend anwesende FEW/SCT flache SC. Weiter südlich ist es
-unter dünnen Cirren meist wolkenlos. In der zweiten Nachthälfte vor
-allem in Südthüringen und gebietsweise zwischen Elbniederung und
-polnischer Grenze flacher, oft dichter Nebel. Er löst sich am
-Vormittag zögernd auf.
-
-Am Vormittag nach Nebelauflösung im Osten noch wolkenlos, von Westen
-her aufkommend BKN AS/AC oberhalb von FL150. Außerdem örtlich Bildung
-von FEW/SCT CU in 2000 bis 3000 FT AMSL.
+Am Morgen nach teils zögerlicher Dunst- Nebelauflösung oft BKN/OVC
+AS/CI-Schichten oberhalb FL140, nur vereinzelt Bildung flacher
+FEW/SCT SC-Felder zwischen 2500 und 3500 FT AMSL.
 
 Sichtweite:
-Meist oberhalb 20 bis 30 km. Morgens durch Dunst 2 bis 5 km. Im Nebel
-200 bis 1000 m.
+20 bis 50 km. In der Nacht bei gebietsweisem Dunst 2 bis 5 km, im
+Nebel unter 1km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  15 UTC  |  06 UTC  |
- 500FT | 290/15KT  14C | 200/10KT  08C |
-1000FT | 290/15KT  12C | 220/10KT  10C |
-1500FT | 290/20KT  10C | 240/10KT  08C |
-2000FT | 290/20KT  09C | 240/10KT  07C |
-3000FT | 300/25KT  06C | 260/10KT  05C |
-5000FT | 300/25KT  03C | 280/10KT  06C |
-FL100  | 320/30KT  00C | 310/20KT  02C |
+AMSL  |  21 UTC  |  09 UTC  |
+ 500FT | 280/10KT  10C | 190/05KT  09C |
+1000FT | 300/10KT  10C | 210/15KT  10C |
+1500FT | 310/15KT  09C | 230/15KT  09C |
+2000FT | 310/15KT  09C | 230/15KT  08C |
+3000FT | 300/15KT  06C | 250/15KT  06C |
+5000FT | 310/10KT  05C | 250/10KT  07C |
+FL100  | 310/25KT  01C | 320/15KT  04C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  15 UTC  |  06 UTC  |
-1000FT | 300/10KT  14C | 190/05KT  10C |
-1500FT | 300/10KT  12C | 210/05KT  10C |
-2000FT | 300/10KT  11C | 220/05KT  10C |
-3000FT | 290/10KT  07C | 250/10KT  07C |
-5000FT | 290/15KT  03C | 290/10KT  06C |
-FL100  | 310/25KT M00C | 320/20KT  03C |
+AMSL  |  21 UTC  |  09 UTC  |
+1000FT | 350/05KT  12C | 210/05KT  11C |
+1500FT | 350/05KT  11C | 240/10KT  11C |
+2000FT | 340/05KT  10C | 240/10KT  11C |
+3000FT | 280/05KT  06C | 270/10KT  08C |
+5000FT | 290/10KT  05C | 260/10KT  07C |
+FL100  | 310/20KT  02C | 330/15KT  03C |
 
 Turbulenz:
-An der Küste und in Harzumfeld bis zum Abend leicht bis mäßig
-unterhalb 3000 FT AMSL.
+Nicht signifikant.
 
 Vereisung:
-keine.
+Nicht signifikant.
 
 Nullgradgrenze:
-Anfangs zwischen FL060 nordöstlich der Elbe und FL095 südwestlich
-davon. Im Lauf der Nacht ansteigend, so dass in der zweiten
-Nachthälfte überall FL100 bis FL120 erreicht sind.
+Zwischen FL095 und FL115, auf FL115-130 ansteigend.
 
 Inversionen:
-Absinkinversion zwischen 4000 FT AMSL und FL080. In der kommenden
-Nacht Ausbildung einer teils markanten Bodeninversion unterhalb 1000
-FT AGL.
+In der Nacht Ausbildung einer Bodeninversion unterhalb 1300 FT AGL,
+am Morgen zögerlich abbauend.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Berlin  16.14 | 16.47  | 04.57 | 05.31
-Leipzig  16.20 | 16.54  | 05.01 | 05.35
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Berlin  04.57 | 05.31 | 16.12 | 16.45
+Leipzig  05.01 | 05.35 | 16.18 | 16.51
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 15.10.2026 um
+02.00/05.00 UTC
 
-Luftfahrtberatungszentrale Berlin/Oe
+Luftfahrtberatungszentrale Berlin/KS
