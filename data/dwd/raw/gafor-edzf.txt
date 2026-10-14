@@ -1,63 +1,66 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-166
-FBEU40 EDZF 140600
+965
+FBEU40 EDZF 141200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 14.10.2026, 06.00 UTC bis 15.10.2026, 03.00 UTC
+gültig vom 14.10.2026, 12.00 UTC bis 15.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Unter zunehmendem Einfluss eines Hochs, mit Zentrum über
-Südwesteuropa, wird mit einer nordwestlichen Strömung eine stabile,
-milde bis sehr milde und trockene Luftmasse wetterbestimmend. Zudem
-bildet sich in der Nacht lokal eine feuchte Grundschicht aus, welche
-tagsüber langsam abtrocknet und sich in der Nacht zum Mittwoch erneut
-ausbildet.
+Unter Hochdruckeinfluss zeigt sich bei einer anfangs nordwestlichen,
+im weiteren Verlauf auf West drehenden Strömung eine trockene und
+teils sehr milde Luftmasse. Ende der zweiten Nachthälfte zum
+Donnerstag fließt in den hohen Luftschichten von Nordwesten feuchte
+Luft ein. Vorderseitig der aufziehenden Bewölkung hat sich nahezu im
+gesamten Gebiet eine flache feuchte Grundschicht ausgebildet. Sie
+löst sich vor allem in Flussniederungen und Tallagen nur zäh auf.
 
 Wettergeschehen:
-Es haben sich Dunst- und Nebelfelder oder ein tiefer Stratus mir
-wenigen 100 FT AGL ausgebildet. Zudem ist südlich einer Linie
-zwischen Schwarzwald und Rhön eine SCT/BKN ST/SC-Bewölkung mit
-Untergrenzen zwischen 1500 und 2500 FT AMSL vorhanden und befindet
-sich somit nur wenige 100 FT AGL. Die Obergrenzen haben sich um FL110
-eingestellt. Berge in den Wolken.
+Zu Beginn zeigen sich verbreitet SCT, westlich des Rheins auch BKN CU
+mit Basis zwischen 2500-3500 FT AMSL und Obergrenze bis 4500 FT AMSL.
+Es ist niederschlagfrei. Im Laufe des Nachmittages steigt die Basis
+auf 4000-4500 FT AMSL an und lockert zunehmend wieder auf. Am Abend
+verbleiben oft flache SC-Felder um 4500 FT AMSL.
 
-Im Laufe des Vormittags und Mittags gehen die Nebelfelder zunächst in
-einen tiefen Stratus und dann in eine SCT/BKN CU-Bewölkung zwischen
-1500 und 2500 FT AMSL über. Einzig im Südwesten von Rheinland-Pfalz
-bleibt der Nebel bis in den Mittag hinein bestehen. Zudem lockert die
-SCT/BKN ST/SC-Bewölkung auf FEW/SCT auf und die Obergrenzen sinken
-auf um 5000 FT AMSL ab.
+Bereits in der ersten Nachthälfte zum Donnerstag kommt es vor allem
+im Bereich des Rheingrabens aber auch westlich des Rheins zu ersten
+Nebelfeldern. Nachfolgend dann auch rasch abseits davon in
+Flussniederungen und Tallagen.
+In der zweiten Nachthälfte breitet sich der Nebel auf nahezu das
+gesamte Gebiet aus. Die Obergrenze der Nebeldecke liegt bei etwa
+1500-2000 FT AMSL. Vor allem die Hochlagen des Schwarzwaldes sind
+frei von Wolken.
 
-Im Nachmittagsverlauf lockert die Bewölkung nach und nach auf FEW
-auf.
-
-Eingangs der Nacht zum Donnerstag bilden sich erneut Dunst- und
-Nebelfelder aus.
+Am Vormittag löst sich der Nebel meist nur zäh auf. Vor allem im
+Rheingraben, entlang des Mains und Richtung Saarland hält er sich bis
+in die Mittagszeit. Er hebt dann langsam an und geht vorübergehend in
+CU mit Basis in 1500-2500 FT AMSL über. Oberhalb FL180 ist kompakter
+CI oberhalb FL180 aufgezogen. Zum Nachmittag zeigen sich darunter
+meist nur noch flache CU mit Basis um 3000 FT AMSL.
 
 Sichtweite:
-10-30 km, im Dunst 1 bis 5 km, im Nebel unter 1 km.
+200-30 km, im Dunst 1 bis 5 km, im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 250/05KT  13C | 210/05KT  11C |
-1500FT | 260/05KT  11C | 190/05KT  12C |
-2000FT | 250/05KT  10C | 200/05KT  12C |
-3000FT | 300/15KT  08C | 230/10KT  09C |
-5000FT | 290/20KT  04C | 240/10KT  06C |
-FL100  | 300/25KT  01C | 290/20KT  05C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 250/05KT  15C | 250/05KT  05C |
+1500FT | 260/05KT  13C | 190/10KT  10C |
+2000FT | 260/05KT  12C | 200/10KT  11C |
+3000FT | 270/05KT  08C | 210/15KT  09C |
+5000FT | 290/10KT  05C | 250/10KT  09C |
+FL100  | 300/25KT  04C | 310/20KT  07C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 210/05KT  14C | 080/05KT  16C |
-1500FT | 220/05KT  12C | 080/05KT  15C |
-2000FT | 230/05KT  12C | 080/05KT  14C |
-3000FT | 270/05KT  10C | 220/05KT  12C |
-5000FT | 290/10KT  08C | 250/10KT  10C |
-FL100  | 300/20KT  02C | 300/20KT  05C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 050/05KT  18C | 220/05KT  12C |
+1500FT | 050/05KT  16C | 210/05KT  13C |
+2000FT | 040/05KT  15C | 220/05KT  13C |
+3000FT | 040/05KT  11C | 240/10KT  11C |
+5000FT | 270/05KT  08C | 270/05KT  11C |
+FL100  | 300/20KT  03C | 300/20KT  05C |
 
 Turbulenz:
 Nicht signifikant.
@@ -66,23 +69,23 @@ Vereisung:
 Nicht signifikant.
 
 Nullgradgrenze:
-FL105, bis Donnerstagmorgen von Südwesten auf um FL120 im Nordosten
-und um FL130 im Südwesten ansteigend.
+Zwischen FL115 im Norden und FL130 im Süden. Bis Donnerstagmittag
+auch über der Mitte und im Norden auf FL130 ansteigend, im Süden
+nahezu unverändert.
 
 Inversionen:
-Bis in den Mittwochmorgen ist örtlich eine Bodeninversion unterhalb
-1500 FT AGL vorhanden, welche sich im Laufe des Morgens auflöst.
-Zudem befindet sich eine Absinkinversion um 5000 FT AMSL im Norden
-und um FL110 im Süden. Tagesüber stellt sich die Absinkinversion um
-4500 FT AMSL im gesamten Gebiet ein. In der Nacht zum Donnerstag
-bildet sich lokal eine Bodeninversion unterhalb 1500 FT AGL aus.
+Vor allem über der Mitte und im Süden Absinkinversion zwischen 5000
+FT AMSL und FL080. In der Nacht zum Donnerstag bildet sich lokal eine
+Bodeninversion unterhalb 1500 FT AGL aus, die sich lokal nur sehr zäh
+abbaut.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Gießen  05.13 | 05.46 | 16.36 | 17.09
-Karlsruhe  05.13 | 05.45 | 16.39 | 17.11
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Gießen  16.36 | 17.09 | 05.14 | 05.48
+Karlsruhe  16.39 | 17.11 | 05.14 | 05.47
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Flugwetterzentrale Frankfurt/MJ
+Flugwetterzentrale Frankfurt/CH
