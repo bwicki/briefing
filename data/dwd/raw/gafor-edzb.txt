@@ -1,82 +1,84 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-050
-FBEU40 EDZB 131800
+158
+FBEU40 EDZB 140600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 13.10.2026, 18.00 UTC bis 14.10.2026, 15.00 UTC
+gültig vom 14.10.2026, 06.00 UTC bis 15.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
-Das Frontensystem eines Skagerraktiefs zieht in der Nacht von West
-nach Ost über Ostdeutschland hinweg. Auf seiner Rückseite fließt am
-Mittwoch kühle Meeresluft ein. Sie gerät unter Zwischenhocheinfluß.
+Rückseitig einer Kaltfront fließt mit westlicher Strömung kühle und
+anfangs leicht labil geschichtete Meeresluft ein, die im weiteren
+Tagesverlauf unter stabilisierenden Hochdruckeinfluss gerät.
 
 Wettergeschehen:
-Anfangs verbreitet Anfangs SCT/BKN SC/AC mit Untergrenzen in FL080
-bis FL100, darunter von Westen aufkommend BKN SC mit Untergrenzen
-zwischen 2500 und 4000 FT AMSL. Zeit- und gebietsweise leichter Regen
-oder Sprühregen, bei längerem Regen in Mecklenburg-Vorpommern und in
-Nordbrandenburg BKN ST um 800 FT AGL. Kammlagen der Berge im
-Südwestanstau.
+Zunächst häufig wolkenfrei oder CI-Felder oberhalb FL200,
+gebietsweise SCT/BKN SC bei 3500 bis 4500 FT AMSL mit Obergrenzen um
+5000 FT AMSL. Darunter östlich der Elbe sowie im Mittelgebirgsbereich
+lokal SCT/BKN ST bei 800 bis 1300 FT AGL, vereinzelt 200 bis 700 FT
+AGL. Kammlagen von Westen angestaut und teils in Wolken. Dabei meist
+niederschlagsfrei, einzig im Küstenumfeld einzelne Schauer aus
+isolierten TCU/CB bei 1000 bis 2000 FT AGL und Tops bis FL120.
 
-Im Laufe der Nacht Durchzug des Niederschlaggebietes nach Osten.
-Vorübergehend in schauerartigem Regen durch eingelagerte TCU/CBs
-absinkende Wolkenbasis auf 1000 bis 1200 FT AGL, Tops bis FL160. Nach
-Durchzug der Front Übergang zu SCT/BKN SC in 2000 bis 3000 FT AMSL,
-örtlich auch klar. Im Werratal und in Westmecklenburg Dunst- und
-Nebelbildung.
+Bis zum Vormittag Übergang in FEW/SCT, lokal SCT/BKN CU/SC bei 2000
+bis 3000 FT AMSL mit Tops bis 5000 FT AMSL. Südlich einer Linie Harz
+- Niederlausitz darunter gebietsweise SCT/BKN, teils BKN/OVC ST bei
+800 bis 1500 FT AGL, im Mittelgebirgsbereich lokal bei 300 bis 600 FT
+AGL. Meist trocken.
 
-Am Mittwochvormittag nach Auflösung eventuellen Nebels Bildung von
-SCT/BKN CU/SC mit Basis zwischen 2500 und 3500 FT AMSL, Obergrenzen
-bei 3500 bis 5000 FT AMSL. An der Ostseeküste mittags einzelne
-Überentwicklungen mit Regenschauern aus TCU, Tops bis Fl130, sonst
-niederschlagsfrei.
+In den Mittags- und Nachmittagsstunden im gesamten Vorhersagebereich
+meist FEW/SCT, teils SCT/BKN CU/SC bei 3500 bis 4500 FT AMSL,
+südwestlich der Elbe gebietsweise bei 1500 bis 2500 FT AMSL. Tops um
+FL060.
+
+Ab dem Abend langsam aufklarend, örtlich noch SCT/BKN SC bei 3000 bis
+4000 FT AMSL.
+
+Im Laufe der Nacht gebietsweise Bildung von flachen Dunst- und
+Nebelfeldern, teils mit aufliegender Bewölkung.
 
 Sichtweite:
-Anfangs um 30 km, mit einsetzendem Regen 8 bis 10 km, im Sprühregen
-und/oder Dunst 3 bis 5 km. Nach Abzug des Niederschlages allgemeine
-Sichtbesserung auf 30 bis 40 km.
+Meist oberhalb 10 bis 30 km. Im Niederschlag kurzzeitig 3 bis 8 km.
+Im Dunst und unter der ST-Bewölkung lokal 2 bis 5 km. Im Nebel 200
+bis 800 m.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  21 UTC  |  09 UTC  |
- 500FT | 200/15KT  12C | 290/20KT  12C |
-1000FT | 220/25KT  12C | 290/25KT  10C |
-1500FT | 240/30KT  12C | 300/30KT  08C |
-2000FT | 240/30KT  12C | 300/30KT  08C |
-3000FT | 260/30KT  11C | 310/25KT  06C |
-5000FT | 270/30KT  09C | 310/30KT  02C |
-FL100  | 270/30KT M00C | 300/45KT M03C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 280/20KT  12C | 270/10KT  10C |
+1000FT | 290/20KT  10C | 300/10KT  10C |
+1500FT | 300/25KT  08C | 310/15KT  09C |
+2000FT | 300/30KT  08C | 310/15KT  09C |
+3000FT | 310/30KT  06C | 300/15KT  06C |
+5000FT | 310/30KT  02C | 300/10KT  06C |
+FL100  | 310/40KT M03C | 320/25KT  00C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 220/15KT  11C | 290/15KT  12C |
-1500FT | 250/25KT  11C | 290/15KT  11C |
-2000FT | 260/30KT  12C | 290/15KT  09C |
-3000FT | 280/25KT  12C | 300/25KT  06C |
-5000FT | 300/20KT  10C | 300/25KT  04C |
-FL100  | 280/25KT  00C | 310/35KT M01C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 270/10KT  12C | 340/05KT  12C |
+1500FT | 290/15KT  11C | 340/05KT  11C |
+2000FT | 300/20KT  10C | 320/05KT  10C |
+3000FT | 310/25KT  06C | 270/05KT  06C |
+5000FT | 300/30KT  04C | 300/10KT  06C |
+FL100  | 310/30KT M01C | 310/20KT  02C |
 
 Turbulenz:
-In der Nacht zum Mittwoch mit der von Nordwesten aufkommenden
-Kaltfront vereinzelt mäßig in unterschiedlichen Höhen. Im und in der
-näheren Umgebung von TCU/CB mäßig bis stark. Ab Mittwochmorgen an der
-Küste mäßig unterhalb 3000 FT AMSL.
+In der Nähe der TCU/CB mäßig bis stark. An der Küste bis zum Abend
+sowie am Mittag/Nachmittag nordöstlich der Elbe leicht bis mäßig
+unterhalb 3000 FT AMSL.
 
 Vereisung:
-Zunächst in der aufziehenden Warmfrontbewölkung leicht bis mäßig
-zwischen FL110 und FL160. In der Nacht zum Mittwoch mit
-Durchschwenken der Kaltfront durch eingelagerte TCU/CB mäßig bis
-stark. Ab Mittwochmorgen nicht mehr signifikant.
+In TCU/CB mäßig bis stark. Sonst nicht signifikant.
 
 Nullgradgrenze:
-Anfangs FL100 bis FL110, nach Passage der Front im Norden auf
-FL060-070 und im Süden auf FL100 absinkend.
+Zunächst zwischen FL055 im Norden und FL100 im Süden. Im Tagesverlauf
+von Westen langsam auf FL105 bis FL115 ansteigend.
 
 Inversionen:
-Keine.
+Absinkinversion zwischen 5000 FT AMSL und FL100. In der kommenden
+Nacht Ausbildung einer Bodeninversion unterhalb 1000 FT AGL.
 
 Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
 Berlin  04.55 | 05.29 | 16.14 | 16.47
@@ -84,7 +86,6 @@ Leipzig  04.59 | 05.33 | 16.20 | 16.54
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt am 14.10.2026 um
-02.00/05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
-Luftfahrtberatungszentrale Berlin/Ns
+Luftfahrtberatungszentrale Berlin/Qe
