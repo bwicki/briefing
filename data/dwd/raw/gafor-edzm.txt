@@ -1,105 +1,100 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-054
-FBEU40 EDZM 150600
+829
+FBEU40 EDZM 151200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 15.10.2026, 06.00 UTC bis 16.10.2026, 03.00 UTC
+gültig vom 15.10.2026, 12.00 UTC bis 16.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
 Wetterlage und -entwicklung:
-Hoher Luftdruck ist und bleibt über Süddeutschland wetterbestimmend.
-Nachts hat sich verbreitet eine feuchtkalte Grundschicht ausgebildet,
-die am Donnerstag oft nur zögerlich abgebaut wird. Gleichzeitig wird
-am Donnerstag in der Höhe feuchtere Luft aus Norden herangeführt. In
-der Nacht zum Freitag erneut Ausbildung einer feuchtkühlen
-Grundschicht.
+Ein Hoch mit Schwerpunkt über Osteuropa ist für Süddeutschland
+wetterbestimmend. In der Grundschicht ist die Luftmasse feucht, in
+mittleren Atmosphärenschichten trocken und mild und in der Höhe ist
+mit nordwestlicher Strömung etwas feuchtere Luft eingeflossen.
 
 Wettergeschehen:
-Zu Beginn verbreitet Nebel. Lediglich im westlichen Alpenvorland und
-im südlichen Franken als auch im Bereich der Schwäbischen Alb oft
-größere nebelfreie Gebiete. Generell sind die Lagen oberhalb etwa
-1800-2300 FT AMSL, an den Alpen oberhalb etwa 3800 FT AMSL frei.
-Darüber ziehen nördlich der Donau BKN AC/CI oberhalb FL180, südlich
-der Donau BKN CI oberhalb FL250-300.
-In der ersten Vormittagshälfte zunächst kaum signifikante Änderungen.
-Erst am späteren Vormittag beginnt der Nebel sich langsam aufzulösen.
-Meist erfolgt dies mit einer kurzen Übergangsphase in Dunst und
-Hochnebel zuvor er sich ganz auflöst. Bis zum Mittag sind die Gebiete
-nördlich der Donau sowie der Alpenrand nebelfrei. Entlang der Donau
-und südlich davon geht der Nebel in den frühen Mittagsstunden
-verbreitet in Hochnebel mit Basis um 2500 FT AMSL über und im
-weiteren Verlauf des mittags in BKN CU. Die Basis steigt dann auf
-etwa 3000 FT AMSL an. Von den Rändern löst sich die CU Bewölkung bis
-etwa bis 12-13 UTC meist auf. Lediglich in Oberschwaben und im
-Südbayerischen Hügelland bleibt am Nachmittag dünne SCT/BKN CU/SC
-Bewölkung um 3000 FT AMSL zurück welche erst in den Abendstunden
-abtrocknet. Darüber im gesamten Zeitraum BKN/OVC AC/CI Bewölkung
-oberhalb FL160-180.
+In Teilen der Donauniederung, des Bodenseebeckens und des
+Südbayerischen Hügellandes zeigt sich noch BKN ST mit tiefer Basis
+zwischen 1500 und 2000 FT AMSL. Im übrigen Gebiet ist der ST bereits
+in CU/SC übergegangen, südlich der Donau FEW/SCT, nördlich der Donau
+nur gebietsweise FEW. Die Basis des CU liegt zwischen 2500 und 3500
+FT AMSL, die des SC zwischen 3500 und 4500 FT AMSL. Darüber zieht
+verbreitet SCT/BKN AC/CI mit Basis bei FL160 bis FL180 durch.
 
-Eingangs der Nacht zum Freitag zunächst nur mittelhohe und hohe BKN
-AC/CI Bewölkung oberhalb etwa FL180. Rasch breiten sich darunter im
-Laufe der ersten Nachthälfte zunächst flache Nebelfelder aus. Im
-weiteren Verlauf werden diese dichter und vertikal mächtiger. Um den
-Tageswechsel hat sich südlich der Donau flächendeckend, nördlich des
-Flusses gebietsweise dichter Nebel ausgebreitet. In der zweiten
-Nachthälfte breiten sich auch nördlich der Donau die Nebelgebiete
-weiter aus. Gleichzeitig schichtet die darüber liegende AC/CI
-Bewölkung nachts zunehmend aus und löst sich später in der Nacht
-meist auf. Nur vereinzelt bleiben dünne CI Felder oberhalb FL300
-zurück.
+Im weiteren Nachmittagsverlauf geht auch der übrige ST in den CU/SC
+über und der CU/SC löst sich von den Rändern her weiter auf, sodass
+am Abend und in der ersten Nachthälfte zum Freitag nur noch einzelne
+SC-Schollen zwischen 3500 und 4500 FT AMSL zurückbleiben.
+
+Im Laufe der Nacht zum Freitag lockert der AC/CI von Nordwesten auf,
+es bleiben allerdings stets dünne CI-Felder oberhalb FL240 erhalten,
+die sich in den Frühstunden des Freitags oberhalb FL180 von
+Nordwesten nochmal etwas verdichten.
+Zudem breiten sich im Laufe der ersten Nachthälfte rasch flache
+Nebelfelder aus. Diese werden im weiteren Verlauf dichter und
+vertikal mächtiger. In der zweiten Nachthälfte liegt dann vom
+Bodensee über die gesamte Donauniederung bis ins nördliche
+Alpenvorland und am Inn flächendeckend dichter Nebel, in den übrigen
+Bereichen zumindest gebietsweise. Die Obergrenze liegt zwischen 2000
+und 2500 FT AMSL an und südlich der Donau, und zwischen 1500 und 2000
+FT AMSL nördlich der Donau. Der höhere Alpenrand und die Kammlagen
+der Mittelgebirge sind damit frei von Nebel.
+
+Am Freitagvormittag geht der Nebel in BKN ST mit zunächst tiefer
+Basis bei 100 bis 400 FT AGL über und beginnt sich von den Rändern
+her zögerlich aufzulösen. Darüber zieht weiterhin von Nordwesten SCT
+CI oberhalb FL180 durch.
 
 Sichtweite:
-Anfangs im Nebel verbreitet zwischen 0.2-0.8 km. In den nebelfreien
-Gebieten 10-20 km. In der 2. Vormittagshälfte mit Übergang in
-Hochnebel oder Nebelauflösung generell zwischen 10-20 km, bei Dunst
-4-6 km. Am Nachmittag verbreitet 20-40 km.
-In der Nacht zum Freitag erneut Sichtrückgang auf 8-15 km, im Nebel
-auf unter 1 km.
+Verbreitet 30 bis 50 km, unter tiefem ST noch um 10 km. In der Nacht
+zum Freitag in den nebelfreien Gebieten Sichtrückgang auf 8 bis 15
+km, im Nebel wenige hundert Meter, im Dunst 1 bis 5 km.
+Am Freitagvormittag unter dem tiefen ST nur zögerliche
+Sichtbesserung, abseits Besserung auf 30 bis 50 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  09 UTC  |  21 UTC  |
-1500FT | 170/05KT  10C | 180/05KT  14C |
-2000FT | 190/05KT  10C | 190/10KT  14C |
-3000FT | 240/05KT  10C | 240/10KT  12C |
-5000FT | 270/10KT  09C | 260/05KT  12C |
-FL100  | 320/15KT  05C | 300/10KT  07C |
+AMSL  |  15 UTC  |  06 UTC  |
+1500FT | 320/05KT  15C | 160/05KT  10C |
+2000FT | 320/05KT  15C | 180/10KT  11C |
+3000FT | 270/05KT  11C | 240/05KT  12C |
+5000FT | 290/10KT  10C | 270/10KT  12C |
+FL100  | 340/15KT  07C | 260/10KT  08C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  09 UTC  |  21 UTC  |
-2000FT | 220/05KT  09C | 150/05KT  14C |
-3000FT | 260/10KT  12C | 240/05KT  13C |
-5000FT | 260/10KT  09C | 270/05KT  12C |
-FL100  | 310/20KT  03C | 360/15KT  06C |
+AMSL  |  15 UTC  |  06 UTC  |
+2000FT | 270/05KT  16C | 180/05KT  09C |
+3000FT | 260/05KT  12C | 230/05KT  13C |
+5000FT | 290/10KT  11C | 270/10KT  11C |
+FL100  | 340/20KT  05C | 290/10KT  07C |
 
 Turbulenz:
-Über den Alpen mäßige Turbulenz unterhalb FL120, abends abschwächend.
-Sonst wird keine mäßige bis starke Turbulenz erwartet.
+Keine mäßige oder starke Turbulenz.
 
 Vereisung:
 Keine mäßige oder starke Vereisung.
 
 Nullgradgrenze:
-Anfangs zwischen FL115-125, im Tagesverlauf von Südwesten Anstieg auf
-FL120-130. Im Laufe der Nacht weiteres Ansteigen auf FL130-135,
-lediglich im Südosten weiterhin nur um FL125.
+Zunächst zwischen FL115 im Südosten Bayerns und FL130 am Bodensee. Im
+Tagesverlauf weiter ansteigend. Ab Mitternacht verbreitet zwischen
+FL125 und FL135.
 
 Inversionen:
-Gebietsweise kräftige Bodeninversion mit Obergrenze zwischen
-1800-2300 FT AMSL, zu den Alpen hin auch um 3000 FT AMSL. Diese wird
-im Tagesverlauf abgebaut und bildet sich in der Nacht zum Freitag
-erneut aus.
-Darüber Absinkinversion um FL060-070, tagsüber gebietsweise auf 5000
-FT AMSL absinkend.
+Gebietsweise schwache Absinkinversion zwischen 3000 und 5000 FT AMSL.
+In der Nacht zum Freitag verbreitete Ausbildung einer Bodeninversion
+mit Obergrenze zwischen 2500 und 3500 FT AMSL, die in den
+Morgenstunden des Freitags in eine leicht abgehobene Inversion
+zwischen 2000 und 4000 FT AMSL übergeht.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Nürnberg  05.03 | 05.37 | 16.26 | 16.58
-München  05.01 | 05.32 | 16.24 | 16.56
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Nürnberg  16.26 | 16.58 | 05.05 | 05.38
+München  16.24 | 16.56 | 05.01 | 05.33
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Luftfahrtberatungszentrale München/Re
+Luftfahrtberatungszentrale München/ip
