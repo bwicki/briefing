@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-829
-FBEU40 EDZM 151200
+992
+FBEU40 EDZM 151800
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 15.10.2026, 12.00 UTC bis 16.10.2026, 09.00 UTC
+gültig vom 15.10.2026, 18.00 UTC bis 16.10.2026, 15.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
@@ -15,60 +15,57 @@ mittleren Atmosphärenschichten trocken und mild und in der Höhe ist
 mit nordwestlicher Strömung etwas feuchtere Luft eingeflossen.
 
 Wettergeschehen:
-In Teilen der Donauniederung, des Bodenseebeckens und des
-Südbayerischen Hügellandes zeigt sich noch BKN ST mit tiefer Basis
-zwischen 1500 und 2000 FT AMSL. Im übrigen Gebiet ist der ST bereits
-in CU/SC übergegangen, südlich der Donau FEW/SCT, nördlich der Donau
-nur gebietsweise FEW. Die Basis des CU liegt zwischen 2500 und 3500
-FT AMSL, die des SC zwischen 3500 und 4500 FT AMSL. Darüber zieht
-verbreitet SCT/BKN AC/CI mit Basis bei FL160 bis FL180 durch.
-
-Im weiteren Nachmittagsverlauf geht auch der übrige ST in den CU/SC
-über und der CU/SC löst sich von den Rändern her weiter auf, sodass
-am Abend und in der ersten Nachthälfte zum Freitag nur noch einzelne
-SC-Schollen zwischen 3500 und 4500 FT AMSL zurückbleiben.
+An der Donau etwa zwischen Neuburg und Kehlheim, liegen noch Reste
+von BKN ST in 1500 FT AMSL. Sonst treten im Süden örtlich noch
+SC-Schollen um 3500-4500 FT AMSL auf, die sich aber bald auflösen
+sollten. Darüber zieht aus Norden BKN AS/CIO oberhalb FL180 auf.
 
 Im Laufe der Nacht zum Freitag lockert der AC/CI von Nordwesten auf,
 es bleiben allerdings stets dünne CI-Felder oberhalb FL240 erhalten,
 die sich in den Frühstunden des Freitags oberhalb FL180 von
-Nordwesten nochmal etwas verdichten.
-Zudem breiten sich im Laufe der ersten Nachthälfte rasch flache
-Nebelfelder aus. Diese werden im weiteren Verlauf dichter und
-vertikal mächtiger. In der zweiten Nachthälfte liegt dann vom
-Bodensee über die gesamte Donauniederung bis ins nördliche
-Alpenvorland und am Inn flächendeckend dichter Nebel, in den übrigen
-Bereichen zumindest gebietsweise. Die Obergrenze liegt zwischen 2000
-und 2500 FT AMSL an und südlich der Donau, und zwischen 1500 und 2000
-FT AMSL nördlich der Donau. Der höhere Alpenrand und die Kammlagen
-der Mittelgebirge sind damit frei von Nebel.
+Nordwesten nochmal etwas verdichten. Zudem breiten sich im Laufe der
+ersten Nachthälfte rasch flache Nebelfelder aus. Diese werden im
+weiteren Verlauf dichter und vertikal mächtiger. In der zweiten
+Nachthälfte liegt dann vom Bodensee über die gesamte Donauniederung
+bis ins nördliche Alpenvorland und am Inn flächendeckend dichter
+Nebel, in den übrigen Bereichen zumindest gebietsweise. Die
+Obergrenze liegt zwischen 2000 und 2500 FT AMSL an und südlich der
+Donau, und zwischen 1500 und 2000 FT AMSL nördlich der Donau. Der
+höhere Alpenrand und die Kammlagen der Mittelgebirge sind damit frei
+von Nebel.
 
 Am Freitagvormittag geht der Nebel in BKN ST mit zunächst tiefer
 Basis bei 100 bis 400 FT AGL über und beginnt sich von den Rändern
 her zögerlich aufzulösen. Darüber zieht weiterhin von Nordwesten SCT
 CI oberhalb FL180 durch.
 
+Über Mittag und am Nachmittag setzt sich der Auflösungstrend fort,
+bis Berichtsende hält sich der Nebel/ST noch im Bereich Der
+Donau-Naab-Region sowie gebietsweise in Niederbayern. Abseits davon
+ist es abgesehen von den CI-Feldern oberhalb FL180 wolkenfrei.
+
 Sichtweite:
 Verbreitet 30 bis 50 km, unter tiefem ST noch um 10 km. In der Nacht
 zum Freitag in den nebelfreien Gebieten Sichtrückgang auf 8 bis 15
-km, im Nebel wenige hundert Meter, im Dunst 1 bis 5 km.
-Am Freitagvormittag unter dem tiefen ST nur zögerliche
-Sichtbesserung, abseits Besserung auf 30 bis 50 km.
+km, im Nebel wenige hundert Meter, im Dunst 1 bis 5 km. Am
+Freitagvormittag unter dem tiefen ST nur zögerliche Sichtbesserung,
+abseits Besserung auf 30 bis 50 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  15 UTC  |  06 UTC  |
-1500FT | 320/05KT  15C | 160/05KT  10C |
-2000FT | 320/05KT  15C | 180/10KT  11C |
-3000FT | 270/05KT  11C | 240/05KT  12C |
-5000FT | 290/10KT  10C | 270/10KT  12C |
-FL100  | 340/15KT  07C | 260/10KT  08C |
+AMSL  |  21 UTC  |  09 UTC  |
+1500FT | 180/05KT  14C | 160/05KT  10C |
+2000FT | 200/10KT  14C | 170/10KT  09C |
+3000FT | 240/10KT  12C | 220/10KT  12C |
+5000FT | 240/05KT  12C | 240/10KT  12C |
+FL100  | 310/10KT  07C | 260/10KT  07C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  15 UTC  |  06 UTC  |
-2000FT | 270/05KT  16C | 180/05KT  09C |
-3000FT | 260/05KT  12C | 230/05KT  13C |
-5000FT | 290/10KT  11C | 270/10KT  11C |
-FL100  | 340/20KT  05C | 290/10KT  07C |
+AMSL  |  21 UTC  |  09 UTC  |
+2000FT | 160/05KT  14C | 050/05KT  08C |
+3000FT | 240/05KT  13C | 220/05KT  13C |
+5000FT | 260/05KT  13C | 260/10KT  12C |
+FL100  | 350/15KT  07C | 300/10KT  07C |
 
 Turbulenz:
 Keine mäßige oder starke Turbulenz.
@@ -77,9 +74,8 @@ Vereisung:
 Keine mäßige oder starke Vereisung.
 
 Nullgradgrenze:
-Zunächst zwischen FL115 im Südosten Bayerns und FL130 am Bodensee. Im
-Tagesverlauf weiter ansteigend. Ab Mitternacht verbreitet zwischen
-FL125 und FL135.
+Zwischen FL115 im Südosten Bayerns und FL130 in Württemberg. Im Laufe
+der Nacht und am Donnerstag dann überall bei FL130-135.
 
 Inversionen:
 Gebietsweise schwache Absinkinversion zwischen 3000 und 5000 FT AMSL.
@@ -88,13 +84,13 @@ mit Obergrenze zwischen 2500 und 3500 FT AMSL, die in den
 Morgenstunden des Freitags in eine leicht abgehobene Inversion
 zwischen 2000 und 4000 FT AMSL übergeht.
 
-Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
-  heute  |  morgen
-Nürnberg  16.26 | 16.58 | 05.05 | 05.38
-München  16.24 | 16.56 | 05.01 | 05.33
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
-SA/SU   = Sonnenauf/untergang
+Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
+Nürnberg  05.05 | 05.38 | 16.24 | 16.55
+München  05.01 | 05.33 | 16.22 | 16.53
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
+SA/SU   = Sonnenauf/untergang - morgen
 
-Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt am 16.10.2026 um 02.00
+UTC
 
-Luftfahrtberatungszentrale München/ip
+Luftfahrtberatungszentrale München/pk
