@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-118
-FBEU40 EDZB 150300
+019
+FBEU40 EDZB 150600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 15.10.2026, 03.00 UTC bis 16.10.2026, 00.00 UTC
+gültig vom 15.10.2026, 06.00 UTC bis 16.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
@@ -16,19 +16,16 @@ wetterbestimmend. Lediglich nachts kann sich stellenweise eine flache
 feuchte Grundschicht bilden.
 
 Wettergeschehen:
-Von Nordwesten Aufzug von AS/CS-Schichten oberhalb FL160. Darunter
-meist wolkenfrei, allerdings im Osten und Süden des Gebiets
-stellenweise Bildung von flachen Dunst- und Nebelbänken, vereinzelt
-in aufliegenden ST übergehend.
-Am Morgen und Vormittag Auflösung von Dunst und Nebel, am längsten
-voraussichtlich in den Tallagen und Flussniederungen Thüringens
-haltend. Ansonsten tagsüber nur hohe SCT/BKN oder BKN/OVC
-AS/CS-Wolkenschichten, lediglich in den Mittelgebirgen lokal FEW SC
-bei 3000 bis 4500 FT AMSL. Zum Abend bzw. zur Nacht dünner werdende
-bzw. abziehende hohe Bewölkung. In der Nacht zum Freitag wieder
-örtlich Bildung flacher Dunst- oder Nebelfelder. In der zweiten
-Nachthälfte in Mecklenburg aufziehender SCT/BKN SC zwischen 3000 FT
-AMSL und FL070. Niederschlagsfrei.
+Aufzug von AS/CS-Schichten oberhalb FL160. Darunter meist wolkenfrei,
+allerdings im Osten und Süden des Gebiets noch stellenweise
+auflösende, flache Dunst- und Nebelbänke, am längsten in den Tallagen
+und Flussniederungen Thüringens haltend. Ansonsten tagsüber nur hohe
+SCT/BKN oder BKN/OVC AS/CS-Wolkenschichten, lediglich in den
+Mittelgebirgen lokal FEW SC bei 3000 bis 4500 FT AMSL. Zum Abend bzw.
+zur Nacht dünner werdende bzw. abziehende hohe Bewölkung. In der
+Nacht zum Freitag wieder örtlich Bildung flacher Dunst- oder
+Nebelfelder. In der zweiten Nachthälfte in Mecklenburg aufziehender
+SCT/BKN SC zwischen 3000 FT AMSL und FL070. Niederschlagsfrei.
 
 Sichtweite:
 20 bis 50 km. In der Nacht bei flachem Dunst 2 bis 5 km, im Nebel
@@ -36,23 +33,23 @@ Sichtweite:
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 210/10KT  08C | 190/10KT  13C |
-1000FT | 230/15KT  10C | 210/15KT  13C |
-1500FT | 240/15KT  09C | 220/15KT  12C |
-2000FT | 240/15KT  08C | 230/15KT  11C |
-3000FT | 260/10KT  07C | 260/15KT  10C |
-5000FT | 270/10KT  06C | 280/15KT  10C |
-FL100  | 320/20KT  02C | 290/20KT  05C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 180/05KT  10C | 200/10KT  13C |
+1000FT | 210/10KT  10C | 220/15KT  14C |
+1500FT | 220/10KT  10C | 240/15KT  12C |
+2000FT | 230/10KT  09C | 240/15KT  12C |
+3000FT | 250/10KT  08C | 260/10KT  11C |
+5000FT | 260/15KT  08C | 260/10KT  11C |
+FL100  | 320/20KT  03C | 290/20KT  05C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 220/05KT  11C | 200/10KT  16C |
-1500FT | 230/10KT  11C | 220/10KT  15C |
-2000FT | 240/10KT  11C | 220/10KT  14C |
-3000FT | 260/10KT  08C | 240/15KT  10C |
-5000FT | 280/10KT  07C | 290/10KT  12C |
-FL100  | 330/20KT  02C | 300/20KT  05C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 220/05KT  11C | 230/05KT  15C |
+1500FT | 240/10KT  12C | 260/10KT  14C |
+2000FT | 250/10KT  11C | 260/10KT  13C |
+3000FT | 270/10KT  08C | 270/10KT  12C |
+5000FT | 260/10KT  07C | 260/10KT  11C |
+FL100  | 330/20KT  03C | 300/15KT  05C |
 
 Turbulenz:
 Nicht signifikant.
@@ -65,10 +62,10 @@ Zunächst zwischen FL105 und FL115, im Verlauf langsam auf FL125 bis
 FL135 ansteigend.
 
 Inversionen:
-Gebietsweise Bodeninversion unterhalb meist 1000 FT AGL, am Vormittag
-zögerlich abbauend und in der Nacht zum Freitag erneut ausbildend.
-Ansonsten zeitweise und regional schwache Absinkinversion zwischen
-3000 FT AMSL und FL070.
+Gebietsweise Bodeninversion unterhalb meist 1000 FT AGL, im weiteren
+Vormittagsverlauf zögerlich abbauend und in der Nacht zum Freitag
+erneut ausbildend. Ansonsten zeitweise und regional schwache
+Absinkinversion zwischen 3000 FT AMSL und FL070.
 
 Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
 Berlin  04.57 | 05.31 | 16.12 | 16.45
@@ -76,6 +73,6 @@ Leipzig  05.01 | 05.35 | 16.18 | 16.51
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Luftfahrtberatungszentrale Berlin/dh

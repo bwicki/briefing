@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-120
-FBEU40 EDZM 150300
+054
+FBEU40 EDZM 150600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 15.10.2026, 03.00 UTC bis 16.10.2026, 00.00 UTC
+gültig vom 15.10.2026, 06.00 UTC bis 16.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
@@ -17,25 +17,26 @@ der Nacht zum Freitag erneut Ausbildung einer feuchtkühlen
 Grundschicht.
 
 Wettergeschehen:
-Ausgangs der Nacht und am Donnerstagmorgen verbreitet Nebel.
-Lediglich im westlichen Alpenvorland und im südlichen Franken als
-auch im Bereich der Schwäbischen Alb anfangs noch nebelfrei. Die
-Lagen oberhalb etwa 1800-2300 FT AMSL, an den Alpen oberhalb etwa
-3000 FT AMSL sind frei. Darüber ziehen nördlich der Donau BKN AC/CI
-oberhalb FL180, südlich der Donau BKN CI oberhalb FL250-300.
-Auch am Vormittag zunächst keine signifikanten Änderungen. Erst am
-späteren Vormittag beginnt der Nebel sich langsam aufzulösen. Meist
-erfolgt dies mit einer kurzen Übergangsphase in Dunst und Hochnebel
-zuvor er sich ganz auflöst. Bis zum Mittag sind die Gebiete nördlich
-der Donau sowie der höhere Alpenrand nebelfrei. Entlang der Donau und
-südlich davon geht der Nebel in den frühen Mittagsstunden verbreitet
-in Hochnebel mit Basis um 2500 FT AMSL über und im weiteren Verlauf
-des mittags in BKN CU. Die Basis steigt dann auf etwa 3000 FT AMSL
-an. Von den Rändern löst sich die CU Bewölkung bis etwa bis 12-13 UTC
-meist auf. Lediglich in Oberschwaben und im Südbayerischen Hügelland
-bleibt am Nachmittag dünne SCT/BKN CU/SC Bewölkung um 3000 FT AMSL
-zurück welche erst in den Abendstunden abtrocknet. Darüber im
-gesamten Zeitraum BKN/OVC AC/CI Bewölkung oberhalb FL160-180.
+Zu Beginn verbreitet Nebel. Lediglich im westlichen Alpenvorland und
+im südlichen Franken als auch im Bereich der Schwäbischen Alb oft
+größere nebelfreie Gebiete. Generell sind die Lagen oberhalb etwa
+1800-2300 FT AMSL, an den Alpen oberhalb etwa 3800 FT AMSL frei.
+Darüber ziehen nördlich der Donau BKN AC/CI oberhalb FL180, südlich
+der Donau BKN CI oberhalb FL250-300.
+In der ersten Vormittagshälfte zunächst kaum signifikante Änderungen.
+Erst am späteren Vormittag beginnt der Nebel sich langsam aufzulösen.
+Meist erfolgt dies mit einer kurzen Übergangsphase in Dunst und
+Hochnebel zuvor er sich ganz auflöst. Bis zum Mittag sind die Gebiete
+nördlich der Donau sowie der Alpenrand nebelfrei. Entlang der Donau
+und südlich davon geht der Nebel in den frühen Mittagsstunden
+verbreitet in Hochnebel mit Basis um 2500 FT AMSL über und im
+weiteren Verlauf des mittags in BKN CU. Die Basis steigt dann auf
+etwa 3000 FT AMSL an. Von den Rändern löst sich die CU Bewölkung bis
+etwa bis 12-13 UTC meist auf. Lediglich in Oberschwaben und im
+Südbayerischen Hügelland bleibt am Nachmittag dünne SCT/BKN CU/SC
+Bewölkung um 3000 FT AMSL zurück welche erst in den Abendstunden
+abtrocknet. Darüber im gesamten Zeitraum BKN/OVC AC/CI Bewölkung
+oberhalb FL160-180.
 
 Eingangs der Nacht zum Freitag zunächst nur mittelhohe und hohe BKN
 AC/CI Bewölkung oberhalb etwa FL180. Rasch breiten sich darunter im
@@ -50,28 +51,28 @@ meist auf. Nur vereinzelt bleiben dünne CI Felder oberhalb FL300
 zurück.
 
 Sichtweite:
-Anfangs im Nebel verbreitet zwischen 0.2-0.8 km. In der 2.
-Vormittagshälfte mit Übergang in Hochnebel oder Nebelauflösung
-zwischen 8-20 km, bei Dunst 4-6 km. Am Nachmittag verbreitet 15-30
-km.
+Anfangs im Nebel verbreitet zwischen 0.2-0.8 km. In den nebelfreien
+Gebieten 10-20 km. In der 2. Vormittagshälfte mit Übergang in
+Hochnebel oder Nebelauflösung generell zwischen 10-20 km, bei Dunst
+4-6 km. Am Nachmittag verbreitet 20-40 km.
 In der Nacht zum Freitag erneut Sichtrückgang auf 8-15 km, im Nebel
 auf unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  06 UTC  |  18 UTC  |
-1500FT | 150/05KT  10C | 150/05KT  15C |
-2000FT | 170/05KT  11C | 170/05KT  14C |
-3000FT | 230/05KT  09C | 230/05KT  11C |
-5000FT | 270/10KT  08C | 290/05KT  12C |
-FL100  | 310/20KT  04C | 330/10KT  07C |
+AMSL  |  09 UTC  |  21 UTC  |
+1500FT | 170/05KT  10C | 180/05KT  14C |
+2000FT | 190/05KT  10C | 190/10KT  14C |
+3000FT | 240/05KT  10C | 240/10KT  12C |
+5000FT | 270/10KT  09C | 260/05KT  12C |
+FL100  | 320/15KT  05C | 300/10KT  07C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  06 UTC  |  18 UTC  |
-2000FT | 220/05KT  08C | 040/05KT  15C |
-3000FT | 250/05KT  12C | 230/05KT  12C |
-5000FT | 280/10KT  08C | 290/05KT  11C |
-FL100  | 310/25KT  03C | 350/20KT  06C |
+AMSL  |  09 UTC  |  21 UTC  |
+2000FT | 220/05KT  09C | 150/05KT  14C |
+3000FT | 260/10KT  12C | 240/05KT  13C |
+5000FT | 260/10KT  09C | 270/05KT  12C |
+FL100  | 310/20KT  03C | 360/15KT  06C |
 
 Turbulenz:
 Über den Alpen mäßige Turbulenz unterhalb FL120, abends abschwächend.
@@ -99,6 +100,6 @@ München  05.01 | 05.32 | 16.24 | 16.56
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
-Luftfahrtberatungszentrale München/**
+Luftfahrtberatungszentrale München/Re

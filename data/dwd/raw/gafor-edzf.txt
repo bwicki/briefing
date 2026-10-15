@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-119
-FBEU40 EDZF 150300
+055
+FBEU40 EDZF 150600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 15.10.2026, 03.00 UTC bis 16.10.2026, 00.00 UTC
+gültig vom 15.10.2026, 06.00 UTC bis 16.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
@@ -15,52 +15,53 @@ verbreitet eine feuchte Grundschicht aus, die sich tagsüber nur
 zögerlich auflöst.
 
 Wettergeschehen:
-Am Morgen liegt gebietsweise Dunst, Nebel oder BKN/OVC ST um 500 FT
-AGL vor mit Rheinland-Pfalz, dem Oberrheingraben und sonstigen
-Tallagen und Flussniederungen als Schwerpunkte. Darüber befinden über
-Nordhessen FEW/SCT AC/CI oberhalb von FL180.
+Am frühen Vormittag liegt gebietsweise Dunst, Nebel oder BKN/OVC ST
+um 500 FT AGL vor mit Rheinland-Pfalz, dem südlichen Oberrheingraben
+und sonstigen Tallagen und Flussniederungen als Schwerpunkte. Darüber
+befinden über Nordhessen FEW/SCT AC/CI oberhalb von FL180.
 
-Am Vormittag lösen sich Dunst, Nebel und ST nur sehr zögerlich auf.
-Vor allem in den eben benannten Schwerpunktgebieten dauert die
-Auflösung teils bis in die Mittagsstunden oder gar bis in den frühen
-Nachmittag. Nebel kann dabei übergangsweise in Hochnebel übergehen.
-Der FEW/SCT AC/CI weitet sich bis zum Nachmittag auf das gesamte
-Vorhersagegebiet aus. Über dem Bergland können sich ab dem Nachmittag
-lokal flache FEW CU um 3000 FT AMSL bilden.
+Im weiteren Vormittagsverlauf lösen sich Dunst, Nebel und ST nur sehr
+zögerlich auf. Vor allem in den eben benannten Schwerpunktgebieten
+dauert die Auflösung teils bis in die Mittagsstunden oder gar bis in
+den frühen Nachmittag. Nebel kann dabei übergangsweise in Hochnebel
+übergehen. Der FEW/SCT AC/CI weitet sich bis zum Nachmittag auf das
+gesamte Vorhersagegebiet aus. Über dem Bergland können sich ab dem
+Nachmittag lokal flache FEW CU um 3000 FT AMSL bilden.
 
 Am Abend löst sich der flache CU über dem Bergland auf und der AC/CI
 lockert ebenfalls auf. Anschließend bildet sich erneut bereits in der
 ersten Nachthälfte in Rheinland-Pfalz, dem Oberrheingraben, dem
 Neckartal und sonstigen Tallagen und Flussniederungen erneut wieder
-Dunst, Nebel oder BKN/OVC ST um 500 FT AGL.
+Dunst, Nebel oder BKN/OVC ST um 500 FT AGL. Anderswo bilden sich
+diese tendenziell erst ab der zweiten Nachthälfte aus.
 
 Sichtweite:
 30-60 km. Im Dunst 5 bis 1 km. Im Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 300/05KT  05C | 210/05KT  12C |
-1500FT | 210/10KT  10C | 200/10KT  11C |
-2000FT | 210/10KT  10C | 220/10KT  13C |
-3000FT | 240/10KT  09C | 240/10KT  12C |
-5000FT | 260/15KT  09C | 250/10KT  13C |
-FL100  | 330/20KT  06C | 280/10KT  08C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 280/05KT  08C | 240/05KT  10C |
+1500FT | 210/10KT  09C | 210/05KT  12C |
+2000FT | 210/10KT  10C | 220/10KT  12C |
+3000FT | 230/15KT  10C | 250/10KT  11C |
+5000FT | 260/10KT  11C | 260/05KT  13C |
+FL100  | 340/10KT  07C | 250/10KT  08C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 220/05KT  11C | 060/05KT  17C |
-1500FT | 220/05KT  13C | 120/05KT  17C |
-2000FT | 220/10KT  13C | 180/05KT  16C |
-3000FT | 250/10KT  11C | 210/05KT  14C |
-5000FT | 270/10KT  11C | 230/05KT  13C |
-FL100  | 300/20KT  05C | 290/10KT  08C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 230/05KT  09C | 080/05KT  17C |
+1500FT | 220/10KT  13C | 150/05KT  16C |
+2000FT | 220/10KT  13C | 190/05KT  16C |
+3000FT | 260/10KT  12C | 210/10KT  14C |
+5000FT | 260/10KT  11C | 240/10KT  12C |
+FL100  | 320/15KT  06C | 280/05KT  07C |
 
 Turbulenz:
 Nicht signifikant.
 
 Vereisung:
-Zwischen FL180-220 mäßig. Zum Abend abschwächend.
+Nicht signifikant.
 
 Nullgradgrenze:
 Zu Beginn zwischen FL120 im Nordosten und FL130 im Südwesten. Bis zum
@@ -78,6 +79,6 @@ Karlsruhe  05.14 | 05.47 | 16.37 | 17.09
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Flugwetterzentrale Frankfurt/lb

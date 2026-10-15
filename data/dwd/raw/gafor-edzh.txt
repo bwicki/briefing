@@ -1,28 +1,30 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzh_node.html
 
-121
-FBEU40 EDZH 150300
+051
+FBEU40 EDZH 150600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Nord
-gültig vom 15.10.2026, 03.00 UTC bis 16.10.2026, 00.00 UTC
+gültig vom 15.10.2026, 06.00 UTC bis 16.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 00 bis 10
 
 Wetterlage und -entwicklung:
 Ein Hoch mit Schwerpunkt über Tschechien wandert unter Abschwächung
 langsam ostwärts und erreicht in der Nacht zu Freitag die Slowakei.
-Auf seiner Nordfestflanke fließt mit einer südwestlichen Strömung
+Auf seiner Nordwestflanke fließt mit einer südwestlichen Strömung
 milde Meeresluft in den Vorhersagebereich. Eine vor allem im Südosten
 in den Morgenstunden vorhandene feuchte Grundschicht löst sich am
-Vormittag auf und bildet sich in der kommenden Nacht erneut.
+Vormittag auf und bildet sich in der kommenden Nacht erneut. In der
+zweiten Nachthälfte zu Freitag nähert sich im Nordwesten die wellende
+Kaltfront eines Nordmeertiefs.
 
 Wettergeschehen:
 Am Morgen zeigen sich verbreitet BKN/OVC AC/CI in Schichten oberhalb
-von FL150. Sie gehen im Nordwesten bereits am Vormittag, ansonsten am
+von FL140. Sie gehen im Nordwesten bereits am Vormittag, ansonsten am
 Nachmittag in SCT/BKN CI oberhalb von FL210 über, letztere können
 zeit- und gebietsweise noch stärker auflockern.  Darunter ziehen über
 der Nordsee und dem angrenzenden, besonders dem nordfriesischen
-Küstenbereich immer wieder SCT/BKN CU/SC mit Untergrenzen 1200-2500
+Küstenbereich immer wieder SCT/BKN CU/SC mit Untergrenzen 1200-3500
 FT AMSL und Obergrenzen zwischen 4000 FT AMSL und FL060 durch.
 Außerdem zeigt sich in den Tallagen des Weser-Leine-Berglands am
 Morgen gebietsweise Nebel mit Obergrenzen 100-300 FT AGL, der sich
@@ -32,46 +34,47 @@ zeitweise SCT/BKN ST mit Untergrenzen zwischen 400 und 800 FT AGL und
 Tops um 1200 FT AGL aufziehen, die sich zumeist rasch wieder
 auflösen.
 Über Land bilden sich ab Mittag verbreitet FEW flache CU mit Basis
-1500-2500 FT AMSL, die am Nachmittag teilweise abtrocknen und sich
+2000-2500 FT AMSL, die am Nachmittag teilweise abtrocknen und sich
 sonst ab dem späten Nachmittag wieder auflösen.
 Über der nordwestlichen Deutschen Bucht verdichtet sich die
 CU/SC-Bewölkung im Nachmittagsverlauf zu BKN/OVC CU/SC mit
 Untergrenzen 1200-1500 FT AMSL und Obergrenzen um FL060, örtlich
 können darunter auch SCT/BKN ST in 800-1200 FT AGL auftreten. Am
-Abend und in der ersten Nachthälfte weitet sich diese BKN/OVC
-SC-Bewölkung ostwärts aus und erreicht gegen Berichtsende etwa eine
-Linie Lübecker Bucht - Teutoburger Wald. Dabei verbleiben die
-tieferen Untergrenzen von 1500-2000 FT AMSL meist über See sowie über
+Abend und in der Nacht weitet sich diese BKN SC-Bewölkung ostwärts
+aus und erreicht gegen Berichtsende etwa eine Linie Wendland - Bad
+Salzuflen. Dabei verbleiben die tieferen Untergrenzen von 1500-2000
+FT AMSL sowie die darunter liegenden Stratusfelder über See und über
 dem nordwestlichen Schleswig-Holstein, während nach Südosten hin
 meist Untergrenzen von 4000-5000 FT AMSL anzutreffen sind.
 
 Sichtweite:
-Über Land vor allem im Osten und im Süden am Morgen gebietsweise
-Dunst mit Sichtweiten 2-8 km, örtlich auch Starkdunst oder Nebel mit
-Sichtweiten 300-2000 m, am Vormittag auflösend und wie schon im
-Nordwesten auf 20-40 km verbessernde Sichtweiten. In der kommenden
-Nacht im Südosten erneut Dunst- oder Nebelbildung.
+Über Land im Osten und im Süden anfangs noch örtlich Dunst mit
+Sichtweiten 2-8 km, vor allem in Tallagen des Weser-Leine-Berglands
+örtlich auch Starkdunst oder Nebel mit Sichtweiten 300-2000 m, am
+Vormittag auflösend und wie schon im Nordwesten auf 20-40 km
+verbessernde Sichtweiten. In der kommenden Nacht im Südosten erneut
+Dunst- oder Nebelbildung.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 00-04:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 200/15KT  09C | 210/20KT  14C |
-1000FT | 220/25KT  11C | 220/25KT  14C |
-1500FT | 230/25KT  11C | 240/25KT  13C |
-2000FT | 240/25KT  10C | 240/25KT  12C |
-3000FT | 240/20KT  07C | 260/25KT  09C |
-5000FT | 240/20KT  06C | 250/25KT  10C |
-FL100  | 290/25KT  04C | 270/30KT  06C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 200/15KT  11C | 210/20KT  13C |
+1000FT | 220/20KT  11C | 220/25KT  14C |
+1500FT | 240/25KT  11C | 240/25KT  13C |
+2000FT | 240/25KT  11C | 240/25KT  13C |
+3000FT | 230/25KT  08C | 260/25KT  10C |
+5000FT | 250/25KT  08C | 260/25KT  07C |
+FL100  | 270/25KT  04C | 250/25KT  06C |
 
 GAFOR-Gebiete 05-10:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 190/10KT  12C | 190/10KT  15C |
-1000FT | 220/10KT  13C | 220/15KT  15C |
-1500FT | 230/10KT  11C | 240/20KT  14C |
-2000FT | 240/10KT  10C | 250/20KT  13C |
-3000FT | 240/10KT  08C | 270/20KT  12C |
-5000FT | 250/15KT  07C | 260/15KT  12C |
-FL100  | 310/25KT  04C | 270/15KT  06C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 200/05KT  12C | 200/10KT  15C |
+1000FT | 230/10KT  13C | 230/15KT  15C |
+1500FT | 250/15KT  11C | 250/15KT  14C |
+2000FT | 250/15KT  10C | 260/15KT  14C |
+3000FT | 250/15KT  08C | 270/15KT  12C |
+5000FT | 250/15KT  09C | 250/15KT  12C |
+FL100  | 310/15KT  05C | 260/20KT  07C |
 
 Turbulenz:
 keine signifikante
@@ -81,9 +84,9 @@ Bis zum Mittag vereinzelt mäßig in AC oberhalb der Nullgradgrenze bis
 FL210.
 
 Nullgradgrenze:
-Am Morgen zwischen FL110 und FL120, von Südwesten weiter ansteigend,
+Am Morgen zwischen FL115 und FL125, von Südwesten weiter ansteigend,
 am späten Nachmittag verbreitet bei FL130-FL135. Über dem äußersten
-Nordwesten ab dem Abend wieder absinkend auf FL115-FL125.
+Nordwesten ab dem Abend allmählich wieder absinkend auf FL110-FL125.
 
 Inversionen:
 Verbreitet Absinkinversion zwischen 3000-4000 FT AMSL und FL070, über
@@ -99,6 +102,6 @@ Hannover  05.12 | 05.46 | 16.27 | 17.00
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Luftfahrtberatungszentrale Hamburg/RI
