@@ -1,83 +1,100 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-991
-FBEU40 EDZF 151800
+742
+FBEU40 EDZF 160300
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 15.10.2026, 18.00 UTC bis 16.10.2026, 15.00 UTC
+gültig vom 16.10.2026, 03.00 UTC bis 17.10.2026, 00.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Unter Hochdruckeinfluss und bei einer südwestlichen Höhenströmung
-bleibt die Luftmasse mild und stabil geschichtet. In der Nacht bildet
-sich eine feuchte Grundschicht, welche örtlich bis zum Freitagmittag
-anhält.
+Zunächst bleibt Hochdruckeinfluss wetterbstimmend und bei einer
+südwestlichen Höhenströmung bleibt die Luftmasse mild und stabil
+geschichtet. In der Nacht hat sich eine feuchte Grundschicht
+gebildet, die am Vormittag teils nur langsam abtrocknet. In der Nacht
+auf Samstag zieht von Nordwesten eine Kaltfront heran, sie erreicht
+aber nur den Nordwesten des Vorhersagebereiches bis Berichtsende. Im
+Vorfeld wird jedoch feuchte und teils labil geschichtete Luft in den
+Südwesten und Süden geführt.
 
 Wettergeschehen:
-Aktuell zeigt sich eine SCT/BKN AS/CI-Bewölkung oberhalb FL190.
-Eingangs der Nacht beginnt sich feuchter Dunst und später Nebel zu
-bilden. Vor allen betroffen sind dabei Flussniederungen von Main,
-Rhein, Neckar und Saar. Dabei kommt es ab der zweiten Nachthälfte
-auch zur Bildung eines BKN/OVC ST mit Untergrenzen in wenigen hundert
-FT AGL und Obergrenzen zwischen 1000 und 1500 FT AMSL.
+Lokal zeigt sich SCT/BKN CI-Bewölkung oberhalb von FL200-220. In der
+Nacht hat sich Flussniederungen und Tallagen, insbesondere von Main,
+Rhein, Neckar und Saar, Dunst und Nebel gebildet, vielfach mit
+BKN/OVC ST in wenigen hundert FT AGL und Obergrenzen zwischen 1000
+und 1500 FT AMSL.
 
-Die AS/CI-Bewölkung lockert im Laufe der zweiten Nachhälfte auf. Die
-Auflösung vom feuchten Dunst, Nebel und ST-Bewölkung findet
-verbreitet im Laufe des Freitagvormittags statt. Örtlich kann es aber
-auch bis in den frühen Freitagnachmittag andauern.
+Die Auflösung von Dunst, Nebel und ST-Bewölkung findet verbreitet im
+Laufe des Freitagvormittags statt. Vereinzelt kann es aber auch bis
+in den frühen Freitagnachmittag andauern.
 
-Die AS/CI-Bewölkung zieht im Tagesverlauf in den Südosten, sodass sie
-zum Berichtsende nur noch Baden-Württemberg betrifft. Dahinter zieht
-aus Westen eine SCT/BKN SC/CU Bewölkung heran und liegt mit
-Untergrenzen zwischen 2500 und 3500 FT AMSL und Obergrenzen um 5000
-FT AMSL über dem Saarland, Rheinland-Pfalz und Teilen von Hessen.
+Die CI-Bewölkung zieht im Tagesverlauf nach Baden-Württemberg. Nach
+Auflösung von Dunst, Nebel und ST-Bewölkung kann sich nur vereinzelt,
+vorzugsweise westlich des Rheins SCT/BKN flacher CU in 2500-3500 FT
+AMSL bilden.
+
+Im Laufe des Nachmittages zieht von Westen her SCT/BKN SC/CU in
+3000-3500 FT AMSL in die Gebiete westlich des Rheins und in den
+Nordwesten von Hessen. Die Obergrenzen liegen bei 5000 FT AMSL bis FL
+Darüber zieht CI-Bewölkung oberhalb von FL245 auf.
+Diese Bewölkung breitet sich am Abend und der Nacht ostwärts aus und
+überdeckt in der zweiten Nachthälfte den gesamten Bereich. Das höhere
+Bergland geht dabei zeitweise in Wolken.
+
+In der zweiten Nachthälfte zieht dann frontale Bewölkung in den
+Nordwesten mit BKN/OVC ST/SC/AC in 2000-2500 FT AMSL und Tops um
+FL140. Gebietsweise beginnt es leicht bis mäßig zu regnen. Auch im
+Westen Baden-Württembergs zieht von Frankreich her kompaktere
+Bewölkung mit BKN/OVC SC/AC in 2500-3500 FT AMLS und Tops ebenfalls
+um FL140. Auch hier beginnt es zu regnen, durch eingelagerte TCU/CB
+mit Tops bis FL170 teil schauerartig verstärkt.
 
 Sichtweite:
-Verbreitet zwischen 30 und 60 km. Im Dunst 1 bis 5 km, im Nebel unter
-1 km.
+30-60 km. Im Dunst 1-4 km, im Nebel unter 1 km. Im Niederschlag je
+nach Intensität 5-20 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 250/05KT  11C | 220/05KT  09C |
-1500FT | 210/10KT  12C | 200/10KT  09C |
-2000FT | 220/10KT  13C | 200/15KT  11C |
-3000FT | 250/10KT  12C | 220/15KT  12C |
-5000FT | 250/10KT  12C | 260/15KT  11C |
-FL100  | 250/10KT  08C | 240/15KT  05C |
+AMSL  |  06 UTC  |  18 UTC  |
+1000FT | 310/05KT  06C | 190/05KT  16C |
+1500FT | 190/10KT  11C | 210/15KT  16C |
+2000FT | 190/15KT  12C | 220/15KT  16C |
+3000FT | 210/10KT  12C | 240/15KT  13C |
+5000FT | 240/10KT  11C | 250/15KT  09C |
+FL100  | 240/20KT  07C | 250/25KT  04C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 070/05KT  17C | 220/05KT  12C |
-1500FT | 100/05KT  17C | 210/10KT  15C |
-2000FT | 190/05KT  16C | 210/15KT  15C |
-3000FT | 220/10KT  14C | 230/10KT  14C |
-5000FT | 240/10KT  13C | 270/15KT  14C |
-FL100  | 260/05KT  07C | 260/15KT  05C |
+AMSL  |  06 UTC  |  18 UTC  |
+1000FT | 220/05KT  13C | 210/10KT  20C |
+1500FT | 210/10KT  15C | 220/15KT  19C |
+2000FT | 210/10KT  15C | 230/15KT  18C |
+3000FT | 230/10KT  13C | 250/15KT  15C |
+5000FT | 280/10KT  13C | 270/20KT  12C |
+FL100  | 250/15KT  06C | 260/15KT  02C |
 
 Turbulenz:
-Nicht signifikant.
+Im Bereich von TCU/CB mäßig bis stark, sonst nicht signifikant.
 
 Vereisung:
-Nicht signifikant.
+In der Nacht auf Samstag in der aufziehenden Bewölkung mäßig zwischen
+Nullgradgrenze und FL140, im Bereich von TCU/CB mäßig bis stark.
 
 Nullgradgrenze:
-Zu Beginn um FL130. Am Freitag absinkend auf FL110 bis FL120.
+Am Morgen FL130-140, bis zum Abend allmählich absinkend auf
+FL110-FL120, in der Nacht weiteres Absinken auf FL080-090 im
+Nordwesten und FL100-105 im Süden.
 
 Inversionen:
-Am Donnerstag zeigt sich eine Absinkinversion um 3500 FT AMSL, welche
-sich im Laufe der Nacht abschwächt. Am Abend bildet sich eine
-markante Bodeninversion mit vereinzelt Temperaturdifferenzen um 10 K
-unterhalb 1000 bis 1500 FT AMSL.
+Am Morgen markante Bodeninversion, teils mit Temperaturdifferenzen um
+10 K unterhalb 1000 bis 1500 FT AMSL, am Vormittag langsam auflösend.
 
 Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
 Gießen  05.16 | 05.49 | 16.32 | 17.04
 Karlsruhe  05.16 | 05.48 | 16.35 | 17.06
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
-SA/SU   = Sonnenauf/untergang - morgen
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
+SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt am 16.10.2026 um 02.00
-UTC
+Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
 
-Flugwetterzentrale Frankfurt/IT/mb
+Flugwetterzentrale Frankfurt/He
