@@ -1,80 +1,102 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzm_node.html
 
-169
-FBEU40 EDZM 160600
+125
+FBEU40 EDZM 161200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Süd
-gültig vom 16.10.2026, 06.00 UTC bis 17.10.2026, 03.00 UTC
+gültig vom 16.10.2026, 12.00 UTC bis 17.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 54 - 58, 62 - 64, 71 - 76, 81 - 84
 
 Wetterlage und -entwicklung:
-Die Hochdruckzone über Süddeutschland schwächt sich langsam ab und in
-der 2. Nachthälfte greift von Nordwesten eine Kaltfront über. Vorher
-ist noch die milde Luft wetterbestimmend. Die in der Nacht
-entstandene bodennahe feuchte Kaltluftschicht wird tagsüber meist
-weggeheizt und bildet sich kommenden Nacht erneut.
+Süddeutschland befindet sich im Einfluss einer Hochdruckzone, welche
+sich langsam abschwächt. Nachts kann sich eine feucht-kalte
+Grundschicht ausbilden. In der 2. Nachthälfte greift von Nordwesten
+allmählich eine Kaltfront über. Im Verlauf der zweiten Nachthälfte
+und des Samstagvormittags breitet sich die Front nach Südosten aus,
+erreicht jedoch noch nicht die Alpen und das angrenzende
+Alpenvorland.
 
 Wettergeschehen:
-Im gesamten Zeitraum ziehen oberhalb FL180 aufgelockerte CI-Felder
-durch.
-Unterhalb 2000 FT AMSL liegen am Morgen verbreitet Nebelfelder. Diese
-heben in der 2. Vormittagshälfte an und beginnen sich aufzulösen. Im
-Dreieck Ingolstadt-Regensburg-München Flughafen bleiben Teile des
-Hochnebels zum Teil bis zum Nachmittag erhalten. Dabei liegt die
-ST-Bewölkung dann bei 1800 FT AMSL, Obergrenze bei 2200 FT AMSL. Am
-Mittag und am Nachmittag zeigen sich über Ostbayern gelegentlich
-wenige flache CU bei 3000 FT AMSL.
-In der ersten Nachthälfte bilden sich in den Niederungen erneut
-Nebelfelder. Ab etwa Mitternacht gelangt in den Nordwesten BKN SC mit
-Untergrenzen zwischen 2500 und 3500 FT AMSL. Tops bei FL075. Bis 03
-UTC breitet sich diese Bewölkung bis zur Linie Schwäbische
-Alb-Vogtland aus. Gelegentlich fällt etwas Regen oder Sprühregen.
+Im gesamten Zeitraum ziehen oberhalb von FL180 aufgelockerte
+CI-Felder durch.
+Örtlich ist noch Nebel und teils Hochnebel unterhalb von 2000 FT AMSL
+aus der Nacht vorhanden, besonders im Bereich der Donau- und
+Naabniederung sowie in Teilen der Fränkischen Alb.
+Lokal, besonders entlang der Mittelgebirge bilden sich FEW CU
+zwischen 2500 und 3500 FT AMSL, welche am späten Nachmittag und Abend
+wieder abtrocknen.
+
+In der 1. Nachthälfte bilden sich erneut Nebelfelder aus.
+In der 2. Nachthälfte zieht von Nordwesten BKN SC mit Untergrenze in
+2500 bis 3500 FT AMSL auf, TOPs in Fl070 bis FL080. Bis Sonnenaufgang
+kann sich der SC bis auf eine Höhe Bodenseeraum - Augsburg -
+Oberpfälzer Wald ausbreiten. Dabei geht die Bewölkung im Südwesten,
+entlang der Schwäbischen Alb und in der Bodenseeregion, in SC/AC über
+mit Obergrenzen bis FL130. Daraus teils Regen/Sprühregen.
+Besonders südlich dieser Linie (Bodensee - Augsburg - Oberpfälzer
+Wald) verdichtet sich der Nebel in der zweiten Nachthälfte, mit
+Schwerpunkt entlang der östlichen Donauniederung sowie zwischen
+Innsbruck, München-Flughafen und dem Innviertel.
+
+Am Samstagvormittag erreicht von Nordwesten geschichtete OVC
+ST/SC/AC, meist darüber geschichtet CI Mainfranken. Dabei sinken die
+Untergrenzen teils auf 1500 bis 2000 FT AMSL ab. Es fällt Regen mit
+erhöhtem Sprühregenanteil. Bereits im Vorfeld dessen sinken die
+Untergrenzen meist auf 2000 bis 2500 FT AMSL ab. Diese tieferen
+Untergrenzen breiten sich bis 09 UTC circa bis zum
+Kocher-Jagst-Gebiet - Frankenwald aus.
 
 Sichtweite:
-Am Morgen 100m bis 5 km. Nach Nebelauflösung 20-40 km, nachmittags
-zum Teil um 50 km. In der kommenden Nacht in den Niederungen wieder
-auf 100m bis 5 km zurückgehend. Im Nordwesten später unter der
-aufziehenden Bewölkung 5-20 km. Oberhalb 2500-3000 FT AMSL 60-100 km.
+Im Nebel und unter Hochnebel 100 m bis 5 km. Abseits davon südlich
+der Donau meist um 50 km, nördlich überwiegend 20 bis 40 km. Kommende
+Nacht im Nebel erneut auf wenige hundert Meter im Nebel bis 5 km
+zurückgehend. Mit der aufziehenden Front ebenfalls Sichtrückgang auf
+meist 7 bis 15 km, im Sprühregen/Regen sowie unter der ST/SC/AC
+Bewölkung Rückgang auf 2 bis 5 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 54 - 58, 63, 64:
-AMSL  |  09 UTC  |  21 UTC  |
-1500FT | 160/05KT  09C | 180/10KT  14C |
-2000FT | 160/10KT  09C | 210/10KT  15C |
-3000FT | 210/10KT  12C | 280/15KT  13C |
-5000FT | 230/10KT  12C | 280/15KT  11C |
-FL100  | 260/10KT  08C | 270/15KT  04C |
+AMSL  |  15 UTC  |  06 UTC  |
+1500FT | 180/05KT  15C | 260/05KT  13C |
+2000FT | 190/05KT  14C | 280/10KT  13C |
+3000FT | 290/10KT  12C | 280/15KT  10C |
+5000FT | 300/15KT  13C | 260/15KT  08C |
+FL100  | 250/10KT  06C | 250/25KT  02C |
 
 GAFOR-Gebiete 62, 71 - 84:
-AMSL  |  09 UTC  |  21 UTC  |
-2000FT | 180/05KT  09C | 220/05KT  15C |
-3000FT | 220/10KT  13C | 280/10KT  14C |
-5000FT | 260/10KT  12C | 310/10KT  12C |
-FL100  | 310/10KT  07C | 300/15KT  03C |
+AMSL  |  15 UTC  |  06 UTC  |
+2000FT | 010/05KT  13C | 250/05KT  11C |
+3000FT | 260/10KT  12C | 310/10KT  12C |
+5000FT | 280/15KT  12C | 300/10KT  09C |
+FL100  | 270/05KT  07C | 280/10KT  01C |
 
 Turbulenz:
-Keine.
+Am Samstagvormittag in Mainfranken unterhalb von FL100 mäßig.
 
 Vereisung:
-Keine.
+In der SC/AC-Bewölkung im Südwesten mäßig zwischen FL100 und FL130.
+Sowie in der aufziehenden ST/SC/AC mäßig zwischen FL090 und FL140.
 
 Nullgradgrenze:
-Um FL135. In der kommenden Nacht von Nordwesten absinkend. Zum
-Berichtsende dann zwischen FL115 im Südosten und FL100 im Nordwesten.
+Um FL135. Kommende Nacht absinkend bis Mitternacht auf FL110 im
+Nordwesten und FL125 im Südwesten, bis Sonnenaufgang auf verbreitet
+FL100 bis FL105. Am Samstagvormittag in der Nordwesthälfte weiter
+absinkend auf FL090 bis FL100.
 
 Inversionen:
-2000-2500 FT AMSL. Wird tagsüber durch Erwärmung stark abgeschwächt
-und bildet sich kommende Nacht erneut aus. In der 2. Nachthälfte wird
-durch den Wolkenaufzug die Inversion abgebaut und es entsteht eine
-bei FL075.
+Absinkinversion in 3500/4000 FT AMSL, Am Abend und in der Nacht von
+Nordwesten abbauend und Entstehung einer Absinkinversion um FL080. In
+der Nacht örtlich Ausbildung einer Bodeninversion unterhalb von 2000
+bis 2500 FT AMSL.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Nürnberg  05.05 | 05.38 | 16.24 | 16.55
-München  05.01 | 05.33 | 16.22 | 16.53
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Nürnberg  16.24 | 16.55 | 05.07 | 05.40
+München  16.22 | 16.53 | 05.03 | 05.35
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Luftfahrtberatungszentrale München/AG
+Luftfahrtberatungszentrale München/ma

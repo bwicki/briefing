@@ -1,92 +1,110 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-483
-FBEU40 EDZB 160600
+438
+FBEU40 EDZB 161200 COR
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 16.10.2026, 06.00 UTC bis 17.10.2026, 03.00 UTC
-
+gültig vom 16.10.2026, 12.00 UTC bis 17.10.2026, 09.00 UTC
+aktualisiert um 12:15 UTC
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
 Wetterlage und -entwicklung:
 Am Rand eines Hochdruckgebietes über Südosteuropa fließt mit
-südwestlicher Strömung milde, stabil geschichtete und in den höheren
-Schichten feuchtere Luft ein. Die örtlich gebildete feuchte
-Grundschicht löst sich am Vormittag auf. In der Nacht zum Samstag
-erreicht eine kaum wetteraktive Kaltfront von Nordwesten das
-Vorhersagegebiet und führt kühlere Meeresluft heran.
+südwestlicher Strömung milde und stabil geschichtete Luft ein. In der
+Nacht zum Samstag erreicht eine Kaltfront von Nordwesten das
+Vorhersagegebiet mit feuchter Meeresluft.
+Aufgrund der langsamen Verlagerung der Front bleiben weite Teile des
+Vorhersagebereichs bis Samstagnachmittag davon beeinflusst.
+Rückseitig fließt etwas kühlere Meeresluft ein, die Luftmasse bleibt
+weitgehend stabil geschichtet.
 
 Wettergeschehen:
-Gebietsweise SCT/BKN CI/CS oberhalb FL180. Nordwestlich einer Linie
-Altmark - Usedom darunter oftmals SCT/BKN SC zwischen 3000 FT AMSL
-und FL060. Zudem örtlich flache Dunst- und Nebelfelder, südlich des
-Thüringer Waldes teilweise auch tiefere ST-Bewölkung um 500 FT AGL.
-Niederschlagsfrei.
+Zunächst Durchzug von SCT/BKN, gebietsweise auch FEW AC/AS/CI-Feldern
+oberhalb von FL180, daraus Niederschläge die den Boden nicht
+erreichen.
+Darunter in Teilen Mecklenburg-Vorpommerns, ab dem Abend auch im
+Bereich von Altmark und Prignitz SCT/BKN SC zwischen 4000 FT AMSL und
+FL060, teils auch bis FL080 hochreichend. Regional auch wolkenlos.
+Im Südstau der Thüringischen und Sächsischen Mittelgebirge
+stellenweise noch tiefe ST-Bewölkung um 500 FT AGL oder als Nebel
+aufliegend.
+Weitgehend niederschlagsfrei.
 
-Am Vormittag allmähliche Auflösung von Dunst, Nebel und tiefem ST, am
-Thüringer Wald nur zögernd anhebend bzw. auflösend. Im Nordwesten
-auflockernde SC-Bewölkung. Ansonsten Durchzug von AC/AS/CI-Feldern
-oberhalb FL160, im Tagesverlauf von Nordwesten zunehmend auflockernd.
-Am Nachmittag dann stellenweise auch wolkenlos.
+Gegen Mitternacht mit der Kaltfront von Nordwesten Aufzug von
+zunehmend kompakter BKN/OVC SC/AC/AS-Bewölkung mit Basis um 3000 FT
+AMSL, Obergrenzen teilweise bis FL160 reichend. Im weiteren
+Nachtverlauf langsam südostwärts ausbreitend. Darunter zunächst in
+Mecklenburg, im weiteren Nachtverlauf auf ganz Mecklenburg-Vorpommern
+über die Prignitz, Sachsen-Anhalt bis nach Thüringen vorankommende
+BKN/OVC ST-Bewölkung mit Basis in 500 bis 1500 FT AGL, örtlich auch
+unter 500 FT AGL, im Bereich des Berglands auch aufliegend. Teilweise
+auch in Nimbostratus übergehend. Dabei zeitweise leichter, teils auch
+mäßiger Regen oder Sprühregen.
 
-Eingangs der Nacht mit der Kaltfront von Nordwesten Aufzug von
-SCT/BKN SC/AC mit Basis bei 3000 FT AMSL, Obergrenzen um FL080. Im
-Verlauf südostwärts ausbreitend. In der zweiten Nachthälfte zunächst
-in Mecklenburg, später vom Thüringer Wald bis zum Darß Übergang zu
-kompakterem BKN/OVC ST/SC/AC/AS in 1500 bis 2500 FT AMSL, örtlich nur
-in 500 bis 1500 FT AGL. Daraus vereinzelt etwas Regen. Weiter östlich
-erneut lokal Bildung flacher Dunst- und Nebelfelder.
+Im Vormittags- und Mittagsverlauf weiter südostwärts vorankommende
+Kaltfrontbewölkung, dann gesamt Brandenburg, Berlin und Sachsen mit
+tiefem Stratus und Regen erfassend. Währenddessen in Teilen
+Mecklenburgs erste Wolkenauflockerungen möglich.
 
 Sichtweite:
-Meist 20 bis 50 km. In der Nacht im Dunst Rückgang auf 2 bis 5 km, im
-Nebel unter 1 km.
+Meist 20 bis 40 km. Im Südstau der Mittelgebirge bei Dunst 2 bis 5
+km, im Nebel unter 1 km. In der Nacht auf 8 bis 20 km reduziert, mit
+der Kaltfront unter Status und bei mäßigem Regen oder im Sprühregen 2
+bis 8 km.
+Am Samstag unter Stratus weiterhin 2 bis 8 km, rückseitig der
+Statusbewölkung von Nordwesten auf 8 bis 20 km bessernd.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  09 UTC  |  21 UTC  |
- 500FT | 180/10KT  12C | 190/10KT  14C |
-1000FT | 180/15KT  14C | 210/15KT  16C |
-1500FT | 190/15KT  13C | 230/15KT  15C |
-2000FT | 200/15KT  13C | 230/15KT  15C |
-3000FT | 200/10KT  11C | 250/10KT  14C |
-5000FT | 210/10KT  10C | 260/10KT  09C |
-FL100  | 220/25KT  05C | 240/25KT  02C |
+AMSL  |  15 UTC  |  06 UTC  |
+ 500FT | 180/10KT  17C | 350/15KT  10C |
+1000FT | 180/10KT  15C | 350/20KT  09C |
+1500FT | 200/10KT  14C | 010/25KT  08C |
+2000FT | 210/10KT  14C | 010/25KT  08C |
+3000FT | 250/15KT  12C | 010/20KT  07C |
+5000FT | 290/15KT  09C | 310/05KT  06C |
+FL100  | 230/30KT  03C | 230/20KT M03C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 190/10KT  13C | 230/15KT  16C |
-1500FT | 200/10KT  14C | 250/15KT  16C |
-2000FT | 200/10KT  14C | 260/15KT  15C |
-3000FT | 210/10KT  13C | 270/10KT  13C |
-5000FT | 210/10KT  12C | 250/10KT  11C |
-FL100  | 240/10KT  07C | 270/15KT  02C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 220/10KT  18C | 310/10KT  14C |
+1500FT | 220/10KT  16C | 330/10KT  13C |
+2000FT | 230/10KT  15C | 330/10KT  12C |
+3000FT | 270/15KT  13C | 310/10KT  10C |
+5000FT | 280/10KT  12C | 280/10KT  08C |
+FL100  | 230/20KT  05C | 240/20KT M01C |
 
 Turbulenz:
-Zunächst nicht signifikant. In der zweiten Nachthälfte zum Samstag in
-der Kaltfront stellenweise mäßig zwischen FL100 und FL160.
+Zunächst nicht signifikant. Ab Samstagmorgen im Bereich der Kaltfront
+stellenweise mäßig, zunächst unterhalb von FL120, ab
+Mittag/Nachmittag unterhalb FL160.
 
 Vereisung:
-Zunächst nicht signifikant. In der zweiten Nachthälfte zum Samstag in
-der Kaltfrontbewölkung teils mäßig zwischen Nullgradgrenze und FL200.
+In unterkühlter AC/AS-Bewölkung leicht, örtlich mäßig oberhalb von
+FL180. Ab etwa Mitternacht mit der Kaltfrontbewölkung von Nordwesten
+mäßig zwischen FZLVL und FL160.
 
 Nullgradgrenze:
-Zwischen FL125 und FL135. Im Tagesverlauf von Nordwesten allmählich
-absinkend, in der zweiten Nachthälfte zum Samstag zwischen FL095 in
-Mecklenburg und FL115 in Ostsachsen.
+Anfangs zwischen FL110 und FL120 in Mecklenburg und FL135 in der
+Lausitz. Bis zum Abend von Nordwesten, in Mecklenburg auf FL090 bis
+FL100 sinkend, in der Lausitz weiterhin um FL130.
+Mit der Kaltfront im Verlauf auf FL060 bis FL080 sinkend. Rückseitig
+der Kaltfront zwischen FL050 und FL060.
 
 Inversionen:
-Gebietsweise Bodeninversion unterhalb meist 1000 FT AGL, im
-Vormittagsverlauf zögerlich abbauend und in der Nacht zum Samstag
-erneut stellenweise ausbildend. Ansonsten schwache Absinkinversion
-zwischen 3000 FT AMSL und FL070, mit Annäherung der Kaltfront von
-Nordwesten auflösend.
+Zunächst gebietsweise Absinkinversion zwischen 2000 FT AMSL und
+FL070, zur Nacht häufig abbauend.
+Zudem im Vorfeld der Kaltfront im Laufe der Nacht Ausbildung einer
+Bodeninversion, meist unterhalb 1000 FT AGL, mit Kaltfrontannäherung
+abbauend.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Berlin  04.59 | 05.33 | 16.09 | 16.42
-Leipzig  05.03 | 05.36 | 16.16 | 16.49
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Berlin  16.09 | 16.42  | 05.00 | 05.34
+Leipzig  16.16 | 16.49  | 05.05 | 05.38
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Luftfahrtberatungszentrale Berlin/Ze
+Luftfahrtberatungszentrale Berlin/Ka/HS
