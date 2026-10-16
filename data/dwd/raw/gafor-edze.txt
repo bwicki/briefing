@@ -1,15 +1,15 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edze_node.html
 
-454
-FBEU40 EDZE 160300
+480
+FBEU40 EDZE 160600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich West
-gültig vom 16.10.2026, 03.00 UTC bis 17.10.2026, 00.00 UTC
+gültig vom 16.10.2026, 06.00 UTC bis 17.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 31 bis 39
 
 Wetterlage und -entwicklung:
-Zwischen hohem Druck über Südosteuropa und einem Tief im Europäischen
+Zwischen hohem Druck über Südeuropa und einem Tief im Europäischen
 Nordmeer fließt mit einer südwestlichen Strömung milde und stabile
 Luft ein. In der Nacht hat sich vor allem im Süden gebietsweise eine
 feuchte Grundschicht ausgebildet, die am Vormittag wieder abtrocknet.
@@ -18,11 +18,11 @@ Skandinavien an und zieht im Laufe der Nacht zum Samstag südostwärts
 ab.
 
 Wettergeschehen:
-In Westfalen gebietsweise SCT/BKN SC mit Untergrenzen in 3500-4500 FT
-AMSL, Obergrenzen um FL060. Darüber und im restlichen Gebiet
-verbreitet BKN CI oberhalb FL200. Im Süden schwerpunktmäßig in Tal-
-und Flussniederungen haben sich Dunst- und Nebelfelder gebildet,
-teils mit aufliegendem ST mit Obergrenzen in 500-800 FT AGL.
+In der Nordhälfte gebietsweise SCT/BKN SC mit Untergrenzen in
+3500-4500 FT AMSL, Obergrenzen um FL060. Darüber und im restlichen
+Gebiet verbreitet BKN CI oberhalb FL200. Im Süden schwerpunktmäßig in
+Tal- und Flussniederungen haben sich Dunst- und Nebelfelder gebildet,
+teils mit aufliegendem ST mit Obergrenzen in 400-800 FT AGL.
 
 Am Vormittag löst sich der Nebel/ST zögerlich auf und geht vereinzelt
 in flachen FEW/SCT CU mit Anfangsbasis um 1500 FT AMSL über. Teils
@@ -39,14 +39,16 @@ sich südostwärts.
 
 Am frühen Abend zieht im äußersten Nordwesten erste frontale BKN/OVC
 SC/AC/AS Bewölkung mit Untergrenzen um 2500 FT AMSL, Obergrenzen bis
-FL160 auf. Daraus einsetzender leichter Regen. Im weiteren Verlaufe
-verlagert und verdichtet sich die frontale Bewölkung langsam
-südostwärts und erreicht zum Berichtsende etwa eine Linie
-Sauerland-Eifel. Es zeigt sich dann verbreitet BKN/OVC SC/AC/AS mit
-Untergrenzen um 1500 FT AMSL und Obergrenzen bei FL160-FL180. Daraus
-fällt leichter, teils mäßiger Regen. Im Niederschlag kann sich
-darunter gebietsweise SCT/BKN ST in 500-1200 FT AGL bilden. Bergland
-gerät zunehmend in Wolken.
+FL160 auf. Daraus einsetzender leichter Regen. Im Vorfeld der Front
+sind einzelne leichte Regenschauer aus ISOL TCU bis FL140 nicht ganz
+ausgeschlossen.
+Im weiteren Verlaufe verlagert und verdichtet sich die frontale
+Bewölkung langsam südostwärts und erreicht gegen Mitternacht etwa
+eine Linie Sauerland-Eifel. Es zeigt sich dann verbreitet BKN/OVC
+SC/AC/AS mit Untergrenzen um 1500 FT AMSL und Obergrenzen bei
+FL160-FL180. Daraus fällt leichter, teils mäßiger Regen. Im
+Niederschlag kann sich darunter gebietsweise SCT/BKN ST in 500-1200
+FT AGL bilden. Bergland gerät zunehmend in Wolken.
 Rückseitig der Front schichtet die Bewölkung von Nordwesten her aus
 und geht in SCT/BKN ST/SC mit Untergrenzen um 1500 FT AMSL und
 Obergrenzen um FL060 über, darüber in LYR BKN AC/CI oberhalb von
@@ -60,32 +62,32 @@ Niederschlag je nach Intensität bei 4-8 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 31 - 34:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 160/15KT  15C | 240/10KT  18C |
-1000FT | 170/20KT  16C | 250/15KT  17C |
-1500FT | 180/15KT  17C | 250/20KT  15C |
-2000FT | 190/15KT  16C | 250/20KT  14C |
-3000FT | 210/15KT  13C | 250/20KT  12C |
-5000FT | 240/20KT  10C | 240/20KT  08C |
-FL100  | 240/25KT  04C | 240/30KT  01C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 170/15KT  16C | 280/10KT  15C |
+1000FT | 180/20KT  15C | 290/15KT  14C |
+1500FT | 220/20KT  16C | 300/20KT  13C |
+2000FT | 230/20KT  15C | 300/20KT  12C |
+3000FT | 230/20KT  14C | 290/15KT  11C |
+5000FT | 210/20KT  10C | 270/15KT  08C |
+FL100  | 250/25KT  03C | 250/20KT  00C |
 
 GAFOR-Gebiete 35 - 39:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 110/05KT  13C | 250/05KT  17C |
-1500FT | 160/15KT  13C | 260/15KT  16C |
-2000FT | 180/15KT  14C | 260/15KT  15C |
-3000FT | 190/10KT  13C | 260/20KT  12C |
-5000FT | 240/15KT  11C | 250/20KT  09C |
-FL100  | 240/20KT  05C | 240/35KT  03C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 150/05KT  15C | 240/05KT  16C |
+1500FT | 180/15KT  13C | 260/15KT  15C |
+2000FT | 200/20KT  14C | 260/15KT  14C |
+3000FT | 230/15KT  14C | 260/20KT  11C |
+5000FT | 230/20KT  11C | 250/15KT  08C |
+FL100  | 240/25KT  05C | 260/20KT  02C |
 
 Turbulenz:
-Nicht signifikant.
+In der Umgebung von TCU mäßig bis stark.
 
 Vereisung:
 Meist nicht signifikant. Mit Annäherung der Front ab dem Abend
 zunächst im Nordwesten teils mäßig zwischen FZLVL und FL150, in der
 Nacht ostwärts verlagernd. Rückseitig der Front meist nicht mehr
-signifikant.
+signifikant. Zudem in TCU mäßig bis stark.
 
 Nullgradgrenze:
 FL130-FL135. In den Frühstunden im Nordwesten auf FL120-FL125
@@ -106,6 +108,6 @@ Düsseldorf  05.25 | 05.58 | 16.38 | 17.10
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
-Regionale Wetterberatungszentrale Essen/Ze
+Regionale Wetterberatungszentrale Essen/ld

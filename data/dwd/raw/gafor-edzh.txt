@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzh_node.html
 
-741
-FBEU40 EDZH 160300
+172
+FBEU40 EDZH 160600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Nord
-gültig vom 16.10.2026, 03.00 UTC bis 17.10.2026, 00.00 UTC
+gültig vom 16.10.2026, 06.00 UTC bis 17.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 00 bis 10
 
@@ -20,22 +20,20 @@ rückseitig strömt labile, kühlere Meeresluft ein.
 Wettergeschehen:
 Zu Beginn zeigt sich im gesamten Nordwesten SCT/BKN SC, dessen
 Untergrenzen um 3000 FT AMSL liegen, während die Obergrenzen FL060
-erreichen. Darunter haben sich lokal, besonders im Bergland und in
-der Ostheide flache Nebel- und Dunstfelder gebildet. Über der
-Deutschen Bucht und in Teilen Nordfrieslands ist dagegen mit SCT/BKN
-ST zu rechnen, welcher zumeist in Schichten zwischen 600 und 1200 FT
-AGL auftritt. Oberhalb FL200 ziehen SCT/BKN CI-Felder durch.
+erreichen. Über der Deutschen Bucht und in Teilen Nordfrieslands ist
+dagegen mit SCT/BKN ST zu rechnen, welcher zumeist in Schichten
+zwischen 600 und 1200 FT AGL auftritt. Oberhalb FL200 ziehen SCT/BKN
+CI-Felder durch.
 
-Am Morgen und im Verlauf des Vormittags löst sich Nebel und Dunst
-rasch auf. Die SC-Bewölkung geht in CU über, wobei dieser
-gebietsweise auflockert. Besonders im Südosten Niedersachsens ist es
-dann zeitweise wolkenlos. Über der Nordsee sind vereinzelt Schauer
-möglich, die aus ISOL TCU stammen. Deren Tops erreichen etwa FL120.
-Gegen Mittag beginnt sich die Bewölkung über der Deutschen Bucht zu
-BKN/OVC CU/AC/AS/CI zu verdichten. Diese Bewölkung weist dabei
-zumeist Untergrenzen zwischen 1500 und 2500 FT AMSL auf, die
-Obergrenzen liegen oberhalb FL245. Daraus fällt Regen, der mit
-Sprühregen vermischt ist. Mit kräftigen Regenfällen kann die
+Am Morgen und im Verlauf des Vormittags geht die SC-Bewölkung in CU
+über, wobei dieser gebietsweise auflockert. Besonders im Südosten
+Niedersachsens ist es dann zeitweise wolkenlos. Über der Nordsee sind
+vereinzelt Schauer möglich, die aus ISOL TCU stammen. Deren Tops
+erreichen etwa FL120. Gegen Mittag beginnt sich die Bewölkung über
+der Deutschen Bucht zu BKN/OVC CU/AC/AS/CI zu verdichten. Diese
+Bewölkung weist dabei zumeist Untergrenzen zwischen 1500 und 2500 FT
+AMSL auf, die Obergrenzen liegen oberhalb FL245. Daraus fällt Regen,
+der mit Sprühregen vermischt ist. Mit kräftigen Regenfällen kann die
 Wolkenuntergrenze auf 400-800 FT AGL absinken. Verbreitet bildet sich
 dann zum Spätnachmittag unterhalb der Frontalbewölkung ein SCT/BKN
 ST-Gebiet aus, welches mit dem Niederschlag nach Osten zieht. Bis zum
@@ -48,15 +46,15 @@ lassen die Niederschläge zusehends nach und die Wolkenobergrenze
 sinkt auf FL180 ab. Rückseitig der Frontalbewölkung zeigt sich
 SCT/BKN CU. Die Basis dieser Bewölkung befindet sich dabei zwischen
 2000 und 3000 FT AMSL, die Obergrenzen erreichen etwa FL100.
-Dazwischen quillt ISOL TCU/CB hervor, dessen Tops wiederum auch FL140
-erreichen können. Daraus kommt es zu Schauern, mit geringer
-Wahrscheinlichkeit auch zu Gewittern.
+Dazwischen quillt über der Nordsee ISOL TCU/CB hervor, dessen Tops
+wiederum auch FL140 erreichen können. Daraus kommt es zu Schauern,
+mit geringer Wahrscheinlichkeit auch zu Gewittern.
 Bis zum Berichtsende erreicht das Niederschlagsgebiet unter weiterer
-Abschwächung etwa die Linie Rostock-Braunschweig. Meistens fallen
-dann nur noch ein paar Tropfen Regen. Besonders im Süden fällt
-allerdings noch etwas mehr Sprühregen aus der Bewölkung. Die
-Obergrenze sinkt weiter auf FL140 ab. Westlich dieser Linie dehnen
-sich die Schauer von der Nordsee auch auf das Festland aus.
+Abschwächung etwa die Linie Rostock-Braunschweig, die Obergrenze
+sinkt weiter auf FL140 ab. Kaum mehr fällt dann noch Regen, lokal
+aber weiterhin etwas Sprühregen, vor allem im Süden. Westlich dieser
+Linie dehnen sich die Schauer von der Nordsee auch auf das Festland
+aus.
 
 Sichtweite:
 Zumeist zwischen 20 und 40 km, in anfänglichen Dunst und Nebelfeldern
@@ -65,24 +63,24 @@ km reduziert, in Schauern eher zwischen 3-8 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 00-04:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 200/15KT  13C | 240/10KT  15C |
-1000FT | 210/20KT  14C | 250/15KT  14C |
-1500FT | 230/20KT  14C | 250/20KT  13C |
-2000FT | 220/20KT  14C | 240/20KT  13C |
-3000FT | 230/25KT  11C | 230/25KT  10C |
-5000FT | 240/30KT  08C | 230/25KT  08C |
-FL100  | 240/35KT  04C | 220/25KT M01C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 200/15KT  14C | 240/10KT  14C |
+1000FT | 210/20KT  13C | 260/10KT  14C |
+1500FT | 230/25KT  14C | 260/15KT  12C |
+2000FT | 230/25KT  14C | 250/15KT  12C |
+3000FT | 230/25KT  11C | 250/20KT  09C |
+5000FT | 230/25KT  08C | 250/20KT  07C |
+FL100  | 240/30KT  01C | 240/15KT M02C |
 
 GAFOR-Gebiete 05-10:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 170/15KT  14C | 210/10KT  18C |
-1000FT | 190/10KT  17C | 230/15KT  18C |
-1500FT | 180/10KT  16C | 250/15KT  16C |
-2000FT | 180/10KT  15C | 250/20KT  16C |
-3000FT | 210/05KT  12C | 260/20KT  13C |
-5000FT | 250/10KT  08C | 250/25KT  08C |
-FL100  | 230/25KT  05C | 240/30KT  02C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 170/10KT  15C | 220/10KT  18C |
+1000FT | 200/15KT  15C | 240/15KT  17C |
+1500FT | 190/10KT  16C | 250/15KT  15C |
+2000FT | 190/10KT  15C | 250/15KT  15C |
+3000FT | 200/05KT  13C | 260/20KT  12C |
+5000FT | 260/10KT  09C | 250/25KT  08C |
+FL100  | 220/25KT  04C | 240/30KT  01C |
 
 Turbulenz:
 In und in der Umgebung von TCU und CB. Außerdem rückwärtig der
@@ -111,6 +109,6 @@ Hannover  05.14 | 05.48 | 16.25 | 17.00
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Luftfahrtberatungszentrale Hamburg/VW

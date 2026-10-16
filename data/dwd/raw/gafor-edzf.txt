@@ -1,33 +1,31 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-742
-FBEU40 EDZF 160300
+173
+FBEU40 EDZF 160600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 16.10.2026, 03.00 UTC bis 17.10.2026, 00.00 UTC
+gültig vom 16.10.2026, 06.00 UTC bis 17.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Zunächst bleibt Hochdruckeinfluss wetterbstimmend und bei einer
+Zunächst ist Hochdruckeinfluss wetterbstimmend und bei einer
 südwestlichen Höhenströmung bleibt die Luftmasse mild und stabil
 geschichtet. In der Nacht hat sich eine feuchte Grundschicht
 gebildet, die am Vormittag teils nur langsam abtrocknet. In der Nacht
 auf Samstag zieht von Nordwesten eine Kaltfront heran, sie erreicht
-aber nur den Nordwesten des Vorhersagebereiches bis Berichtsende. Im
-Vorfeld wird jedoch feuchte und teils labil geschichtete Luft in den
-Südwesten und Süden geführt.
+eine Linie von Nordhessen über das Rhein-Main Gebiet bis ins südliche
+RLP bis Berichtsende. Im Vorfeld wird jedoch auch feuchte und teils
+labil geschichtete Luft in den Südwesten und Süden geführt.
 
 Wettergeschehen:
 Lokal zeigt sich SCT/BKN CI-Bewölkung oberhalb von FL200-220. In der
-Nacht hat sich Flussniederungen und Tallagen, insbesondere von Main,
-Rhein, Neckar und Saar, Dunst und Nebel gebildet, vielfach mit
-BKN/OVC ST in wenigen hundert FT AGL und Obergrenzen zwischen 1000
-und 1500 FT AMSL.
+Nacht hat sich in Flussniederungen und Tallagen Dunst und Nebel
+gebildet, vielfach mit BKN/OVC ST in wenigen hundert FT AGL und
+Obergrenzen zwischen 1000 und 1500 FT AMSL.
 
 Die Auflösung von Dunst, Nebel und ST-Bewölkung findet verbreitet im
-Laufe des Freitagvormittags statt. Vereinzelt kann es aber auch bis
-in den frühen Freitagnachmittag andauern.
+Laufe des Freitagvormittags statt.
 
 Die CI-Bewölkung zieht im Tagesverlauf nach Baden-Württemberg. Nach
 Auflösung von Dunst, Nebel und ST-Bewölkung kann sich nur vereinzelt,
@@ -50,28 +48,34 @@ Bewölkung mit BKN/OVC SC/AC in 2500-3500 FT AMLS und Tops ebenfalls
 um FL140. Auch hier beginnt es zu regnen, durch eingelagerte TCU/CB
 mit Tops bis FL170 teil schauerartig verstärkt.
 
+Die frontale Bewölkung kommt bis Berichtende südostwärts voran und
+liegt in einem Streifen von Nordhessen über das Rhein-Main Gebiet bis
+ins südliche RLP. Rückseitig schichtet die Bewölkung etwas auf und
+der Regen hört auf, an den Untergrenzen und Obergrenzen ändert sich
+zunächst wenig.
+
 Sichtweite:
 30-60 km. Im Dunst 1-4 km, im Nebel unter 1 km. Im Niederschlag je
 nach Intensität 5-20 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 310/05KT  06C | 190/05KT  16C |
-1500FT | 190/10KT  11C | 210/15KT  16C |
-2000FT | 190/15KT  12C | 220/15KT  16C |
-3000FT | 210/10KT  12C | 240/15KT  13C |
-5000FT | 240/10KT  11C | 250/15KT  09C |
-FL100  | 240/20KT  07C | 250/25KT  04C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 240/05KT  10C | 220/05KT  16C |
+1500FT | 200/10KT  10C | 230/15KT  15C |
+2000FT | 200/15KT  12C | 250/15KT  14C |
+3000FT | 220/15KT  12C | 270/20KT  12C |
+5000FT | 260/15KT  12C | 250/15KT  09C |
+FL100  | 240/20KT  05C | 240/30KT  03C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 220/05KT  13C | 210/10KT  20C |
-1500FT | 210/10KT  15C | 220/15KT  19C |
-2000FT | 210/10KT  15C | 230/15KT  18C |
-3000FT | 230/10KT  13C | 250/15KT  15C |
-5000FT | 280/10KT  13C | 270/20KT  12C |
-FL100  | 250/15KT  06C | 260/15KT  02C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 220/05KT  12C | 240/10KT  18C |
+1500FT | 210/10KT  15C | 260/15KT  17C |
+2000FT | 210/15KT  15C | 270/15KT  16C |
+3000FT | 230/10KT  14C | 270/15KT  13C |
+5000FT | 260/10KT  14C | 250/15KT  10C |
+FL100  | 260/15KT  05C | 250/20KT  02C |
 
 Turbulenz:
 Im Bereich von TCU/CB mäßig bis stark, sonst nicht signifikant.
@@ -95,6 +99,6 @@ Karlsruhe  05.16 | 05.48 | 16.35 | 17.06
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Flugwetterzentrale Frankfurt/He

@@ -1,10 +1,10 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzb_node.html
 
-455
-FBEU40 EDZB 160300
+483
+FBEU40 EDZB 160600
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Ost
-gültig vom 16.10.2026, 03.00 UTC bis 17.10.2026, 00.00 UTC
+gültig vom 16.10.2026, 06.00 UTC bis 17.10.2026, 03.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 11 bis 28
 
@@ -43,23 +43,23 @@ Nebel unter 1 km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 11 - 19:
-AMSL  |  06 UTC  |  18 UTC  |
- 500FT | 170/15KT  12C | 170/10KT  15C |
-1000FT | 190/10KT  15C | 190/15KT  16C |
-1500FT | 190/10KT  14C | 210/15KT  15C |
-2000FT | 190/10KT  13C | 210/15KT  14C |
-3000FT | 220/05KT  11C | 230/10KT  12C |
-5000FT | 240/10KT  10C | 280/15KT  10C |
-FL100  | 240/20KT  05C | 240/20KT  03C |
+AMSL  |  09 UTC  |  21 UTC  |
+ 500FT | 180/10KT  12C | 190/10KT  14C |
+1000FT | 180/15KT  14C | 210/15KT  16C |
+1500FT | 190/15KT  13C | 230/15KT  15C |
+2000FT | 200/15KT  13C | 230/15KT  15C |
+3000FT | 200/10KT  11C | 250/10KT  14C |
+5000FT | 210/10KT  10C | 260/10KT  09C |
+FL100  | 220/25KT  05C | 240/25KT  02C |
 
 GAFOR-Gebiete 20 - 28:
-AMSL  |  06 UTC  |  18 UTC  |
-1000FT | 190/05KT  14C | 210/15KT  17C |
-1500FT | 210/05KT  14C | 230/10KT  16C |
-2000FT | 210/10KT  13C | 230/10KT  16C |
-3000FT | 220/10KT  12C | 270/10KT  13C |
-5000FT | 220/05KT  12C | 280/10KT  12C |
-FL100  | 260/10KT  06C | 250/15KT  04C |
+AMSL  |  09 UTC  |  21 UTC  |
+1000FT | 190/10KT  13C | 230/15KT  16C |
+1500FT | 200/10KT  14C | 250/15KT  16C |
+2000FT | 200/10KT  14C | 260/15KT  15C |
+3000FT | 210/10KT  13C | 270/10KT  13C |
+5000FT | 210/10KT  12C | 250/10KT  11C |
+FL100  | 240/10KT  07C | 270/15KT  02C |
 
 Turbulenz:
 Zunächst nicht signifikant. In der zweiten Nachthälfte zum Samstag in
@@ -87,6 +87,6 @@ Leipzig  05.03 | 05.36 | 16.16 | 16.49
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
 
 Luftfahrtberatungszentrale Berlin/Ze
