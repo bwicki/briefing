@@ -6,7 +6,7 @@ GAFOR Bereich LBZ Hamburg 16.10.2026
 
 Gebiet  Name  15-17 UTC  17-19 UTC  19-21 UTC
 
-00  Deutsche Bucht  M5 OCNL RADZ  M5 ISOL RADZ  D1
+00  Deutsche Bucht  D1 ISOL RADZ  D1 ISOL RADZ  O
 
 01  Ostfriesland  D1 OCNL RADZ  M5 OCNL RADZ  D1 ISOL RADZ
 
