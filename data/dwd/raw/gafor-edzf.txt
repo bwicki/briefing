@@ -1,61 +1,50 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edzf_node.html
 
-860
-FBEU40 EDZF 170600
+617
+FBEU40 EDZF 171200
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich Mitte
-gültig vom 17.10.2026, 06.00 UTC bis 18.10.2026, 03.00 UTC
+gültig vom 17.10.2026, 12.00 UTC bis 18.10.2026, 09.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 41 bis 47, 50 bis 53, 61
 
 Wetterlage und -entwicklung:
-Eine Kaltfront erstreckt sich am Morgen über weite Teile von Hessen,
-RLP und das Saarland und zieht bis zum Abend südostwärts über den
-Großteil des Vorhersagebereich hinweg. Sie wird über dem äußersten
-Süden dann stationär und beeinflusst die südlichsten Bereiche bis in
-die Nacht hinein. Mit der Front dreht die Strömung auf Nord/Nordwest
-und es wird eine feuchte und kühlere Luftmasse herangeführt.
-Rückseitig trocknet die Luftmasse in höheren Schichten zögerlich ab,
-bleibt in tieferen Schichten aber feucht und leicht labil
-geschichtet.
+Eine Kaltfront hat Hessen ostwärts überquert, sie wird aber über dem
+südlichen Baden-Württemberg stationär. Rückseitig dreht die Strömung
+auf Nord/Nordwest und es wird eine feuchte und kühlere Luftmasse
+herangeführt, die in höheren Schichten zögerlich abtrocknet.
+In tieferen Schichten bleibt die Luftmasse feucht und leicht labil
+geschichtet. Am Sonntag dreht die Höhenströmung auf Südost, das
+frontale Hebungsgebiet im Süden kommt dann wieder in Richtung westen
+voran.
 
 Wettergeschehen:
-Am Morgen hält sich im Vorfeld der Front verbreitet BKN SC in
-2500-4500 FT AMSL und Obergrenzen um FL080-120. Von Osthessen bis
-nach RLP und das Saarland zeigt sich frontale Bewölkung mit BKN/OVC
-ST/SC/AS/AC in 1500-2500 FT AMSL und Obergrenzen um FL140-160.
-Darüber teils noch dichtere CI-Bewölkung oberhalb von FL160-180. Es
-regnet gebietsweise leicht bis mäßig. Die frontale Bewölkung
-verlagert sich im Tagesverlauf südostwärts. Gleichzeitig verlagern
-sich aus Frankreich ISOL EMBD TCU in 2500-4000 FT AMSL und Tops um
-FL140-160 nach Baden-Württemberg und verlagern sich mit Regenschauern
-ostwärts über Baden-Württemberg hinweg.
-
-Gegen Mittag erreicht die Kaltfront mit ihrem Wolken- und
-Niederschlagsband Baden-Württemberg, dort gehen die Bewölkung mit
-eingelagerten TCU und die Kaltfrontbewölkung in BKN/OVC LYR
-ST/SC/AS/AC/CI mit Untergrenzen in 1500-3500 FT AMSL und Tops teils
-oberhalb von FL245 über und im gesamten Bereich von Baden-Württemberg
-fällt gebietsweise leichter bis mäßiger Regen.
-Bis zum Abend zieht die kompakte Bewölkung und der Regen südostwärts
-bis in den Süden Baden-Württembergs. Hier verbleibt sie in einem
-Streifen vom südlichen Schwarzwald und entlang der Schwäbischen Alb
-in der Nacht stationär.
+Über Baden-Württemberg hält sich die Kaltfrontbewölkung mit
+BKN/OVC ST/SC/AS mit Untergrenzen in 1500-2500 FT AMSL und Tops teils
+oberhalb von FL245, gebietsweise fällt leichter bis mäßiger Regen.
+Bis zum Abend zieht die kompakte Bewölkung und der Regen langsam
+südostwärts bis in den Süden Baden-Württembergs.
+Hier verbleibt sie in einem Streifen vom südlichen Schwarzwald und
+entlang der Schwäbischen Alb in der Nacht stationär.
 
 Rückseitig der Front geht die Bewölkung in Hessen, RLP und im
-Saarland und später auch in Baden-Württemberg in SCT/BKN CU in
-2500-3500 FT AMSL mit Tops um FL100 über. Hier entwickeln sich bis in
-die Abendstunden immer wieder ISOL TCU mit Tops bis FL120-140 und es
-kommt zu Regenschauern.
+Saarland und in SCT/BKN CU in 2500-3500 FT AMSL mit Tops um FL100
+über. Hier entwickeln sich bis in die Abendstunden immer wieder ISOL
+TCU mit Tops bis FL120-140 und es kommt zu leichten bis mäßigen
+Regenschauern.
 
 Am Abend trocknet die Quellbewölkung vielfach ab, örtlich verbleibt
-FEW/SCT flacher SC um 3000 FT AMSL. In der Nacht entwickelt sich
-lokal, vor allem in Hessen und westlich des Rheins, BKN ST in
-1500-2000 FT AMSL mit Dunst, die Obergrenzen liegen bei um 4000-5000
-FT AMSL.
+FEW/SCT flacher SC um 3000 FT AMSL.
+In der Nacht entwickelt sich lokal, vor allem in Hessen und westlich
+des Rheins, BKN/OVC ST 500-1000 FT AGL mit Dunst, die Obergrenzen
+liegen bei um 4000-5000 FT AMSL.
 In Baden-Württemberg zeigt sich nördlich der stationären frontalen
 Bewölkung BKN LYR SC/AC, die Untergrenzen variieren stark zwischen
 2500 FT AMSL und FL060, die Obergrenzen liegen bei FL140-160.
+
+Bis zum Berichtende kommt frontale Bewölkung wieder westwärts voran
+und erstreckt sich dann in einem Streifen vom Saarland über den
+Odenwald bis nach Franken.
 
 Sichtweite:
 20-50 km. Im Niederschlag je nach Intensität 5-10 km, im Dunst 1-4
@@ -63,22 +52,22 @@ km.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 41 - 47:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 350/10KT  10C | 360/05KT  08C |
-1500FT | 350/15KT  08C | 010/10KT  07C |
-2000FT | 350/15KT  07C | 010/15KT  06C |
-3000FT | 010/25KT  05C | 020/20KT  03C |
-5000FT | 010/25KT  02C | 010/15KT  00C |
-FL100  | 250/15KT M06C | 360/10KT M08C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 360/15KT  11C | 010/05KT  07C |
+1500FT | 360/15KT  09C | 030/10KT  05C |
+2000FT | 360/20KT  08C | 040/15KT  05C |
+3000FT | 360/20KT  05C | 050/15KT  02C |
+5000FT | 010/20KT  02C | 080/10KT  02C |
+FL100  | 330/15KT M08C | 170/15KT M05C |
 
 GAFOR-Gebiete 50 - 53, 61:
-AMSL  |  09 UTC  |  21 UTC  |
-1000FT | 350/10KT  12C | 030/15KT  09C |
-1500FT | 360/15KT  10C | 030/25KT  08C |
-2000FT | 360/15KT  09C | 030/25KT  08C |
-3000FT | 020/20KT  07C | 050/20KT  05C |
-5000FT | 030/15KT  04C | 060/20KT  01C |
-FL100  | 260/15KT M03C | 260/10KT M05C |
+AMSL  |  15 UTC  |  06 UTC  |
+1000FT | 020/10KT  12C | 040/20KT  06C |
+1500FT | 010/15KT  10C | 050/20KT  06C |
+2000FT | 010/15KT  09C | 070/20KT  06C |
+3000FT | 020/20KT  06C | 080/20KT  05C |
+5000FT | 030/20KT  03C | 080/15KT  03C |
+FL100  | 250/15KT M03C | 170/20KT M03C |
 
 Turbulenz:
 Im Bereich von TCU mäßig bis stark. Im Bereich der Kaltfront lokal
@@ -89,20 +78,21 @@ In TCU mäßig bis stark. In frontaler Bewölkung mäßig zwischen
 Nullgradgrenze und FL160-200.
 
 Nullgradgrenze:
-Am Morgen im Norden bei FL090 und im Süden bei FL100-105. Bis Mittag
-im Norden auf FL060 absinkend, im Süden auf FL090. Bis zum Abend im
-Norden auf 5000 FT AMSL absinkend, im Süden auf FL060-065. In der der
-Nacht dann kaum noch Änderungen.
+Im Norden auf FL060 absinkend, im Süden auf FL090. Bis zum Abend im
+Norden auf 5000 FT AMSL absinkend, im Süden auf FL060-065.
+In der der Nacht dann kaum noch Änderungen.
+Zum Berichtsende von Süden her Anstieg FL095, im Norden auf FL080.
 
 Inversionen:
 Nicht signifikant.
 
-Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
-Gießen  05.18 | 05.51 | 16.30 | 17.01
-Karlsruhe  05.18 | 05.50 | 16.33 | 17.06
+Zeiten in UTC: SU   |  BDE  |  BDA  |  SA
+  heute  |  morgen
+Gießen  16.30 | 17.01 | 05.20 | 05.53
+Karlsruhe  16.33 | 17.06 | 05.20 | 05.51
 BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
 SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt um 11.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 17.00 UTC
 
-Flugwetterzentrale Frankfurt/He
+Flugwetterzentrale Frankfurt/Go
