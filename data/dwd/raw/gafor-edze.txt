@@ -1,109 +1,90 @@
 https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/fbeu40_edze_node.html
 
-593
-FBEU40 EDZE 161800
+637
+FBEU40 EDZE 170300
 Deutscher Wetterdienst
 Flugwetterübersicht Bereich West
-gültig vom 16.10.2026, 18.00 UTC bis 17.10.2026, 15.00 UTC
+gültig vom 17.10.2026, 03.00 UTC bis 18.10.2026, 00.00 UTC
 
 Vorhersagebereich: GAFOR-Gebiete 31 bis 39
 
 Wetterlage und -entwicklung:
-Die Kaltfront eines Tiefs über Skandinavien hat auf den Nordwesten
-übergegriffen und führt mit einer auf Nord drehenden Strömung
-deutlich kühlere Meeresluft heran. Ausgangs der Nacht zieht die Front
-nach Südosten ab und die Luftmasse wird im Tagesverlauf labilisiert.
+Die Kaltfront eines Tiefs über Skandinavien liegt über der
+Südosthälfte des Vorhersagegebietes und zieht bis zum Morgen weiter
+ostwärts ab. Bei einer auf Nord drehenden Strömung bestimmt
+rückseitig davon kühle Meeresluft das Wetter. Während bodennah der
+Hochdruckeinfluss weiter steigt, sorgt ein Höhentief im Tagesverlauf
+für eine Labilisierung der Luftmasse.
 
 Wettergeschehen:
-Es zeigt sich gebietsweise SCT/BKN SC mit Untergrenzen zwischen 2000
-und 4000 FT AMSL, Obergrenzen FL060-080. Gleichzeitig von Nordwesten
-aufziehende frontale Bewölkung mit OVC SC/AC/AS und absinkenden
-Untergrenzen auf 1500-2000 FT AMSL, Obergrenzen steigen auf FL160-200
-an. Daraus einsetzender Regen, wodurch die Untergrenzen strichweise
-auf 500-1000 FT AGL absinken. Im Vorfeld der Front sind einzelne
-leichte Regenschauer aus ISOL TCU bis FL120 nicht ganz
-ausgeschlossen.
-
-In der Nacht verlagert sich die Front mit den o.g Bedingungen nach
-Südosten und erreicht gegen 0 UTC eine Linie Paderborn-Köln. Im
-Bergland muss verbreitet mit Untergrenzen unter 500 FT AGL gerechnet
-werden, viele Nordweststaulagen und die höheren lagen geraten in
-Wolken. Rückseitig schichtet die Bewölkung zu BKN SC/AC mit
-Untergrenzen zwischen 4000 und 6000 FT AMSL aus, stellenweise ziehen
-auch Schichten bei 2000-3000 FT AMSL durch. Darüber noch
-ausgeschichtete AC-Felder bis FL120 wahrscheinlich.
-
-Ausgangs der Nacht zieht die Front nach Südosten ab, allerdings fällt
-besonders in den Nordstaulagen weiterhin leichter Regen. Im Südosten
-meist BKN/OVC SC/AC mit Untergrenzen bei 1500-3000 FT AMSL, in den
-Nordstaulagen und im Bergland gebietsweise ST ab 200-800 FT AGL, in
-den höheren Lagen teils aufliegend. Im Nordwesten unterschiedlich
-dichte SC/AC-Felder mit Untergrenzen meist oberhalb 5000 FT AMSL und
-meist niederschlagsfrei.
-
-Im Vormittagsverlauf zögernde Besserung im Bergland bei Übergang in
-BKN CU/SC und ansteigenden Untergrenzen auf 800-1500 FT AGL, im
-Nordwesten SCT/BKN CU mit Basis bei 2000-3000 FT AMSL. Gegen Mittag
-bereits erste Schauer aus ISOL TCU mit Tops bis FL140.
-
-Die Schaueraktivität nimmt am Nachmittag noch etwas zu, gleichzeitig
-hebt die Basis der CU auf 3000-4000 FT AMSL an. Neben von Nord nach
-Süd ziehenden Schauern sind einzelne, kurze Gewitter nicht
-ausgeschlossen. Die Tops der ISOL TCU/CB reichen bis FL170.
+Im Frontbereich über der Südosthälfte des Bereiches OVC SC/AC/AS/CI
+mit Untergrenzen bei 500-1000 FT AGL, Obergrenzen bei FL220 bis
+FL240. Dabei Regen. Diese Bedingungen ziehen bis zum Morgen weiter
+nach Osten ab.
+Rückseitig der Front deutlich ausgeschichtete Bewölkung mit BKN SC/AC
+zwischen 2000 FT AMSL und FL100, in den Nordstaulagen und im Bergland
+gebietsweise BKN/OVC ST in 200 bis 800 FT AGL, Hochlagen teils in
+Wolken. Stellenweise Regen.
+Im Vormittagsverlauf zögernde Auflösung der ST-Bewölkung und Übergang
+zu BKN CU/SC in 800 bis 1500 FT AGL, sonst SCT/BKN CU mit Basis bei
+2000 bis 3000 FT AMSL.
+Ab dem Mittag erste Schauer aus ISOL TCU mit Tops bis FL140.
+Am Nachmittag von Norden zunehmende Schaueraktivität, Tops der ISOL
+TCU/CB bis FL180, kurze Gewitter möglich. Gleichzeitig Basis der CU
+auf 3000 bis 4000 FT AMSL anhebend.
+Zum Abend nur noch vereinzelt Schauer, meist größere
+Wolkenauflockerungen mit FEW/SCT CU/SC um 3000 FT AMSL, gebietsweise
+auch BKN SC um 4000 FT AMSL.
+In der Nacht zum Sonntag niederschlagsfrei bei SCT/BKN SC um 3000 FT
+AMSL, stellenweise SKC. Im Bergland zunehmend BKN ST in 200 bis 500
+FT AGL, teils aufliegend.
 
 Sichtweite:
-20-50 km, im frontalen Niederschlag zeitweilig auf 3-8 km fallend, im
-Nordstaulagen und im Bergland durch tiefe Bewölkung oft unter 3 km,
-bei aufliegenden Wolken unter 500 m. Am Samstag im Bergland zögerlich
-bessernd, sonst wenig Änderungen. Bei Schauern bzw. einzelnen
-Gewittern 3-8 km.
+20-40 km, im Niederschlag zeitweilig 3-8 km, bei aufliegenden Wolken
+unter 500 m.
 
 Höhenwind und -temperatur:
 GAFOR-Gebiete 31 - 34:
-AMSL  |  21 UTC  |  09 UTC  |
- 500FT | 310/20KT  15C | 350/10KT  10C |
-1000FT | 320/20KT  14C | 350/15KT  09C |
-1500FT | 320/20KT  12C | 010/20KT  07C |
-2000FT | 320/20KT  12C | 010/20KT  06C |
-3000FT | 320/15KT  10C | 020/20KT  05C |
-5000FT | 280/15KT  08C | 010/20KT  01C |
-FL100  | 240/15KT M00C | 360/20KT M09C |
+AMSL  |  06 UTC  |  18 UTC  |
+ 500FT | 350/15KT  10C | 350/10KT  10C |
+1000FT | 350/20KT  09C | 360/15KT  09C |
+1500FT | 010/25KT  07C | 360/20KT  07C |
+2000FT | 010/25KT  07C | 360/20KT  06C |
+3000FT | 010/20KT  05C | 020/20KT  05C |
+5000FT | 360/20KT  01C | 020/15KT  01C |
+FL100  | 340/20KT M09C | 360/15KT M09C |
 
 GAFOR-Gebiete 35 - 39:
-AMSL  |  21 UTC  |  09 UTC  |
-1000FT | 230/05KT  16C | 350/10KT  10C |
-1500FT | 260/15KT  14C | 360/15KT  08C |
-2000FT | 260/15KT  14C | 360/15KT  07C |
-3000FT | 260/20KT  11C | 010/20KT  04C |
-5000FT | 250/15KT  08C | 010/20KT  02C |
-FL100  | 260/25KT  01C | 340/10KT M08C |
+AMSL  |  06 UTC  |  18 UTC  |
+1000FT | 340/10KT  09C | 330/05KT  09C |
+1500FT | 350/15KT  08C | 350/15KT  08C |
+2000FT | 350/15KT  07C | 350/15KT  07C |
+3000FT | 010/20KT  06C | 010/20KT  04C |
+5000FT | 360/20KT  02C | 010/20KT  00C |
+FL100  | 260/10KT M06C | 360/15KT M09C |
 
 Turbulenz:
-Am Samstagmorgen von Nordwesten teils mäßig zwischen FL120 und FL180,
-im Tagesverlauf unter Abschwächung nach Südosten verlagernd. Bei
-TCU/CB allgemein mäßig bis stark.
+Am Morgen von Nordwesten teils mäßig zwischen FL100 und FL180, im
+Tagesverlauf unter Abschwächung nach Südosten verlagernd. Bei TCU/CB
+allgemein mäßig bis stark.
 
 Vereisung:
-Mit Annäherung der Front ab dem Abend zunächst im Nordwesten teils
-mäßig zwischen FZLVL und FL180, in der Nacht ostwärts verlagernd.
-Rückseitig der Front im Südosten weiterhin mäßige Vereisung bis FL120
-möglich, dort am Samstagvormittag abschwächend. Dann in TCU/CB mäßig
-bis stark.
+Anfangs im Frontbereich teils mäßig zwischen FZLVL und FL180. Sonst
+in TCU/CB mäßig bis stark.
 
 Nullgradgrenze:
-FL105-110. Mit der Kaltfront von Nordwest nach Südost auf FL055-060
-absinkend. Am Samstag weiterer leichter Rückgang auf 5000-5500 FT
-AMSL.
+Im Osten anfangs um FL080, sonst frontrückseitig um FL060, im
+Tagesverlauf auf 5000 FT AMSL absinkend.
 
 Inversionen:
-Nicht signifikant.
+Ab dem Abend schwach ausgeprägt um 3000 FT AMSL. In der Nacht zum
+Sonntag zunehmende Bodeninversion unterhalb 1000 FT AGL.
 
 Zeiten in UTC: BDA  |  SA   |  SU   |  BDE
 Düsseldorf  05.27 | 06.00 | 16.36 | 17.10
-BDA/BDE = Anfang/Ende Bürgerliche Dämmerung - morgen
-SA/SU   = Sonnenauf/untergang - morgen
+BDA/BDE = Anfang/Ende Bürgerliche Dämmerung
+SA/SU   = Sonnenauf/untergang
 
-Die nächste planmäßige Aktualisierung erfolgt am 17.10.2026 um
-02.00/05.00 UTC
+Die nächste planmäßige Aktualisierung erfolgt um 05.00 UTC
 
-Regionale Wetterberatungszentrale Essen/JK
+Regionale Wetterberatungszentrale Essen/Ha
