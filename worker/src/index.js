@@ -239,7 +239,7 @@ const rowOut = (r) => ({ id: r.id, no: r.no || null, startMs: r.start_ms, endMs:
 /** Speichern; ownerId nur beim Anlegen gesetzt; materialOwner = Eigner des Ballons (Freigabe nötig). */
 async function saveBriefing(env, ctx, b, who, ownerId, logUid, opts = {}) {
   await ensureSchema(env);
-  const row = await env.DB.prepare('SELECT revision, owner_id, final_no, no FROM briefings WHERE id=?').bind(b.id).first();
+  const row = await env.DB.prepare("SELECT revision, owner_id, final_no, no, json_extract(json, '$.docs') AS docs FROM briefings WHERE id=?").bind(b.id).first();
   const isNew = !row;
   const owner = row?.owner_id || ownerId;
   b.revision = (row?.revision || 0) + 1; b.updatedAt = Date.now(); b.updatedBy = who || 'owner';
@@ -262,6 +262,8 @@ async function saveBriefing(env, ctx, b, who, ownerId, logUid, opts = {}) {
   if (logUid) {
     logUsage(env, ctx, logUid, isNew ? 'briefing_create' : 'briefing_save', b.id);
     if ((b.finalNo || 0) > (row?.final_no || 0)) logUsage(env, ctx, logUid, 'release', `${b.id} v${b.finalNo}`);
+    // 0.13.0a: digitale Signaturen der Betriebsdokumente protokollieren (neu gesetzte Signatur gegenüber dem gespeicherten Stand)
+    try { const old = row?.docs ? JSON.parse(row.docs) : {}; for (const k of ['bs', 'fa']) for (const r of ['opSig', 'picSig']) { const sig = b.docs?.[k]?.[r]; if (sig?.ts && sig.ts !== old?.[k]?.[r]?.ts) logUsage(env, ctx, logUid, 'doc_sign', `${b.id} ${k} ${r === 'opSig' ? 'Betreiber' : 'PIC'} ${sig.name || ''}`); } } catch { /* ohne Protokoll */ }
   }
   return { revision: b.revision, updatedAt: b.updatedAt, updatedBy: b.updatedBy, no: b.no };
 }

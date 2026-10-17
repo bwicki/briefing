@@ -180,7 +180,7 @@ async function viewStamm(ctx, u) {
 }
 
 // ---------------------------------------------------------------- Aktivitätsprotokoll (Super, 0.12.16)
-const LOG_KINDS = ['login', 'logout', 'briefing_open', 'briefing_create', 'briefing_save', 'release', 'briefing_amend', 'briefing_delete', 'briefing_hide', 'briefing_unhide', 'link_create', 'link_open', 'link_save', 'link_revoke', 'share', 'file', 'ai', 'pdf', 'wx_', 'settings_save', 'secret_set', 'secret_view', 'secret_delete', 'user_create', 'user_update', 'password_reset', 'export'];
+const LOG_KINDS = ['login', 'logout', 'briefing_open', 'briefing_create', 'briefing_save', 'release', 'briefing_amend', 'briefing_delete', 'briefing_hide', 'briefing_unhide', 'link_create', 'link_open', 'link_save', 'link_revoke', 'share', 'file', 'ai', 'pdf', 'wx_', 'settings_save', 'secret_set', 'secret_view', 'secret_delete', 'user_create', 'user_update', 'password_reset', 'export', 'doc_sign'];
 const kindLabel = (k) => (k.startsWith('wx_') ? `${t('lg_wx')} ${k.slice(3)}` : t('lg_' + k) !== 'lg_' + k ? t('lg_' + k) : k);
 export function logSection(ctx) {
   const box = h('div');

@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.13.0a — 2026-10-12
+## 0.13.0a — 2026-10-17
 
+* Betriebsdokumente: Startort ohne «CH-» (Schweizer Formular), im Ausland mit Länderkürzel; digitale Signaturen werden im Aktivitätsprotokoll festgehalten (Aktion «Dokument signiert»).
 * Umzug abgeschlossen: alle Verweise auf briefing.wicki.aero (SETUP, README, Setup-Skripte, Workflows, Demo, Konzepte, UA des DWD-Abrufs) auf ops.wicki.aero; alte Origin aus den erlaubten Worker-Origins entfernt. Kalender-UIDs (ICS) bleiben unverändert, damit bestehende Einträge erkannt werden.
 
 ## 0.13.0 — 2026-10-12 · Stufe 0: Beförderungsschein und Flugauftrag aus dem Briefing

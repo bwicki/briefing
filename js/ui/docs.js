@@ -22,6 +22,8 @@ export function picDocs(person) {
   const lic = docs.find((d) => /lizenz|licen/i.test(d.type || '')), med = docs.find((d) => /medical/i.test(d.type || ''));
   return { licence: lic?.name || '', medicalTo: med?.validTo || '', medicalExpired: !!med?.validTo && med.validTo < today(), licenceDoc: lic, medicalDoc: med };
 }
+/** Ortsname ohne Länderkürzel in der Schweiz («Oberlunkhofen AG»), mit Kürzel im Ausland («DE-Gladbeck»). */
+const siteName = (b) => ((b.site?.country || 'CH').toUpperCase() === 'CH' ? String(b.site?.name || '').replace(/\s*\(CH\)$/, '') : placeLabel(b.site));
 const fmtIso = (iso) => (iso ? iso.split('-').reverse().join('.') : '');
 
 /** Ballon mit Registerdaten aus den Stammdaten (Snapshot im Briefing enthält sie nicht). */
@@ -58,7 +60,7 @@ export function bsSheet(b, ctx) {
   const page1 = h('div.docsheet.bs', [
     h('div.dhead', [h('div.dtitle', de ? 'Passagierliste und Beförderungsschein' : 'Passenger List and Title of Transport'), h('img.dlogo', { src: 'img/wicki-logo.png', alt: 'Wicki Partners Ballonteam' })]),
     h('table.dtab', h('tbody', [
-      h('tr', [h('td.k', de ? 'Datum der Fahrt' : 'Date of Flight'), h('td', [h('b', fmtDate(z, b.time.startMs, lang)), '   ', box(startH < 12), de ? ' am  ' : ' am  ', box(false), de ? ' Tag  ' : ' day  ', box(startH >= 12), ' pm    ', de ? 'Startort ' : 'launch location ', h('b', placeLabel(b.site))])]),
+      h('tr', [h('td.k', de ? 'Datum der Fahrt' : 'Date of Flight'), h('td', [h('b', fmtDate(z, b.time.startMs, lang)), '   ', box(startH < 12), de ? ' am  ' : ' am  ', box(false), de ? ' Tag  ' : ' day  ', box(startH >= 12), ' pm    ', de ? 'Startort ' : 'launch location ', h('b', siteName(b))])]),
       h('tr', [h('td.k', de ? 'Kennzeichen' : 'Registration'), h('td', [...REGS.flatMap((r) => [box(b.balloon?.reg === r), ` ${r}  `]), box(!REGS.includes(b.balloon?.reg)), ` ${!REGS.includes(b.balloon?.reg) ? b.balloon?.reg || '____________' : '____________'}`])]),
       h('tr', [h('td.k', de ? 'Luftfrachtführer' : 'Air Carrier'), h('td.lines', [h('div', [box(opIsWicki), ` ${OPERATOR_LINES[lang][0]}`]), h('div', [box(!opIsWicki && /wicki/i.test(b.flight.operatorName || '')), ` ${OPERATOR_LINES[lang][1]}`]), h('div', [box(false), de ? ' Veranstalter einer Luftfahrtveranstaltung  ' : ' organizer of an aviation event  ', box(!opIsWicki && !/wicki/i.test(b.flight.operatorName || '')), de ? ' andere Drittpartei ' : ' other third party ', (!opIsWicki && !/wicki/i.test(b.flight.operatorName || '')) ? h('b', b.flight.operatorName) : '____________________'])])]),
       h('tr', [h('td.k', de ? 'Entgelt' : 'Remuneration'), h('td.lines', [
@@ -82,7 +84,7 @@ export function bsSheet(b, ctx) {
       h('ul', ['have been briefed on the procedure of the balloon flight;', 'in any case expressly agree with the agreement of Zurich/Switzerland as the exclusive place of jurisdiction and Swiss law as the applicable law (as stated overleaf, Section B);', 'agree with the insurance and the transport regulations (as stated overleaf, Sections A and, if applicable, C);', 'in case of a private unpaid flight: agree with a comprehensive release from liability (as stated overleaf, Section D);', 'consent to the use of my e-mail address to be used for eventual future electronic communication; and', 'informed the pilot fully of any health restrictions.'].map((x) => h('li', x))),
     ]),
     h('table.dtab.paxtab', [h('thead', h('tr', [h('td.k', de ? 'Vorname Name' : 'Full name'), h('td.k', de ? 'E-Mail-Adresse; Bemerkungen, gesundheitliche Einschränkungen' : 'E-mail address; remarks, health restrictions'), h('td.k', de ? 'Unterschrift' : 'Signature')])), h('tbody', paxRows)]),
-    h('div.sigrow', [h('div.sig', [h('div.sig-img.text', `${placeLabel(b.site).split(',')[0]}, ${fmtDate(z, b.time.startMs, lang)}`), h('div.sig-line', de ? 'Ort, Datum' : 'Place, Date')]), sigBlock(b.docs?.bs?.picSig, de ? 'Unterschrift Ballonpilot' : 'Signature of Balloon Pilot')]),
+    h('div.sigrow', [h('div.sig', [h('div.sig-img.text', `${siteName(b).split(',')[0]}, ${fmtDate(z, b.time.startMs, lang)}`), h('div.sig-line', de ? 'Ort, Datum' : 'Place, Date')]), sigBlock(b.docs?.bs?.picSig, de ? 'Unterschrift Ballonpilot' : 'Signature of Balloon Pilot')]),
     h('div.dfoot', [h('span', `v7 | 28.12.2024 | EASA BOP.BAS.115 · ${t('doc_from')} ${b.no || ''} ${b.finalNo ? `Final v${b.finalNo}` : ''} · ops.wicki.aero`), h('span', '1 | 2')]),
   ]);
   const page2 = de ? h('div.docsheet.bs.p2', [
@@ -132,7 +134,7 @@ export function faSheet(b, ctx) {
     h('table.dtab', h('tbody', [
       h('tr', [h('td.k', de ? 'Betreiber' : 'Operator'), h('td', { colspan: 3 }, /wicki aero/i.test(b.flight.operatorName || '') ? `Wicki Aero GmbH, Stockerstrasse 44, CH-8002 Zürich (${de ? 'Halterin, Lufttransportführer' : 'operator, air carrier'})` : b.flight.operatorName || '–')]),
       h('tr', [h('td.k', de ? 'Datum · Start' : 'Date · Launch'), h('td.w2', [h('b', fmtDate(z, b.time.startMs, lang)), ` · ${de ? 'Start' : 'launch'} ${hhmm(z, b.time.startMs)} LT (${hhmm('UTC', b.time.startMs)} UTC)`]), h('td.k2', de ? 'Dauer' : 'Duration'), h('td', `${de ? 'geplant' : 'planned'} ${fmtDur(b.intent.durationMin)} · ${de ? 'Landung ca.' : 'landing approx.'} ${hhmm(z, endMs)} LT`)]),
-      h('tr', [h('td.k', de ? 'Startort' : 'Launch site'), h('td', { colspan: 3 }, `${placeLabel(b.site)} · ${b.site.icao || (b.site.lat != null ? icao(b.site.lat, b.site.lon) : '')}${b.site.elev != null ? ` · ${b.site.elev} m / ${Math.round(b.site.elev * 3.28084)} ft` : ''}`)]),
+      h('tr', [h('td.k', de ? 'Startort' : 'Launch site'), h('td', { colspan: 3 }, `${siteName(b)} · ${b.site.icao || (b.site.lat != null ? icao(b.site.lat, b.site.lon) : '')}${b.site.elev != null ? ` · ${b.site.elev} m / ${Math.round(b.site.elev * 3.28084)} ft` : ''}`)]),
       h('tr', [h('td.k', de ? 'Landeraum' : 'Landing area'), h('td', { colspan: 3 }, [landing, `; ${de ? 'Grenzübertritt' : 'border crossing'}: `, box(!crossesBorder(b)), de ? ' nein  ' : ' no  ', box(crossesBorder(b)), ` ${de ? 'ja' : 'yes'}${countries.length ? ` (${countries.join(' / ')})` : ''}`])]),
       h('tr', [h('td.k', de ? 'Art der Fahrt' : 'Type of flight'), h('td', { colspan: 3 }, [box(b.flight.kind === 'commercial'), de ? ' gewerbliche Fahrt  ' : ' commercial  ', box(b.flight.kind === 'private'), de ? ' private Fahrt  ' : ' private  ', box(b.flight.kind === 'training'), de ? ' Ausbildung/Training  ' : ' training  ', box(b.flight.kind === 'exam'), ' Skill test/OPC  ·  ', box(b.balloon?.type !== 'gas'), de ? ' Heissluft  ' : ' hot air  ', box(b.balloon?.type === 'gas'), ' Gas', b.flight.kind === 'commercial' && fee.amount ? ` · ${de ? 'Entgelt' : 'fee'} ${fee.currency || 'CHF'} ${fee.amount} ${fee.mode === 'perPerson' ? (de ? 'pro Person' : 'per person') : fee.mode === 'various' ? (de ? 'unterschiedlich' : 'various') : (de ? 'pro Fahrt' : 'per flight')}` : ''])]),
     ])),
